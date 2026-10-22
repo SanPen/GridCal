@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Utils.NumericalMethods.emt_sparse_solver_loader &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Utils.NumericalMethods.emt_sparse_solver_loader &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/license.html">📜 License</a></li>
@@ -123,14 +124,14 @@
 <div class="viewcode-block" id="SparseSolverPluginManifest">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.NumericalMethods.html#VeraGridEngine.Utils.NumericalMethods.emt_sparse_solver_loader.SparseSolverPluginManifest">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">SparseSolverPluginManifest</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Parsed manifest of one external EMT sparse solver plugin.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
-    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;_name&quot;</span><span class="p">,</span> <span class="s2">&quot;_solver_type&quot;</span><span class="p">,</span> <span class="s2">&quot;_module_name&quot;</span><span class="p">,</span> <span class="s2">&quot;_class_name&quot;</span><span class="p">,</span> <span class="s2">&quot;_version&quot;</span><span class="p">]</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"_name"</span><span class="p">,</span> <span class="s2">"_solver_type"</span><span class="p">,</span> <span class="s2">"_module_name"</span><span class="p">,</span> <span class="s2">"_class_name"</span><span class="p">,</span> <span class="s2">"_version"</span><span class="p">]</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">solver_type</span><span class="p">:</span> <span class="n">SparseSolver</span><span class="p">,</span> <span class="n">module_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">class_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">version</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Build the plugin manifest object.</span>
 
 <span class="sd">        :param name: Plugin name.</span>
@@ -145,7 +146,7 @@
 <span class="sd">        :type version: str</span>
 <span class="sd">        :return: None.</span>
 <span class="sd">        :rtype: None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">name</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_solver_type</span><span class="p">:</span> <span class="n">SparseSolver</span> <span class="o">=</span> <span class="n">solver_type</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_module_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">module_name</span>
@@ -155,60 +156,60 @@
 <div class="viewcode-block" id="SparseSolverPluginManifest.get_name">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.NumericalMethods.html#VeraGridEngine.Utils.NumericalMethods.emt_sparse_solver_loader.SparseSolverPluginManifest.get_name">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return the plugin name.</span>
 
 <span class="sd">        :return: Plugin name.</span>
 <span class="sd">        :rtype: str</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_name</span></div>
 
 
 <div class="viewcode-block" id="SparseSolverPluginManifest.get_solver_type">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.NumericalMethods.html#VeraGridEngine.Utils.NumericalMethods.emt_sparse_solver_loader.SparseSolverPluginManifest.get_solver_type">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_solver_type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SparseSolver</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return the sparse solver type.</span>
 
 <span class="sd">        :return: Sparse solver type.</span>
 <span class="sd">        :rtype: SparseSolver</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_solver_type</span></div>
 
 
 <div class="viewcode-block" id="SparseSolverPluginManifest.get_module_name">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.NumericalMethods.html#VeraGridEngine.Utils.NumericalMethods.emt_sparse_solver_loader.SparseSolverPluginManifest.get_module_name">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_module_name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return the module name.</span>
 
 <span class="sd">        :return: Module name.</span>
 <span class="sd">        :rtype: str</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_module_name</span></div>
 
 
 <div class="viewcode-block" id="SparseSolverPluginManifest.get_class_name">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.NumericalMethods.html#VeraGridEngine.Utils.NumericalMethods.emt_sparse_solver_loader.SparseSolverPluginManifest.get_class_name">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_class_name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return the provider class name.</span>
 
 <span class="sd">        :return: Provider class name.</span>
 <span class="sd">        :rtype: str</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_class_name</span></div>
 
 
 <div class="viewcode-block" id="SparseSolverPluginManifest.get_version">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.NumericalMethods.html#VeraGridEngine.Utils.NumericalMethods.emt_sparse_solver_loader.SparseSolverPluginManifest.get_version">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_version</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return the plugin version string.</span>
 
 <span class="sd">        :return: Plugin version string.</span>
 <span class="sd">        :rtype: str</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_version</span></div>
 </div>
 
@@ -217,13 +218,13 @@
 <div class="viewcode-block" id="get_default_sparse_solver_plugins_directory">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.NumericalMethods.html#VeraGridEngine.Utils.NumericalMethods.emt_sparse_solver_loader.get_default_sparse_solver_plugins_directory">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_default_sparse_solver_plugins_directory</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Return the default directory containing EMT sparse solver plugins.</span>
 
 <span class="sd">    :return: Default sparse-solver plugin directory.</span>
 <span class="sd">    :rtype: Path</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">plugin_root</span><span class="p">:</span> <span class="n">Path</span> <span class="o">=</span> <span class="n">Path</span><span class="o">.</span><span class="n">home</span><span class="p">()</span> <span class="o">/</span> <span class="s2">&quot;.VeraGrid&quot;</span> <span class="o">/</span> <span class="s2">&quot;plugins&quot;</span> <span class="o">/</span> <span class="s2">&quot;sparse_solvers&quot;</span>
+<span class="sd">    """</span>
+    <span class="n">plugin_root</span><span class="p">:</span> <span class="n">Path</span> <span class="o">=</span> <span class="n">Path</span><span class="o">.</span><span class="n">home</span><span class="p">()</span> <span class="o">/</span> <span class="s2">".VeraGrid"</span> <span class="o">/</span> <span class="s2">"plugins"</span> <span class="o">/</span> <span class="s2">"sparse_solvers"</span>
     <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">plugin_root</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">plugin_root</span></div>
 
@@ -232,14 +233,14 @@
 <div class="viewcode-block" id="resolve_sparse_solver_plugins_directory">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.NumericalMethods.html#VeraGridEngine.Utils.NumericalMethods.emt_sparse_solver_loader.resolve_sparse_solver_plugins_directory">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">resolve_sparse_solver_plugins_directory</span><span class="p">(</span><span class="n">custom_directory</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Resolve the sparse-solver plugin directory.</span>
 
 <span class="sd">    :param custom_directory: User-provided plugin directory.</span>
 <span class="sd">    :type custom_directory: str</span>
 <span class="sd">    :return: Resolved plugin directory.</span>
 <span class="sd">    :rtype: Path</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">custom_directory</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">Path</span><span class="p">(</span><span class="n">custom_directory</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
@@ -250,41 +251,41 @@
 <div class="viewcode-block" id="read_sparse_solver_plugin_manifest">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.NumericalMethods.html#VeraGridEngine.Utils.NumericalMethods.emt_sparse_solver_loader.read_sparse_solver_plugin_manifest">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">read_sparse_solver_plugin_manifest</span><span class="p">(</span><span class="n">plugin_directory</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SparseSolverPluginManifest</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Read and validate one sparse-solver plugin manifest.</span>
 
 <span class="sd">    :param plugin_directory: Plugin directory.</span>
 <span class="sd">    :type plugin_directory: Path</span>
 <span class="sd">    :return: Parsed manifest.</span>
 <span class="sd">    :rtype: SparseSolverPluginManifest</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">manifest_path</span><span class="p">:</span> <span class="n">Path</span> <span class="o">=</span> <span class="n">plugin_directory</span> <span class="o">/</span> <span class="s2">&quot;plugin.json&quot;</span>
+<span class="sd">    """</span>
+    <span class="n">manifest_path</span><span class="p">:</span> <span class="n">Path</span> <span class="o">=</span> <span class="n">plugin_directory</span> <span class="o">/</span> <span class="s2">"plugin.json"</span>
 
     <span class="k">if</span> <span class="n">manifest_path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
         <span class="k">pass</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Sparse solver plugin manifest not found: </span><span class="si">{</span><span class="n">manifest_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Sparse solver plugin manifest not found: </span><span class="si">{</span><span class="n">manifest_path</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
     <span class="n">raw_data_any</span><span class="p">:</span> <span class="n">Any</span>
-    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">manifest_path</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">json_file</span><span class="p">:</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">manifest_path</span><span class="p">,</span> <span class="s2">"r"</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">"utf-8"</span><span class="p">)</span> <span class="k">as</span> <span class="n">json_file</span><span class="p">:</span>
         <span class="n">raw_data_any</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">json_file</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">raw_data_any</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
         <span class="n">raw_data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">raw_data_any</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Sparse solver plugin manifest must be a JSON object: </span><span class="si">{</span><span class="n">manifest_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Sparse solver plugin manifest must be a JSON object: </span><span class="si">{</span><span class="n">manifest_path</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="s2">&quot;name&quot;</span> <span class="ow">in</span> <span class="n">raw_data</span> <span class="ow">and</span> <span class="s2">&quot;solver_type&quot;</span> <span class="ow">in</span> <span class="n">raw_data</span> <span class="ow">and</span> <span class="s2">&quot;module&quot;</span> <span class="ow">in</span> <span class="n">raw_data</span> <span class="ow">and</span> <span class="s2">&quot;class_name&quot;</span> <span class="ow">in</span> <span class="n">raw_data</span> <span class="ow">and</span> <span class="s2">&quot;version&quot;</span> <span class="ow">in</span> <span class="n">raw_data</span><span class="p">:</span>
-        <span class="n">solver_type</span><span class="p">:</span> <span class="n">SparseSolver</span> <span class="o">=</span> <span class="n">SparseSolver</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">raw_data</span><span class="p">[</span><span class="s2">&quot;solver_type&quot;</span><span class="p">])]</span>
+    <span class="k">if</span> <span class="s2">"name"</span> <span class="ow">in</span> <span class="n">raw_data</span> <span class="ow">and</span> <span class="s2">"solver_type"</span> <span class="ow">in</span> <span class="n">raw_data</span> <span class="ow">and</span> <span class="s2">"module"</span> <span class="ow">in</span> <span class="n">raw_data</span> <span class="ow">and</span> <span class="s2">"class_name"</span> <span class="ow">in</span> <span class="n">raw_data</span> <span class="ow">and</span> <span class="s2">"version"</span> <span class="ow">in</span> <span class="n">raw_data</span><span class="p">:</span>
+        <span class="n">solver_type</span><span class="p">:</span> <span class="n">SparseSolver</span> <span class="o">=</span> <span class="n">SparseSolver</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">raw_data</span><span class="p">[</span><span class="s2">"solver_type"</span><span class="p">])]</span>
         <span class="k">return</span> <span class="n">SparseSolverPluginManifest</span><span class="p">(</span>
-            <span class="n">name</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">raw_data</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]),</span>
+            <span class="n">name</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">raw_data</span><span class="p">[</span><span class="s2">"name"</span><span class="p">]),</span>
             <span class="n">solver_type</span><span class="o">=</span><span class="n">solver_type</span><span class="p">,</span>
-            <span class="n">module_name</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">raw_data</span><span class="p">[</span><span class="s2">&quot;module&quot;</span><span class="p">]),</span>
-            <span class="n">class_name</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">raw_data</span><span class="p">[</span><span class="s2">&quot;class_name&quot;</span><span class="p">]),</span>
-            <span class="n">version</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">raw_data</span><span class="p">[</span><span class="s2">&quot;version&quot;</span><span class="p">]),</span>
+            <span class="n">module_name</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">raw_data</span><span class="p">[</span><span class="s2">"module"</span><span class="p">]),</span>
+            <span class="n">class_name</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">raw_data</span><span class="p">[</span><span class="s2">"class_name"</span><span class="p">]),</span>
+            <span class="n">version</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">raw_data</span><span class="p">[</span><span class="s2">"version"</span><span class="p">]),</span>
         <span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Sparse solver plugin manifest is missing required fields: </span><span class="si">{</span><span class="n">manifest_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Sparse solver plugin manifest is missing required fields: </span><span class="si">{</span><span class="n">manifest_path</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span></div>
 
 
 
@@ -294,7 +295,7 @@
         <span class="n">plugin_directory</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span>
         <span class="n">manifest</span><span class="p">:</span> <span class="n">SparseSolverPluginManifest</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SparseLinearSolverBackendProvider</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Load a sparse-solver backend provider from one plugin directory.</span>
 
 <span class="sd">    :param plugin_directory: Plugin directory.</span>
@@ -303,20 +304,20 @@
 <span class="sd">    :type manifest: SparseSolverPluginManifest</span>
 <span class="sd">    :return: Sparse solver backend provider.</span>
 <span class="sd">    :rtype: SparseLinearSolverBackendProvider</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">module_path</span><span class="p">:</span> <span class="n">Path</span> <span class="o">=</span> <span class="n">plugin_directory</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">manifest</span><span class="o">.</span><span class="n">get_module_name</span><span class="p">()</span><span class="si">}</span><span class="s2">.py&quot;</span>
+<span class="sd">    """</span>
+    <span class="n">module_path</span><span class="p">:</span> <span class="n">Path</span> <span class="o">=</span> <span class="n">plugin_directory</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">manifest</span><span class="o">.</span><span class="n">get_module_name</span><span class="p">()</span><span class="si">}</span><span class="s2">.py"</span>
     <span class="n">spec</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">spec_from_file_location</span><span class="p">(</span>
-        <span class="sa">f</span><span class="s2">&quot;emt_sparse_plugin_</span><span class="si">{</span><span class="n">manifest</span><span class="o">.</span><span class="n">get_name</span><span class="p">()</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">manifest</span><span class="o">.</span><span class="n">get_version</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="sa">f</span><span class="s2">"emt_sparse_plugin_</span><span class="si">{</span><span class="n">manifest</span><span class="o">.</span><span class="n">get_name</span><span class="p">()</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">manifest</span><span class="o">.</span><span class="n">get_version</span><span class="p">()</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
         <span class="n">module_path</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">if</span> <span class="n">spec</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unable to create import spec for sparse solver plugin: </span><span class="si">{</span><span class="n">module_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unable to create import spec for sparse solver plugin: </span><span class="si">{</span><span class="n">module_path</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">pass</span>
 
     <span class="k">if</span> <span class="n">spec</span><span class="o">.</span><span class="n">loader</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Sparse solver plugin spec has no loader: </span><span class="si">{</span><span class="n">module_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Sparse solver plugin spec has no loader: </span><span class="si">{</span><span class="n">module_path</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">pass</span>
 
@@ -329,7 +330,7 @@
         <span class="n">provider_class</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="n">module_namespace</span><span class="p">[</span><span class="n">manifest</span><span class="o">.</span><span class="n">get_class_name</span><span class="p">()]</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Sparse solver plugin provider class &#39;</span><span class="si">{</span><span class="n">manifest</span><span class="o">.</span><span class="n">get_class_name</span><span class="p">()</span><span class="si">}</span><span class="s2">&#39; not found in </span><span class="si">{</span><span class="n">module_path</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">"Sparse solver plugin provider class '</span><span class="si">{</span><span class="n">manifest</span><span class="o">.</span><span class="n">get_class_name</span><span class="p">()</span><span class="si">}</span><span class="s2">' not found in </span><span class="si">{</span><span class="n">module_path</span><span class="si">}</span><span class="s2">"</span>
         <span class="p">)</span>
 
     <span class="n">provider_obj</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="n">provider_class</span><span class="p">()</span>
@@ -338,7 +339,7 @@
         <span class="k">return</span> <span class="n">provider_obj</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Sparse solver plugin provider &#39;</span><span class="si">{</span><span class="n">manifest</span><span class="o">.</span><span class="n">get_class_name</span><span class="p">()</span><span class="si">}</span><span class="s2">&#39; does not implement SparseLinearSolverBackendProvider&quot;</span>
+            <span class="sa">f</span><span class="s2">"Sparse solver plugin provider '</span><span class="si">{</span><span class="n">manifest</span><span class="o">.</span><span class="n">get_class_name</span><span class="p">()</span><span class="si">}</span><span class="s2">' does not implement SparseLinearSolverBackendProvider"</span>
         <span class="p">)</span></div>
 
 
@@ -349,7 +350,7 @@
         <span class="n">plugin_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">plugin_directory_override</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SparseLinearSolverBackendProvider</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Load one sparse-solver backend provider by plugin name.</span>
 
 <span class="sd">    :param plugin_name: Plugin name.</span>
@@ -358,7 +359,7 @@
 <span class="sd">    :type plugin_directory_override: str</span>
 <span class="sd">    :return: Sparse solver backend provider.</span>
 <span class="sd">    :rtype: SparseLinearSolverBackendProvider</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">root_directory</span><span class="p">:</span> <span class="n">Path</span> <span class="o">=</span> <span class="n">resolve_sparse_solver_plugins_directory</span><span class="p">(</span><span class="n">plugin_directory_override</span><span class="p">)</span>
     <span class="n">plugin_directory</span><span class="p">:</span> <span class="n">Path</span> <span class="o">=</span> <span class="n">root_directory</span> <span class="o">/</span> <span class="n">plugin_name</span>
     <span class="n">manifest</span><span class="p">:</span> <span class="n">SparseSolverPluginManifest</span> <span class="o">=</span> <span class="n">read_sparse_solver_plugin_manifest</span><span class="p">(</span><span class="n">plugin_directory</span><span class="p">)</span>

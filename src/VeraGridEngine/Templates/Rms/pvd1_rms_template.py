@@ -189,12 +189,14 @@ def get_pvd1_complete_rms_template(vfactory: VarFactory, name: str = "PVD1 compl
     More complete WECC/ANDES-like PVD1 RMS model.
 
     Compared to ``get_pvd1_rms_template``, this variant adds:
+
     - frequency deadband and post-deadband active-power support (fdbd, ddn),
     - explicit pref/pext internal summation channels,
     - optional active-power limiting switch (plim),
     - recovery multipliers with separate frequency/voltage enable flags.
 
     Notes:
+
     - ``fn`` is a static parameter mapped to the grid nominal frequency.
       ``f_hz`` is the local frequency measured by the PLL.
     - True latching tripping behavior (frflag/vrflag in the original ANDES formulation)

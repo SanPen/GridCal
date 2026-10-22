@@ -5,10 +5,31 @@
 from __future__ import annotations
 
 import datetime
+from pathlib import Path
 from typing import List, Dict, Tuple
 
 from VeraGridEngine.IO.raw.psse_object import RawObject
 from VeraGridEngine.IO.raw.psse_property import PsseProperty
+from VeraGridEngine.IO.raw.psse_file_type import PsseFileType
+from VeraGridEngine.IO.raw.psse_conversion_report import PsseImportReport
+from VeraGridEngine.IO.raw.psse_auxiliary import BusInputMode, PsseVersion, resolve_psse_version
+from VeraGridEngine.IO.raw.raw_types import PsseAuxiliaryDocument
+from VeraGridEngine.IO.raw.versioned.base.sub import RawSub
+from VeraGridEngine.IO.raw.versioned.base.mon import RawMon
+from VeraGridEngine.IO.raw.versioned.base.con_ import RawCon
+from VeraGridEngine.IO.raw.versioned.base.dyr import RawDyr
+from VeraGridEngine.IO.raw.versioned.base.seq import RawSeq, Sequence35Layout
+from VeraGridEngine.IO.raw.versioned.base.rop import RawRop
+from VeraGridEngine.IO.raw.versioned.base.gcp import RawGcp
+from VeraGridEngine.IO.raw.versioned.base.loc import RawLoc
+from VeraGridEngine.IO.raw.sub_parser import read_sub
+from VeraGridEngine.IO.raw.mon_parser import read_mon
+from VeraGridEngine.IO.raw.con_parser import read_con
+from VeraGridEngine.IO.raw.dyr_parser import read_dyr
+from VeraGridEngine.IO.raw.seq_parser import read_seq
+from VeraGridEngine.IO.raw.rop_parser import read_rop
+from VeraGridEngine.IO.raw.gcp_parser import read_gcp
+from VeraGridEngine.IO.raw.loc_parser import read_loc
 from VeraGridEngine.IO.raw.raw_types import RawAreaLike, RawBranchLike, RawBusLike, RawEquipmentTerminalLike, \
     RawFACTSLike, RawFixedShuntLike, RawGeneratorLike, RawGneDeviceLike, RawImpedanceCorrectionTableLike, \
     RawInductionMachineLike, RawInterAreaLike, RawLoadLike, RawMultiLineSectionLike, RawNodeLike, RawOwnerLike, \
@@ -67,6 +88,15 @@ class PsseCircuit(RawObject, BaseCircuit):
         PsseProperty(property_name='gne', rawx_key='gne', class_type=RawGneDevice),
         PsseProperty(property_name='indiction_tables', rawx_key='impcor', class_type=RawImpedanceCorrectionTable),
         PsseProperty(property_name='multi_line_sections', rawx_key='msline', class_type=RawMultiLineSection),
+        # Documents are registered circuit collections, but not RAWX network sections.
+        PsseProperty(property_name='sub_files', rawx_key='', class_type=RawSub, file_type=PsseFileType.SUB),
+        PsseProperty(property_name='mon_files', rawx_key='', class_type=RawMon, file_type=PsseFileType.MON),
+        PsseProperty(property_name='con_files', rawx_key='', class_type=RawCon, file_type=PsseFileType.CON),
+        PsseProperty(property_name='dyr_files', rawx_key='', class_type=RawDyr, file_type=PsseFileType.DYR),
+        PsseProperty(property_name='seq_files', rawx_key='', class_type=RawSeq, file_type=PsseFileType.SEQ),
+        PsseProperty(property_name='rop_files', rawx_key='', class_type=RawRop, file_type=PsseFileType.ROP),
+        PsseProperty(property_name='gcp_files', rawx_key='', class_type=RawGcp, file_type=PsseFileType.GCP),
+        PsseProperty(property_name='loc_files', rawx_key='', class_type=RawLoc, file_type=PsseFileType.LOC),
     )
 
     __slots__ = (
@@ -100,9 +130,21 @@ class PsseCircuit(RawObject, BaseCircuit):
         "gne",
         "indiction_tables",
         "multi_line_sections",
+        "sub_files",
+        "mon_files",
+        "con_files",
+        "dyr_files",
+        "seq_files",
+        "rop_files",
+        "gcp_files",
+        "loc_files",
+        "auxiliary_logger",
+        "conversion_report",
+        "auxiliary_bus_mode",
     )
 
-    def __init__(self):
+    def __init__(self) -> None:
+        """Initialize network collections and independent auxiliary document collections."""
         RawObject.__init__(self, "Circuit")
         BaseCircuit.__init__(self)
 
@@ -161,6 +203,164 @@ class PsseCircuit(RawObject, BaseCircuit):
 
         self.multi_line_sections: List[RawMultiLineSectionLike] = list()
 
+        # Preserve complete file semantics instead of flattening away headers and order.
+        self.sub_files: list[RawSub] = list()
+        self.mon_files: list[RawMon] = list()
+        self.con_files: list[RawCon] = list()
+        self.dyr_files: list[RawDyr] = list()
+        self.seq_files: list[RawSeq] = list()
+        self.rop_files: list[RawRop] = list()
+        self.gcp_files: list[RawGcp] = list()
+        self.loc_files: list[RawLoc] = list()
+        self.auxiliary_logger: Logger = Logger()
+        # Source-specific provenance belongs to the source circuit, not native devices.
+        self.conversion_report: PsseImportReport | None = None
+        self.auxiliary_bus_mode: BusInputMode = BusInputMode.NUMBERS
+
+    def get_auxiliary_properties(self) -> list[PsseProperty]:
+        """Get registered auxiliary collections, including their owning formats.
+
+        :return: Non-network circuit property descriptors.
+        """
+        return [prop for prop in self.get_properties() if prop.file_type != PsseFileType.RAW]
+
+    def get_rawx_properties(self) -> list[PsseProperty]:
+        """Get only properties supported by the RAWX network schema.
+
+        :return: Network properties, excluding auxiliary documents.
+        """
+        return [prop for prop in self.get_properties() if prop.file_type == PsseFileType.RAW]
+
+    def get_rawx_dict(self) -> dict[str, PsseProperty]:
+        """Map actual RAWX network keys without inventing auxiliary sections.
+
+        :return: RAWX network property lookup.
+        """
+        return dict((prop.rawx_key, prop) for prop in self.get_rawx_properties())
+
+    def get_auxiliary_documents(self) -> tuple[PsseAuxiliaryDocument, ...]:
+        """Collect owned documents without copying or rewriting their records.
+
+        :return: All documents, grouped by registered format and ordered within each format.
+        """
+        documents: list[PsseAuxiliaryDocument] = list()
+        for prop in self.get_auxiliary_properties():
+            documents.extend(self.get_prop_value(prop))
+        return tuple(documents)
+
+    def add_auxiliary(self, document: PsseAuxiliaryDocument) -> bool:
+        """Own a parsed document after checking its selected major revision.
+
+        Invalid records remain available for inspection with their diagnostics.
+        No file defaults, contingencies or electrical values are applied to RAW.
+
+        :param document: Concrete versioned auxiliary data.
+        :return: Whether the document was accepted into its circuit collection.
+        """
+        version: PsseVersion | None = resolve_psse_version(self.REV, self.auxiliary_logger, 'PsseCircuit.REV')
+        if version is None or document.version is None or document.version != version:
+            self.auxiliary_logger.add_error('Auxiliary document version does not match circuit REV',
+                                            device=document.source, value=document.version,
+                                            expected_value=self.REV)
+            return False
+        elif any(owned is document for owned in self.get_auxiliary_documents()):
+            self.auxiliary_logger.add_error('Auxiliary document already belongs to this circuit',
+                                            device=document.source)
+            return False
+        else:
+            pass
+        # Dispatch explicitly: callers keep the concrete version type and every record.
+        if isinstance(document, RawSub):
+            self.sub_files.append(document)
+            self.auxiliary_bus_mode = document.bus_mode
+        elif isinstance(document, RawMon):
+            self.mon_files.append(document)
+            self.auxiliary_bus_mode = document.bus_mode
+        elif isinstance(document, RawCon):
+            self.con_files.append(document)
+            self.auxiliary_bus_mode = document.bus_mode
+        elif isinstance(document, RawDyr):
+            self.dyr_files.append(document)
+        elif isinstance(document, RawSeq):
+            self.seq_files.append(document)
+        elif isinstance(document, RawRop):
+            self.rop_files.append(document)
+        elif isinstance(document, RawGcp):
+            self.gcp_files.append(document)
+        elif isinstance(document, RawLoc):
+            self.loc_files.append(document)
+        else:
+            self.auxiliary_logger.add_error('Unsupported auxiliary document type')
+            return False
+        if document.logger is not self.auxiliary_logger:
+            self.auxiliary_logger += document.logger
+        else:
+            pass
+        return True
+
+    def read_auxiliary_file(self, file_name: str | Path,
+                            bus_mode: BusInputMode | None = None,
+                            layout_35: Sequence35Layout = Sequence35Layout.V35_2) -> PsseAuxiliaryDocument | None:
+        """Read and own one auxiliary file using circuit REV, never RawObject.version.
+
+        Call in source order: SUB/MON/CON inherit the preceding bus-name mode.
+        Explicitly supplying bus_mode starts a new command-file interpretation.
+
+        :param file_name: SUB, MON, CON, DYR, SEQ, ROP, GCP or LOC input path.
+        :param bus_mode: Optional initial bus-reference mode override.
+        :param layout_35: Explicit SEQ minor-release layout when REV is 35.
+        :return: Owned parsed document, or None after a load/version failure.
+        """
+        path: Path = Path(file_name)
+        version: PsseVersion | None = resolve_psse_version(self.REV, self.auxiliary_logger, str(path))
+        if version is None:
+            return None
+        else:
+            pass
+        file_type: PsseFileType
+        try:
+            file_type = PsseFileType(path.suffix.lower())
+        except ValueError:
+            self.auxiliary_logger.add_error('Unsupported PSS/E auxiliary file extension', device=str(path))
+            return None
+        mode: BusInputMode = self.auxiliary_bus_mode if bus_mode is None else bus_mode
+        document: PsseAuxiliaryDocument
+        try:
+            if file_type == PsseFileType.SUB:
+                document = read_sub(path, mode, version)
+            elif file_type == PsseFileType.MON:
+                document = read_mon(path, mode, version)
+            elif file_type == PsseFileType.CON:
+                document = read_con(path, mode, version)
+            elif file_type == PsseFileType.DYR:
+                document = read_dyr(path, version)
+            elif file_type == PsseFileType.SEQ:
+                document = read_seq(path, version, layout_35)
+            elif file_type == PsseFileType.ROP:
+                document = read_rop(path, version)
+            elif file_type == PsseFileType.GCP:
+                document = read_gcp(path, version)
+            elif file_type == PsseFileType.LOC:
+                document = read_loc(path, version)
+            else:
+                self.auxiliary_logger.add_error('RAW is not an auxiliary file', device=str(path))
+                return None
+        except (OSError, UnicodeError) as error:
+            self.auxiliary_logger.add_error('Could not read PSS/E auxiliary file', device=str(path), value=str(error))
+            return None
+        if self.add_auxiliary(document):
+            return document
+        else:
+            return None
+
+    def warn_auxiliary_omission(self, logger: Logger) -> None:
+        """Report auxiliary data excluded by a network-only RAW/RAWX export.
+
+        :param logger: Export diagnostics destination.
+        """
+        for document in self.get_auxiliary_documents():
+            logger.add_warning('RAW/RAWX output does not contain auxiliary files', device=document.source)
+
     def parse(self, data: List[int | float], logger: Logger) -> None:
         """
         Parse the basic data
@@ -181,11 +381,11 @@ class PsseCircuit(RawObject, BaseCircuit):
             logger.add_warning(f"RAW header contains {len(data)} elements instead of the expected 6")
 
     def get_class_properties(self) -> List[PsseProperty]:
-        """
+        """Get RAW network collections used by existing object tools.
 
-        :return:
+        :return: Network object descriptors, excluding scalars and auxiliary documents.
         """
-        return [p for p in self.get_properties() if p.class_type not in [str, bool, int, float]]
+        return [p for p in self.get_rawx_properties() if p.class_type not in [str, bool, int, float]]
 
     def check_primary_keys(self, logger: Logger = Logger()):
         """

@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Devices.Parents.load_parent &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Devices.Parents.load_parent &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/license.html">📜 License</a></li>
@@ -122,99 +123,99 @@
 <div class="viewcode-block" id="LoadParent">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Parents.html#VeraGridEngine.Devices.Parents.load_parent.LoadParent">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">LoadParent</span><span class="p">(</span><span class="n">InjectionParent</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Template for objects that behave like loads</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s1">&#39;_P&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_P_prof&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_Q&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_Q_prof&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_Pa&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_Pa_prof&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_Qa&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_Qa_prof&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_Pb&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_Pb_prof&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_Qb&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_Qb_prof&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_Pc&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_Pc_prof&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_Qc&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_Qc_prof&#39;</span><span class="p">,</span>
+        <span class="s1">'_P'</span><span class="p">,</span>
+        <span class="s1">'_P_prof'</span><span class="p">,</span>
+        <span class="s1">'_Q'</span><span class="p">,</span>
+        <span class="s1">'_Q_prof'</span><span class="p">,</span>
+        <span class="s1">'_Pa'</span><span class="p">,</span>
+        <span class="s1">'_Pa_prof'</span><span class="p">,</span>
+        <span class="s1">'_Qa'</span><span class="p">,</span>
+        <span class="s1">'_Qa_prof'</span><span class="p">,</span>
+        <span class="s1">'_Pb'</span><span class="p">,</span>
+        <span class="s1">'_Pb_prof'</span><span class="p">,</span>
+        <span class="s1">'_Qb'</span><span class="p">,</span>
+        <span class="s1">'_Qb_prof'</span><span class="p">,</span>
+        <span class="s1">'_Pc'</span><span class="p">,</span>
+        <span class="s1">'_Pc_prof'</span><span class="p">,</span>
+        <span class="s1">'_Qc'</span><span class="p">,</span>
+        <span class="s1">'_Qc_prof'</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="n">LOCAL_PROPERTY_DECLARATIONS</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">GCProp</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;P&#39;</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;MW&#39;</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'P'</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">'MW'</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Active power&#39;</span><span class="p">,</span>
-            <span class="n">profile_name</span><span class="o">=</span><span class="s1">&#39;P_prof&#39;</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">'Active power'</span><span class="p">,</span>
+            <span class="n">profile_name</span><span class="o">=</span><span class="s1">'P_prof'</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">PF</span><span class="p">,</span> <span class="n">PrpCat</span><span class="o">.</span><span class="n">OPF</span><span class="p">,</span> <span class="n">PrpCat</span><span class="o">.</span><span class="n">NTC</span><span class="p">],</span>
             <span class="n">dyn_ref</span><span class="o">=</span><span class="n">ParamPowerFlowReferenceType</span><span class="o">.</span><span class="n">Pl0</span><span class="p">,</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;Pa&#39;</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;MW&#39;</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'Pa'</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">'MW'</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Phase A active power&#39;</span><span class="p">,</span>
-            <span class="n">profile_name</span><span class="o">=</span><span class="s1">&#39;Pa_prof&#39;</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">'Phase A active power'</span><span class="p">,</span>
+            <span class="n">profile_name</span><span class="o">=</span><span class="s1">'Pa_prof'</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">PF3</span><span class="p">,</span> <span class="n">PrpCat</span><span class="o">.</span><span class="n">EMT</span><span class="p">],</span>
             <span class="n">dyn_ref</span><span class="o">=</span><span class="n">ParamPowerFlowReferenceType</span><span class="o">.</span><span class="n">Pl0_A</span><span class="p">,</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;Pb&#39;</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;MW&#39;</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'Pb'</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">'MW'</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Phase B active power&#39;</span><span class="p">,</span>
-            <span class="n">profile_name</span><span class="o">=</span><span class="s1">&#39;Pb_prof&#39;</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">'Phase B active power'</span><span class="p">,</span>
+            <span class="n">profile_name</span><span class="o">=</span><span class="s1">'Pb_prof'</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">PF3</span><span class="p">,</span> <span class="n">PrpCat</span><span class="o">.</span><span class="n">EMT</span><span class="p">],</span>
             <span class="n">dyn_ref</span><span class="o">=</span><span class="n">ParamPowerFlowReferenceType</span><span class="o">.</span><span class="n">Pl0_B</span><span class="p">,</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;Pc&#39;</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;MW&#39;</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'Pc'</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">'MW'</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Phase C active power&#39;</span><span class="p">,</span>
-            <span class="n">profile_name</span><span class="o">=</span><span class="s1">&#39;Pc_prof&#39;</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">'Phase C active power'</span><span class="p">,</span>
+            <span class="n">profile_name</span><span class="o">=</span><span class="s1">'Pc_prof'</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">PF3</span><span class="p">,</span> <span class="n">PrpCat</span><span class="o">.</span><span class="n">EMT</span><span class="p">],</span>
             <span class="n">dyn_ref</span><span class="o">=</span><span class="n">ParamPowerFlowReferenceType</span><span class="o">.</span><span class="n">Pl0_C</span><span class="p">,</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;Q&#39;</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;MVAr&#39;</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'Q'</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">'MVAr'</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Reactive power&#39;</span><span class="p">,</span>
-            <span class="n">profile_name</span><span class="o">=</span><span class="s1">&#39;Q_prof&#39;</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">'Reactive power'</span><span class="p">,</span>
+            <span class="n">profile_name</span><span class="o">=</span><span class="s1">'Q_prof'</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">PF</span><span class="p">,</span> <span class="n">PrpCat</span><span class="o">.</span><span class="n">OPF</span><span class="p">,</span> <span class="n">PrpCat</span><span class="o">.</span><span class="n">NTC</span><span class="p">],</span>
             <span class="n">dyn_ref</span><span class="o">=</span><span class="n">ParamPowerFlowReferenceType</span><span class="o">.</span><span class="n">Ql0</span><span class="p">,</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;Qa&#39;</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;MVAr&#39;</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'Qa'</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">'MVAr'</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Phase A reactive power&#39;</span><span class="p">,</span>
-            <span class="n">profile_name</span><span class="o">=</span><span class="s1">&#39;Qa_prof&#39;</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">'Phase A reactive power'</span><span class="p">,</span>
+            <span class="n">profile_name</span><span class="o">=</span><span class="s1">'Qa_prof'</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">PF3</span><span class="p">],</span>
             <span class="n">dyn_ref</span><span class="o">=</span><span class="n">ParamPowerFlowReferenceType</span><span class="o">.</span><span class="n">Ql0_A</span><span class="p">,</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;Qb&#39;</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;MVAr&#39;</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'Qb'</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">'MVAr'</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Phase B reactive power&#39;</span><span class="p">,</span>
-            <span class="n">profile_name</span><span class="o">=</span><span class="s1">&#39;Qb_prof&#39;</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">'Phase B reactive power'</span><span class="p">,</span>
+            <span class="n">profile_name</span><span class="o">=</span><span class="s1">'Qb_prof'</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">PF3</span><span class="p">,</span> <span class="n">PrpCat</span><span class="o">.</span><span class="n">EMT</span><span class="p">],</span>
             <span class="n">dyn_ref</span><span class="o">=</span><span class="n">ParamPowerFlowReferenceType</span><span class="o">.</span><span class="n">Ql0_B</span><span class="p">,</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;Qc&#39;</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;MVAr&#39;</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'Qc'</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">'MVAr'</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Phase C reactive power&#39;</span><span class="p">,</span>
-            <span class="n">profile_name</span><span class="o">=</span><span class="s1">&#39;Qc_prof&#39;</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">'Phase C reactive power'</span><span class="p">,</span>
+            <span class="n">profile_name</span><span class="o">=</span><span class="s1">'Qc_prof'</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">PF3</span><span class="p">,</span> <span class="n">PrpCat</span><span class="o">.</span><span class="n">EMT</span><span class="p">],</span>
             <span class="n">dyn_ref</span><span class="o">=</span><span class="n">ParamPowerFlowReferenceType</span><span class="o">.</span><span class="n">Ql0_C</span><span class="p">,</span>
         <span class="p">),</span>
@@ -241,10 +242,10 @@
                  <span class="n">opex</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
                  <span class="n">build_status</span><span class="p">:</span> <span class="n">BuildStatus</span><span class="p">,</span>
                  <span class="n">device_type</span><span class="p">:</span> <span class="n">DeviceType</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        LoadLikeTemplate</span>
 <span class="sd">        :param name: Name of the device</span>
-<span class="sd">        :param idtag: unique id of the device (if None or &quot;&quot; a new one is generated)</span>
+<span class="sd">        :param idtag: unique id of the device (if None or "" a new one is generated)</span>
 <span class="sd">        :param code: secondary code for compatibility</span>
 <span class="sd">        :param bus: snapshot bus object</span>
 <span class="sd">        :param active:active state</span>
@@ -263,7 +264,7 @@
 <span class="sd">        :param opex: operational expenditures (maintainance cost)</span>
 <span class="sd">        :param build_status: BuildStatus</span>
 <span class="sd">        :param device_type: DeviceType</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="n">InjectionParent</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                                  <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
@@ -306,10 +307,10 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">P_prof</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ProfileFloat</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Cost profile</span>
 <span class="sd">        :return: Profile</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_P_prof</span>
 
     <span class="nd">@P_prof</span><span class="o">.</span><span class="n">setter</span>
@@ -319,25 +320,25 @@
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_P_prof</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">arr</span><span class="o">=</span><span class="n">val</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">val</span><span class="p">))</span> <span class="o">+</span> <span class="s1">&#39;not supported to be set into a pofile&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">val</span><span class="p">))</span> <span class="o">+</span> <span class="s1">'not supported to be set into a pofile'</span><span class="p">)</span>
 
 <div class="viewcode-block" id="LoadParent.get_P_at">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Parents.html#VeraGridEngine.Devices.Parents.load_parent.LoadParent.get_P_at">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_P_at</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get power at time t</span>
 <span class="sd">        :param t:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">get_at</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">P</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">P_prof</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span></div>
 
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">Pa_prof</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ProfileFloat</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Cost profile</span>
 <span class="sd">        :return: Profile</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Pa_prof</span>
 
     <span class="nd">@Pa_prof</span><span class="o">.</span><span class="n">setter</span>
@@ -347,24 +348,24 @@
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_Pa_prof</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">arr</span><span class="o">=</span><span class="n">val</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">val</span><span class="p">))</span> <span class="o">+</span> <span class="s1">&#39;not supported to be set into a pofile&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">val</span><span class="p">))</span> <span class="o">+</span> <span class="s1">'not supported to be set into a pofile'</span><span class="p">)</span>
 
 <div class="viewcode-block" id="LoadParent.get_Pa_at">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Parents.html#VeraGridEngine.Devices.Parents.load_parent.LoadParent.get_Pa_at">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_Pa_at</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        :param t:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">get_at</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Pa</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Pa_prof</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span></div>
 
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">Pb_prof</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ProfileFloat</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Cost profile</span>
 <span class="sd">        :return: Profile</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Pb_prof</span>
 
     <span class="nd">@Pb_prof</span><span class="o">.</span><span class="n">setter</span>
@@ -374,24 +375,24 @@
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_Pb_prof</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">arr</span><span class="o">=</span><span class="n">val</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">val</span><span class="p">))</span> <span class="o">+</span> <span class="s1">&#39;not supported to be set into a pofile&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">val</span><span class="p">))</span> <span class="o">+</span> <span class="s1">'not supported to be set into a pofile'</span><span class="p">)</span>
 
 <div class="viewcode-block" id="LoadParent.get_Pb_at">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Parents.html#VeraGridEngine.Devices.Parents.load_parent.LoadParent.get_Pb_at">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_Pb_at</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        :param t:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">get_at</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Pb</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Pb_prof</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span></div>
 
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">Pc_prof</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ProfileFloat</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Cost profile</span>
 <span class="sd">        :return: Profile</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Pc_prof</span>
 
     <span class="nd">@Pc_prof</span><span class="o">.</span><span class="n">setter</span>
@@ -401,24 +402,24 @@
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_Pc_prof</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">arr</span><span class="o">=</span><span class="n">val</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">val</span><span class="p">))</span> <span class="o">+</span> <span class="s1">&#39;not supported to be set into a pofile&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">val</span><span class="p">))</span> <span class="o">+</span> <span class="s1">'not supported to be set into a pofile'</span><span class="p">)</span>
 
 <div class="viewcode-block" id="LoadParent.get_Pc_at">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Parents.html#VeraGridEngine.Devices.Parents.load_parent.LoadParent.get_Pc_at">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_Pc_at</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        :param t:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">get_at</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Pc</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Pc_prof</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span></div>
 
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">Q_prof</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ProfileFloat</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Cost profile</span>
 <span class="sd">        :return: Profile</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Q_prof</span>
 
     <span class="nd">@Q_prof</span><span class="o">.</span><span class="n">setter</span>
@@ -428,24 +429,24 @@
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_Q_prof</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">arr</span><span class="o">=</span><span class="n">val</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">val</span><span class="p">))</span> <span class="o">+</span> <span class="s1">&#39;not supported to be set into a Q_prof&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">val</span><span class="p">))</span> <span class="o">+</span> <span class="s1">'not supported to be set into a Q_prof'</span><span class="p">)</span>
 
 <div class="viewcode-block" id="LoadParent.get_Q_at">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Parents.html#VeraGridEngine.Devices.Parents.load_parent.LoadParent.get_Q_at">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_Q_at</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        :param t:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">get_at</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Q</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Q_prof</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span></div>
 
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">Qa_prof</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ProfileFloat</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Cost profile</span>
 <span class="sd">        :return: Profile</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Qa_prof</span>
 
     <span class="nd">@Qa_prof</span><span class="o">.</span><span class="n">setter</span>
@@ -455,24 +456,24 @@
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_Qa_prof</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">arr</span><span class="o">=</span><span class="n">val</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">val</span><span class="p">))</span> <span class="o">+</span> <span class="s1">&#39;not supported to be set into a Q1_prof&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">val</span><span class="p">))</span> <span class="o">+</span> <span class="s1">'not supported to be set into a Q1_prof'</span><span class="p">)</span>
 
 <div class="viewcode-block" id="LoadParent.get_Qa_at">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Parents.html#VeraGridEngine.Devices.Parents.load_parent.LoadParent.get_Qa_at">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_Qa_at</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        :param t:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">get_at</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Qa</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Qa_prof</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span></div>
 
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">Qb_prof</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ProfileFloat</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Cost profile</span>
 <span class="sd">        :return: Profile</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Qb_prof</span>
 
     <span class="nd">@Qb_prof</span><span class="o">.</span><span class="n">setter</span>
@@ -482,24 +483,24 @@
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_Qb_prof</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">arr</span><span class="o">=</span><span class="n">val</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">val</span><span class="p">))</span> <span class="o">+</span> <span class="s1">&#39;not supported to be set into a Q2_prof&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">val</span><span class="p">))</span> <span class="o">+</span> <span class="s1">'not supported to be set into a Q2_prof'</span><span class="p">)</span>
 
 <div class="viewcode-block" id="LoadParent.get_Qb_at">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Parents.html#VeraGridEngine.Devices.Parents.load_parent.LoadParent.get_Qb_at">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_Qb_at</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        :param t:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">get_at</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Qb</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Qb_prof</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span></div>
 
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">Qc_prof</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ProfileFloat</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Cost profile</span>
 <span class="sd">        :return: Profile</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Qc_prof</span>
 
     <span class="nd">@Qc_prof</span><span class="o">.</span><span class="n">setter</span>
@@ -509,86 +510,86 @@
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_Qc_prof</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">arr</span><span class="o">=</span><span class="n">val</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">val</span><span class="p">))</span> <span class="o">+</span> <span class="s1">&#39;not supported to be set into a Q3_prof&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">val</span><span class="p">))</span> <span class="o">+</span> <span class="s1">'not supported to be set into a Q3_prof'</span><span class="p">)</span>
 
 <div class="viewcode-block" id="LoadParent.get_Qc_at">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Parents.html#VeraGridEngine.Devices.Parents.load_parent.LoadParent.get_Qc_at">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_Qc_at</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        :param t:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">get_at</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Qc</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Qc_prof</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="LoadParent.get_S_with_sign">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Parents.html#VeraGridEngine.Devices.Parents.load_parent.LoadParent.get_S_with_sign">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_S_with_sign</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">complex</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="nb">complex</span><span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">P</span><span class="p">,</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">Q</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="LoadParent.get_Sprof_with_sign">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Parents.html#VeraGridEngine.Devices.Parents.load_parent.LoadParent.get_Sprof_with_sign">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_Sprof_with_sign</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CxVec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">P_prof</span><span class="o">.</span><span class="n">toarray</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">Q_prof</span><span class="o">.</span><span class="n">toarray</span><span class="p">()</span></div>
 
 
 <div class="viewcode-block" id="LoadParent.get_S_at">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Parents.html#VeraGridEngine.Devices.Parents.load_parent.LoadParent.get_S_at">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_S_at</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">complex</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        :param t:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="nb">complex</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_P_at</span><span class="p">(</span><span class="n">t</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_Q_at</span><span class="p">(</span><span class="n">t</span><span class="p">))</span></div>
 
 
 <div class="viewcode-block" id="LoadParent.get_Sa_at">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Parents.html#VeraGridEngine.Devices.Parents.load_parent.LoadParent.get_Sa_at">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_Sa_at</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">complex</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        :param t:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="nb">complex</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_Pa_at</span><span class="p">(</span><span class="n">t</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_Qa_at</span><span class="p">(</span><span class="n">t</span><span class="p">))</span></div>
 
 
 <div class="viewcode-block" id="LoadParent.get_Sb_at">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Parents.html#VeraGridEngine.Devices.Parents.load_parent.LoadParent.get_Sb_at">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_Sb_at</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">complex</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        :param t:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="nb">complex</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_Pb_at</span><span class="p">(</span><span class="n">t</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_Qb_at</span><span class="p">(</span><span class="n">t</span><span class="p">))</span></div>
 
 
 <div class="viewcode-block" id="LoadParent.get_Sc_at">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Parents.html#VeraGridEngine.Devices.Parents.load_parent.LoadParent.get_Sc_at">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_Sc_at</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">complex</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        :param t:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="nb">complex</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_Pc_at</span><span class="p">(</span><span class="n">t</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_Qc_at</span><span class="p">(</span><span class="n">t</span><span class="p">))</span></div>
 
 
 <div class="viewcode-block" id="LoadParent.get_Pf_at">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Parents.html#VeraGridEngine.Devices.Parents.load_parent.LoadParent.get_Pf_at">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_Pf_at</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get power factor</span>
 <span class="sd">        :param t:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">p</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_P_at</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
         <span class="n">q</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_Q_at</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
         <span class="n">s</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">p</span><span class="o">*</span><span class="n">p</span> <span class="o">+</span> <span class="n">q</span><span class="o">*</span><span class="n">q</span><span class="p">)</span>
@@ -598,9 +599,9 @@
 <div class="viewcode-block" id="LoadParent.split_sequence_load_in_3_phase">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Parents.html#VeraGridEngine.Devices.Parents.load_parent.LoadParent.split_sequence_load_in_3_phase">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">split_sequence_load_in_3_phase</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">share_a</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">share_b</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">share_c</span><span class="o">=</span><span class="mf">1.0</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Initializes the 3-phase properties using the positive sequence ones</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">Pa</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">P</span> <span class="o">*</span> <span class="n">share_a</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">Pb</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">P</span> <span class="o">*</span> <span class="n">share_b</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">Pc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">P</span> <span class="o">*</span> <span class="n">share_c</span>
@@ -611,11 +612,11 @@
 
 
 
-    <span class="k">def</span><span class="w"> </span><span class="fm">__iadd__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="s2">&quot;LoadParent&quot;</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__iadd__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="s2">"LoadParent"</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Add another generator here</span>
 <span class="sd">        :param other: Generator to add</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">P</span> <span class="o">+=</span> <span class="n">other</span><span class="o">.</span><span class="n">P</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">P_prof</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">P_prof</span><span class="o">.</span><span class="n">toarray</span><span class="p">()</span> <span class="o">+</span> <span class="n">other</span><span class="o">.</span><span class="n">P_prof</span><span class="o">.</span><span class="n">toarray</span><span class="p">()</span>
@@ -627,154 +628,154 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">P</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get ``P``.</span>
 
 <span class="sd">        :return: float</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_P</span>
 
     <span class="nd">@P</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">P</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Set ``P``.</span>
 
 <span class="sd">        :param val: Value to assign.</span>
 <span class="sd">        :return: None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_P</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">Pa</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get ``Pa``.</span>
 
 <span class="sd">        :return: float</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Pa</span>
 
     <span class="nd">@Pa</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">Pa</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Set ``Pa``.</span>
 
 <span class="sd">        :param val: Value to assign.</span>
 <span class="sd">        :return: None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_Pa</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">Pb</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get ``Pb``.</span>
 
 <span class="sd">        :return: float</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Pb</span>
 
     <span class="nd">@Pb</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">Pb</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Set ``Pb``.</span>
 
 <span class="sd">        :param val: Value to assign.</span>
 <span class="sd">        :return: None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_Pb</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">Pc</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get ``Pc``.</span>
 
 <span class="sd">        :return: float</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Pc</span>
 
     <span class="nd">@Pc</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">Pc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Set ``Pc``.</span>
 
 <span class="sd">        :param val: Value to assign.</span>
 <span class="sd">        :return: None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_Pc</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">Q</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get ``Q``.</span>
 
 <span class="sd">        :return: float</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Q</span>
 
     <span class="nd">@Q</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">Q</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Set ``Q``.</span>
 
 <span class="sd">        :param val: Value to assign.</span>
 <span class="sd">        :return: None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_Q</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">Qa</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get ``Qa``.</span>
 
 <span class="sd">        :return: float</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Qa</span>
 
     <span class="nd">@Qa</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">Qa</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Set ``Qa``.</span>
 
 <span class="sd">        :param val: Value to assign.</span>
 <span class="sd">        :return: None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_Qa</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">Qb</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get ``Qb``.</span>
 
 <span class="sd">        :return: float</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Qb</span>
 
     <span class="nd">@Qb</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">Qb</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Set ``Qb``.</span>
 
 <span class="sd">        :param val: Value to assign.</span>
 <span class="sd">        :return: None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_Qb</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">Qc</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get ``Qc``.</span>
 
 <span class="sd">        :return: float</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Qc</span>
 
     <span class="nd">@Qc</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">Qc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Set ``Qc``.</span>
 
 <span class="sd">        :param val: Value to assign.</span>
 <span class="sd">        :return: None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_Qc</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="p">)</span></div>
 
 </pre></div>

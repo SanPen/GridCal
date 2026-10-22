@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Utils.Symbolic.templates_common_functions &mdash; VeraGrid 6.7.13 documentation</title>
+  <title>VeraGridEngine.Utils.Symbolic.templates_common_functions &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=16fbabd8"></script>
+      <script src="../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -135,13 +135,13 @@
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_find_block_by_uid</span><span class="p">(</span><span class="n">root_block</span><span class="p">:</span> <span class="n">Block</span><span class="p">,</span>
                        <span class="n">block_uid</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Block</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Return one child block by UID from one symbolic block tree.</span>
 
 <span class="sd">    :param root_block: Root block to inspect.</span>
 <span class="sd">    :param block_uid: Block UID to locate.</span>
 <span class="sd">    :return: Matching block or ``None``.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">candidate_block</span><span class="p">:</span> <span class="n">Block</span>
 
     <span class="k">for</span> <span class="n">candidate_block</span> <span class="ow">in</span> <span class="n">root_block</span><span class="o">.</span><span class="n">get_all_blocks</span><span class="p">():</span>
@@ -156,14 +156,14 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">_find_root_var_by_ref</span><span class="p">(</span><span class="n">root_block</span><span class="p">:</span> <span class="n">Block</span><span class="p">,</span>
                           <span class="n">reference</span><span class="p">:</span> <span class="n">VarPowerFlowReferenceType</span><span class="p">,</span>
                           <span class="n">direction</span><span class="p">:</span> <span class="n">DynamicConnectionIntentDirection</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Var</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Return one root interface variable by semantic reference and direction.</span>
 
 <span class="sd">    :param root_block: Root block to inspect.</span>
 <span class="sd">    :param reference: Desired root reference.</span>
 <span class="sd">    :param direction: Root-interface direction.</span>
 <span class="sd">    :return: Matching variable or ``None``.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">candidate_var</span><span class="p">:</span> <span class="n">Var</span>
 
     <span class="k">if</span> <span class="n">direction</span> <span class="o">==</span> <span class="n">DynamicConnectionIntentDirection</span><span class="o">.</span><span class="n">INPUT</span><span class="p">:</span>
@@ -186,12 +186,12 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_is_branch_like_device</span><span class="p">(</span><span class="n">device</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Return whether one device uses two-terminal EMT branch semantics.</span>
 
 <span class="sd">    :param device: Device to classify.</span>
 <span class="sd">    :return: ``True`` when the device is branch-like.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">branch_device_types</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">DeviceType</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">([</span><span class="n">DeviceType</span><span class="o">.</span><span class="n">BranchDevice</span><span class="p">,</span>
                                                   <span class="n">DeviceType</span><span class="o">.</span><span class="n">LineDevice</span><span class="p">,</span>
                                                   <span class="n">DeviceType</span><span class="o">.</span><span class="n">Transformer2WDevice</span><span class="p">,</span>
@@ -210,12 +210,12 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_build_supported_root_intent_refs_for_device</span><span class="p">(</span><span class="n">device</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">VarPowerFlowReferenceType</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">VarPowerFlowReferenceType</span><span class="p">]]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Return the supported root input/output references for one EMT device.</span>
 
 <span class="sd">    :param device: Device whose root EMT contract is being inspected.</span>
 <span class="sd">    :return: ``(input_refs, output_refs)``.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">input_refs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">VarPowerFlowReferenceType</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
     <span class="n">output_refs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">VarPowerFlowReferenceType</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
 
@@ -266,7 +266,7 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_prune_saved_root_io_vars_to_supported_contract</span><span class="p">(</span><span class="n">device</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Remove saved root IO vars that are no longer part of the live device contract.</span>
 
 <span class="sd">    The persisted saved model can retain stale branch-side root variables after a</span>
@@ -278,7 +278,7 @@
 
 <span class="sd">    :param device: Device whose saved root contract must be pruned.</span>
 <span class="sd">    :return: None.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">model</span><span class="p">:</span> <span class="n">Block</span> <span class="o">=</span> <span class="n">device</span><span class="o">.</span><span class="n">emt_model</span>
     <span class="n">supported_input_refs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">VarPowerFlowReferenceType</span><span class="p">]</span>
     <span class="n">supported_output_refs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">VarPowerFlowReferenceType</span><span class="p">]</span>
@@ -333,13 +333,13 @@
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_prune_saved_branch_root_contract_side</span><span class="p">(</span><span class="n">device</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
                                            <span class="n">side</span><span class="p">:</span> <span class="n">EmtBusConnectionSide</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Prune one saved branch root contract side against its live bus shell.</span>
 
 <span class="sd">    :param device: Branch-like device whose side contract must be pruned.</span>
 <span class="sd">    :param side: Side to prune.</span>
 <span class="sd">    :return: None.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">model</span><span class="p">:</span> <span class="n">Block</span> <span class="o">=</span> <span class="n">device</span><span class="o">.</span><span class="n">emt_model</span>
     <span class="n">side_input_refs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">VarPowerFlowReferenceType</span><span class="p">]</span>
     <span class="n">side_output_refs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">VarPowerFlowReferenceType</span><span class="p">]</span>
@@ -462,12 +462,12 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_build_live_root_contract_refs</span><span class="p">(</span><span class="n">device</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">VarPowerFlowReferenceType</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">VarPowerFlowReferenceType</span><span class="p">]]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Build the exact currently available root refs for one live device contract.</span>
 
 <span class="sd">    :param device: Device whose live root contract must be derived.</span>
 <span class="sd">    :return: ``(input_refs, output_refs)``.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">input_refs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">VarPowerFlowReferenceType</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
     <span class="n">output_refs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">VarPowerFlowReferenceType</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
     <span class="n">available_bus_ref</span><span class="p">:</span> <span class="n">VarPowerFlowReferenceType</span>
@@ -549,13 +549,13 @@
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_build_live_branch_side_root_contract_refs</span><span class="p">(</span><span class="n">device</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
                                                <span class="n">side</span><span class="p">:</span> <span class="n">EmtBusConnectionSide</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">VarPowerFlowReferenceType</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">VarPowerFlowReferenceType</span><span class="p">]]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Build the exact currently available root refs for one branch side.</span>
 
 <span class="sd">    :param device: Branch-like device whose side contract must be derived.</span>
 <span class="sd">    :param side: Branch side to inspect.</span>
 <span class="sd">    :return: ``(input_refs, output_refs)``.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">input_refs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">VarPowerFlowReferenceType</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
     <span class="n">output_refs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">VarPowerFlowReferenceType</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
     <span class="n">available_bus_ref</span><span class="p">:</span> <span class="n">VarPowerFlowReferenceType</span>
@@ -615,13 +615,13 @@
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_ensure_saved_root_io_vars_for_live_contract</span><span class="p">(</span><span class="n">device</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
                                                  <span class="n">var_factory</span><span class="p">:</span> <span class="n">VarFactory</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Recreate missing saved root IO vars required by the current live contract.</span>
 
 <span class="sd">    :param device: Device whose saved root contract must be completed.</span>
 <span class="sd">    :param var_factory: Shared variable factory used to create replacement vars.</span>
 <span class="sd">    :return: None.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">model</span><span class="p">:</span> <span class="n">Block</span> <span class="o">=</span> <span class="n">device</span><span class="o">.</span><span class="n">emt_model</span>
     <span class="n">input_refs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">VarPowerFlowReferenceType</span><span class="p">]</span>
     <span class="n">output_refs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">VarPowerFlowReferenceType</span><span class="p">]</span>
@@ -688,14 +688,14 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">_ensure_saved_branch_root_contract_side</span><span class="p">(</span><span class="n">device</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
                                             <span class="n">side</span><span class="p">:</span> <span class="n">EmtBusConnectionSide</span><span class="p">,</span>
                                             <span class="n">var_factory</span><span class="p">:</span> <span class="n">VarFactory</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Recreate missing saved root IO vars for one branch side only.</span>
 
 <span class="sd">    :param device: Branch-like device whose side contract must be completed.</span>
 <span class="sd">    :param side: Side to complete.</span>
 <span class="sd">    :param var_factory: Shared variable factory.</span>
 <span class="sd">    :return: None.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">model</span><span class="p">:</span> <span class="n">Block</span> <span class="o">=</span> <span class="n">device</span><span class="o">.</span><span class="n">emt_model</span>
     <span class="n">input_refs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">VarPowerFlowReferenceType</span><span class="p">]</span>
     <span class="n">output_refs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">VarPowerFlowReferenceType</span><span class="p">]</span>
@@ -743,13 +743,13 @@
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_rebuild_saved_branch_root_contract_from_live_sides</span><span class="p">(</span><span class="n">device</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
                                                         <span class="n">var_factory</span><span class="p">:</span> <span class="n">VarFactory</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Rebuild the saved branch root IO contract directly from the current live side contracts.</span>
 
 <span class="sd">    :param device: Branch-like device whose saved root contract must be rebuilt.</span>
 <span class="sd">    :param var_factory: Shared variable factory.</span>
 <span class="sd">    :return: None.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">model</span><span class="p">:</span> <span class="n">Block</span> <span class="o">=</span> <span class="n">device</span><span class="o">.</span><span class="n">emt_model</span>
     <span class="n">from_input_refs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">VarPowerFlowReferenceType</span><span class="p">]</span>
     <span class="n">from_output_refs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">VarPowerFlowReferenceType</span><span class="p">]</span>
@@ -819,7 +819,7 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_restore_legacy_saved_branch_interface_references</span><span class="p">(</span><span class="n">device</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Restore missing root-IO references from a legacy external mapping.</span>
 
 <span class="sd">    Historical symbolic archives stored the semantic terminal reference only</span>
@@ -835,7 +835,7 @@
 
 <span class="sd">    :param device: Branch-like device whose legacy root references are repaired.</span>
 <span class="sd">    :return: None.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">model</span><span class="p">:</span> <span class="n">Block</span> <span class="o">=</span> <span class="n">device</span><span class="o">.</span><span class="n">emt_model</span>
     <span class="n">mapping_ref</span><span class="p">:</span> <span class="n">VarPowerFlowReferenceType</span>
     <span class="n">mapping_var</span><span class="p">:</span> <span class="n">Var</span> <span class="o">|</span> <span class="kc">None</span>
@@ -892,12 +892,12 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_clear_saved_branch_root_external_mapping</span><span class="p">(</span><span class="n">device</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Clear every branch root external-mapping entry before rebuilding the live contract.</span>
 
 <span class="sd">    :param device: Branch-like device whose saved root mapping must be cleared.</span>
 <span class="sd">    :return: None.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">model</span><span class="p">:</span> <span class="n">Block</span> <span class="o">=</span> <span class="n">device</span><span class="o">.</span><span class="n">emt_model</span>
     <span class="n">mapping_ref</span><span class="p">:</span> <span class="n">VarPowerFlowReferenceType</span>
 
@@ -932,7 +932,7 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_prune_saved_root_external_mapping_to_live_contract</span><span class="p">(</span><span class="n">device</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Clear saved root external-mapping entries that are not in the live contract.</span>
 
 <span class="sd">    Per-terminal topology changes can leave one saved external-mapping entry</span>
@@ -942,7 +942,7 @@
 
 <span class="sd">    :param device: Device whose saved root external mapping must be pruned.</span>
 <span class="sd">    :return: None.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">model</span><span class="p">:</span> <span class="n">Block</span> <span class="o">=</span> <span class="n">device</span><span class="o">.</span><span class="n">emt_model</span>
     <span class="n">live_input_refs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">VarPowerFlowReferenceType</span><span class="p">]</span>
     <span class="n">live_output_refs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">VarPowerFlowReferenceType</span><span class="p">]</span>
@@ -1009,7 +1009,7 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_normalize_saved_branch_root_contract_from_live_sides</span><span class="p">(</span><span class="n">device</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Rebuild one saved branch external mapping from currently materialized side refs.</span>
 
 <span class="sd">    The generic branch normalization path can clear untouched-side mappings when</span>
@@ -1020,7 +1020,7 @@
 
 <span class="sd">    :param device: Branch-like device whose saved root contract must be normalized.</span>
 <span class="sd">    :return: None.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">model</span><span class="p">:</span> <span class="n">Block</span> <span class="o">=</span> <span class="n">device</span><span class="o">.</span><span class="n">emt_model</span>
     <span class="n">input_ref</span><span class="p">:</span> <span class="n">VarPowerFlowReferenceType</span>
     <span class="n">output_ref</span><span class="p">:</span> <span class="n">VarPowerFlowReferenceType</span>
@@ -1142,14 +1142,14 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">_connection_exists_in_var_factory</span><span class="p">(</span><span class="n">var_factory</span><span class="p">:</span> <span class="n">VarFactory</span><span class="p">,</span>
                                       <span class="n">source_var</span><span class="p">:</span> <span class="n">Var</span><span class="p">,</span>
                                       <span class="n">target_var</span><span class="p">:</span> <span class="n">Var</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Return whether one directed symbolic connection already exists.</span>
 
 <span class="sd">    :param var_factory: Shared variable factory.</span>
 <span class="sd">    :param source_var: Source variable.</span>
 <span class="sd">    :param target_var: Target variable.</span>
 <span class="sd">    :return: ``True`` when the connection already exists.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">existing_connection</span><span class="p">:</span> <span class="n">Any</span>
 
     <span class="k">for</span> <span class="n">existing_connection</span> <span class="ow">in</span> <span class="n">var_factory</span><span class="o">.</span><span class="n">get_connections_dict</span><span class="p">()</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">source_var</span><span class="o">.</span><span class="n">non_mutable_uid</span><span class="p">,</span> <span class="nb">list</span><span class="p">()):</span>
@@ -1164,12 +1164,12 @@
 <div class="viewcode-block" id="seed_template_derived_dynamic_connection_intents">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.templates_common_functions.seed_template_derived_dynamic_connection_intents">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">seed_template_derived_dynamic_connection_intents</span><span class="p">(</span><span class="n">device</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Record template-derived root-interface intents for one template-backed EMT model.</span>
 
 <span class="sd">    :param device: Device whose current EMT model originated from a template.</span>
 <span class="sd">    :return: None.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">model</span><span class="p">:</span> <span class="n">Block</span> <span class="o">=</span> <span class="n">device</span><span class="o">.</span><span class="n">emt_model</span>
     <span class="n">child_block</span><span class="p">:</span> <span class="n">Block</span>
     <span class="n">input_var</span><span class="p">:</span> <span class="n">Var</span>
@@ -1254,12 +1254,12 @@
 <div class="viewcode-block" id="seed_branch_template_derived_dynamic_connection_intents">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.templates_common_functions.seed_branch_template_derived_dynamic_connection_intents">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">seed_branch_template_derived_dynamic_connection_intents</span><span class="p">(</span><span class="n">device</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Record template-derived root-interface intents for one branch-like EMT template.</span>
 
 <span class="sd">    :param device: Branch-like device whose EMT model originated from a template.</span>
 <span class="sd">    :return: None.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">_is_branch_like_device</span><span class="p">(</span><span class="n">device</span><span class="p">):</span>
         <span class="k">return</span>
     <span class="k">else</span><span class="p">:</span>
@@ -1273,13 +1273,13 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.templates_common_functions.rematerialize_saved_dynamic_connection_intents">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">rematerialize_saved_dynamic_connection_intents</span><span class="p">(</span><span class="n">device</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
                                                    <span class="n">var_factory</span><span class="p">:</span> <span class="n">VarFactory</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Restore active symbolic root-interface connections from persisted intent records.</span>
 
 <span class="sd">    :param device: Device whose saved model must be rematerialized.</span>
 <span class="sd">    :param var_factory: Shared variable factory.</span>
 <span class="sd">    :return: None.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">model</span><span class="p">:</span> <span class="n">Block</span> <span class="o">=</span> <span class="n">device</span><span class="o">.</span><span class="n">emt_model</span>
     <span class="n">entry</span><span class="p">:</span> <span class="n">DynamicConnectionIntent</span>
     <span class="n">direction</span><span class="p">:</span> <span class="n">DynamicConnectionIntentDirection</span>
@@ -1357,14 +1357,14 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">reconcile_saved_emt_model_against_current_topology</span><span class="p">(</span><span class="n">device</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
                                                        <span class="n">grid</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
                                                        <span class="n">var_factory</span><span class="p">:</span> <span class="n">VarFactory</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Synchronize one saved EMT device model against the current static topology.</span>
 
 <span class="sd">    :param device: Device whose EMT model must match the current grid topology.</span>
 <span class="sd">    :param grid: Owning circuit used to derive bus-shell topology.</span>
 <span class="sd">    :param var_factory: Shared symbolic variable factory.</span>
 <span class="sd">    :return: None.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">device</span><span class="o">.</span><span class="n">emt_model</span><span class="o">.</span><span class="n">empty</span><span class="p">():</span>
         <span class="k">return</span>
     <span class="k">else</span><span class="p">:</span>
@@ -1431,14 +1431,14 @@
 <div class="viewcode-block" id="EmtBusShellSyncResult">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.templates_common_functions.EmtBusShellSyncResult">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">EmtBusShellSyncResult</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Describe the outcome of one EMT bus-shell synchronization pass.</span>
 
 <span class="sd">    :param changed: Whether the bus shell was replaced.</span>
 <span class="sd">    :param old_mask: Previously detected AC phase mask, or ``None`` for DC or malformed shells.</span>
 <span class="sd">    :param new_mask: Authoritative AC phase mask, or ``None`` for DC buses.</span>
 <span class="sd">    :param voltage_vars: Current authoritative bus-voltage vars indexed by reference.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">changed</span><span class="p">:</span> <span class="nb">bool</span>
     <span class="n">old_mask</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span>
@@ -1448,12 +1448,12 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_build_bus_shell_voltage_mapping</span><span class="p">(</span><span class="n">bus</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="n">VarPowerFlowReferenceType</span><span class="p">,</span> <span class="n">Var</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Build the authoritative bus-voltage mapping for one live EMT shell.</span>
 
 <span class="sd">    :param bus: Bus whose EMT shell is being inspected.</span>
 <span class="sd">    :return: Voltage mapping keyed by bus-side power-flow reference.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">voltage_mapping</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">VarPowerFlowReferenceType</span><span class="p">,</span> <span class="n">Var</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
 
     <span class="k">if</span> <span class="n">bus</span><span class="o">.</span><span class="n">is_dc</span><span class="p">:</span>
@@ -1468,12 +1468,12 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_detect_bus_shell_ac_mask</span><span class="p">(</span><span class="n">model</span><span class="p">:</span> <span class="n">Block</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Detect the AC phase mask represented by one EMT bus shell.</span>
 
 <span class="sd">    :param model: Bus EMT shell to inspect.</span>
 <span class="sd">    :return: Mask ordered as ``[N, A, B, C]``, or ``None`` when malformed.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">get_bus_emt_algebraic_vars</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
     <span class="k">except</span> <span class="p">(</span><span class="ne">AttributeError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">):</span>
@@ -1492,14 +1492,14 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">_bus_shell_matches_expected_voltage_contract</span><span class="p">(</span><span class="n">bus</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
                                                  <span class="n">model</span><span class="p">:</span> <span class="n">Block</span><span class="p">,</span>
                                                  <span class="n">expected_mask</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Check whether one EMT bus shell exposes the expected voltage contract.</span>
 
 <span class="sd">    :param bus: Owning bus.</span>
 <span class="sd">    :param model: EMT shell to inspect.</span>
 <span class="sd">    :param expected_mask: Expected AC mask, or ``None`` for DC buses.</span>
 <span class="sd">    :return: ``True`` when the shell matches the current topology/domain contract.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">bus</span><span class="o">.</span><span class="n">is_dc</span><span class="p">:</span>
         <span class="n">voltage_var</span><span class="p">:</span> <span class="n">Var</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">external_mapping</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">Vdc</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">voltage_var</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -1529,13 +1529,13 @@
 <div class="viewcode-block" id="emt_bus_shell_matches_grid_topology">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.templates_common_functions.emt_bus_shell_matches_grid_topology">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">emt_bus_shell_matches_grid_topology</span><span class="p">(</span><span class="n">bus</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">grid</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Check whether one existing EMT bus shell matches the current static topology.</span>
 
 <span class="sd">    :param bus: Bus that owns the EMT shell.</span>
 <span class="sd">    :param grid: Circuit used to derive the authoritative phase mask.</span>
 <span class="sd">    :return: ``True`` when the existing shell matches the current grid contract.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">expected_mask</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span>
 
     <span class="k">if</span> <span class="n">bus</span><span class="o">.</span><span class="n">is_dc</span><span class="p">:</span>
@@ -1551,13 +1551,13 @@
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_cleanup_bus_shell_var_factory_state</span><span class="p">(</span><span class="n">model</span><span class="p">:</span> <span class="n">Block</span><span class="p">,</span>
                                          <span class="n">var_factory</span><span class="p">:</span> <span class="n">VarFactory</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Remove one discarded bus shell from the shared var-factory registries.</span>
 
 <span class="sd">    :param model: Discarded bus shell.</span>
 <span class="sd">    :param var_factory: Shared symbolic variable factory.</span>
 <span class="sd">    :return: None.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">stale_vars</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Var</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
     <span class="n">stale_var</span><span class="p">:</span> <span class="n">Var</span>
     <span class="n">connected_uid</span><span class="p">:</span> <span class="nb">int</span>
@@ -1599,7 +1599,7 @@
                                         <span class="n">grid</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
                                         <span class="n">var_factory</span><span class="p">:</span> <span class="n">VarFactory</span><span class="p">,</span>
                                         <span class="n">device_to_skip</span><span class="p">:</span> <span class="n">Any</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EmtBusShellSyncResult</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Synchronize one EMT bus shell with the current static topology.</span>
 
 <span class="sd">    :param bus: Bus whose EMT shell must match the current topology.</span>
@@ -1607,7 +1607,7 @@
 <span class="sd">    :param var_factory: Shared symbolic variable factory.</span>
 <span class="sd">    :param device_to_skip: Optional device currently being reconciled elsewhere.</span>
 <span class="sd">    :return: Detailed synchronization result.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">expected_mask</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span>
     <span class="n">old_mask</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">rebuild_required</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
@@ -1690,7 +1690,7 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_has_materialized_emt_model</span><span class="p">(</span><span class="n">device</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Check whether one device already owns one materialized EMT model.</span>
 
 <span class="sd">    The bus-resynchronisation algorithm must only reconnect devices that already</span>
@@ -1699,7 +1699,7 @@
 
 <span class="sd">    :param device: Device to inspect.</span>
 <span class="sd">    :return: ``True`` when the device has a non-empty EMT model.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">device</span><span class="o">.</span><span class="n">emt_model</span><span class="p">,</span> <span class="n">Block</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">device</span><span class="o">.</span><span class="n">emt_model</span><span class="o">.</span><span class="n">empty</span><span class="p">():</span>
             <span class="k">return</span> <span class="kc">False</span>
@@ -1711,7 +1711,7 @@
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_is_entry_side_still_connected_to_bus</span><span class="p">(</span><span class="n">bus</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
                                           <span class="n">record</span><span class="p">:</span> <span class="n">EmtBusConnectedModelRecord</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Check whether one registered EMT endpoint still belongs to this bus.</span>
 
 <span class="sd">    The bus registry can accumulate stale entries when one device changes model,</span>
@@ -1721,7 +1721,7 @@
 <span class="sd">    :param bus: Bus whose registry is being validated.</span>
 <span class="sd">    :param record: Registered EMT endpoint.</span>
 <span class="sd">    :return: ``True`` when the record still belongs to this bus.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">device</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="n">record</span><span class="o">.</span><span class="n">get_device</span><span class="p">()</span>
     <span class="n">side</span><span class="p">:</span> <span class="n">EmtBusConnectionSide</span> <span class="o">=</span> <span class="n">record</span><span class="o">.</span><span class="n">get_side</span><span class="p">()</span>
 
@@ -1747,7 +1747,7 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_is_entry_model_still_current</span><span class="p">(</span><span class="n">record</span><span class="p">:</span> <span class="n">EmtBusConnectedModelRecord</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Check whether one registered EMT endpoint still points to the device current model.</span>
 
 <span class="sd">    The registry must stop referencing old block instances after one device</span>
@@ -1756,7 +1756,7 @@
 
 <span class="sd">    :param record: Registered EMT endpoint.</span>
 <span class="sd">    :return: ``True`` when the record still points to the live device model.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">device</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="n">record</span><span class="o">.</span><span class="n">get_device</span><span class="p">()</span>
     <span class="n">model</span><span class="p">:</span> <span class="n">Block</span> <span class="o">=</span> <span class="n">record</span><span class="o">.</span><span class="n">get_model</span><span class="p">()</span>
 
@@ -1775,7 +1775,7 @@
 <div class="viewcode-block" id="cleanup_connected_emt_models_for_bus">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.templates_common_functions.cleanup_connected_emt_models_for_bus">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">cleanup_connected_emt_models_for_bus</span><span class="p">(</span><span class="n">bus</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Remove stale EMT endpoint records from one bus-local registry.</span>
 
 <span class="sd">    The cleanup runs before every bus-driven reconnect so the algorithm only</span>
@@ -1784,7 +1784,7 @@
 
 <span class="sd">    :param bus: Bus whose EMT endpoint registry must be cleaned.</span>
 <span class="sd">    :return: None.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">cleaned_records</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">EmtBusConnectedModelRecord</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
     <span class="n">record</span><span class="p">:</span> <span class="n">EmtBusConnectedModelRecord</span>
 
@@ -1815,7 +1815,7 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">reconnect_registered_emt_models_for_bus</span><span class="p">(</span><span class="n">bus</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
                                             <span class="n">var_factory</span><span class="p">:</span> <span class="n">VarFactory</span><span class="p">,</span>
                                             <span class="n">device_to_skip</span><span class="p">:</span> <span class="n">Any</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Reconnect every live registered EMT endpoint for one rebuilt bus shell.</span>
 
 <span class="sd">    Rebuilding the bus shell changes the symbolic voltage variables. The bus must</span>
@@ -1826,7 +1826,7 @@
 <span class="sd">    :param var_factory: Shared variable factory.</span>
 <span class="sd">    :param device_to_skip: Optional device currently being reconciled elsewhere.</span>
 <span class="sd">    :return: None.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">cleanup_connected_emt_models_for_bus</span><span class="p">(</span><span class="n">bus</span><span class="o">=</span><span class="n">bus</span><span class="p">)</span>
 
     <span class="n">record</span><span class="p">:</span> <span class="n">EmtBusConnectedModelRecord</span>
@@ -1883,7 +1883,7 @@
                                  <span class="n">device</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
                                  <span class="n">model</span><span class="p">:</span> <span class="n">Block</span><span class="p">,</span>
                                  <span class="n">side</span><span class="p">:</span> <span class="n">EmtBusConnectionSide</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Register one live EMT endpoint on one bus.</span>
 
 <span class="sd">    The registry key is maintained at the bus level so future bus-shell rebuilds</span>
@@ -1895,7 +1895,7 @@
 <span class="sd">    :param model: Materialized EMT model block.</span>
 <span class="sd">    :param side: Semantic bus side used by the connection.</span>
 <span class="sd">    :return: None.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">bus</span><span class="o">.</span><span class="n">add_or_replace_emt_model_connected</span><span class="p">(</span><span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span>
                                            <span class="n">emt_model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
                                            <span class="n">side</span><span class="o">=</span><span class="n">side</span><span class="p">,</span>
@@ -1908,14 +1908,14 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">unregister_connected_emt_model</span><span class="p">(</span><span class="n">bus</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
                                    <span class="n">device</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
                                    <span class="n">side</span><span class="p">:</span> <span class="n">EmtBusConnectionSide</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Remove one device EMT endpoint registration from one bus.</span>
 
 <span class="sd">    :param bus: Bus that owns the registry.</span>
 <span class="sd">    :param device: Device whose registration must be removed.</span>
 <span class="sd">    :param side: Optional side filter.</span>
 <span class="sd">    :return: None.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">bus</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span>
     <span class="k">else</span><span class="p">:</span>
@@ -1926,7 +1926,7 @@
 <div class="viewcode-block" id="unregister_connected_emt_model_from_attached_buses">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.templates_common_functions.unregister_connected_emt_model_from_attached_buses">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">unregister_connected_emt_model_from_attached_buses</span><span class="p">(</span><span class="n">device</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Remove stale bus endpoint registrations for one device from all its attached buses.</span>
 
 <span class="sd">    This cleanup step runs before one device assigns or clears an EMT model so no</span>
@@ -1934,7 +1934,7 @@
 
 <span class="sd">    :param device: Device whose bus registrations must be removed.</span>
 <span class="sd">    :return: None.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">branch_devices</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">DeviceType</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">([</span><span class="n">DeviceType</span><span class="o">.</span><span class="n">BranchDevice</span><span class="p">,</span>
                                              <span class="n">DeviceType</span><span class="o">.</span><span class="n">LineDevice</span><span class="p">,</span>
                                              <span class="n">DeviceType</span><span class="o">.</span><span class="n">Transformer2WDevice</span><span class="p">,</span>
@@ -1964,7 +1964,7 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.templates_common_functions.register_saved_emt_model_vars_for_device">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">register_saved_emt_model_vars_for_device</span><span class="p">(</span><span class="n">device</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
                                              <span class="n">var_factory</span><span class="p">:</span> <span class="n">VarFactory</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Register the vars of one saved EMT model block in the shared variable factory.</span>
 
 <span class="sd">    Editor-driven EMT saves replace the concrete ``device.emt_model`` block vars</span>
@@ -1976,7 +1976,7 @@
 <span class="sd">    :param device: Device whose saved EMT model vars must be registered.</span>
 <span class="sd">    :param var_factory: Shared variable factory.</span>
 <span class="sd">    :return: None.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">model</span><span class="p">:</span> <span class="n">Block</span> <span class="o">=</span> <span class="n">device</span><span class="o">.</span><span class="n">emt_model</span>
     <span class="n">block_model</span><span class="p">:</span> <span class="n">Block</span>
     <span class="n">model_var</span><span class="p">:</span> <span class="n">Var</span>
@@ -2033,7 +2033,7 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.templates_common_functions.unregister_saved_emt_model_var_connections_for_device">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">unregister_saved_emt_model_var_connections_for_device</span><span class="p">(</span><span class="n">device</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
                                                           <span class="n">var_factory</span><span class="p">:</span> <span class="n">VarFactory</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Remove saved EMT var-factory connection edges currently associated to one device.</span>
 
 <span class="sd">    Reapplying one editor-built EMT model replaces the device symbolic vars, but</span>
@@ -2045,7 +2045,7 @@
 <span class="sd">    :param device: Device whose saved EMT graph edges must be removed.</span>
 <span class="sd">    :param var_factory: Shared variable factory that owns the connection graph.</span>
 <span class="sd">    :return: None.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">previous_device_vars</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Var</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">var_factory</span><span class="o">.</span><span class="n">vars_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">device</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
     <span class="n">previous_device_var_uids</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
     <span class="n">connected_uid</span><span class="p">:</span> <span class="nb">int</span>
@@ -2087,7 +2087,7 @@
 <div class="viewcode-block" id="unify_saved_emt_model_root_contract">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.templates_common_functions.unify_saved_emt_model_root_contract">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">unify_saved_emt_model_root_contract</span><span class="p">(</span><span class="n">device</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Unify one saved EMT model root external mapping with the actual root IO vars.</span>
 
 <span class="sd">    Editor-driven ``copy_block_state()`` can leave the saved EMT block with one</span>
@@ -2100,7 +2100,7 @@
 
 <span class="sd">    :param device: Device whose saved EMT model root contract must be normalized.</span>
 <span class="sd">    :return: None.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">model</span><span class="p">:</span> <span class="n">Block</span> <span class="o">=</span> <span class="n">device</span><span class="o">.</span><span class="n">emt_model</span>
     <span class="n">ref</span> <span class="o">=</span> <span class="kc">None</span>
 
@@ -2215,7 +2215,7 @@
 <div class="viewcode-block" id="synchronize_saved_emt_root_contract_identity">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.templates_common_functions.synchronize_saved_emt_root_contract_identity">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">synchronize_saved_emt_root_contract_identity</span><span class="p">(</span><span class="n">device</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Copy propagated root IO identities into the saved EMT external mapping.</span>
 
 <span class="sd">    After editor save, one EMT root external-mapping entry and the matching root</span>
@@ -2228,7 +2228,7 @@
 
 <span class="sd">    :param device: Device whose saved EMT root contract must mirror propagated identities.</span>
 <span class="sd">    :return: None.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">model</span><span class="p">:</span> <span class="n">Block</span> <span class="o">=</span> <span class="n">device</span><span class="o">.</span><span class="n">emt_model</span>
     <span class="n">io_var_by_ref</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="n">VarPowerFlowReferenceType</span><span class="p">,</span> <span class="n">Var</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
     <span class="n">io_var</span><span class="p">:</span> <span class="n">Var</span>
@@ -2294,7 +2294,7 @@
 <div class="viewcode-block" id="synchronize_saved_emt_root_contract_from_bus">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.templates_common_functions.synchronize_saved_emt_root_contract_from_bus">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">synchronize_saved_emt_root_contract_from_bus</span><span class="p">(</span><span class="n">device</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Copy live bus-shell identities into the saved EMT root contract.</span>
 
 <span class="sd">    The EMT validator compares the saved device external mapping directly</span>
@@ -2307,7 +2307,7 @@
 
 <span class="sd">    :param device: Device whose saved EMT root contract must match the live buses.</span>
 <span class="sd">    :return: None.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">branch_devices</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">DeviceType</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">([</span><span class="n">DeviceType</span><span class="o">.</span><span class="n">BranchDevice</span><span class="p">,</span>
                                              <span class="n">DeviceType</span><span class="o">.</span><span class="n">LineDevice</span><span class="p">,</span>
                                              <span class="n">DeviceType</span><span class="o">.</span><span class="n">Transformer2WDevice</span><span class="p">,</span>
@@ -2378,13 +2378,13 @@
 <div class="viewcode-block" id="synchronize_saved_rms_root_mappings_from_children">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.templates_common_functions.synchronize_saved_rms_root_mappings_from_children">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">synchronize_saved_rms_root_mappings_from_children</span><span class="p">(</span><span class="n">device</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Synchronize the live child RMS interface into the saved model root.</span>
+<span class="w">    </span><span class="sd">"""Synchronize the live child RMS interface into the saved model root.</span>
 
 <span class="sd">    Models assembled in the Dynamic Editor store complete device templates as</span>
 <span class="sd">    children of the editor-owned root. External terminal bindings form the root</span>
 <span class="sd">    interface and must therefore be exposed there after the edited model is</span>
 <span class="sd">    committed. Static API mappings remain owner-local: recursive RMS and EMT</span>
-<span class="sd">    initialization visits every block, so copying a child&#39;s mapping to its parent</span>
+<span class="sd">    initialization visits every block, so copying a child's mapping to its parent</span>
 <span class="sd">    would create a second, invalid owner. Existing root terminal bindings are</span>
 <span class="sd">    retained only while their targets are still declared in the current tree,</span>
 <span class="sd">    and obsolete root API copies are discarded unless the root itself declares</span>
@@ -2392,7 +2392,7 @@
 
 <span class="sd">    :param device: Device whose saved RMS model has just been committed.</span>
 <span class="sd">    :return: None.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">model</span><span class="p">:</span> <span class="n">Block</span> <span class="o">=</span> <span class="n">device</span><span class="o">.</span><span class="n">rms_model</span>
     <span class="n">descendant_block</span><span class="p">:</span> <span class="n">Block</span>
     <span class="n">external_key</span><span class="p">:</span> <span class="n">VarPowerFlowReferenceType</span>
@@ -2466,7 +2466,7 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">ensure_bus_emt_model_matches_grid_mask</span><span class="p">(</span><span class="n">bus</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
                                            <span class="n">grid</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
                                            <span class="n">var_factory</span><span class="p">:</span> <span class="n">VarFactory</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Ensure one bus EMT shell matches the current grid-derived phase contract.</span>
 
 <span class="sd">    Reopening the dynamic editor after static topology or phase changes can</span>
@@ -2479,7 +2479,7 @@
 <span class="sd">    :param grid: Circuit used to derive the current bus phase mask.</span>
 <span class="sd">    :param var_factory: Shared symbolic variable factory.</span>
 <span class="sd">    :return: ``True`` when the bus EMT shell was rebuilt, else ``False``.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">sync_result</span><span class="p">:</span> <span class="n">EmtBusShellSyncResult</span> <span class="o">=</span> <span class="n">synchronize_emt_bus_shell_with_grid</span><span class="p">(</span><span class="n">bus</span><span class="o">=</span><span class="n">bus</span><span class="p">,</span>
                                                                              <span class="n">grid</span><span class="o">=</span><span class="n">grid</span><span class="p">,</span>
                                                                              <span class="n">var_factory</span><span class="o">=</span><span class="n">var_factory</span><span class="p">)</span>
@@ -2492,7 +2492,7 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">initialize_bus_emt_from_grid_with_fallback</span><span class="p">(</span><span class="n">bus</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
                                                <span class="n">grid</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
                                                <span class="n">var_factory</span><span class="p">:</span> <span class="n">VarFactory</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Initialize one bus EMT shell from the grid using the safe fallback mask.</span>
 
 <span class="sd">    Template-style EMT assignment can occur before the surrounding topology has</span>
@@ -2504,12 +2504,12 @@
 <span class="sd">    :param grid: Circuit used to derive the current mask.</span>
 <span class="sd">    :param var_factory: Shared variable factory.</span>
 <span class="sd">    :return: None.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">bus</span><span class="o">.</span><span class="n">emt_model</span> <span class="o">=</span> <span class="n">BusEmtTemplate</span><span class="p">(</span>
         <span class="n">vf</span><span class="o">=</span><span class="n">var_factory</span><span class="p">,</span>
         <span class="n">mask</span><span class="o">=</span><span class="n">get_bus_mask</span><span class="p">(</span><span class="n">grid</span><span class="o">=</span><span class="n">grid</span><span class="p">,</span> <span class="n">bus</span><span class="o">=</span><span class="n">bus</span><span class="p">),</span>
         <span class="n">is_dc</span><span class="o">=</span><span class="n">bus</span><span class="o">.</span><span class="n">is_dc</span><span class="p">,</span>
-        <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">bus</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">_emt&quot;</span><span class="p">,</span>
+        <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">bus</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">_emt"</span><span class="p">,</span>
     <span class="p">)</span><span class="o">.</span><span class="n">block</span></div>
 
 
@@ -2521,13 +2521,13 @@
         <span class="n">mdl2</span><span class="p">:</span> <span class="n">Block</span><span class="p">,</span>
         <span class="n">var_factory</span><span class="p">:</span> <span class="n">VarFactory</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    This function substitutes input variables for output variables to connect two rms models</span>
 <span class="sd">    :param mdl1:</span>
 <span class="sd">    :param mdl2:</span>
 <span class="sd">    :param var_factory:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># Connect the branch-side voltage to the canonical AC or DC bus voltage.</span>
     <span class="c1"># AC and DC line shells use Vmf at the terminal boundary, while a VSC uses</span>
     <span class="c1"># Vf_dc for its DC terminal. The bus owns either Vm or Vdc according to its</span>
@@ -2569,14 +2569,14 @@
 <div class="viewcode-block" id="connect_models_power_flow">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.templates_common_functions.connect_models_power_flow">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">connect_models_power_flow</span><span class="p">(</span><span class="n">mdl1</span><span class="p">:</span> <span class="n">Block</span><span class="p">,</span> <span class="n">mdl2</span><span class="p">:</span> <span class="n">Block</span><span class="p">,</span> <span class="n">var_factory</span><span class="p">:</span> <span class="n">VarFactory</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    This function substitutes input variables for output variables to connect two rms models</span>
 <span class="sd">    :param mdl1:</span>
 <span class="sd">    :param mdl2:</span>
 <span class="sd">    :param var_factory:</span>
 <span class="sd">    :return:</span>
 
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># connect inputs mdl2 with outputs mdl1</span>
     <span class="n">pairs</span> <span class="o">=</span> <span class="p">[</span>
         <span class="p">(</span><span class="n">outp</span><span class="p">,</span> <span class="n">inpt</span><span class="p">)</span>
@@ -2599,13 +2599,13 @@
         <span class="n">mdl2</span><span class="p">:</span> <span class="n">Block</span><span class="p">,</span>
         <span class="n">var_factory</span><span class="p">:</span> <span class="n">VarFactory</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    This function substitutes input variables for output variables to connect two rms models</span>
 <span class="sd">    :param mdl1:</span>
 <span class="sd">    :param mdl2:</span>
 <span class="sd">    :param var_factory:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># Connect the branch-side voltage to the canonical AC or DC bus voltage.</span>
     <span class="c1"># AC and DC line shells use Vmt at the terminal boundary, while a VSC uses</span>
     <span class="c1"># Vt_dc for its DC terminal. The bus owns either Vm or Vdc according to its</span>
@@ -2649,7 +2649,7 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.templates_common_functions.normalize_rms_root_contract">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">normalize_rms_root_contract</span><span class="p">(</span><span class="n">mdl2</span><span class="p">:</span> <span class="n">Block</span><span class="p">,</span>
                                 <span class="n">var_mapping</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Var</span><span class="p">,</span> <span class="n">Var</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Normalize one RMS root contract to the authoritative connected bus variables.</span>
 
 <span class="sd">    The RMS templates use one root wrapper block exposing ``in_vars`` and</span>
@@ -2662,7 +2662,7 @@
 <span class="sd">    :param mdl2: Device RMS model whose root contract must be normalized.</span>
 <span class="sd">    :param var_mapping: Old-to-new variable mapping for RMS contract vars.</span>
 <span class="sd">    :return: None.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">var_mapping</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
         <span class="k">pass</span>
     <span class="k">else</span><span class="p">:</span>
@@ -2673,13 +2673,13 @@
 <div class="viewcode-block" id="normalize_branch_rms_root_contract_from">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.templates_common_functions.normalize_branch_rms_root_contract_from">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">normalize_branch_rms_root_contract_from</span><span class="p">(</span><span class="n">mdl1</span><span class="p">:</span> <span class="n">Block</span><span class="p">,</span> <span class="n">mdl2</span><span class="p">:</span> <span class="n">Block</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Normalize the RMS root contract for the branch ``from`` side.</span>
 
 <span class="sd">    :param mdl1: Connected bus RMS model.</span>
 <span class="sd">    :param mdl2: Branch RMS model.</span>
 <span class="sd">    :return: None.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">vm_bus</span><span class="p">:</span> <span class="n">Var</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">mdl1</span><span class="o">.</span><span class="n">external_mapping</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">Vm</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
     <span class="n">vdc_bus</span><span class="p">:</span> <span class="n">Var</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">mdl1</span><span class="o">.</span><span class="n">external_mapping</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">Vdc</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
     <span class="n">va_bus</span><span class="p">:</span> <span class="n">Var</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">mdl1</span><span class="o">.</span><span class="n">external_mapping</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">Va</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
@@ -2733,13 +2733,13 @@
 <div class="viewcode-block" id="normalize_branch_rms_root_contract_to">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.templates_common_functions.normalize_branch_rms_root_contract_to">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">normalize_branch_rms_root_contract_to</span><span class="p">(</span><span class="n">mdl1</span><span class="p">:</span> <span class="n">Block</span><span class="p">,</span> <span class="n">mdl2</span><span class="p">:</span> <span class="n">Block</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Normalize the RMS root contract for the branch ``to`` side.</span>
 
 <span class="sd">    :param mdl1: Connected bus RMS model.</span>
 <span class="sd">    :param mdl2: Branch RMS model.</span>
 <span class="sd">    :return: None.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">vm_bus</span><span class="p">:</span> <span class="n">Var</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">mdl1</span><span class="o">.</span><span class="n">external_mapping</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">Vm</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
     <span class="n">vdc_bus</span><span class="p">:</span> <span class="n">Var</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">mdl1</span><span class="o">.</span><span class="n">external_mapping</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">Vdc</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
     <span class="n">va_bus</span><span class="p">:</span> <span class="n">Var</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">mdl1</span><span class="o">.</span><span class="n">external_mapping</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">Va</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
@@ -2793,13 +2793,13 @@
 <div class="viewcode-block" id="normalize_single_bus_rms_root_contract">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.templates_common_functions.normalize_single_bus_rms_root_contract">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">normalize_single_bus_rms_root_contract</span><span class="p">(</span><span class="n">mdl1</span><span class="p">:</span> <span class="n">Block</span><span class="p">,</span> <span class="n">mdl2</span><span class="p">:</span> <span class="n">Block</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Normalize the RMS root contract for one single-bus injection model.</span>
 
 <span class="sd">    :param mdl1: Connected bus RMS model.</span>
 <span class="sd">    :param mdl2: Single-bus RMS model.</span>
 <span class="sd">    :return: None.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">vm_bus</span><span class="p">:</span> <span class="n">Var</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">mdl1</span><span class="o">.</span><span class="n">external_mapping</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">Vm</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
     <span class="n">va_bus</span><span class="p">:</span> <span class="n">Var</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">mdl1</span><span class="o">.</span><span class="n">external_mapping</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">Va</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
     <span class="n">vm_dev</span><span class="p">:</span> <span class="n">Var</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">mdl2</span><span class="o">.</span><span class="n">external_mapping</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">Vm</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
@@ -2834,10 +2834,10 @@
 <div class="viewcode-block" id="connect_line_phasor_rms_from">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.templates_common_functions.connect_line_phasor_rms_from">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">connect_line_phasor_rms_from</span><span class="p">(</span><span class="n">mdl1</span><span class="p">:</span> <span class="n">Block</span><span class="p">,</span> <span class="n">mdl2</span><span class="p">:</span> <span class="n">Block</span><span class="p">,</span> <span class="n">var_factory</span><span class="p">:</span><span class="n">VarFactory</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Connect phasor RMS models for the &#39;from&#39; end of a line.</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Connect phasor RMS models for the 'from' end of a line.</span>
 <span class="sd">    Connects Vr, Vi from bus to line inputs.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># connect Vr</span>
     <span class="n">pairs</span> <span class="o">=</span> <span class="p">[</span>
         <span class="p">(</span><span class="n">outp</span><span class="p">,</span> <span class="n">inpt</span><span class="p">)</span>
@@ -2863,10 +2863,10 @@
 <div class="viewcode-block" id="connect_line_phasor_rms_to">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.templates_common_functions.connect_line_phasor_rms_to">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">connect_line_phasor_rms_to</span><span class="p">(</span><span class="n">mdl1</span><span class="p">:</span> <span class="n">Block</span><span class="p">,</span> <span class="n">mdl2</span><span class="p">:</span> <span class="n">Block</span><span class="p">,</span> <span class="n">var_factory</span><span class="p">:</span><span class="n">VarFactory</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Connect phasor RMS models for the &#39;to&#39; end of a line.</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Connect phasor RMS models for the 'to' end of a line.</span>
 <span class="sd">    Connects Vr, Vi from bus to line inputs.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># connect Vr</span>
     <span class="n">pairs</span> <span class="o">=</span> <span class="p">[</span>
         <span class="p">(</span><span class="n">outp</span><span class="p">,</span> <span class="n">inpt</span><span class="p">)</span>
@@ -2892,13 +2892,13 @@
 <div class="viewcode-block" id="connect_models">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.templates_common_functions.connect_models">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">connect_models</span><span class="p">(</span><span class="n">mdl1</span><span class="p">:</span> <span class="n">Block</span><span class="p">,</span> <span class="n">mdl2</span><span class="p">:</span> <span class="n">Block</span><span class="p">,</span> <span class="n">var_factory</span><span class="p">:</span><span class="n">VarFactory</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    This function substitutes input variables for output variables to connect two rms models</span>
 <span class="sd">    :param mdl1:</span>
 <span class="sd">    :param mdl2:</span>
 <span class="sd">    :param var_factory:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># connect inputs mdl2 with outputs mdl1</span>
     <span class="n">pairs</span> <span class="o">=</span> <span class="p">[</span>
         <span class="p">(</span><span class="n">outp</span><span class="p">,</span> <span class="n">inpt</span><span class="p">)</span>
@@ -2922,7 +2922,7 @@
         <span class="n">var_factory</span><span class="o">.</span><span class="n">add_connections</span><span class="p">([</span><span class="n">inpt</span><span class="p">],</span> <span class="p">[</span><span class="n">outp</span><span class="p">])</span></div>
 
 
-    <span class="c1">#print(&quot;&quot;)</span>
+    <span class="c1">#print("")</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">_connect_rms_bus_voltage_reference</span><span class="p">(</span>
         <span class="n">bus_model</span><span class="p">:</span> <span class="n">Block</span><span class="p">,</span>
         <span class="n">device_model</span><span class="p">:</span> <span class="n">Block</span><span class="p">,</span>
@@ -2930,7 +2930,7 @@
         <span class="n">device_reference</span><span class="p">:</span> <span class="n">VarPowerFlowReferenceType</span><span class="p">,</span>
         <span class="n">var_factory</span><span class="p">:</span> <span class="n">VarFactory</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Connect one device RMS voltage terminal to its authoritative bus variable.</span>
+<span class="w">    </span><span class="sd">"""Connect one device RMS voltage terminal to its authoritative bus variable.</span>
 
 <span class="sd">    The ordinary AC branch helpers encode the conventional ``Vm/Va`` to</span>
 <span class="sd">    ``Vmf/Vaf`` or ``Vmt/Vat`` mappings directly. DC terminals and mixed</span>
@@ -2944,7 +2944,7 @@
 <span class="sd">    :param device_reference: Terminal reference exposed by the device model.</span>
 <span class="sd">    :param var_factory: Shared variable factory that persists the connection.</span>
 <span class="sd">    :return: ``True`` when both endpoints exist and are connected.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">bus_voltage</span><span class="p">:</span> <span class="n">Var</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">bus_model</span><span class="o">.</span><span class="n">external_mapping</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">bus_reference</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
     <span class="n">device_voltage</span><span class="p">:</span> <span class="n">Var</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">device_model</span><span class="o">.</span><span class="n">external_mapping</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">device_reference</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
     <span class="n">candidate_var</span><span class="p">:</span> <span class="n">Var</span>
@@ -2996,7 +2996,7 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">connect_bus_variables_rms</span><span class="p">(</span><span class="n">device</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
                               <span class="n">model</span><span class="p">:</span> <span class="n">Block</span><span class="p">,</span>
                               <span class="n">var_factory</span><span class="p">:</span> <span class="n">VarFactory</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Connect one RMS device model to the voltage variables of its buses.</span>
+<span class="w">    </span><span class="sd">"""Connect one RMS device model to the voltage variables of its buses.</span>
 
 <span class="sd">    Mixed AC/DC VSCs and pure DC lines use explicit device-specific terminal</span>
 <span class="sd">    mappings. Conventional AC branches retain the existing from/to connection</span>
@@ -3006,13 +3006,13 @@
 <span class="sd">    :param model: Materialized RMS model whose terminal variables are connected.</span>
 <span class="sd">    :param var_factory: Shared symbolic variable factory, when available.</span>
 <span class="sd">    :return: None.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">device</span><span class="o">.</span><span class="n">device_type</span> <span class="o">==</span> <span class="n">DeviceType</span><span class="o">.</span><span class="n">VscDevice</span><span class="p">:</span>
         <span class="c1"># A VeraGrid VSC is oriented from its positive DC bus to its AC bus.</span>
         <span class="c1"># Its RMS template therefore combines Vf_dc (and, for a bipolar VSC,</span>
         <span class="c1"># Vt_dc) with the conventional Vmt/Vat AC terminal pair.</span>
         <span class="k">if</span> <span class="n">var_factory</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;var factory not associated to grid element&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"var factory not associated to grid element"</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">pass</span>
 
@@ -3100,7 +3100,7 @@
         <span class="c1"># A DC line reuses the branch-side Vmf/Vmt references for its two</span>
         <span class="c1"># terminals, while both connected bus shells expose a direct Vdc.</span>
         <span class="k">if</span> <span class="n">var_factory</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;var factory not associated to grid element&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"var factory not associated to grid element"</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">pass</span>
 
@@ -3141,7 +3141,7 @@
             <span class="k">if</span> <span class="n">var_factory</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">initialize_bus_rms</span><span class="p">(</span><span class="n">device</span><span class="o">.</span><span class="n">bus_from</span><span class="p">,</span> <span class="n">var_factory</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;var factory not associated to grid element&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"var factory not associated to grid element"</span><span class="p">)</span>
 
         <span class="c1"># Check if bus has Vr/Vi (phasor) or Vm/Va (polar) outputs</span>
         <span class="n">has_phasor</span> <span class="o">=</span> <span class="nb">any</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">ref</span> <span class="o">==</span> <span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">Vr</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">bus_model</span><span class="o">.</span><span class="n">out_vars</span><span class="p">)</span>
@@ -3158,7 +3158,7 @@
             <span class="k">if</span> <span class="n">var_factory</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">initialize_bus_rms</span><span class="p">(</span><span class="n">device</span><span class="o">.</span><span class="n">bus_to</span><span class="p">,</span> <span class="n">var_factory</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;var factory not associated to grid element&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"var factory not associated to grid element"</span><span class="p">)</span>
         <span class="c1"># Check if bus has Vr/Vi (phasor) or Vm/Va (polar) outputs</span>
         <span class="n">has_phasor</span> <span class="o">=</span> <span class="nb">any</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">ref</span> <span class="o">==</span> <span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">Vr</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">bus_model</span><span class="o">.</span><span class="n">out_vars</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">has_phasor</span><span class="p">:</span>
@@ -3174,7 +3174,7 @@
             <span class="k">if</span> <span class="n">var_factory</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">initialize_bus_rms</span><span class="p">(</span><span class="n">device</span><span class="o">.</span><span class="n">bus</span><span class="p">,</span> <span class="n">var_factory</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;var factory not associated to grid element&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"var factory not associated to grid element"</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">var_factory</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">connect_models_power_flow</span><span class="p">(</span><span class="n">device</span><span class="o">.</span><span class="n">bus</span><span class="o">.</span><span class="n">rms_model</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">var_factory</span><span class="p">)</span></div>
 
@@ -3183,7 +3183,7 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.templates_common_functions.connect_pending_injection_bus_variables_emt">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">connect_pending_injection_bus_variables_emt</span><span class="p">(</span><span class="n">bus</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
                                                 <span class="n">var_factory</span><span class="p">:</span> <span class="n">VarFactory</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Connect deferred single-bus EMT devices once one bus shell exists.</span>
 
 <span class="sd">    The GUI can assign one injection EMT template before any branch template has</span>
@@ -3194,7 +3194,7 @@
 <span class="sd">    :param bus: Bus whose pending EMT injection devices must be connected.</span>
 <span class="sd">    :param var_factory: Shared variable factory used to register rebinding connections.</span>
 <span class="sd">    :return: None.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">pending_devices</span> <span class="o">=</span> <span class="n">bus</span><span class="o">.</span><span class="n">get_pending_emt_devices</span><span class="p">()</span>
     <span class="n">pending_device</span><span class="p">:</span> <span class="n">Any</span>
 
@@ -3223,7 +3223,7 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.templates_common_functions.initialize_bus_emt_from_local_device_context">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">initialize_bus_emt_from_local_device_context</span><span class="p">(</span><span class="n">bus</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
                                                  <span class="n">var_factory</span><span class="p">:</span> <span class="n">VarFactory</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Materialize one minimal EMT bus shell from the local bus context.</span>
 
 <span class="sd">    When the GUI assigns one single-bus EMT template before any branch template</span>
@@ -3235,7 +3235,7 @@
 <span class="sd">    :param bus: Bus whose EMT shell must be initialized.</span>
 <span class="sd">    :param var_factory: Shared symbolic variable factory.</span>
 <span class="sd">    :return: None.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">default_mask</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span>
 
     <span class="k">if</span> <span class="n">bus</span><span class="o">.</span><span class="n">is_dc</span><span class="p">:</span>
@@ -3246,7 +3246,7 @@
     <span class="n">bus</span><span class="o">.</span><span class="n">emt_model</span> <span class="o">=</span> <span class="n">BusEmtTemplate</span><span class="p">(</span><span class="n">vf</span><span class="o">=</span><span class="n">var_factory</span><span class="p">,</span>
                                    <span class="n">mask</span><span class="o">=</span><span class="n">default_mask</span><span class="p">,</span>
                                    <span class="n">is_dc</span><span class="o">=</span><span class="n">bus</span><span class="o">.</span><span class="n">is_dc</span><span class="p">,</span>
-                                   <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">bus</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">_emt&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">block</span></div>
+                                   <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">bus</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">_emt"</span><span class="p">)</span><span class="o">.</span><span class="n">block</span></div>
 
 
 
@@ -3255,7 +3255,7 @@
                                      <span class="n">bus</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
                                      <span class="n">side</span><span class="p">:</span> <span class="n">EmtBusConnectionSide</span><span class="p">,</span>
                                      <span class="n">var_factory</span><span class="p">:</span> <span class="n">VarFactory</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Connect one branch EMT terminal to one bus shell using the proper helper.</span>
 
 <span class="sd">    :param device: Branch-like EMT device.</span>
@@ -3264,7 +3264,7 @@
 <span class="sd">    :param side: Semantic branch side represented by the bus.</span>
 <span class="sd">    :param var_factory: Shared symbolic variable factory.</span>
 <span class="sd">    :return: None.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">device</span><span class="o">.</span><span class="n">device_type</span> <span class="o">==</span> <span class="n">DeviceType</span><span class="o">.</span><span class="n">VscDevice</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">side</span> <span class="o">==</span> <span class="n">EmtBusConnectionSide</span><span class="o">.</span><span class="n">FROM</span><span class="p">:</span>
             <span class="n">connect_vsc_emt_from</span><span class="p">(</span><span class="n">bus</span><span class="o">.</span><span class="n">emt_model</span><span class="p">,</span>
@@ -3293,14 +3293,14 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">attach_emt_model_to_buses</span><span class="p">(</span><span class="n">device</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
                               <span class="n">model</span><span class="p">:</span> <span class="n">Block</span><span class="p">,</span>
                               <span class="n">var_factory</span><span class="p">:</span> <span class="n">VarFactory</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Attach one EMT model to its bus shells using one shared engine workflow.</span>
 
 <span class="sd">    :param device: Device owning the EMT model.</span>
 <span class="sd">    :param model: Materialized EMT model block to attach.</span>
 <span class="sd">    :param var_factory: Shared symbolic variable factory.</span>
 <span class="sd">    :return: None.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">branch_devices</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">DeviceType</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">([</span><span class="n">DeviceType</span><span class="o">.</span><span class="n">BranchDevice</span><span class="p">,</span>
                                              <span class="n">DeviceType</span><span class="o">.</span><span class="n">LineDevice</span><span class="p">,</span>
                                              <span class="n">DeviceType</span><span class="o">.</span><span class="n">Transformer2WDevice</span><span class="p">,</span>
@@ -3316,7 +3316,7 @@
 
     <span class="k">if</span> <span class="n">device</span><span class="o">.</span><span class="n">device_type</span> <span class="ow">in</span> <span class="n">branch_devices</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">device</span><span class="o">.</span><span class="n">bus_from</span><span class="o">.</span><span class="n">emt_model</span><span class="o">.</span><span class="n">empty</span><span class="p">():</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Connection Bus EMT model cannot be empty, initialize </span><span class="si">{</span><span class="n">device</span><span class="o">.</span><span class="n">bus_from</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> EMT model&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Connection Bus EMT model cannot be empty, initialize </span><span class="si">{</span><span class="n">device</span><span class="o">.</span><span class="n">bus_from</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> EMT model"</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">pass</span>
 
@@ -3331,7 +3331,7 @@
                                      <span class="n">side</span><span class="o">=</span><span class="n">EmtBusConnectionSide</span><span class="o">.</span><span class="n">FROM</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">device</span><span class="o">.</span><span class="n">bus_to</span><span class="o">.</span><span class="n">emt_model</span><span class="o">.</span><span class="n">empty</span><span class="p">():</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Connection Bus EMT model cannot be empty, initialize </span><span class="si">{</span><span class="n">device</span><span class="o">.</span><span class="n">bus_to</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> EMT model&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Connection Bus EMT model cannot be empty, initialize </span><span class="si">{</span><span class="n">device</span><span class="o">.</span><span class="n">bus_to</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> EMT model"</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">pass</span>
 
@@ -3363,7 +3363,7 @@
             <span class="n">synchronize_saved_emt_root_contract_from_bus</span><span class="p">(</span><span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">device</span><span class="o">.</span><span class="n">bus</span><span class="o">.</span><span class="n">emt_model</span><span class="o">.</span><span class="n">empty</span><span class="p">():</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Connection Bus EMT model cannot be empty, initialize </span><span class="si">{</span><span class="n">device</span><span class="o">.</span><span class="n">bus</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> EMT model&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Connection Bus EMT model cannot be empty, initialize </span><span class="si">{</span><span class="n">device</span><span class="o">.</span><span class="n">bus</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> EMT model"</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">connect_injection_emt</span><span class="p">(</span><span class="n">device</span><span class="o">.</span><span class="n">bus</span><span class="o">.</span><span class="n">emt_model</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">var_factory</span><span class="p">)</span>
             <span class="n">register_connected_emt_model</span><span class="p">(</span><span class="n">bus</span><span class="o">=</span><span class="n">device</span><span class="o">.</span><span class="n">bus</span><span class="p">,</span>
@@ -3390,7 +3390,7 @@
                               <span class="n">var_factory</span><span class="p">:</span> <span class="n">VarFactory</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
                               <span class="n">allow_deferred_connection</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
                               <span class="n">grid</span><span class="p">:</span> <span class="n">Any</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    connect the bus variables of the model with the api_object bus variables</span>
 <span class="sd">    :param device:</span>
 <span class="sd">    :type device:</span>
@@ -3404,7 +3404,7 @@
 <span class="sd">    :type grid: Any | None</span>
 <span class="sd">    :return:</span>
 <span class="sd">    :rtype:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">branch_devices</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">DeviceType</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">([</span><span class="n">DeviceType</span><span class="o">.</span><span class="n">BranchDevice</span><span class="p">,</span>
                                              <span class="n">DeviceType</span><span class="o">.</span><span class="n">LineDevice</span><span class="p">,</span>
@@ -3418,7 +3418,7 @@
                                              <span class="n">DeviceType</span><span class="o">.</span><span class="n">VscDevice</span><span class="p">])</span>
 
     <span class="k">if</span> <span class="n">var_factory</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;var factory not associated to grid element&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"var factory not associated to grid element"</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">pass</span>
 
@@ -3433,7 +3433,7 @@
                                                                <span class="n">grid</span><span class="o">=</span><span class="n">grid</span><span class="p">,</span>
                                                                <span class="n">var_factory</span><span class="o">=</span><span class="n">var_factory</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Connection Bus EMT model cannot be empty, initialize </span><span class="si">{</span><span class="n">device</span><span class="o">.</span><span class="n">bus_from</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> EMT model&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Connection Bus EMT model cannot be empty, initialize </span><span class="si">{</span><span class="n">device</span><span class="o">.</span><span class="n">bus_from</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> EMT model"</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">pass</span>
 
@@ -3447,7 +3447,7 @@
                                                                <span class="n">grid</span><span class="o">=</span><span class="n">grid</span><span class="p">,</span>
                                                                <span class="n">var_factory</span><span class="o">=</span><span class="n">var_factory</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Connection Bus EMT model cannot be empty, initialize </span><span class="si">{</span><span class="n">device</span><span class="o">.</span><span class="n">bus_to</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> EMT model&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Connection Bus EMT model cannot be empty, initialize </span><span class="si">{</span><span class="n">device</span><span class="o">.</span><span class="n">bus_to</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> EMT model"</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">pass</span>
 
@@ -3465,7 +3465,7 @@
                     <span class="n">initialize_bus_emt_from_local_device_context</span><span class="p">(</span><span class="n">bus</span><span class="o">=</span><span class="n">device</span><span class="o">.</span><span class="n">bus</span><span class="p">,</span>
                                                                  <span class="n">var_factory</span><span class="o">=</span><span class="n">var_factory</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Connection Bus EMT model cannot be empty, initialize </span><span class="si">{</span><span class="n">device</span><span class="o">.</span><span class="n">bus</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> EMT model&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Connection Bus EMT model cannot be empty, initialize </span><span class="si">{</span><span class="n">device</span><span class="o">.</span><span class="n">bus</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> EMT model"</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">pass</span>
 
@@ -3478,11 +3478,11 @@
 <div class="viewcode-block" id="set_rms_model">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.templates_common_functions.set_rms_model">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">set_rms_model</span><span class="p">(</span><span class="n">device</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span><span class="n">Block</span><span class="p">,</span> <span class="n">var_factory</span><span class="p">:</span> <span class="n">VarFactory</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Set the RMS model</span>
 <span class="sd">    :return:</span>
 <span class="sd">    :rtype:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># connect bus variables</span>
 
     <span class="k">if</span> <span class="n">device</span><span class="o">.</span><span class="n">device_type</span> <span class="ow">in</span> <span class="p">[</span><span class="n">DeviceType</span><span class="o">.</span><span class="n">BranchDevice</span><span class="p">,</span>
@@ -3505,7 +3505,7 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">connect_line_rms_from</span><span class="p">(</span><span class="n">device</span><span class="o">.</span><span class="n">bus_from</span><span class="o">.</span><span class="n">rms_model</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">var_factory</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Connection Bus RMS model cannot be empty, initialize </span><span class="si">{</span><span class="n">device</span><span class="o">.</span><span class="n">bus_from</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> RMS model&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Connection Bus RMS model cannot be empty, initialize </span><span class="si">{</span><span class="n">device</span><span class="o">.</span><span class="n">bus_from</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> RMS model"</span><span class="p">)</span>
 
         <span class="n">bus_model</span> <span class="o">=</span> <span class="n">device</span><span class="o">.</span><span class="n">bus_to</span><span class="o">.</span><span class="n">rms_model</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">bus_model</span><span class="o">.</span><span class="n">empty</span><span class="p">():</span>
@@ -3516,7 +3516,7 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">connect_line_rms_to</span><span class="p">(</span><span class="n">device</span><span class="o">.</span><span class="n">bus_to</span><span class="o">.</span><span class="n">rms_model</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">var_factory</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Connection Bus RMS model cannot be empty, initialize </span><span class="si">{</span><span class="n">device</span><span class="o">.</span><span class="n">bus_to</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> RMS model&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Connection Bus RMS model cannot be empty, initialize </span><span class="si">{</span><span class="n">device</span><span class="o">.</span><span class="n">bus_to</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> RMS model"</span><span class="p">)</span>
 
     <span class="k">else</span><span class="p">:</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">device</span><span class="o">.</span><span class="n">bus</span><span class="o">.</span><span class="n">rms_model</span><span class="o">.</span><span class="n">empty</span><span class="p">():</span>
@@ -3524,7 +3524,7 @@
                 <span class="n">connect_models_power_flow</span><span class="p">(</span><span class="n">device</span><span class="o">.</span><span class="n">bus</span><span class="o">.</span><span class="n">rms_model</span><span class="p">,</span> <span class="n">mdl</span><span class="p">,</span> <span class="n">var_factory</span><span class="p">)</span>
 
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Connection Bus RMS model cannot be empty, initialize </span><span class="si">{</span><span class="n">device</span><span class="o">.</span><span class="n">bus</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> RMS model&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Connection Bus RMS model cannot be empty, initialize </span><span class="si">{</span><span class="n">device</span><span class="o">.</span><span class="n">bus</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> RMS model"</span><span class="p">)</span>
 
     <span class="c1"># fill var factory dict[Dev, List[Var]] with model variables</span>
     <span class="c1"># model.unify_blocks()</span>
@@ -3545,8 +3545,8 @@
 <div class="viewcode-block" id="connect_line_emt_from">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.templates_common_functions.connect_line_emt_from">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">connect_line_emt_from</span><span class="p">(</span><span class="n">mdl1</span><span class="p">:</span> <span class="n">Block</span><span class="p">,</span> <span class="n">mdl2</span><span class="p">:</span> <span class="n">Block</span><span class="p">,</span> <span class="n">var_factory</span><span class="p">:</span><span class="n">VarFactory</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Connects the bus voltages (mdl1) to the &quot;from&quot; side of the line (mdl2)</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Connects the bus voltages (mdl1) to the "from" side of the line (mdl2)</span>
 <span class="sd">    for simulations with explicit phases (e.g., EMT).</span>
 <span class="sd">    It only connects the phases present in both models (any NABC combination).</span>
 
@@ -3554,7 +3554,7 @@
 <span class="sd">    :param mdl2: Line model (Block)</span>
 <span class="sd">    :param var_factory:</span>
 <span class="sd">    :return: None</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># Branch EMT validation later rebuilds the saved external mapping from the</span>
     <span class="c1"># authoritative root IO vars. The connection helper must therefore propagate</span>
     <span class="c1"># bus identities into those root input vars, not only into detached mapping</span>
@@ -3635,8 +3635,8 @@
 <div class="viewcode-block" id="connect_line_emt_to">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.templates_common_functions.connect_line_emt_to">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">connect_line_emt_to</span><span class="p">(</span><span class="n">mdl1</span><span class="p">:</span> <span class="n">Block</span><span class="p">,</span> <span class="n">mdl2</span><span class="p">:</span> <span class="n">Block</span><span class="p">,</span> <span class="n">var_factory</span><span class="p">:</span><span class="n">VarFactory</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Connects the bus voltages (mdl1) to the &quot;to&quot; side of the line (mdl2)</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Connects the bus voltages (mdl1) to the "to" side of the line (mdl2)</span>
 <span class="sd">    for simulations with explicit phases (e.g., EMT).</span>
 <span class="sd">    It only connects the phases present in both models (any NABC combination).</span>
 
@@ -3644,7 +3644,7 @@
 <span class="sd">    :param mdl2: Line model (Block)</span>
 <span class="sd">    :param var_factory:</span>
 <span class="sd">    :return: None</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># The same authoritative-root-IO rule as the from side applies here.</span>
     <span class="n">pairs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">Var</span><span class="p">,</span> <span class="n">Var</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[</span>
         <span class="p">(</span><span class="n">outp</span><span class="p">,</span> <span class="n">inpt</span><span class="p">)</span>
@@ -3719,7 +3719,7 @@
 <div class="viewcode-block" id="connect_injection_emt">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.templates_common_functions.connect_injection_emt">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">connect_injection_emt</span><span class="p">(</span><span class="n">mdl1</span><span class="p">:</span> <span class="n">Block</span><span class="p">,</span> <span class="n">mdl2</span><span class="p">:</span> <span class="n">Block</span><span class="p">,</span> <span class="n">var_factory</span><span class="p">:</span><span class="n">VarFactory</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Connect one bus EMT shell to one single-bus EMT injection model.</span>
 
 <span class="sd">    The bus shell exposes EMT bus voltages as outputs. Single-bus injection</span>
@@ -3730,7 +3730,7 @@
 <span class="sd">    :param mdl2: EMT model of one single-bus injection device.</span>
 <span class="sd">    :param var_factory:</span>
 <span class="sd">    :return: None.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># Single-bus EMT validation also rebuilds the saved root contract from the</span>
     <span class="c1"># authoritative root input vars, so bus identity must be propagated through</span>
     <span class="c1"># those root inputs directly.</span>
@@ -3770,8 +3770,8 @@
 <div class="viewcode-block" id="connect_vsc_emt_from">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.templates_common_functions.connect_vsc_emt_from">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">connect_vsc_emt_from</span><span class="p">(</span><span class="n">mdl1</span><span class="p">:</span> <span class="n">Block</span><span class="p">,</span> <span class="n">mdl2</span><span class="p">:</span> <span class="n">Block</span><span class="p">,</span> <span class="n">var_factory</span><span class="p">:</span><span class="n">VarFactory</span><span class="p">,</span><span class="n">is_dc_bus</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Connects the bus voltages to the &quot;from&quot; side of the VSC model.</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Connects the bus voltages to the "from" side of the VSC model.</span>
 <span class="sd">    For DC buses, connects Vdc. For AC buses, connects abc voltages.</span>
 
 <span class="sd">    :param mdl1: Bus model (Block)</span>
@@ -3779,7 +3779,7 @@
 <span class="sd">    :param var_factory:</span>
 <span class="sd">    :param is_dc_bus: True if bus_from is DC</span>
 <span class="sd">    :return: None</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">is_dc_bus</span><span class="p">:</span>
         <span class="c1"># DC bus: connect the live bus ``Vdc`` directly to the VSC root DC input.</span>
         <span class="c1"># Pseudo-converter templates expose the shared DC terminal through the</span>
@@ -3830,8 +3830,8 @@
 <div class="viewcode-block" id="connect_vsc_emt_to">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.templates_common_functions.connect_vsc_emt_to">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">connect_vsc_emt_to</span><span class="p">(</span><span class="n">mdl1</span><span class="p">:</span> <span class="n">Block</span><span class="p">,</span> <span class="n">mdl2</span><span class="p">:</span> <span class="n">Block</span><span class="p">,</span> <span class="n">var_factory</span><span class="p">:</span><span class="n">VarFactory</span><span class="p">,</span> <span class="n">is_dc_bus</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Connects the bus voltages to the &quot;to&quot; side of the VSC model.</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Connects the bus voltages to the "to" side of the VSC model.</span>
 <span class="sd">    For DC buses, connects Vdc. For AC buses, connects abc voltages.</span>
 
 <span class="sd">    :param mdl1: Bus model (Block)</span>
@@ -3839,7 +3839,7 @@
 <span class="sd">    :param var_factory:</span>
 <span class="sd">    :param is_dc_bus: True if bus_to is DC</span>
 <span class="sd">    :return: None</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">is_dc_bus</span><span class="p">:</span>
         <span class="c1"># DC bus: connect the bus ``Vdc`` to the branch-side VSC DC terminal.</span>
         <span class="c1"># The editor and branch EMT root contract expose the ``to``-side DC</span>
@@ -3884,7 +3884,7 @@
 <div class="viewcode-block" id="set_emt_model">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.templates_common_functions.set_emt_model">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">set_emt_model</span><span class="p">(</span><span class="n">device</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">Block</span><span class="p">,</span> <span class="n">var_factory</span><span class="p">:</span> <span class="n">VarFactory</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Sets the EMT model for a given device, connects it to the bus(es),</span>
 <span class="sd">    and stores the same hierarchical runtime shape used by GUI assignment.</span>
 
@@ -3892,7 +3892,7 @@
 <span class="sd">    :param model: The mathematical block model of the device</span>
 <span class="sd">    :param var_factory: Factory to register simulation variables</span>
 <span class="sd">    :return: None</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># The attachment path normalizes the authoritative saved root through</span>
     <span class="c1"># ``device.emt_model``. Publish the incoming block first so scripting does</span>
     <span class="c1"># not normalize the previous (often empty) device model while connecting</span>

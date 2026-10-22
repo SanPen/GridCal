@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Simulations.OPF.simple_dispatch_ts &mdash; VeraGrid 6.7.13 documentation</title>
+  <title>VeraGridEngine.Simulations.OPF.simple_dispatch_ts &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=16fbabd8"></script>
+      <script src="../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -108,10 +108,10 @@
 <span class="c1"># file, You can obtain one at https://mozilla.org/MPL/2.0/.</span>
 <span class="c1"># SPDX-License-Identifier: MPL-2.0</span>
 
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 <span class="sd">This file implements a DC-OPF for time series</span>
 <span class="sd">That means that solves the OPF problem for a complete time series at once</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numba</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nb</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Tuple</span>
@@ -124,15 +124,15 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">run_simple_dispatch</span><span class="p">(</span><span class="n">grid</span><span class="p">:</span> <span class="n">MultiCircuit</span><span class="p">,</span>
                         <span class="n">text_prog</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                         <span class="n">prog_func</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Vec</span><span class="p">,</span> <span class="n">Vec</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Simple generation dispatch for the snapshot</span>
 <span class="sd">    :param grid: MultiCircuit instance</span>
 <span class="sd">    :param text_prog: text report function</span>
 <span class="sd">    :param prog_func: progress report function</span>
 <span class="sd">    :return Pl, Pg</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">text_prog</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">text_prog</span><span class="p">(</span><span class="s1">&#39;Simple dispatch...&#39;</span><span class="p">)</span>
+        <span class="n">text_prog</span><span class="p">(</span><span class="s1">'Simple dispatch...'</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">prog_func</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">prog_func</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
@@ -191,7 +191,7 @@
         <span class="n">dt</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
         <span class="n">force_charge_if_low</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
         <span class="n">tol</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Greedy dispatch algorithm with dispatchable and non-dispatchable (e.g., renewable) generators.</span>
 <span class="sd">    :param load_profile: ndarray (T, L) - Load time series per timestep and load element.</span>
 <span class="sd">    :param gen_profile: ndarray (T, G) - Precomputed generator output (for renewables or constraints).</span>
@@ -217,7 +217,7 @@
 <span class="sd">            dispatch_batt : ndarray (T, B)</span>
 <span class="sd">            soc : ndarray (T, B)</span>
 <span class="sd">            total_cost : float</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">T</span><span class="p">,</span> <span class="n">L</span> <span class="o">=</span> <span class="n">load_profile</span><span class="o">.</span><span class="n">shape</span>
     <span class="n">_</span><span class="p">,</span> <span class="n">G</span> <span class="o">=</span> <span class="n">gen_profile</span><span class="o">.</span><span class="n">shape</span>
@@ -260,7 +260,7 @@
         <span class="n">gen_order</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">cost</span><span class="p">,</span> <span class="n">g</span> <span class="ow">in</span> <span class="n">gen_order</span><span class="p">:</span>
             <span class="n">p_max</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">gen_p_max</span><span class="p">[</span><span class="n">t</span><span class="p">,</span> <span class="n">g</span><span class="p">],</span> <span class="n">gen_profile</span><span class="p">[</span><span class="n">t</span><span class="p">,</span> <span class="n">g</span><span class="p">])</span>
-            <span class="n">p_min</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">gen_p_min</span><span class="p">[</span><span class="n">t</span><span class="p">,</span> <span class="n">g</span><span class="p">],</span> <span class="n">p_max</span><span class="p">)</span>  <span class="c1"># don&#39;t allow p_min &gt; p_max</span>
+            <span class="n">p_min</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">gen_p_min</span><span class="p">[</span><span class="n">t</span><span class="p">,</span> <span class="n">g</span><span class="p">],</span> <span class="n">p_max</span><span class="p">)</span>  <span class="c1"># don't allow p_min &gt; p_max</span>
             <span class="n">p</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">p_max</span><span class="p">,</span> <span class="n">remaining_load</span><span class="p">)</span>
             <span class="n">p</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">p_min</span><span class="p">)</span> <span class="k">if</span> <span class="n">remaining_load</span> <span class="o">&gt;=</span> <span class="n">p_min</span> <span class="k">else</span> <span class="mf">0.0</span>
             <span class="n">dispatch_gen</span><span class="p">[</span><span class="n">t</span><span class="p">,</span> <span class="n">g</span><span class="p">]</span> <span class="o">=</span> <span class="n">p</span>
@@ -341,7 +341,7 @@
         <span class="n">dt</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
         <span class="n">force_charge_if_low</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
         <span class="n">tol</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Greedy dispatch algorithm with dispatchable and non-dispatchable (e.g., renewable) generators.</span>
 
 <span class="sd">    (A) non-dispatchable gens</span>
@@ -379,7 +379,7 @@
 <span class="sd">            load_shedding:</span>
 <span class="sd">            ndg_surplus_after_batt,</span>
 <span class="sd">            ndg_curtailment_per_gen (T, G)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">T</span><span class="p">,</span> <span class="n">L</span> <span class="o">=</span> <span class="n">load_profile</span><span class="o">.</span><span class="n">shape</span>
     <span class="n">_</span><span class="p">,</span> <span class="n">G</span> <span class="o">=</span> <span class="n">gen_profile</span><span class="o">.</span><span class="n">shape</span>
@@ -523,7 +523,7 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">p</span> <span class="o">=</span> <span class="mf">0.0</span>
 
-            <span class="n">dispatch_gen</span><span class="p">[</span><span class="n">t</span><span class="p">,</span> <span class="n">g</span><span class="p">]</span> <span class="o">=</span> <span class="n">dispatch_gen</span><span class="p">[</span><span class="n">t</span><span class="p">,</span> <span class="n">g</span><span class="p">]</span> <span class="o">+</span> <span class="n">p</span>  <span class="c1"># in case unit had NDG earlier (it didn&#39;t, but explicit)</span>
+            <span class="n">dispatch_gen</span><span class="p">[</span><span class="n">t</span><span class="p">,</span> <span class="n">g</span><span class="p">]</span> <span class="o">=</span> <span class="n">dispatch_gen</span><span class="p">[</span><span class="n">t</span><span class="p">,</span> <span class="n">g</span><span class="p">]</span> <span class="o">+</span> <span class="n">p</span>  <span class="c1"># in case unit had NDG earlier (it didn't, but explicit)</span>
             <span class="n">total_cost</span> <span class="o">=</span> <span class="n">total_cost</span> <span class="o">+</span> <span class="n">p</span> <span class="o">*</span> <span class="n">gen_cost</span><span class="p">[</span><span class="n">t</span><span class="p">,</span> <span class="n">g</span><span class="p">]</span> <span class="o">*</span> <span class="n">dt</span><span class="p">[</span><span class="n">t</span><span class="p">]</span>
             <span class="n">remaining_load</span> <span class="o">=</span> <span class="n">remaining_load</span> <span class="o">-</span> <span class="n">p</span>
 
@@ -643,28 +643,28 @@
 <div class="viewcode-block" id="GreedyDispatchInputs">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.OPF.html#VeraGridEngine.Simulations.OPF.simple_dispatch_ts.GreedyDispatchInputs">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">GreedyDispatchInputs</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Inputs container for greedy dispatch time series.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;dt&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;load_profile&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;load_shedding_cost&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;gen_profile&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;gen_dispatchable&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;gen_active&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;gen_cost&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;gen_p_max&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;gen_p_min&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;batt_active&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;batt_p_max_charge&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;batt_p_max_discharge&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;batt_energy_max&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;batt_eff_charge&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;batt_eff_discharge&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;batt_cost&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;batt_soc0&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;batt_soc_min&quot;</span><span class="p">,</span>
+        <span class="s2">"dt"</span><span class="p">,</span>
+        <span class="s2">"load_profile"</span><span class="p">,</span>
+        <span class="s2">"load_shedding_cost"</span><span class="p">,</span>
+        <span class="s2">"gen_profile"</span><span class="p">,</span>
+        <span class="s2">"gen_dispatchable"</span><span class="p">,</span>
+        <span class="s2">"gen_active"</span><span class="p">,</span>
+        <span class="s2">"gen_cost"</span><span class="p">,</span>
+        <span class="s2">"gen_p_max"</span><span class="p">,</span>
+        <span class="s2">"gen_p_min"</span><span class="p">,</span>
+        <span class="s2">"batt_active"</span><span class="p">,</span>
+        <span class="s2">"batt_p_max_charge"</span><span class="p">,</span>
+        <span class="s2">"batt_p_max_discharge"</span><span class="p">,</span>
+        <span class="s2">"batt_energy_max"</span><span class="p">,</span>
+        <span class="s2">"batt_eff_charge"</span><span class="p">,</span>
+        <span class="s2">"batt_eff_discharge"</span><span class="p">,</span>
+        <span class="s2">"batt_cost"</span><span class="p">,</span>
+        <span class="s2">"batt_soc0"</span><span class="p">,</span>
+        <span class="s2">"batt_soc_min"</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
@@ -673,13 +673,13 @@
         <span class="n">time_indices</span><span class="p">:</span> <span class="n">IntVec</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span> <span class="o">=</span> <span class="n">Logger</span><span class="p">(),</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        GreedyDispatchInputs constructor.</span>
 
 <span class="sd">        :param grid: MultiCircuit instance</span>
 <span class="sd">        :param time_indices: Array of time indices (optional)</span>
 <span class="sd">        :param logger: Logger instance</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="n">time_indices</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">time_indices</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">get_all_time_indices</span><span class="p">()</span>
         <span class="k">else</span><span class="p">:</span>
@@ -737,13 +737,13 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">batt_eff_charge</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">elm</span><span class="o">.</span><span class="n">charge_efficiency</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">batt_eff_charge</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s2">&quot;Charge efficiency is zero&quot;</span><span class="p">,</span> <span class="n">device_class</span><span class="o">=</span><span class="s2">&quot;Battery&quot;</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">elm</span><span class="o">.</span><span class="n">idtag</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s2">"Charge efficiency is zero"</span><span class="p">,</span> <span class="n">device_class</span><span class="o">=</span><span class="s2">"Battery"</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">elm</span><span class="o">.</span><span class="n">idtag</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="n">elm</span><span class="o">.</span><span class="n">discharge_efficiency</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">batt_eff_discharge</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">elm</span><span class="o">.</span><span class="n">discharge_efficiency</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">batt_eff_discharge</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s2">&quot;Discharge efficiency is zero&quot;</span><span class="p">,</span> <span class="n">device_class</span><span class="o">=</span><span class="s2">&quot;Battery&quot;</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">elm</span><span class="o">.</span><span class="n">idtag</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s2">"Discharge efficiency is zero"</span><span class="p">,</span> <span class="n">device_class</span><span class="o">=</span><span class="s2">"Battery"</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">elm</span><span class="o">.</span><span class="n">idtag</span><span class="p">)</span>
 
             <span class="bp">self</span><span class="o">.</span><span class="n">batt_soc0</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">elm</span><span class="o">.</span><span class="n">Enom</span> <span class="o">*</span> <span class="mf">0.5</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">batt_soc_min</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">elm</span><span class="o">.</span><span class="n">Enom</span> <span class="o">*</span> <span class="n">elm</span><span class="o">.</span><span class="n">min_soc</span></div>
@@ -753,36 +753,36 @@
 <div class="viewcode-block" id="GreedyDispatchInputsSnapshot">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.OPF.html#VeraGridEngine.Simulations.OPF.simple_dispatch_ts.GreedyDispatchInputsSnapshot">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">GreedyDispatchInputsSnapshot</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Inputs container for greedy dispatch snapshot.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;dt&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;load_profile&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;gen_profile&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;gen_dispatchable&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;gen_active&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;gen_cost&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;gen_p_max&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;gen_p_min&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;batt_active&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;batt_p_max_charge&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;batt_p_max_discharge&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;batt_energy_max&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;batt_eff_charge&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;batt_eff_discharge&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;batt_cost&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;batt_soc0&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;batt_soc_min&quot;</span><span class="p">,</span>
+        <span class="s2">"dt"</span><span class="p">,</span>
+        <span class="s2">"load_profile"</span><span class="p">,</span>
+        <span class="s2">"gen_profile"</span><span class="p">,</span>
+        <span class="s2">"gen_dispatchable"</span><span class="p">,</span>
+        <span class="s2">"gen_active"</span><span class="p">,</span>
+        <span class="s2">"gen_cost"</span><span class="p">,</span>
+        <span class="s2">"gen_p_max"</span><span class="p">,</span>
+        <span class="s2">"gen_p_min"</span><span class="p">,</span>
+        <span class="s2">"batt_active"</span><span class="p">,</span>
+        <span class="s2">"batt_p_max_charge"</span><span class="p">,</span>
+        <span class="s2">"batt_p_max_discharge"</span><span class="p">,</span>
+        <span class="s2">"batt_energy_max"</span><span class="p">,</span>
+        <span class="s2">"batt_eff_charge"</span><span class="p">,</span>
+        <span class="s2">"batt_eff_discharge"</span><span class="p">,</span>
+        <span class="s2">"batt_cost"</span><span class="p">,</span>
+        <span class="s2">"batt_soc0"</span><span class="p">,</span>
+        <span class="s2">"batt_soc_min"</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">grid</span><span class="p">:</span> <span class="n">MultiCircuit</span><span class="p">,</span> <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span> <span class="o">=</span> <span class="n">Logger</span><span class="p">())</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        GreedyDispatchInputsSnapshot constructor.</span>
 
 <span class="sd">        :param grid: MultiCircuit instance</span>
 <span class="sd">        :param logger: Logger instance</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="n">nt</span> <span class="o">=</span> <span class="mi">1</span>
         <span class="n">nl</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">get_loads_number</span><span class="p">()</span>
@@ -834,13 +834,13 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">batt_eff_charge</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">elm</span><span class="o">.</span><span class="n">charge_efficiency</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">batt_eff_charge</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s2">&quot;Charge efficiency is zero&quot;</span><span class="p">,</span> <span class="n">device_class</span><span class="o">=</span><span class="s2">&quot;Battery&quot;</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">elm</span><span class="o">.</span><span class="n">idtag</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s2">"Charge efficiency is zero"</span><span class="p">,</span> <span class="n">device_class</span><span class="o">=</span><span class="s2">"Battery"</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">elm</span><span class="o">.</span><span class="n">idtag</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="n">elm</span><span class="o">.</span><span class="n">discharge_efficiency</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">batt_eff_discharge</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">elm</span><span class="o">.</span><span class="n">discharge_efficiency</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">batt_eff_discharge</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s2">&quot;Discharge efficiency is zero&quot;</span><span class="p">,</span> <span class="n">device_class</span><span class="o">=</span><span class="s2">&quot;Battery&quot;</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">elm</span><span class="o">.</span><span class="n">idtag</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s2">"Discharge efficiency is zero"</span><span class="p">,</span> <span class="n">device_class</span><span class="o">=</span><span class="s2">"Battery"</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">elm</span><span class="o">.</span><span class="n">idtag</span><span class="p">)</span>
 
             <span class="bp">self</span><span class="o">.</span><span class="n">batt_soc0</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">elm</span><span class="o">.</span><span class="n">Enom</span> <span class="o">*</span> <span class="mf">0.5</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">batt_soc_min</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">elm</span><span class="o">.</span><span class="n">Enom</span> <span class="o">*</span> <span class="n">elm</span><span class="o">.</span><span class="n">min_soc</span></div>
@@ -854,7 +854,7 @@
                            <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span><span class="p">,</span>
                            <span class="n">text_prog</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                            <span class="n">prog_func</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Mat</span><span class="p">,</span> <span class="n">Mat</span><span class="p">,</span> <span class="n">Mat</span><span class="p">,</span> <span class="n">Mat</span><span class="p">,</span> <span class="n">Mat</span><span class="p">,</span> <span class="n">Mat</span><span class="p">,</span> <span class="n">GreedyDispatchInputs</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Run a simple (greedy) dispatch</span>
 <span class="sd">    :param grid: MultiCircuit</span>
 <span class="sd">    :param time_indices: array of time indices (optional)</span>
@@ -862,12 +862,12 @@
 <span class="sd">    :param text_prog: text report function (optional)</span>
 <span class="sd">    :param prog_func: progress report function (optional)</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">prog_func</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">prog_func</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">text_prog</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">text_prog</span><span class="p">(</span><span class="s2">&quot;Running greedy dispatch...&quot;</span><span class="p">)</span>
+        <span class="n">text_prog</span><span class="p">(</span><span class="s2">"Running greedy dispatch..."</span><span class="p">)</span>
 
     <span class="n">inpts</span> <span class="o">=</span> <span class="n">GreedyDispatchInputs</span><span class="p">(</span><span class="n">grid</span><span class="o">=</span><span class="n">grid</span><span class="p">,</span> <span class="n">time_indices</span><span class="o">=</span><span class="n">time_indices</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="n">logger</span><span class="p">)</span>
 
@@ -901,7 +901,7 @@
         <span class="n">prog_func</span><span class="p">(</span><span class="mf">100.0</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">text_prog</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">text_prog</span><span class="p">(</span><span class="s2">&quot;Done!&quot;</span><span class="p">)</span>
+        <span class="n">text_prog</span><span class="p">(</span><span class="s2">"Done!"</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="p">(</span><span class="n">inpts</span><span class="o">.</span><span class="n">load_profile</span><span class="p">,</span>
             <span class="n">gen_dispatch</span><span class="p">,</span>

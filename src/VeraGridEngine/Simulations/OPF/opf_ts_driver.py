@@ -18,7 +18,7 @@ from VeraGridEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOpt
 from VeraGridEngine.Simulations.driver_template import TimeSeriesDriverTemplate
 from VeraGridEngine.Simulations.Clustering.clustering_results import ClusteringResults
 from VeraGridEngine.basic_structures import IntVec, Vec, get_time_groups
-from VeraGridEngine.Compilers.Gslv.activation import GSLV_AVAILABLE
+from VeraGridEngine.Compilers.Gslv.activation import GSLV_AVAILABLE, GSLV_UNAVAILABLE_REASON
 from VeraGridEngine.Compilers.Gslv.Simulations.opf import gslv_opf
 
 
@@ -690,7 +690,7 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
         if self.engine == EngineType.GSLV:
             if not GSLV_AVAILABLE:
                 self.engine = EngineType.VeraGrid
-                self.logger.add_warning('GSLV not available, falling back to VeraGrid')
+                self.logger.add_warning(f'GSLV unavailable: {GSLV_UNAVAILABLE_REASON}; falling back to VeraGrid')
             else:
                 if self.options.solver != SolverType.LINEAR_OPF:
                     self.engine = EngineType.VeraGrid

@@ -569,12 +569,10 @@ The history terms are modelled as runtime-updated event parameters.
 <p>Symbolic helper for Bergeron history runtime.</p>
 <p>This class reuses the existing numerical setup (phase reduction, Gc/H matrices,
 indexing) and exposes symbolic-friendly builders for:</p>
-<blockquote>
-<div><ul class="simple">
+<ul class="simple">
 <li><p>branch nodal injections</p></li>
 <li><p>history recursion update expressions</p></li>
 </ul>
-</div></blockquote>
 <dl class="py method">
 <dt class="sig sig-object py" id="VeraGridEngine.Templates.Emt.bergeron_line_symbolic_runtime.BergeronHistorySymbolicRuntime.bind_symbolic_state">
 <span class="sig-name descname"><span class="pre">bind_symbolic_state</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">v_f_tau</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v_t_tau</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">i_f_tau</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">i_t_tau</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ih_f</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ih_t</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../../_modules/VeraGridEngine/Templates/Emt/bergeron_line_symbolic_runtime.html#BergeronHistorySymbolicRuntime.bind_symbolic_state"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#VeraGridEngine.Templates.Emt.bergeron_line_symbolic_runtime.BergeronHistorySymbolicRuntime.bind_symbolic_state" title="Link to this definition"></a></dt>
@@ -810,13 +808,13 @@ converter DC side and SoC decreases.</p>
 <dt class="sig sig-object py" id="VeraGridEngine.Templates.Emt.bridge_2level_3ph_emt_multilinear_template.get_bridge_2level_3ph_emt_multilinear_template">
 <span class="sig-prename descclassname"><span class="pre">VeraGridEngine.Templates.Emt.bridge_2level_3ph_emt_multilinear_template.</span></span><span class="sig-name descname"><span class="pre">get_bridge_2level_3ph_emt_multilinear_template</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vf</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="VeraGridEngine.Devices.Dynamic.html#VeraGridEngine.Devices.Dynamic.var_factory.VarFactory" title="VeraGridEngine.Devices.Dynamic.var_factory.VarFactory"><span class="pre">VarFactory</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'bridge_2level_3ph_emt_ml'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="VeraGridEngine.Devices.Dynamic.html#VeraGridEngine.Devices.Dynamic.emt_template.EmtModelTemplate" title="VeraGridEngine.Devices.Dynamic.emt_template.EmtModelTemplate"><span class="pre">EmtModelTemplate</span></a></span></span><a class="reference internal" href="../../../_modules/VeraGridEngine/Templates/Emt/bridge_2level_3ph_emt_multilinear_template.html#get_bridge_2level_3ph_emt_multilinear_template"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#VeraGridEngine.Templates.Emt.bridge_2level_3ph_emt_multilinear_template.get_bridge_2level_3ph_emt_multilinear_template" title="Link to this definition"></a></dt>
 <dd><p>Build one switched 2-level bridge EMT template with explicit trig states.</p>
-<p>This is a first-step multilinear bridge variant for the switched-converter path:
-- keeps the procedural PWM logic unchanged,
-- keeps the electrical equations/layout unchanged,
-- replaces direct trig usage around <code class="docutils literal notranslate"><span class="pre">theta_pll</span></code> with explicit dynamic</p>
-<blockquote>
-<div><p><code class="docutils literal notranslate"><span class="pre">u_cos/u_sin</span></code> states and +/-120 identities.</p>
-</div></blockquote>
+<p>This is a first-step multilinear bridge variant for the switched-converter path:</p>
+<ul class="simple">
+<li><p>keeps the procedural PWM logic unchanged,</p></li>
+<li><p>keeps the electrical equations/layout unchanged,</p></li>
+<li><p>replaces direct trig usage around <code class="docutils literal notranslate"><span class="pre">theta_pll</span></code> with explicit dynamic
+<code class="docutils literal notranslate"><span class="pre">u_cos/u_sin</span></code> states and +/-120 identities.</p></li>
+</ul>
 </dd></dl>
 
 </section>
@@ -1205,19 +1203,21 @@ static PF model, while the code layout stays close to <code class="docutils lite
 <dd><p>Build a two-terminal DC EMT line with one external active-power order <code class="docutils literal notranslate"><span class="pre">Pext</span></code>.</p>
 <p>The topology is a PI-type corridor arranged strictly in series as:
 <code class="docutils literal notranslate"><span class="pre">from_node</span> <span class="pre">-&gt;</span> <span class="pre">shunt_from</span> <span class="pre">-&gt;</span> <span class="pre">R3L3</span> <span class="pre">-&gt;</span> <span class="pre">v1</span> <span class="pre">-&gt;</span> <span class="pre">shunt_1</span> <span class="pre">-&gt;</span> <span class="pre">R2L2</span> <span class="pre">-&gt;</span> <span class="pre">v2</span> <span class="pre">-&gt;</span> <span class="pre">shunt_2</span> <span class="pre">-&gt;</span> <span class="pre">R1L1</span> <span class="pre">-&gt;</span> <span class="pre">shunt_to</span> <span class="pre">-&gt;</span> <span class="pre">to_node</span></code>.</p>
-<p>The model therefore contains:
-- four shunt capacitors: one at <code class="docutils literal notranslate"><span class="pre">from</span></code>, one at <code class="docutils literal notranslate"><span class="pre">v1</span></code>, one at <code class="docutils literal notranslate"><span class="pre">v2</span></code>, and one at <code class="docutils literal notranslate"><span class="pre">to</span></code>,
-- three RL branches connected in series: <code class="docutils literal notranslate"><span class="pre">R3L3</span></code>, <code class="docutils literal notranslate"><span class="pre">R2L2</span></code>, then <code class="docutils literal notranslate"><span class="pre">R1L1</span></code>,
-- one injected current at <code class="docutils literal notranslate"><span class="pre">v1</span></code> and one injected current at <code class="docutils literal notranslate"><span class="pre">v2</span></code> derived from <code class="docutils literal notranslate"><span class="pre">Pext</span></code></p>
-<blockquote>
-<div><p>using the local node voltage.</p>
-</div></blockquote>
+<p>The model therefore contains:</p>
+<ul class="simple">
+<li><p>four shunt capacitors: one at <code class="docutils literal notranslate"><span class="pre">from</span></code>, one at <code class="docutils literal notranslate"><span class="pre">v1</span></code>, one at <code class="docutils literal notranslate"><span class="pre">v2</span></code>, and one at <code class="docutils literal notranslate"><span class="pre">to</span></code>,</p></li>
+<li><p>three RL branches connected in series: <code class="docutils literal notranslate"><span class="pre">R3L3</span></code>, <code class="docutils literal notranslate"><span class="pre">R2L2</span></code>, then <code class="docutils literal notranslate"><span class="pre">R1L1</span></code>,</p></li>
+<li><p>one injected current at <code class="docutils literal notranslate"><span class="pre">v1</span></code> and one injected current at <code class="docutils literal notranslate"><span class="pre">v2</span></code> derived from <code class="docutils literal notranslate"><span class="pre">Pext</span></code>
+using the local node voltage.</p></li>
+</ul>
 <p><code class="docutils literal notranslate"><span class="pre">Pext</span></code> is a runtime/event parameter. The template converts that power order into
 the local injected currents
 <code class="docutils literal notranslate"><span class="pre">i_n1</span> <span class="pre">=</span> <span class="pre">Pext</span> <span class="pre">/</span> <span class="pre">v1</span></code> and <code class="docutils literal notranslate"><span class="pre">i_n2</span> <span class="pre">=</span> <span class="pre">Pext</span> <span class="pre">/</span> <span class="pre">v2</span></code>.</p>
-<p>Important implementation detail:
-- <code class="docutils literal notranslate"><span class="pre">state_vars</span></code>, <code class="docutils literal notranslate"><span class="pre">state_eqs</span></code> and <code class="docutils literal notranslate"><span class="pre">diff_vars</span></code> are kept in exactly the same order.
-- <code class="docutils literal notranslate"><span class="pre">algebraic_vars</span></code> and <code class="docutils literal notranslate"><span class="pre">algebraic_eqs</span></code> are also kept in exactly the same order.</p>
+<p>Important implementation detail:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">state_vars</span></code>, <code class="docutils literal notranslate"><span class="pre">state_eqs</span></code> and <code class="docutils literal notranslate"><span class="pre">diff_vars</span></code> are kept in exactly the same order.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">algebraic_vars</span></code> and <code class="docutils literal notranslate"><span class="pre">algebraic_eqs</span></code> are also kept in exactly the same order.</p></li>
+</ul>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -1619,16 +1619,12 @@ e_qp, e_dp, psi_pp_d, psi_pp_q</p>
 </section>
 <section id="id1">
 <h3>Sign convention<a class="headerlink" href="#id1" title="Link to this heading"></a></h3>
-<ul>
+<ul class="simple">
 <li><p>abc stator currents i_A, i_B, i_C are positive when LEAVING the generator
 and entering the network.</p></li>
 <li><p>internal magnetic/electrical equations are written in Milano’s physical d-q axes.</p></li>
 <li><p>zero sequence is retained explicitly and represented as a stator-only homopolar
-branch:</p>
-<blockquote>
-<div><p>psi_0 + x0 * i_0 = 0</p>
-</div></blockquote>
-</li>
+branch defined by <code class="docutils literal notranslate"><span class="pre">psi_0</span> <span class="pre">+</span> <span class="pre">x0</span> <span class="pre">*</span> <span class="pre">i_0</span> <span class="pre">=</span> <span class="pre">0</span></code>.</p></li>
 </ul>
 </section>
 <section id="angles">
@@ -2991,15 +2987,13 @@ split equally on a common primary-referred basis between the two terminals;
 the secondary conductance is scaled by the square of the voltage ratio.
 Winding-current initialization subtracts the respective loss currents from
 the PF terminal currents.</p>
-<p>Assumptions:
-- <cite>l1</cite>, <cite>l2</cite>, and <cite>m12</cite> already represent the physical transformer model in the</p>
-<blockquote>
-<div><p>chosen winding coordinates.</p>
-</div></blockquote>
+<p>Assumptions:</p>
 <ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">l1</span></code>, <code class="docutils literal notranslate"><span class="pre">l2</span></code>, and <code class="docutils literal notranslate"><span class="pre">m12</span></code> already represent the physical transformer model in the
+chosen winding coordinates.</p></li>
 <li><p>branch currents are positive when leaving the connected bus.</p></li>
-<li><p><cite>if_act</cite> and <cite>it_act</cite> are externally initialized by the EMT framework from the
-power-flow solution through <cite>external_mapping</cite>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">if_act</span></code> and <code class="docutils literal notranslate"><span class="pre">it_act</span></code> are externally initialized by the EMT framework from the
+power-flow solution through <code class="docutils literal notranslate"><span class="pre">external_mapping</span></code>.</p></li>
 </ul>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -3259,18 +3253,19 @@ control2: Second control mode (Qac or Vm_ac)</p>
 <span class="sig-prename descclassname"><span class="pre">VeraGridEngine.Templates.Emt.vsc_gfl_emt.</span></span><span class="sig-name descname"><span class="pre">build_gfl_converter_model_emt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vfactory</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="VeraGridEngine.Devices.Dynamic.html#VeraGridEngine.Devices.Dynamic.var_factory.VarFactory" title="VeraGridEngine.Devices.Dynamic.var_factory.VarFactory"><span class="pre">VarFactory</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">inputs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">control1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="VeraGridEngine.html#VeraGridEngine.enumerations.ConverterControlType" title="VeraGridEngine.enumerations.ConverterControlType"><span class="pre">ConverterControlType</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">P_ac</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">control2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="VeraGridEngine.html#VeraGridEngine.enumerations.ConverterControlType" title="VeraGridEngine.enumerations.ConverterControlType"><span class="pre">ConverterControlType</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Q_ac</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multilinear</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frozen_voltage_source</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/VeraGridEngine/Templates/Emt/vsc_gfl_emt.html#build_gfl_converter_model_emt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#VeraGridEngine.Templates.Emt.vsc_gfl_emt.build_gfl_converter_model_emt" title="Link to this definition"></a></dt>
 <dd><p>Build power control loop model for Grid Following Converter for EMT simulation.
 Supports multiple control modes via ConverterControlType.</p>
-<dl>
-<dt>Args:</dt><dd><dl class="simple">
-<dt>inputs: [vc_A, vc_B, vc_C, vg_A, vg_B, vg_C, i_A, i_B, i_C, Vdc,</dt><dd><p>Pt_vsc, Qt_vsc, Vpk_ref, phi_v_ref]</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>vfactory</strong> – Variable factory used to construct the symbolic model.</p></li>
+<li><p><strong>inputs</strong> – Converter voltages, currents, references, and initial power values.</p></li>
+<li><p><strong>control1</strong> – First control mode, typically related to active power or DC voltage.</p></li>
+<li><p><strong>control2</strong> – Second control mode, typically related to reactive power or AC voltage.</p></li>
+<li><p><strong>multilinear</strong> – Whether to use multilinearized Park transforms.</p></li>
+<li><p><strong>frozen_voltage_source</strong> – Whether to keep the converter voltage source fixed.</p></li>
+</ul>
 </dd>
-</dl>
-<p>control1: First control mode (typically active power or DC voltage related)
-control2: Second control mode (typically reactive power or AC voltage related)
-multilinear: Use multilinearization for Park transforms</p>
-</dd>
-<dt>Returns:</dt><dd><p>gfl_block: The complete converter block
-i_a_inj, i_b_inj, i_c_inj: Three-phase bus injection currents
-P, Q: Active and reactive power measurements</p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Converter block together with its active and reactive power measurements.</p>
 </dd>
 </dl>
 </dd></dl>

@@ -30,7 +30,7 @@ from VeraGridEngine.Utils.Symbolic.explicit_initialization_symbolic import (
     build_rms_single_equation_compiler,
     init_explicit_common,
 )
-from VeraGridEngine.Simulations.Rms.initialization import init_pseudo_transient
+from VeraGridEngine.Simulations.Rms.initialization import init_pseudo_transient, _select_rms_initialization_method
 from VeraGridEngine.Simulations.Rms.initialization_rms import run_rms_consistent_initialization
 from VeraGridEngine.Simulations.Rms.problems.rms_problem_template import (
     RmsProblemTemplate,
@@ -46,13 +46,13 @@ from VeraGridEngine.Devices.Parents.branch_parent import BranchParent
 from VeraGridEngine.Devices.Events.rms_events_group import RmsEventsGroup
 from VeraGridEngine.Devices.Events.rms_event import RmsEvent
 from VeraGridEngine.Devices.Branches.transformer import Transformer2W
-from VeraGridEngine.Utils.Symbolic.jit_compiler import RMSCompiler
+from VeraGridEngine.Utils.Symbolic.jit_compiler import RMSCompiler, ProceduralExpressionCompiler
 from VeraGridEngine.Utils.Symbolic.bus_rms_template import (
     build_dc_bus_nodal_power_equation,
     dc_bus_rms_model_has_capacitive_state,
     get_bus_rms_algebraic_vars,
 )
-from VeraGridEngine.Utils.procedural_logic import build_boundary_updater_from_block
+from VeraGridEngine.Utils.procedural_logic import build_boundary_updater_from_block, ProceduralExpressionMode
 from VeraGridEngine.Utils.procedural_logic_contract import ManufacturerNativeRuntimeSessionProtocol
 from VeraGridEngine.IO.fmu.co_simulation import (
     advance_rms_fmu_cs_devices,
@@ -471,70 +471,6 @@ def setQ(Q: ObjVec, Q_used: BoolVec, k: int, val: object):
         Q[k] += val
 
 
-def _block_has_complete_explicit_initialization(mdl: Block,
-                                                init_guess: Dict[int, float | int | complex | None],
-                                                uid2idx_vars: Dict[int, int]) -> bool:
-    """Return whether every local variable has an explicit initialization source."""
-    explicit_eq_uids: Set[int] = set()
-    for blk in mdl.get_all_blocks():
-        explicit_eq_uids.update(
-            var.uid for var in blk.init_eqs if isinstance(var, Var)
-        )
-        explicit_eq_uids.update(
-            var.uid for var in blk.diff_init_eqs if isinstance(var, Var)
-        )
-
-    for blk in mdl.get_all_blocks():
-        for event_var, event_value in blk.event_dict.items():
-            if (isinstance(event_var, Var)
-                    and isinstance(event_value, Const)
-                    and event_value.value is None
-                    and event_var.uid not in explicit_eq_uids):
-                return False
-
-        for var in list(blk.state_vars) + list(blk.algebraic_vars):
-            if not isinstance(var, Var) or var.uid not in uid2idx_vars:
-                continue
-            if var.uid in init_guess and init_guess[var.uid] is not None:
-                continue
-            if var.uid in explicit_eq_uids:
-                continue
-            return False
-    return True
-
-
-def _select_rms_initialization_method(configured_method: RmsInitializationMethod,
-                                      mdl: Block,
-                                      init_guess: Dict[int, float | int | complex | None],
-                                      uid2idx_vars: Dict[int, int]) -> RmsInitializationMethod:
-    """
-    Select the concrete initialization method for one RMS block.
-
-    :param configured_method: User-selected initialization method.
-    :param mdl: RMS symbolic block to initialize.
-    :param init_guess: Initial values already seeded from power flow or previous blocks.
-    :param uid2idx_vars: Global system variable index map.
-    :return: Concrete initialization method to execute.
-    """
-    if configured_method == RmsInitializationMethod.Auto:
-        selected_method = (
-            RmsInitializationMethod.Explicit
-            if _block_has_complete_explicit_initialization(
-                mdl=mdl,
-                init_guess=init_guess,
-                uid2idx_vars=uid2idx_vars,
-            )
-            else RmsInitializationMethod.PseudoTransient
-        )
-    elif configured_method == RmsInitializationMethod.ConsistentNewton:
-        # Explicit equations provide the seed for the global consistency solve.
-        selected_method = RmsInitializationMethod.Explicit
-    else:
-        selected_method = configured_method
-
-    return selected_method
-
-
 def _run_rms_model_pseudo_transient(*,
                                     auto_fallback: bool,
                                     **kwargs) -> Dict[int, float]:
@@ -607,6 +543,7 @@ class RmsProblemDae(RmsProblemTemplate):
         "_mode_runtime_expression_by_uid",
         "_mode_runtime_initialized_uids",
         "_procedural_logic_updater",
+        "_procedural_expression_compiler",
         "_manufacturer_native_runtime_session",
         "_derivative_fn",
         "_event_params_fn",
@@ -727,6 +664,7 @@ class RmsProblemDae(RmsProblemTemplate):
         self._active_events_group: RmsEventsGroup | None = None
         self._mode_runtime_expression_by_uid: Dict[int, Expr | Const] = dict()
         self._mode_runtime_initialized_uids: Set[int] = set()
+        self._procedural_expression_compiler: ProceduralExpressionCompiler | None = None
         self._procedural_logic_updater: BlockProceduralLogicUpdater | None = None
         self._manufacturer_native_runtime_session: ManufacturerNativeRuntimeSessionProtocol | None = None
 
@@ -904,7 +842,7 @@ class RmsProblemDae(RmsProblemTemplate):
                         uid2idx_vars=self._uid2idx_vars,
                     )
 
-                    if initialization_method == RmsInitializationMethod.Explicit:
+                    if initialization_method in (RmsInitializationMethod.Explicit, RmsInitializationMethod.ConsistentNewton):
                         diff_sys_vars: Dict[int, Var] = {diff_var.uid: diff_var for diff_var in self._diff_vars}
                         rms_compiler_init = RMSCompiler(
                             variables=list(self.sys_vars.values()),
@@ -961,7 +899,7 @@ class RmsProblemDae(RmsProblemTemplate):
                             CONSTANT_PARAMS_NAME=self.CONSTANT_PARAMS_NAME,
                             dtau0=1.0,
                             max_iter=max(500, int(self.options.max_iter)),
-                            tol=1e-8,
+                            tol=min(1e-8, self.options.tolerance),
                             verbose=bool(self.options.verbose > 0),
                         )
                     else:
@@ -1128,7 +1066,7 @@ class RmsProblemDae(RmsProblemTemplate):
                     uid2idx_vars=self._uid2idx_vars,
                 )
 
-                if initialization_method == RmsInitializationMethod.Explicit:
+                if initialization_method in (RmsInitializationMethod.Explicit, RmsInitializationMethod.ConsistentNewton):
                     # common initialization to integrate
 
                     # create constant parameters array
@@ -1176,6 +1114,48 @@ class RmsProblemDae(RmsProblemTemplate):
                         raise RuntimeError(explicit_initialization_result.message)
 
                 elif initialization_method == RmsInitializationMethod.PseudoTransient:
+                    if isinstance(elm, InjectionParent):
+                        self._seed_rms_input_initialization_from_single_bus_model(
+                            mdl=elm.rms_model,
+                            bus_model=elm.bus.rms_model,
+                        )
+                    elif isinstance(elm, BranchParent):
+                        self._seed_rms_input_initialization_from_branch_bus_models(
+                            mdl=elm.rms_model,
+                            bus_from_model=elm.bus_from.rms_model,
+                            bus_to_model=elm.bus_to.rms_model,
+                        )
+
+                    diff_sys_vars: Dict[int, Var] = {
+                        diff_var.uid: diff_var for diff_var in self._diff_vars
+                    }
+                    rms_compiler_init = RMSCompiler(
+                        variables=list(self.sys_vars.values()),
+                        diff_vars=list(diff_sys_vars.values()),
+                        v_params=self._variable_parameters,
+                        c_params=self._constant_parameters,
+                        compiler_names_dict=self._compiler_names_dict,
+                    )
+                    compile_single_equation = build_rms_single_equation_compiler(rms_compiler_init)
+                    self.init_guess, diff_init_guess_common = init_explicit_common(
+                        mdl=elm.rms_model,
+                        sys_vars=self.sys_vars,
+                        sys_diff_vars=diff_sys_vars,
+                        variable_parameters=self._variable_parameters,
+                        event_parameters_eqs=self._event_parameters_eqs0,
+                        constant_parameters=self._constant_parameters,
+                        event_param_init_dict=self.event_params_init_dict,
+                        init_guess=self.init_guess,
+                        diff_init_guess=diff_init_guess_common,
+                        uid2idx_vars=self.uid2idx_vars,
+                        uid2idx_diff=self._uid2idx_diff,
+                        uid2idx_params=self._uid2idx_params,
+                        uid2idx_event_params=self._uid2idx_event_params,
+                        params_array=self._parameters_values,
+                        compile_single_equation=compile_single_equation,
+                        external_uid_values=self._get_explicit_external_uid_values(mdl=elm.rms_model),
+                        verbose=bool(self.options.verbose > 0),
+                    )
                     self.init_guess = _run_rms_model_pseudo_transient(
                         auto_fallback=self.options.initialization_method == RmsInitializationMethod.Auto,
                         mdl=elm.rms_model,
@@ -1196,14 +1176,14 @@ class RmsProblemDae(RmsProblemTemplate):
                         CONSTANT_PARAMS_NAME=self.CONSTANT_PARAMS_NAME,
                         dtau0=1e-4,
                         max_iter=max(500, int(self.options.max_iter)),
-                        tol=1e-8,
+                        tol=min(1e-8, self.options.tolerance),
                         verbose=bool(self.options.verbose > 0),
                     )
 
                 else:
                     raise ValueError("Not implemented initialization method")
-                # add model to system block
-                self.sys_block.add(elm.rms_model)
+                # PF seeding already registered this canonical VSC model.
+                # Initialization must not add a second procedural owner.
 
         injection_init_data = self.get_injection_init_data(bus_dict=bus_dict)
 
@@ -1297,7 +1277,7 @@ class RmsProblemDae(RmsProblemTemplate):
                     uid2idx_vars=self._uid2idx_vars,
                 )
 
-                if initialization_method == RmsInitializationMethod.Explicit:
+                if initialization_method in (RmsInitializationMethod.Explicit, RmsInitializationMethod.ConsistentNewton):
 
                     if isinstance(elm, InjectionParent):
                         self._seed_rms_input_initialization_from_single_bus_model(mdl=elm.rms_model,
@@ -1368,8 +1348,8 @@ class RmsProblemDae(RmsProblemTemplate):
                         VARS_NAME=self.VARS_NAME,
                         DIFF_NAME=self.DIFF_NAME,
                         CONSTANT_PARAMS_NAME=self.CONSTANT_PARAMS_NAME,
-                        max_iter=100,
-                        tol=1e-5,
+                        max_iter=self.options.max_iter,
+                        tol=self.options.tolerance,
                         verbose=bool(self.options.verbose > 0),
                     )
 
@@ -1604,15 +1584,6 @@ class RmsProblemDae(RmsProblemTemplate):
             if isinstance(eq, Const) and eq.value is None:
                 raise Exception(f' Event parameter {self._variable_parameters[it]} has None Value')
 
-        if self.options.initialization_method in {
-            RmsInitializationMethod.ConsistentNewton,
-            RmsInitializationMethod.Auto,
-        }:
-            run_rms_consistent_initialization(
-                problem=self,
-                options=self.options,
-                logger=self.logger,
-            )
 
     def _get_explicit_external_uid_values(self, mdl: Block) -> Dict[int, float]:
         """Bind imported external inputs and retain their exact runtime UIDs.
@@ -1665,8 +1636,12 @@ class RmsProblemDae(RmsProblemTemplate):
         else:
             same_group_requested = self._active_events_group.idtag == rms_events_group.idtag
 
-        if same_group_requested:
+        if same_group_requested and self.is_initialized():
             return
+        else:
+            pass
+        # Preparing another group invalidates the previous runtime certificate.
+        self._is_initialized: bool = False
 
         active_runtime_eqs: List[Expr | Const] = list(self._runtime_all_eqs_source0)
 
@@ -1773,7 +1748,6 @@ class RmsProblemDae(RmsProblemTemplate):
 
         self._runtime_all_eqs_source = active_runtime_eqs
         self._scheduled_mode_events = scheduled_mode_events
-        self._active_events_group = rms_events_group
 
         # The active runtime equations must replace the current event-parameter
         # equations before recompilation. Otherwise the JIT event-parameter
@@ -1883,6 +1857,25 @@ class RmsProblemDae(RmsProblemTemplate):
             print(f"\nTotal compile time: {sum(timings.values()):.4f} s")
 
         # we mark the problem as ready for simulation
+        if self.options.initialization_method in (
+                RmsInitializationMethod.ConsistentNewton, RmsInitializationMethod.Auto,
+                RmsInitializationMethod.PseudoTransient):
+            # Local PTC success does not certify the assembled network. Reuse
+            # the global owner only after the final replay/latch snapshot.
+            # Record the completed replay/latch snapshot in its existing UID owner.
+            initial_parameter: Var
+            for initial_parameter in self._variable_parameters:
+                self.event_params_init_dict[initial_parameter.uid] = float(
+                    self._variable_parameters_values[self._uid2idx_event_params[initial_parameter.uid]])
+            consistency_converged: bool = run_rms_consistent_initialization(problem=self, options=self.options, logger=self.logger)
+            if consistency_converged:
+                pass
+            else:
+                raise RuntimeError("RMS Auto consistent initialization did not converge")
+        else:
+            pass
+        # A failed new group must remain retryable instead of looking accepted.
+        self._active_events_group = rms_events_group
         self.set_initialize_flag()
 
     def _set_manufacturer_native_runtime_session(
@@ -1895,8 +1888,11 @@ class RmsProblemDae(RmsProblemTemplate):
         :return: None.
         """
         self._manufacturer_native_runtime_session = runtime_session
+        # Finalize compiler snapshots before binding kernels to runtime indexes.
+        self._rebuild_procedural_expression_compiler()
         self._procedural_logic_updater = build_boundary_updater_from_block(
             problem=self,
+            expression_mode=ProceduralExpressionMode.Compiled,
             runtime_session=runtime_session,
             model_mode=2 if runtime_session is not None else None,
         )
@@ -1947,12 +1943,44 @@ class RmsProblemDae(RmsProblemTemplate):
             else:
                 return min(native_event_time, t_fmu)
 
+    def _rebuild_procedural_expression_compiler(self) -> None:
+        """Snapshot finalized RMS indexes and constants before procedural binding.
+
+        :return: None.
+        """
+        # Event groups can reorder runtime parameters, so kernels must use a fresh snapshot.
+        self._procedural_expression_compiler = ProceduralExpressionCompiler(
+            state_map=self._uid2idx_vars,
+            runtime_map=self._uid2idx_event_params,
+            constant_map=self._uid2idx_params,
+            constant_values=self._parameters_values,
+            global_time_uid=self._glob_time.uid,
+        )
+
+    def get_procedural_expression_compiler(self) -> ProceduralExpressionCompiler:
+        """Return the RMS compiler shared by fused and standalone evaluators.
+
+        :return: Compiler bound to the current RMS parameter layout.
+        """
+        # Direct bindings also need a compiler when no event group has been installed.
+        if self._procedural_expression_compiler is None:
+            self._rebuild_procedural_expression_compiler()
+        else:
+            pass
+        assert self._procedural_expression_compiler is not None
+        return self._procedural_expression_compiler
+
     def _initialize_procedural_logic_updater(self) -> None:
         """Build solver-owned procedural state without binding model entries.
 
         :return: None.
         """
-        self._procedural_logic_updater = build_boundary_updater_from_block(self)
+        # Finalize compiler snapshots before binding kernels to runtime indexes.
+        self._rebuild_procedural_expression_compiler()
+        self._procedural_logic_updater = build_boundary_updater_from_block(
+            problem=self,
+            expression_mode=ProceduralExpressionMode.Compiled,
+        )
 
     def _validate_deferred_mode_parameter_sources(self) -> None:
         """Reject null RMS modes that have no startup value owner.

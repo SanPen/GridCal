@@ -6,9 +6,11 @@
 import os.path
 import sys
 import faulthandler
+import traceback
 from datetime import datetime
 from pathlib import Path
 from typing import TextIO, Any
+from types import TracebackType
 
 from PySide6 import QtWidgets, QtGui, QtCore
 from PySide6.QtCore import Qt
@@ -88,7 +90,7 @@ def qt_message_handler(mode: QtCore.QtMsgType,
 
 def exception_hook(exception_type: type[BaseException],
                    exception_value: BaseException,
-                   exception_traceback) -> None:
+                   exception_traceback: TracebackType | None) -> None:
     """
     Persist uncaught Python exceptions before delegating to Python's default hook.
 
@@ -101,9 +103,10 @@ def exception_hook(exception_type: type[BaseException],
         with open(get_crash_log_path(), "a", encoding="utf-8") as file_pointer:
             timestamp: str = datetime.now().isoformat(timespec="seconds")
             file_pointer.write(f"[{timestamp}] Uncaught Python exception\n")
-            file_pointer.write(f"{exception_type.__name__}: {exception_value}\n")
+            traceback.print_exception(exception_type, exception_value, exception_traceback, file=file_pointer)
     except Exception:
         pass
+    sys.__excepthook__(exception_type, exception_value, exception_traceback)
 
 
 def write_runtime_state_log(window: "VeraGridMainGUI", title: str) -> None:

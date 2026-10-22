@@ -10,7 +10,10 @@ from typing import Sequence, Any, Union, Type
 from VeraGridEngine.Devices.Dynamic.emt_template import EmtModelTemplate
 from VeraGridEngine.basic_structures import Vec
 from VeraGridEngine.enumerations import (ConverterControlType, WindingType, V_I_CurveSequenceType,
-                                         WaveformSequenceType, X_Y_SequenceType, X_Y_Z_Matrix)
+                                         WaveformSequenceType, X_Y_SequenceType, X_Y_Z_Matrix,
+                                         IntegratorScalingMode, IntegratorHoldMode,
+                                         IntegratorResetMode, IntegratorSaturationMode,
+                                         IntegratorBoundSource, TheveninSourceVoltageMode)
 
 
 
@@ -26,7 +29,13 @@ TEMPLATEPROP_TYPES = Union[
     Type[V_I_CurveSequenceType],
     Type[WaveformSequenceType],
     Type[X_Y_SequenceType],
-    Type[X_Y_Z_Matrix]
+    Type[X_Y_Z_Matrix],
+    Type[IntegratorScalingMode],
+    Type[IntegratorHoldMode],
+    Type[IntegratorResetMode],
+    Type[IntegratorSaturationMode],
+    Type[IntegratorBoundSource],
+    Type[TheveninSourceVoltageMode]
 
 ]
 

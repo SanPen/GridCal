@@ -5,9 +5,10 @@ import hashlib
 import json
 import queue
 from pathlib import Path
+from typing import Any
 
 import pytest
-from PySide6.QtGui import QImage
+from PySide6.QtGui import QImage, QPainter
 from PySide6.QtTest import QSignalSpy
 
 from VeraGrid.Gui.Diagrams.MapWidget.map_widget import MapWidget
@@ -56,6 +57,95 @@ def test_vector_overzoom_crops_parent_data_instead_of_stretching_the_whole_tile(
     assert app is not None
     assert left.pixelColor(128, 128) == renderer.colours.water
     assert right.pixelColor(128, 128) == renderer.colours.land
+
+
+@pytest.mark.parametrize('style', (MapStyle.Light, MapStyle.Dark))
+def test_clean_palettes_omit_landcover_but_colour_retains_it(style: MapStyle) -> None:
+    """
+    Detailed surface fills must not compete with the electrical grid in quiet palettes.
+
+    :param style: Clean palette under test.
+    """
+    app: object = ensure_qapplication()
+    # Rename the fixed reference's water layer to landcover, adjusting its protobuf lengths.
+    payload: bytes = b'\x1a\x34\x0a\x09landcover' + water_tile()[9:]
+    renderer: VectorTileRenderer = VectorTileRenderer(style)
+    image: QImage = QImage.fromData(renderer.render(payload, 10, 10, 0, 0))
+    blank: QImage = QImage.fromData(renderer.render(b'', 10, 10, 0, 0))
+    detailed: VectorTileRenderer = VectorTileRenderer(MapStyle.Colour)
+    colour_image: QImage = QImage.fromData(detailed.render(payload, 10, 10, 0, 0))
+    assert app is not None
+    assert image == blank
+    assert colour_image.pixelColor(16, 16) == detailed.colours.park
+    assert colour_image.pixelColor(200, 128) == detailed.colours.land
+
+
+@pytest.mark.parametrize('style', (MapStyle.Light, MapStyle.Dark))
+@pytest.mark.parametrize('layer_name,properties,visible', (
+    ('transportation', dict(class_='minor'), False),
+    ('transportation', dict(class_='ferry'), False),
+    ('transportation', dict(class_='motorway'), True),
+    ('boundary', dict(admin_level=2, maritime=1), False),
+    ('boundary', dict(admin_level=6), False),
+    ('boundary', dict(admin_level=2), True),
+))
+def test_clean_palettes_keep_only_major_roads_and_land_borders(
+        style: MapStyle, layer_name: str, properties: dict[str, Any], visible: bool) -> None:
+    """
+    Suppress local detail and sea routes while retaining geographic context.
+
+    :param style: Clean palette under test.
+    :param layer_name: Source layer to paint.
+    :param properties: Road or boundary classification.
+    :param visible: Whether this feature should change the background.
+    """
+    app: object = ensure_qapplication()
+    renderer: VectorTileRenderer = VectorTileRenderer(style)
+    image: QImage = QImage(64, 64, QImage.Format.Format_ARGB32_Premultiplied)
+    image.fill(renderer.colours.land)
+    blank: QImage = image.copy()
+    properties = properties.copy()
+    if 'class_' in properties:
+        properties['class'] = properties.pop('class_')
+    else:
+        pass
+    feature: dict[str, Any] = dict(properties=properties, geometry=dict(
+        type='LineString', coordinates=list((list((0, 32)), list((64, 32))))))
+    painter: QPainter = QPainter(image)
+    try:
+        renderer.draw_feature(painter, layer_name, feature, 1.0, 0.0, 0.0, 14)
+    finally:
+        painter.end()
+    assert app is not None
+    assert (image != blank) == visible
+
+
+@pytest.mark.parametrize('style', (MapStyle.Light, MapStyle.Dark))
+@pytest.mark.parametrize('place_class,visible', (('city', True), ('village', False)))
+def test_clean_palettes_label_major_places_only(style: MapStyle, place_class: str, visible: bool) -> None:
+    """
+    Keep city names while removing the village labels that clutter grid views.
+
+    :param style: Clean palette under test.
+    :param place_class: Place classification in the tile.
+    :param visible: Whether its label should appear.
+    """
+    app: object = ensure_qapplication()
+    renderer: VectorTileRenderer = VectorTileRenderer(style)
+    image: QImage = QImage(256, 256, QImage.Format.Format_ARGB32_Premultiplied)
+    image.fill(renderer.colours.land)
+    blank: QImage = image.copy()
+    properties: dict[str, Any] = dict(name='Example')
+    properties['class'] = place_class
+    layers: dict[str, Any] = dict(place=dict(extent=4096, features=list((dict(
+        properties=properties, geometry=dict(type='Point', coordinates=list((2048, 2048)))),))))
+    painter: QPainter = QPainter(image)
+    try:
+        renderer.draw_labels(painter, layers, 1, 0.0, 0.0, 10)
+    finally:
+        painter.end()
+    assert app is not None
+    assert (image != blank) == visible
 
 
 def test_cached_gzipped_vectors_render_offline_and_overzoom(tmp_path: Path) -> None:

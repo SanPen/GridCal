@@ -5,6 +5,7 @@ import sys
 from PySide6 import QtWidgets
 
 from VeraGrid.Gui.DynamicModelEditor.Editor.dynamic_block_editor import DynamicBlockEditorGUI
+from VeraGridEngine.Devices.Dynamic.emt_template import EmtModelTemplate
 from VeraGridEngine.Devices.Dynamic.var_factory import VarFactory
 from VeraGridEngine.Devices.multi_circuit import MultiCircuit
 from VeraGridEngine.Utils.Symbolic.block import Block
@@ -96,7 +97,9 @@ class _NavigationDelegateStub:
 def test_scene_edit_dispatch_navigates_via_delegate(override_attrs) -> None:
     editor = _build_editor()
     block = Block(name="dispatch_edit_block")
-    block_item = editor.create_template_block_item(type("_Template", (), {"name": "dispatch_edit_block", "block": block})(), 10.0, 20.0)
+    template: EmtModelTemplate = EmtModelTemplate(name="dispatch_edit_block")
+    template.block = block
+    block_item = editor.create_materialized_template_block_item(template, editor.var_factory, 10.0, 20.0)
 
     assert block_item is not None
 
@@ -115,7 +118,9 @@ def test_scene_edit_dispatch_navigates_via_delegate(override_attrs) -> None:
 def test_edit_scene_item_ignores_navigation_without_delegate() -> None:
     editor = _build_editor()
     block = Block(name="no_delegate_block")
-    block_item = editor.create_template_block_item(type("_Template", (), {"name": "no_delegate_block", "block": block})(), 10.0, 20.0)
+    template: EmtModelTemplate = EmtModelTemplate(name="no_delegate_block")
+    template.block = block
+    block_item = editor.create_materialized_template_block_item(template, editor.var_factory, 10.0, 20.0)
 
     assert block_item is not None
     assert editor._navigation_delegate is None

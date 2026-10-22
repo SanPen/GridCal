@@ -25,6 +25,7 @@ from VeraGridEngine.IO.manufacturer_native.inspection import (
     ManufacturerNativeInspectionResult,
     inspect_manufacturer_native,
 )
+from VeraGridEngine.IO.manufacturer_native.worker_artifact import ManufacturerNativeWorkerArtifact
 from VeraGridEngine.IO.native_compiler.compiler_interface import NativeCompilerSelection
 from VeraGridEngine.Utils.procedural_logic import (
     IeeeCigreDllSignalBinding,
@@ -169,7 +170,8 @@ def import_manufacturer_native_model(assets: Assets,
                                 vendor_declares_no_late_loading: bool,
                                 vendor_declares_instance_isolation: bool,
                                 limits: ManufacturerNativeInspectionLimits | None = None,
-                                compiler_selection: NativeCompilerSelection | None = None) -> Tuple[
+                                compiler_selection: NativeCompilerSelection | None = None,
+                                worker_artifact: ManufacturerNativeWorkerArtifact | None = None) -> Tuple[
                                     ManufacturerNativeModel,
                                     Tuple[RmsModelTemplate, ...],
                                     Tuple[EmtModelTemplate, ...],
@@ -184,6 +186,7 @@ def import_manufacturer_native_model(assets: Assets,
     :param vendor_declares_instance_isolation: Vendor per-Instance state attestation.
     :param limits: Optional finite inspection limits.
     :param compiler_selection: Explicit compiler snapshot for worker inspection.
+    :param worker_artifact: Optional prepared worker supplied by the caller.
     :return: Registered provider and created ordinary RMS/EMT templates.
     """
     result: ManufacturerNativeInspectionResult = inspect_manufacturer_native(
@@ -194,6 +197,7 @@ def import_manufacturer_native_model(assets: Assets,
         vendor_declares_instance_isolation=vendor_declares_instance_isolation,
         limits=limits,
         compiler_selection=compiler_selection,
+        worker_artifact=worker_artifact,
     )
     provider: ManufacturerNativeModel = ManufacturerNativeModel(name=result.model_info.model_name)
     provider.native_interface = result.model_info.native_interface
@@ -254,7 +258,8 @@ def attach_manufacturer_native_binary_variant(provider: ManufacturerNativeModel,
                                          vendor_declares_no_late_loading: bool,
                                          vendor_declares_instance_isolation: bool,
                                          limits: ManufacturerNativeInspectionLimits | None = None,
-                                         compiler_selection: NativeCompilerSelection | None = None) -> ManufacturerNativeBinaryVariant:
+                                         compiler_selection: NativeCompilerSelection | None = None,
+                                         worker_artifact: ManufacturerNativeWorkerArtifact | None = None) -> ManufacturerNativeBinaryVariant:
     """Attach another qualified platform binary only when ModelInfo is identical.
 
     :param provider: Existing canonical manufacturer provider.
@@ -264,6 +269,7 @@ def attach_manufacturer_native_binary_variant(provider: ManufacturerNativeModel,
     :param vendor_declares_instance_isolation: Vendor per-Instance state attestation.
     :param limits: Optional finite inspection limits.
     :param compiler_selection: Explicit compiler snapshot for worker inspection.
+    :param worker_artifact: Optional prepared worker supplied by the caller.
     :return: Newly attached complete variant record.
     """
     result: ManufacturerNativeInspectionResult = inspect_manufacturer_native(
@@ -274,6 +280,7 @@ def attach_manufacturer_native_binary_variant(provider: ManufacturerNativeModel,
         vendor_declares_instance_isolation=vendor_declares_instance_isolation,
         limits=limits,
         compiler_selection=compiler_selection,
+        worker_artifact=worker_artifact,
     )
     if result.model_info_sha256 != provider.model_info_sha256:
         raise ValueError("Platform variant ModelInfo digest differs from the provider")

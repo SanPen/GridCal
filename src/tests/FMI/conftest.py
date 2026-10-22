@@ -31,6 +31,13 @@ def pytest_addoption(parser: pytest.Parser) -> None:
     """
 
     fmi_option_group: pytest.OptionGroup = parser.getgroup("FMI")
+    compiler_name: str
+    for compiler_name in ("gcc", "clang", "msvc"):
+        fmi_option_group.addoption(
+            "--fmi-test-" + compiler_name,
+            default=None,
+            help="Use an already installed " + compiler_name + " executable for builtin FMU qualification.",
+        )
     fmi_option_group.addoption(
         "--require-fmi-three-native-build",
         action="store_true",

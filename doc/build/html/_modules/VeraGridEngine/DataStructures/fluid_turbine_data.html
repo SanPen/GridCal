@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.DataStructures.fluid_turbine_data &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.DataStructures.fluid_turbine_data &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/license.html">📜 License</a></li>
@@ -113,25 +114,25 @@
 <div class="viewcode-block" id="FluidTurbineData">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.fluid_turbine_data.FluidTurbineData">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">FluidTurbineData</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    FluidTurbineData</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;nelm&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;names&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;idtag&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;efficiency&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;max_flow_rate&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;plant_idx&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;generator_idx&quot;</span><span class="p">,</span>
+        <span class="s2">"nelm"</span><span class="p">,</span>
+        <span class="s2">"names"</span><span class="p">,</span>
+        <span class="s2">"idtag"</span><span class="p">,</span>
+        <span class="s2">"efficiency"</span><span class="p">,</span>
+        <span class="s2">"max_flow_rate"</span><span class="p">,</span>
+        <span class="s2">"plant_idx"</span><span class="p">,</span>
+        <span class="s2">"generator_idx"</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nelm</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Fluid turbine data arrays</span>
 <span class="sd">        :param nelm: number of fluid turbines</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nelm</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">nelm</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">names</span><span class="p">:</span> <span class="n">StrVec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">nelm</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">)</span>
@@ -146,21 +147,21 @@
 <div class="viewcode-block" id="FluidTurbineData.size">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.fluid_turbine_data.FluidTurbineData.size">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">size</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get size of the structure</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">nelm</span></div>
 
 
 <div class="viewcode-block" id="FluidTurbineData.copy">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.fluid_turbine_data.FluidTurbineData.copy">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;FluidTurbineData&quot;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"FluidTurbineData"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get deep copy of this structure</span>
 <span class="sd">        :return: new FluidTurbineData instance</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span><span class="n">nelm</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nelm</span><span class="p">)</span>
 

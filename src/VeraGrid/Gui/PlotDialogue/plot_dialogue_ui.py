@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'plot_dialogue.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.11.2
+## Created by: Qt User Interface Compiler version 6.11.0
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -22,7 +22,7 @@ from PySide6.QtWidgets import (QApplication, QFrame, QHBoxLayout, QHeaderView,
     QTreeWidgetItem, QVBoxLayout, QWidget)
 
 from VeraGrid.Gui.PlotDialogue.qt_chart_widget import GraphsWidget
-from VeraGrid.Gui.Icons import icons_rc
+from VeraGrid.Gui.Icons.icons_rc import *
 
 class Ui_PlotDialogue(object):
     def setupUi(self, PlotDialogue):
@@ -51,6 +51,47 @@ class Ui_PlotDialogue(object):
         icon3 = QIcon()
         icon3.addFile(u":/Icons/icons/plus.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.actionAddPlot.setIcon(icon3)
+        self.actionCDF = QAction(PlotDialogue)
+        self.actionCDF.setObjectName(u"actionCDF")
+        self.actionCDF.setCheckable(True)
+        icon4 = QIcon()
+        icon4.addFile(u":/Icons/icons/cdf.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.actionCDF.setIcon(icon4)
+        self.actionCDF.setMenuRole(QAction.MenuRole.NoRole)
+        self.actionAbs = QAction(PlotDialogue)
+        self.actionAbs.setObjectName(u"actionAbs")
+        self.actionAbs.setCheckable(True)
+        icon5 = QIcon()
+        icon5.addFile(u":/Icons/icons/abs.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.actionAbs.setIcon(icon5)
+        self.actionAbs.setMenuRole(QAction.MenuRole.NoRole)
+        self.actionx_y = QAction(PlotDialogue)
+        self.actionx_y.setObjectName(u"actionx_y")
+        icon6 = QIcon()
+        icon6.addFile(u":/Icons/icons/x_y.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.actionx_y.setIcon(icon6)
+        self.actionx_y.setMenuRole(QAction.MenuRole.NoRole)
+        self.actionTranspose = QAction(PlotDialogue)
+        self.actionTranspose.setObjectName(u"actionTranspose")
+        self.actionTranspose.setCheckable(True)
+        icon7 = QIcon()
+        icon7.addFile(u":/Icons/icons/transpose.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.actionTranspose.setIcon(icon7)
+        self.actionTranspose.setMenuRole(QAction.MenuRole.NoRole)
+        self.actionStacked_plot = QAction(PlotDialogue)
+        self.actionStacked_plot.setObjectName(u"actionStacked_plot")
+        self.actionStacked_plot.setCheckable(True)
+        icon8 = QIcon()
+        icon8.addFile(u":/Icons/icons/stacked_plot.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.actionStacked_plot.setIcon(icon8)
+        self.actionStacked_plot.setMenuRole(QAction.MenuRole.NoRole)
+        self.actionBar_plot = QAction(PlotDialogue)
+        self.actionBar_plot.setObjectName(u"actionBar_plot")
+        self.actionBar_plot.setCheckable(True)
+        icon9 = QIcon()
+        icon9.addFile(u":/Icons/icons/stats.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.actionBar_plot.setIcon(icon9)
+        self.actionBar_plot.setMenuRole(QAction.MenuRole.NoRole)
         self.centralwidget = QWidget(PlotDialogue)
         self.centralwidget.setObjectName(u"centralwidget")
         self.verticalLayout = QVBoxLayout(self.centralwidget)
@@ -94,17 +135,17 @@ class Ui_PlotDialogue(object):
 
         self.selectAllButton = QPushButton(self.frame)
         self.selectAllButton.setObjectName(u"selectAllButton")
-        icon4 = QIcon()
-        icon4.addFile(u":/Icons/icons/check_all.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
-        self.selectAllButton.setIcon(icon4)
+        icon10 = QIcon()
+        icon10.addFile(u":/Icons/icons/check_all.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.selectAllButton.setIcon(icon10)
 
         self.horizontalLayout.addWidget(self.selectAllButton)
 
         self.selectNoneButton = QPushButton(self.frame)
         self.selectNoneButton.setObjectName(u"selectNoneButton")
-        icon5 = QIcon()
-        icon5.addFile(u":/Icons/icons/uncheck_all.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
-        self.selectNoneButton.setIcon(icon5)
+        icon11 = QIcon()
+        icon11.addFile(u":/Icons/icons/uncheck_all.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.selectNoneButton.setIcon(icon11)
 
         self.horizontalLayout.addWidget(self.selectNoneButton)
 
@@ -151,8 +192,16 @@ class Ui_PlotDialogue(object):
         self.plotToolBar.addAction(self.actionopencloseTree)
         self.plotToolBar.addSeparator()
         self.plotToolBar.addAction(self.actionAddPlot)
-        self.plotToolBar.addAction(self.actionSaveImage)
+        self.plotToolBar.addAction(self.actionx_y)
+        self.plotToolBar.addSeparator()
+        self.plotToolBar.addAction(self.actionStacked_plot)
+        self.plotToolBar.addAction(self.actionBar_plot)
+        self.plotToolBar.addAction(self.actionCDF)
+        self.plotToolBar.addAction(self.actionAbs)
+        self.plotToolBar.addAction(self.actionTranspose)
+        self.plotToolBar.addSeparator()
         self.plotToolBar.addAction(self.actionResetView)
+        self.plotToolBar.addAction(self.actionSaveImage)
 
         self.retranslateUi(PlotDialogue)
 
@@ -176,6 +225,27 @@ class Ui_PlotDialogue(object):
         self.actionAddPlot.setText(QCoreApplication.translate("PlotDialogue", u"Add plot", None))
 #if QT_CONFIG(tooltip)
         self.actionAddPlot.setToolTip(QCoreApplication.translate("PlotDialogue", u"Add another plot tab", None))
+#endif // QT_CONFIG(tooltip)
+        self.actionCDF.setText(QCoreApplication.translate("PlotDialogue", u"CDF", None))
+#if QT_CONFIG(tooltip)
+        self.actionCDF.setToolTip(QCoreApplication.translate("PlotDialogue", u"Cummulative density function plot", None))
+#endif // QT_CONFIG(tooltip)
+        self.actionAbs.setText(QCoreApplication.translate("PlotDialogue", u"Abs", None))
+#if QT_CONFIG(tooltip)
+        self.actionAbs.setToolTip(QCoreApplication.translate("PlotDialogue", u"Absolute of values", None))
+#endif // QT_CONFIG(tooltip)
+        self.actionx_y.setText(QCoreApplication.translate("PlotDialogue", u"x,y", None))
+#if QT_CONFIG(tooltip)
+        self.actionx_y.setToolTip(QCoreApplication.translate("PlotDialogue", u"Convert to X, Y plot", None))
+#endif // QT_CONFIG(tooltip)
+        self.actionTranspose.setText(QCoreApplication.translate("PlotDialogue", u"Transpose", None))
+#if QT_CONFIG(tooltip)
+        self.actionTranspose.setToolTip(QCoreApplication.translate("PlotDialogue", u"Traspose data", None))
+#endif // QT_CONFIG(tooltip)
+        self.actionStacked_plot.setText(QCoreApplication.translate("PlotDialogue", u"Stacked plot", None))
+        self.actionBar_plot.setText(QCoreApplication.translate("PlotDialogue", u"Bar plot", None))
+#if QT_CONFIG(tooltip)
+        self.actionBar_plot.setToolTip(QCoreApplication.translate("PlotDialogue", u"Show grouped bars with source row labels on the X axis", None))
 #endif // QT_CONFIG(tooltip)
         self.seriesSearchLineEdit.setPlaceholderText(QCoreApplication.translate("PlotDialogue", u"Search series", None))
 #if QT_CONFIG(tooltip)

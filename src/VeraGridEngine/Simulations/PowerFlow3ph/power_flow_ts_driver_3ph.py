@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING, Dict, Union
 
 import numpy as np
 
-from VeraGridEngine.Compilers.Gslv.activation import GSLV_AVAILABLE
+from VeraGridEngine.Compilers.Gslv.activation import GSLV_AVAILABLE, GSLV_UNAVAILABLE_REASON
 from VeraGridEngine.Compilers.Gslv.Simulations.power_flow_3ph import (
     gslv_pf_3ph,
     translate_gslv_pf_3ph_results,
@@ -227,7 +227,7 @@ class PowerFlowTimeSeriesDriver3Ph(TimeSeriesDriverTemplate):
         # The driver can only keep the GSLV engine when the wrapper is available.
         if self.engine == EngineType.GSLV and not GSLV_AVAILABLE:
             self.engine = EngineType.VeraGrid
-            self.logger.add_warning('Failed back to VeraGrid')
+            self.logger.add_warning(f'GSLV unavailable: {GSLV_UNAVAILABLE_REASON}; falling back to VeraGrid')
         else:
             pass
 

@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Topology.Procedural.procedural_grid_debugger &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Topology.Procedural.procedural_grid_debugger &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/license.html">📜 License</a></li>
@@ -112,31 +113,31 @@
 <div class="viewcode-block" id="ProceduralGridDebugger">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Topology.Procedural.html#VeraGridEngine.Topology.Procedural.procedural_grid_debugger.ProceduralGridDebugger">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">ProceduralGridDebugger</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Helper class for plotting and validating intermediate results during</span>
 <span class="sd">    procedural grid generation.</span>
 
 <span class="sd">    This class should only contain debug/inspection utilities and must not</span>
 <span class="sd">    modify the production objects.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;enabled&quot;</span><span class="p">,)</span>
+<span class="sd">    """</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"enabled"</span><span class="p">,)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">enabled</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        :param enabled: Enable or disable debug actions</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">enabled</span> <span class="o">=</span> <span class="n">enabled</span>
 
 
 <div class="viewcode-block" id="ProceduralGridDebugger.snapshot_grid_element_names">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Topology.Procedural.html#VeraGridEngine.Topology.Procedural.procedural_grid_debugger.ProceduralGridDebugger.snapshot_grid_element_names">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">snapshot_grid_element_names</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">grid</span><span class="p">:</span> <span class="n">dev</span><span class="o">.</span><span class="n">MultiCircuit</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Take a snapshot of the current element names in the grid.</span>
 
 <span class="sd">        :param grid: MultiCircuit instance</span>
 <span class="sd">        :return: Set of element names currently present in the grid</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">names</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
 
         <span class="k">for</span> <span class="n">bus</span> <span class="ow">in</span> <span class="n">grid</span><span class="o">.</span><span class="n">buses</span><span class="p">:</span>
@@ -161,14 +162,14 @@
             <span class="n">grid</span><span class="p">:</span> <span class="n">dev</span><span class="o">.</span><span class="n">MultiCircuit</span><span class="p">,</span>
             <span class="n">previous_names</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return the names of the elements that were added to the grid</span>
 <span class="sd">        after a previous snapshot.</span>
 
 <span class="sd">        :param grid: MultiCircuit instance</span>
 <span class="sd">        :param previous_names: Snapshot of names taken before modification</span>
 <span class="sd">        :return: Sorted list of newly added element names</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">current_names</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">snapshot_grid_element_names</span><span class="p">(</span><span class="n">grid</span><span class="o">=</span><span class="n">grid</span><span class="p">)</span>
         <span class="n">added_names</span> <span class="o">=</span> <span class="n">current_names</span> <span class="o">-</span> <span class="n">previous_names</span>
         <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">added_names</span><span class="p">)</span></div>

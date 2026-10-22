@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Devices.Diagrams.graphic_location &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Devices.Diagrams.graphic_location &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/license.html">📜 License</a></li>
@@ -117,20 +118,20 @@
 <div class="viewcode-block" id="GraphicLocation">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Diagrams.html#VeraGridEngine.Devices.Diagrams.graphic_location.GraphicLocation">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">GraphicLocation</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    GraphicLocation</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s1">&#39;x&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;y&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;h&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;w&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;r&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;poly_line&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;layout_metadata&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;draw_labels&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;api_object&#39;</span><span class="p">,</span>
+        <span class="s1">'x'</span><span class="p">,</span>
+        <span class="s1">'y'</span><span class="p">,</span>
+        <span class="s1">'h'</span><span class="p">,</span>
+        <span class="s1">'w'</span><span class="p">,</span>
+        <span class="s1">'r'</span><span class="p">,</span>
+        <span class="s1">'poly_line'</span><span class="p">,</span>
+        <span class="s1">'layout_metadata'</span><span class="p">,</span>
+        <span class="s1">'draw_labels'</span><span class="p">,</span>
+        <span class="s1">'api_object'</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
@@ -143,7 +144,7 @@
                  <span class="n">poly_line</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">layout_metadata</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">draw_labels</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        GraphicLocation</span>
 <span class="sd">        :param x: x position (px)</span>
 <span class="sd">        :param y: y position (px)</span>
@@ -154,7 +155,7 @@
 <span class="sd">        :param layout_metadata: Backward-compatible envelope for future schematic layout state</span>
 <span class="sd">        :param draw_labels: Draw labels?</span>
 <span class="sd">        :param api_object: object to be linked to this representation</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">x</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">y</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">h</span> <span class="o">=</span> <span class="n">h</span>
@@ -168,27 +169,27 @@
 <div class="viewcode-block" id="GraphicLocation.get_properties_dict">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Diagrams.html#VeraGridEngine.Devices.Diagrams.graphic_location.GraphicLocation.get_properties_dict">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_properties_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        get as a dictionary point</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">,</span>
-                <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">,</span>
-                <span class="s1">&#39;h&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">h</span><span class="p">,</span>
-                <span class="s1">&#39;w&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">w</span><span class="p">,</span>
-                <span class="s1">&#39;r&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">r</span><span class="p">,</span>
-                <span class="s1">&#39;poly_line&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">poly_line</span><span class="p">,</span>
-                <span class="s1">&#39;layout_metadata&#39;</span><span class="p">:</span> <span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">layout_metadata</span><span class="p">),</span>
-                <span class="s1">&#39;draw_labels&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">draw_labels</span><span class="p">,</span>
-                <span class="s1">&#39;api_object&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">api_object</span><span class="o">.</span><span class="n">idtag</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">api_object</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span><span class="p">}</span></div>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s1">'x'</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">,</span>
+                <span class="s1">'y'</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">,</span>
+                <span class="s1">'h'</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">h</span><span class="p">,</span>
+                <span class="s1">'w'</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">w</span><span class="p">,</span>
+                <span class="s1">'r'</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">r</span><span class="p">,</span>
+                <span class="s1">'poly_line'</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">poly_line</span><span class="p">,</span>
+                <span class="s1">'layout_metadata'</span><span class="p">:</span> <span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">layout_metadata</span><span class="p">),</span>
+                <span class="s1">'draw_labels'</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">draw_labels</span><span class="p">,</span>
+                <span class="s1">'api_object'</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">api_object</span><span class="o">.</span><span class="n">idtag</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">api_object</span> <span class="k">else</span> <span class="s1">''</span><span class="p">}</span></div>
 
 
 <div class="viewcode-block" id="GraphicLocation.copy">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Diagrams.html#VeraGridEngine.Devices.Diagrams.graphic_location.GraphicLocation.copy">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">api_object</span><span class="p">:</span> <span class="n">ALL_DEV_TYPES</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;GraphicLocation&quot;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">api_object</span><span class="p">:</span> <span class="n">ALL_DEV_TYPES</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"GraphicLocation"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return a detached copy so diagrams do not accidentally share mutable layout state.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">GraphicLocation</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">,</span>
                                <span class="n">y</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">,</span>
                                <span class="n">h</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">h</span><span class="p">,</span>
@@ -200,10 +201,10 @@
                                <span class="n">api_object</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">api_object</span> <span class="k">if</span> <span class="n">api_object</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">api_object</span><span class="p">)</span></div>
 
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">__deepcopy__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">memo</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="s2">&quot;GraphicLocation&quot;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">__deepcopy__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">memo</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="s2">"GraphicLocation"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Deep-copy the location layout while preserving the API object as a pointer.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="nb">id</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="ow">in</span> <span class="n">memo</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">memo</span><span class="p">[</span><span class="nb">id</span><span class="p">(</span><span class="bp">self</span><span class="p">)]</span>
 

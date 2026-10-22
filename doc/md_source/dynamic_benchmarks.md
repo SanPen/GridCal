@@ -24,7 +24,7 @@ and an explicit description of the comparison scope.
 | DIgSILENT PowerFactory | RMS time domain | Responses of an interconnected system containing standard dynamic models |
 | STAMP | RMS small signal | Eigenvalues of an equivalent WSCC dynamic model |
 | STAMP | EMT Floquet | Rightmost continuous-time exponents derived from Floquet multipliers |
-| PowerSimulationsDynamics.jl | RMS small signal | Matched modal spectra for three benchmark networks |
+| PowerSimulationsDynamics.jl | RMS small signal | Matched modal spectra for four benchmark networks |
 
 The comparisons do not claim that the programs use the same internal
 formulation. They test whether equivalent models produce consistent physical
@@ -113,24 +113,24 @@ the more informative value: $6.024\times10^{-7}$.
 
 #### Eigenvalue spectra
 
-![Kundur eigenvalue comparison between ANDES and VeraGrid](figures/dynamics/Benchmarking/sdomain_eigenvalues_kundur_andes_veragrid.png)
+![Kundur eigenvalue comparison between ANDES and VeraGrid](./figures/dynamics/Benchmarking/sdomain_eigenvalues_kundur_andes_veragrid.png)
 
 *Kundur two-area system. The ANDES circles and VeraGrid crosses overlap at the
 resolution of the complete spectrum.*
 
-![IEEE14 eigenvalue comparison between ANDES and VeraGrid](figures/dynamics/Benchmarking/sdomain_eigenvalues_IEEE14_andes_veragrid.png)
+![IEEE14 eigenvalue comparison between ANDES and VeraGrid](./figures/dynamics/Benchmarking/sdomain_eigenvalues_IEEE14_andes_veragrid.png)
 
 *IEEE14 complete eigenvalue spectrum.*
 
-![IEEE39 eigenvalue comparison between ANDES and VeraGrid](figures/dynamics/Benchmarking/sdomain_eigenvalues_IEEE13_Andes_veragrid.png)
+![IEEE39 eigenvalue comparison between ANDES and VeraGrid](./figures/dynamics/Benchmarking/sdomain_eigenvalues_IEEE13_Andes_veragrid.png)
 
 *IEEE39 complete eigenvalue spectrum.*
 
-![NPCC140 eigenvalue comparison between ANDES and VeraGrid](figures/dynamics/Benchmarking/sdomain_eigenvalues_npcc140_andes_veragrid.png)
+![NPCC140 eigenvalue comparison between ANDES and VeraGrid](./figures/dynamics/Benchmarking/sdomain_eigenvalues_npcc140_andes_veragrid.png)
 
 *NPCC140 complete eigenvalue spectrum.*
 
-![WECC179 eigenvalue comparison between ANDES and VeraGrid](figures/dynamics/Benchmarking/sdomain_eigenvalues_wecc179_andes_veragrid.png)
+![WECC179 eigenvalue comparison between ANDES and VeraGrid](./figures/dynamics/Benchmarking/sdomain_eigenvalues_wecc179_andes_veragrid.png)
 
 *WECC179 complete eigenvalue spectrum, including the repeated modes retained in
 the eigenvalue comparison.*
@@ -211,21 +211,21 @@ for every event or limiter regime.
 
 #### Representative base trajectories
 
-![Kundur representative RMS state trajectories](figures/dynamics/Benchmarking/representative_state_trajectories_kundur_andes_veragrid.png)
+![Kundur representative RMS state trajectories](./figures/dynamics/Benchmarking/representative_state_trajectories_kundur_andes_veragrid.png)
 
 *Kundur representative physical states for the 1 s base response.*
 
-![IEEE14 representative RMS state trajectories](figures/dynamics/Benchmarking/representative_state_trajectories_ieee14_andes_veragrid.png)
+![IEEE14 representative RMS state trajectories](./figures/dynamics/Benchmarking/representative_state_trajectories_ieee14_andes_veragrid.png)
 
 *IEEE14 representative physical states. The visible ESST3A `LAW2` differences
 are consistent with the case diagnostics above.*
 
-![IEEE39 representative RMS state trajectories](figures/dynamics/Benchmarking/representative_state_trajectories_ieee39_andes_veragrid.png)
+![IEEE39 representative RMS state trajectories](./figures/dynamics/Benchmarking/representative_state_trajectories_ieee39_andes_veragrid.png)
 
 *IEEE39 representative physical states. The small, nearly constant offsets do
 not develop into a growing trajectory divergence.*
 
-![NPCC140 representative RMS state trajectories](figures/dynamics/Benchmarking/representative_state_trajectories_npcc140_andes_veragrid.png)
+![NPCC140 representative RMS state trajectories](./figures/dynamics/Benchmarking/representative_state_trajectories_npcc140_andes_veragrid.png)
 
 *NPCC140 representative physical states.*
 
@@ -236,7 +236,7 @@ without duplicating one additional error plot per system.
 
 #### Representative event trajectory
 
-![WECC179 RMS event trajectories at 0.2 s](figures/dynamics/Benchmarking/representative_state_trajectories_wecc179_andes_veragrid.png)
+![WECC179 RMS event trajectories at 0.2 s](./figures/dynamics/Benchmarking/representative_state_trajectories_wecc179_andes_veragrid.png)
 
 *WECC179 response to the event at $t=0.2$ s. The selected states expose the
 documented ESST3A and IEEEG1 limiter-chain differences.*
@@ -276,7 +276,7 @@ This comparison exercises the complete workflow rather than an isolated block:
 network solution, model initialization, event processing, DAE integration, and
 result extraction.
 
-![PowerFactory and VeraGrid HVDC current-reference responses](figures/dynamics/Benchmarking/comparison_powerfactory_hvdc.png)
+![PowerFactory and VeraGrid HVDC current-reference responses](./figures/dynamics/Benchmarking/comparison_powerfactory_hvdc.png)
 
 *PowerFactory and VeraGrid master/slave $d$- and $q$-axis current-reference
 responses. The shaded intervals identify the applied active-power,
@@ -295,6 +295,14 @@ can be transferred into VeraGrid before carrying out a study.
 STAMP provides a second independent implementation for modal validation. The
 comparison covers both an RMS equilibrium and an EMT periodic orbit.
 
+The saved nonlinear WSCC model inputs, STAMP eigenvalue CSV, and standalone
+benchmark runners are documented in
+[`benchmarks/stamp_wscc/README.md`](../../benchmarks/stamp_wscc/README.md).
+The runners load committed `.veragrid` grids and do not launch STAMP at run
+time. The EMT runner compares a fixed rightmost subset because its additional
+and strongly damped modes are not all directly comparable with STAMP's RMS
+reference.
+
 ### 3.1 RMS small-signal comparison
 
 The RMS benchmark uses a WSCC system with equivalent components, network data,
@@ -307,7 +315,7 @@ a fully dynamic network realization would mix formulation differences with
 solver differences. The benchmark instead aligns the mathematical model before
 matching the modes.
 
-![STAMP and VeraGrid WSCC eigenvalue comparison](figures/dynamics/Benchmarking/WSCC_SG_GFOR_GFOL_eigenvalue_comparison.png)
+![STAMP and VeraGrid WSCC eigenvalue comparison](./figures/dynamics/Benchmarking/WSCC_SG_GFOR_GFOL_eigenvalue_comparison.png)
 
 *STAMP and VeraGrid WSCC spectra for a fully dynamic network, dynamic lines
 only, and a fully algebraic network. Circles and crosses overlap at the plotted
@@ -326,36 +334,62 @@ $$
 where $T$ is the periodic-orbit period. The resulting rightmost exponents are
 compared with the STAMP RMS eigenvalues.
 
-The physically important rightmost modes agree closely. Strongly damped,
-far-left EMT modes are less precise because their one-period multipliers are
-extremely small. This does not normally alter the stability conclusion. The
-full EMT model also contains additional modes associated with its three-phase
-and larger state-space representation; these have no one-to-one RMS
-counterpart and should not be forced into the matching set.
+The saved **nonlinear** EMT fixture in `benchmarks/stamp_wscc/` gives a maximum difference of about
+`0.00204 s^-1` over its 10 rightmost matched STAMP modes. Its first run had a
+larger `0.0819 s^-1` difference because the nonlinear EMT wrapper did not use
+the synchronous generator's speed as its frame reference; the corrected
+wrapper, grid, and periodic state now do. Strongly damped, far-left EMT modes
+are less precise because their one-period multipliers are extremely small.
+The full EMT model also contains three-phase modes with no one-to-one RMS
+counterpart.
 
-![VeraGrid EMT Floquet spectrum against the STAMP RMS reference](figures/dynamics/Benchmarking/stamp_wscc_corrected_rms_emt_spectrum.png)
+![Corrected nonlinear VeraGrid EMT Floquet spectrum against the STAMP RMS reference](./figures/dynamics/Benchmarking/stamp_wscc_nonlinear_emt_spectrum.png)
 
-*Complete 124-state VeraGrid EMT Floquet spectrum and zoom of the rightmost
-modes against the 88-state RMS/STAMP reference. Additional EMT-only modes are
-retained in the complete-spectrum panel.*
+*Corrected nonlinear EMT run: 124 Floquet exponents and the 88 STAMP RMS
+reference modes. The left panel shows the visible range from `-2500` to
+`20 s^-1`; additional far-left EMT modes are outside that range. The right
+panel zooms in on the rightmost modes. The earlier file named
+`stamp_wscc_corrected_rms_emt_spectrum.png` was produced from the linearized
+converter model and is not this benchmark.*
 
 ## 4. PowerSimulationsDynamics.jl comparison
 
 The RMS small-signal comparison with PowerSimulationsDynamics.jl uses
-equivalent models, network data, and operating points for three systems:
+equivalent models, network data, and operating points for four systems:
+
+The committed `.veragrid` inputs, Julia reference CSVs, reproducible runner,
+package versions, and detailed comparison contract are documented in
+[`benchmarks/powersystems_julia/README.md`](../../benchmarks/powersystems_julia/README.md).
+The benchmark runs VeraGrid against saved Julia results; it does not require a
+Julia installation at run time.
 
 | Case | Finite modes in each program | Recorded modal agreement |
 |---|---:|---|
-| Two-bus single-machine infinite-bus | 2 | Maximum difference approximately $9.1\times10^{-5}\ \mathrm{s}^{-1}$ |
-| Three-bus system | 27 | Rightmost modes align; some internal modes show larger differences |
-| IEEE 9-bus system | 45 | Median difference approximately $2.4\times10^{-7}\ \mathrm{s}^{-1}$ |
+| Two-bus single-machine infinite-bus | 2 | Maximum difference approximately $1.23\times10^{-10}\ \mathrm{s}^{-1}$ |
+| Three-bus system | 27 | Rightmost difference $8.89\times10^{-8}\ \mathrm{s}^{-1}$; maximum difference $5.29\times10^{-6}\ \mathrm{s}^{-1}$ |
+| IEEE 9-bus system | 45 | Median difference approximately $2.4\times10^{-7}\ \mathrm{s}^{-1}$; maximum $1.12\times10^{-4}\ \mathrm{s}^{-1}$ |
+| WECC 240-bus system | 234 of 1,658 | Right-edge window $\operatorname{Re}(\lambda)\geq-0.1\ \mathrm{s}^{-1}$; maximum $7.64\times10^{-4}\ \mathrm{s}^{-1}$ |
+
+For WECC 240, the recorded after-first-run small-signal eigenanalysis took
+$3.15268\ \mathrm{s}$ in Julia and a median of $4.5152\ \mathrm{s}$ across 20
+VeraGrid runs on the same machine. VeraGrid therefore took $1.4321$ times as
+long for the eigenanalysis. Model construction, power flow, and initialization
+are reported separately by the executable benchmark.
+
+VeraGrid's sparse SSA variant requested 100 modes and took a median of
+$3.38921\ \mathrm{s}$ across 20 after-first-run measurements, compared with
+$4.5152\ \mathrm{s}$ for all 1,658 dense modes. This is a $1.3323$ times
+speedup. The sparse modes match the full Julia reference spectrum with a
+recorded maximum distance of $2.61\times10^{-6}\ \mathrm{s}^{-1}$. The Julia
+timing is for its dense full-spectrum analysis and is not used as a direct
+sparse timing comparison.
 
 Modes are paired by nearest distance in the complex plane. Equal finite-mode
 counts confirm that the compared state spaces have the same retained modal
 dimension, but mode count alone is not a validation. The rightmost-mode match,
 individual distances, and full spectra must be inspected together.
 
-![PowerSimulationsDynamics.jl and VeraGrid eigenvalue spectra](figures/dynamics/Benchmarking/validated_eigenvalue_comparison.png)
+![PowerSimulationsDynamics.jl and VeraGrid eigenvalue spectra](./figures/dynamics/Benchmarking/validated_eigenvalue_comparison.png)
 
 *Matched spectra for the two-bus, three-bus, and IEEE9 systems. The numerical
 matching errors are reported in the table above.*

@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Simulations.OPF.Formulations.ac_opf_problem &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Simulations.OPF.Formulations.ac_opf_problem &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/license.html">📜 License</a></li>
@@ -130,9 +131,9 @@
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.OPF.Formulations.html#VeraGridEngine.Simulations.OPF.Formulations.ac_opf_problem.NonlinearOPFResults">[docs]</a>
 <span class="nd">@dataclass</span><span class="p">(</span><span class="n">slots</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">NonlinearOPFResults</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Numerical non linear OPF results</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">Va</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">Vm</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">S</span><span class="p">:</span> <span class="n">CxVec</span> <span class="o">=</span> <span class="kc">None</span>
@@ -171,7 +172,7 @@
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.OPF.Formulations.html#VeraGridEngine.Simulations.OPF.Formulations.ac_opf_problem.NonlinearOPFResults.initialize">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nbus</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">nbr</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">nil</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">nsh</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">ng</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">nhvdc</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">ncap</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
                    <span class="n">nvsc</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Initialize the arrays</span>
 <span class="sd">        :param nbus: number of buses</span>
 <span class="sd">        :param nbr: number of branches</span>
@@ -180,7 +181,7 @@
 <span class="sd">        :param nhvdc: number of HVDCs</span>
 <span class="sd">        :param ncap: number of nodal capacity nodes</span>
 <span class="sd">        :param nvsc: number of VSCs</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">Va</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nbus</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">Vm</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nbus</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">S</span><span class="p">:</span> <span class="n">CxVec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nbus</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">)</span>
@@ -216,7 +217,7 @@
 <div class="viewcode-block" id="NonlinearOPFResults.merge">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.OPF.Formulations.html#VeraGridEngine.Simulations.OPF.Formulations.ac_opf_problem.NonlinearOPFResults.merge">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">merge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
-              <span class="n">other</span><span class="p">:</span> <span class="s2">&quot;NonlinearOPFResults&quot;</span><span class="p">,</span>
+              <span class="n">other</span><span class="p">:</span> <span class="s2">"NonlinearOPFResults"</span><span class="p">,</span>
               <span class="n">bus_idx</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span>
               <span class="n">br_idx</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span>
               <span class="n">il_idx</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span>
@@ -226,7 +227,7 @@
               <span class="n">contshunt_idx</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span>
               <span class="n">acopf_mode</span><span class="p">,</span>
               <span class="n">vsc_idx</span><span class="p">:</span> <span class="n">IntVec</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :param other:</span>
 <span class="sd">        :param bus_idx:</span>
@@ -238,7 +239,7 @@
 <span class="sd">        :param contshunt_idx:</span>
 <span class="sd">        :param acopf_mode:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">Va</span><span class="p">[</span><span class="n">bus_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">other</span><span class="o">.</span><span class="n">Va</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">Vm</span><span class="p">[</span><span class="n">bus_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">other</span><span class="o">.</span><span class="n">Vm</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">voltage</span><span class="p">[</span><span class="n">bus_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">other</span><span class="o">.</span><span class="n">Vm</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="n">other</span><span class="o">.</span><span class="n">Va</span><span class="p">)</span>
@@ -278,10 +279,10 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">V</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CxVec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Complex voltage</span>
 <span class="sd">        :return: CxVec</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">Vm</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">Va</span><span class="p">)</span></div>
 
 
@@ -290,154 +291,154 @@
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.OPF.Formulations.html#VeraGridEngine.Simulations.OPF.Formulations.ac_opf_problem.NonLinearOptimalPfProblem">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">NonLinearOptimalPfProblem</span><span class="p">:</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;options&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;nc&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;logger&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;optimize_nodal_capacity&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;capacity_nodes_idx&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;nodal_capacity_sign&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;results&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Sbase&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;from_idx&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;to_idx&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;indices&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;slack&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;k_m&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;k_tau&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;k_mtau&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;slackgens&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Sd&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Pg_max&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Pg_min&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Qg_max&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Qg_min&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;ngen&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;id_sh&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;sh_bus_idx&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;nsh&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;admittances&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Qsh_max&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Qsh_min&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Vm_max&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Vm_min&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;id_Vm_min0&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;id_Vm_max0&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;pf&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;tanmax&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;pv&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;pq&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;nbr&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;br_idx&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;br_mon_idx&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;gen_disp_idx&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;gen_disp_idx_sh&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Cfmon&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Cfmon_t&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Ctmon&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Ctmon_t&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;R&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;X&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;nbus&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;n_slack&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;ntapm&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;ntapt&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;npv&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;npq&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;n_br_mon&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;n_gen_disp&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;n_gen_disp_sh&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;ind_gens&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;gen_nondisp_idx&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;gen_bus_idx&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Sg_undis&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;rates&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;rates2&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Va_max&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Va_min&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Ybus_indptr&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Ybus_cols&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Ybus_indices&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Ybus_diag_pos&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Cdispgen&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Cdispgen_t&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Cdispgen_sh&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Cdispgen_sh_t&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Inom&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;c0&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;c1&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;c2&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;objective_scale&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;c0n&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;c1n&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;c2n&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Pg_case0&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Qg_case0&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;tapm_max&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;tapm_min&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;tapt_max&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;tapt_min&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;all_tap_m&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;all_tap_tau&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;hvdc_nondisp_idx&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;hvdc_disp_idx&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;f_nd_hvdc&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;t_nd_hvdc&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Pf_nondisp&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;n_disp_hvdc&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;f_disp_hvdc&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;t_disp_hvdc&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;P_hvdc_max&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;nsl&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;c_s&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;c_v&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;nslcap&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;slcap0&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;neq&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;nineq&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Pg&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Qg&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Vm&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Va&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;tap_m&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;tap_tau&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Pfdc&quot;</span><span class="p">,</span>
+        <span class="s2">"options"</span><span class="p">,</span>
+        <span class="s2">"nc"</span><span class="p">,</span>
+        <span class="s2">"logger"</span><span class="p">,</span>
+        <span class="s2">"optimize_nodal_capacity"</span><span class="p">,</span>
+        <span class="s2">"capacity_nodes_idx"</span><span class="p">,</span>
+        <span class="s2">"nodal_capacity_sign"</span><span class="p">,</span>
+        <span class="s2">"results"</span><span class="p">,</span>
+        <span class="s2">"Sbase"</span><span class="p">,</span>
+        <span class="s2">"from_idx"</span><span class="p">,</span>
+        <span class="s2">"to_idx"</span><span class="p">,</span>
+        <span class="s2">"indices"</span><span class="p">,</span>
+        <span class="s2">"slack"</span><span class="p">,</span>
+        <span class="s2">"k_m"</span><span class="p">,</span>
+        <span class="s2">"k_tau"</span><span class="p">,</span>
+        <span class="s2">"k_mtau"</span><span class="p">,</span>
+        <span class="s2">"slackgens"</span><span class="p">,</span>
+        <span class="s2">"Sd"</span><span class="p">,</span>
+        <span class="s2">"Pg_max"</span><span class="p">,</span>
+        <span class="s2">"Pg_min"</span><span class="p">,</span>
+        <span class="s2">"Qg_max"</span><span class="p">,</span>
+        <span class="s2">"Qg_min"</span><span class="p">,</span>
+        <span class="s2">"ngen"</span><span class="p">,</span>
+        <span class="s2">"id_sh"</span><span class="p">,</span>
+        <span class="s2">"sh_bus_idx"</span><span class="p">,</span>
+        <span class="s2">"nsh"</span><span class="p">,</span>
+        <span class="s2">"admittances"</span><span class="p">,</span>
+        <span class="s2">"Qsh_max"</span><span class="p">,</span>
+        <span class="s2">"Qsh_min"</span><span class="p">,</span>
+        <span class="s2">"Vm_max"</span><span class="p">,</span>
+        <span class="s2">"Vm_min"</span><span class="p">,</span>
+        <span class="s2">"id_Vm_min0"</span><span class="p">,</span>
+        <span class="s2">"id_Vm_max0"</span><span class="p">,</span>
+        <span class="s2">"pf"</span><span class="p">,</span>
+        <span class="s2">"tanmax"</span><span class="p">,</span>
+        <span class="s2">"pv"</span><span class="p">,</span>
+        <span class="s2">"pq"</span><span class="p">,</span>
+        <span class="s2">"nbr"</span><span class="p">,</span>
+        <span class="s2">"br_idx"</span><span class="p">,</span>
+        <span class="s2">"br_mon_idx"</span><span class="p">,</span>
+        <span class="s2">"gen_disp_idx"</span><span class="p">,</span>
+        <span class="s2">"gen_disp_idx_sh"</span><span class="p">,</span>
+        <span class="s2">"Cfmon"</span><span class="p">,</span>
+        <span class="s2">"Cfmon_t"</span><span class="p">,</span>
+        <span class="s2">"Ctmon"</span><span class="p">,</span>
+        <span class="s2">"Ctmon_t"</span><span class="p">,</span>
+        <span class="s2">"R"</span><span class="p">,</span>
+        <span class="s2">"X"</span><span class="p">,</span>
+        <span class="s2">"nbus"</span><span class="p">,</span>
+        <span class="s2">"n_slack"</span><span class="p">,</span>
+        <span class="s2">"ntapm"</span><span class="p">,</span>
+        <span class="s2">"ntapt"</span><span class="p">,</span>
+        <span class="s2">"npv"</span><span class="p">,</span>
+        <span class="s2">"npq"</span><span class="p">,</span>
+        <span class="s2">"n_br_mon"</span><span class="p">,</span>
+        <span class="s2">"n_gen_disp"</span><span class="p">,</span>
+        <span class="s2">"n_gen_disp_sh"</span><span class="p">,</span>
+        <span class="s2">"ind_gens"</span><span class="p">,</span>
+        <span class="s2">"gen_nondisp_idx"</span><span class="p">,</span>
+        <span class="s2">"gen_bus_idx"</span><span class="p">,</span>
+        <span class="s2">"Sg_undis"</span><span class="p">,</span>
+        <span class="s2">"rates"</span><span class="p">,</span>
+        <span class="s2">"rates2"</span><span class="p">,</span>
+        <span class="s2">"Va_max"</span><span class="p">,</span>
+        <span class="s2">"Va_min"</span><span class="p">,</span>
+        <span class="s2">"Ybus_indptr"</span><span class="p">,</span>
+        <span class="s2">"Ybus_cols"</span><span class="p">,</span>
+        <span class="s2">"Ybus_indices"</span><span class="p">,</span>
+        <span class="s2">"Ybus_diag_pos"</span><span class="p">,</span>
+        <span class="s2">"Cdispgen"</span><span class="p">,</span>
+        <span class="s2">"Cdispgen_t"</span><span class="p">,</span>
+        <span class="s2">"Cdispgen_sh"</span><span class="p">,</span>
+        <span class="s2">"Cdispgen_sh_t"</span><span class="p">,</span>
+        <span class="s2">"Inom"</span><span class="p">,</span>
+        <span class="s2">"c0"</span><span class="p">,</span>
+        <span class="s2">"c1"</span><span class="p">,</span>
+        <span class="s2">"c2"</span><span class="p">,</span>
+        <span class="s2">"objective_scale"</span><span class="p">,</span>
+        <span class="s2">"c0n"</span><span class="p">,</span>
+        <span class="s2">"c1n"</span><span class="p">,</span>
+        <span class="s2">"c2n"</span><span class="p">,</span>
+        <span class="s2">"Pg_case0"</span><span class="p">,</span>
+        <span class="s2">"Qg_case0"</span><span class="p">,</span>
+        <span class="s2">"tapm_max"</span><span class="p">,</span>
+        <span class="s2">"tapm_min"</span><span class="p">,</span>
+        <span class="s2">"tapt_max"</span><span class="p">,</span>
+        <span class="s2">"tapt_min"</span><span class="p">,</span>
+        <span class="s2">"all_tap_m"</span><span class="p">,</span>
+        <span class="s2">"all_tap_tau"</span><span class="p">,</span>
+        <span class="s2">"hvdc_nondisp_idx"</span><span class="p">,</span>
+        <span class="s2">"hvdc_disp_idx"</span><span class="p">,</span>
+        <span class="s2">"f_nd_hvdc"</span><span class="p">,</span>
+        <span class="s2">"t_nd_hvdc"</span><span class="p">,</span>
+        <span class="s2">"Pf_nondisp"</span><span class="p">,</span>
+        <span class="s2">"n_disp_hvdc"</span><span class="p">,</span>
+        <span class="s2">"f_disp_hvdc"</span><span class="p">,</span>
+        <span class="s2">"t_disp_hvdc"</span><span class="p">,</span>
+        <span class="s2">"P_hvdc_max"</span><span class="p">,</span>
+        <span class="s2">"nsl"</span><span class="p">,</span>
+        <span class="s2">"c_s"</span><span class="p">,</span>
+        <span class="s2">"c_v"</span><span class="p">,</span>
+        <span class="s2">"nslcap"</span><span class="p">,</span>
+        <span class="s2">"slcap0"</span><span class="p">,</span>
+        <span class="s2">"neq"</span><span class="p">,</span>
+        <span class="s2">"nineq"</span><span class="p">,</span>
+        <span class="s2">"Pg"</span><span class="p">,</span>
+        <span class="s2">"Qg"</span><span class="p">,</span>
+        <span class="s2">"Vm"</span><span class="p">,</span>
+        <span class="s2">"Va"</span><span class="p">,</span>
+        <span class="s2">"tap_m"</span><span class="p">,</span>
+        <span class="s2">"tap_tau"</span><span class="p">,</span>
+        <span class="s2">"Pfdc"</span><span class="p">,</span>
         <span class="c1"># AC/DC + VSC extension</span>
-        <span class="s2">&quot;dc_bus_idx&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;ac_bus_idx&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;n_dc_bus&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;vsc_idx&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;nvsc&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;F_vsc&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;T_vsc&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;vsc_alpha1&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;vsc_alpha2&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;vsc_alpha3&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;vsc_rate_pu&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;vsc_lim_idx&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;n_vsc_lim&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;n_vsc_vars&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Pt_vsc&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Qt_vsc&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Pf_vsc&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;It_vsc&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;sl_vsc&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;c_vsc&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;n_sl_vsc&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;sl_sf&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;sl_st&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;sl_vmax&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;sl_vmin&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;slcap&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;x0&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;NV&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;V&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Scalc&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;allSf&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;allSt&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Sf&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;St&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Sf2&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;St2&quot;</span><span class="p">,</span>
+        <span class="s2">"dc_bus_idx"</span><span class="p">,</span>
+        <span class="s2">"ac_bus_idx"</span><span class="p">,</span>
+        <span class="s2">"n_dc_bus"</span><span class="p">,</span>
+        <span class="s2">"vsc_idx"</span><span class="p">,</span>
+        <span class="s2">"nvsc"</span><span class="p">,</span>
+        <span class="s2">"F_vsc"</span><span class="p">,</span>
+        <span class="s2">"T_vsc"</span><span class="p">,</span>
+        <span class="s2">"vsc_alpha1"</span><span class="p">,</span>
+        <span class="s2">"vsc_alpha2"</span><span class="p">,</span>
+        <span class="s2">"vsc_alpha3"</span><span class="p">,</span>
+        <span class="s2">"vsc_rate_pu"</span><span class="p">,</span>
+        <span class="s2">"vsc_lim_idx"</span><span class="p">,</span>
+        <span class="s2">"n_vsc_lim"</span><span class="p">,</span>
+        <span class="s2">"n_vsc_vars"</span><span class="p">,</span>
+        <span class="s2">"Pt_vsc"</span><span class="p">,</span>
+        <span class="s2">"Qt_vsc"</span><span class="p">,</span>
+        <span class="s2">"Pf_vsc"</span><span class="p">,</span>
+        <span class="s2">"It_vsc"</span><span class="p">,</span>
+        <span class="s2">"sl_vsc"</span><span class="p">,</span>
+        <span class="s2">"c_vsc"</span><span class="p">,</span>
+        <span class="s2">"n_sl_vsc"</span><span class="p">,</span>
+        <span class="s2">"sl_sf"</span><span class="p">,</span>
+        <span class="s2">"sl_st"</span><span class="p">,</span>
+        <span class="s2">"sl_vmax"</span><span class="p">,</span>
+        <span class="s2">"sl_vmin"</span><span class="p">,</span>
+        <span class="s2">"slcap"</span><span class="p">,</span>
+        <span class="s2">"x0"</span><span class="p">,</span>
+        <span class="s2">"NV"</span><span class="p">,</span>
+        <span class="s2">"V"</span><span class="p">,</span>
+        <span class="s2">"Scalc"</span><span class="p">,</span>
+        <span class="s2">"allSf"</span><span class="p">,</span>
+        <span class="s2">"allSt"</span><span class="p">,</span>
+        <span class="s2">"Sf"</span><span class="p">,</span>
+        <span class="s2">"St"</span><span class="p">,</span>
+        <span class="s2">"Sf2"</span><span class="p">,</span>
+        <span class="s2">"St2"</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
@@ -523,16 +524,16 @@
 
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">id_Vm_min0</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">id_Vm_min0</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s1">&#39;Lower voltage limits are set to 0. Correcting to 0.9 p.u.&#39;</span><span class="p">,</span>
-                                        <span class="n">device</span><span class="o">=</span><span class="s2">&quot;Bus &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s1">'Lower voltage limits are set to 0. Correcting to 0.9 p.u.'</span><span class="p">,</span>
+                                        <span class="n">device</span><span class="o">=</span><span class="s2">"Bus "</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">Vm_min</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">id_Vm_min0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.9</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">id_Vm_max0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Vm_max</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">Vm_min</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
 
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">id_Vm_max0</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">id_Vm_max0</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s1">&#39;Upper voltage limits are set lower to the lower limit. Correcting to 1.1 p.u.&#39;</span><span class="p">,</span>
-                                        <span class="n">device</span><span class="o">=</span><span class="s2">&quot;Bus &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s1">'Upper voltage limits are set lower to the lower limit. Correcting to 1.1 p.u.'</span><span class="p">,</span>
+                                        <span class="n">device</span><span class="o">=</span><span class="s2">"Bus "</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">Vm_max</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">id_Vm_max0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.1</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">pf</span> <span class="o">=</span> <span class="n">nc</span><span class="o">.</span><span class="n">generator_data</span><span class="o">.</span><span class="n">get_pf</span><span class="p">()</span>
@@ -832,10 +833,10 @@
 <div class="viewcode-block" id="NonLinearOptimalPfProblem.analyze_branch_controls">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.OPF.Formulations.html#VeraGridEngine.Simulations.OPF.Formulations.ac_opf_problem.NonLinearOptimalPfProblem.analyze_branch_controls">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">analyze_branch_controls</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Analyze the control branches and compute the indices</span>
 <span class="sd">        :return: None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">k_pf_tau</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
         <span class="n">k_pt_tau</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
         <span class="n">k_qf_m</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
@@ -864,7 +865,7 @@
                 <span class="k">pass</span>
 
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown tap phase module mode </span><span class="si">{</span><span class="n">ctrl_m</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unknown tap phase module mode </span><span class="si">{</span><span class="n">ctrl_m</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
             <span class="c1"># analyze tap-phase controls</span>
             <span class="k">if</span> <span class="n">ctrl_tau</span> <span class="o">==</span> <span class="n">TapPhaseControl</span><span class="o">.</span><span class="n">Pf</span><span class="o">.</span><span class="n">idx</span><span class="p">():</span>
@@ -884,7 +885,7 @@
                 <span class="k">pass</span>
 
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown tap phase control mode </span><span class="si">{</span><span class="n">ctrl_tau</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unknown tap phase control mode </span><span class="si">{</span><span class="n">ctrl_tau</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
         <span class="c1"># convert lists to integer arrays</span>
         <span class="n">k_pf_tau</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">k_pf_tau</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
@@ -1157,8 +1158,8 @@
             <span class="n">vsc_sl_pos</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
 
         <span class="n">hval</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">Sf2</span><span class="o">.</span><span class="n">real</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">rates2</span> <span class="o">-</span> <span class="n">sl_sf</span><span class="p">,</span>  <span class="c1"># rates &quot;lower limit&quot;</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">St2</span><span class="o">.</span><span class="n">real</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">rates2</span> <span class="o">-</span> <span class="n">sl_st</span><span class="p">,</span>  <span class="c1"># rates &quot;upper limit&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Sf2</span><span class="o">.</span><span class="n">real</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">rates2</span> <span class="o">-</span> <span class="n">sl_sf</span><span class="p">,</span>  <span class="c1"># rates "lower limit"</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">St2</span><span class="o">.</span><span class="n">real</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">rates2</span> <span class="o">-</span> <span class="n">sl_st</span><span class="p">,</span>  <span class="c1"># rates "upper limit"</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">Vm</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">pq</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">Vm_max</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">pq</span><span class="p">]</span> <span class="o">-</span> <span class="n">sl_vmax</span><span class="p">,</span>  <span class="c1"># voltage module upper limit</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">Pg</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">Pg_max</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">gen_disp_idx_sh</span><span class="p">],</span>  <span class="c1"># generator P upper limits</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">Qg</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">Qg_max</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">gen_disp_idx_sh</span><span class="p">],</span>  <span class="c1"># generator Q upper limits</span>
@@ -1190,7 +1191,7 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">get_jacobians_and_hessians</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mu</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">lam</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">compute_hessians</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span>
         <span class="n">Vec</span><span class="p">,</span> <span class="n">csc_matrix</span><span class="p">,</span> <span class="n">csc_matrix</span><span class="p">,</span>
         <span class="n">csc_matrix</span><span class="p">,</span> <span class="n">csc_matrix</span><span class="p">,</span> <span class="n">csc_matrix</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        TODO: we should split this function into functions outside the class, that should make it more manageable</span>
 <span class="sd">              one for each of these: fx, Gx, Hx, fxx, Gxx, Hxx, and leave this function just to call them</span>
@@ -1199,7 +1200,7 @@
 <span class="sd">        :param lam:</span>
 <span class="sd">        :param compute_hessians:</span>
 <span class="sd">        :return: fx, Gx, Hx, fxx, Gxx, Hxx</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="c1"># The DC-bus imaginary nodal balance rows were replaced by the linear</span>
         <span class="c1"># constraint Va[dc]=0, which results in a zero Hessian.</span>
@@ -1264,7 +1265,7 @@
 
         <span class="n">te_fx</span> <span class="o">=</span> <span class="n">timeit</span><span class="o">.</span><span class="n">default_timer</span><span class="p">()</span>
         <span class="c1"># EQUALITY CONSTRAINTS GRAD ------------------------------------------------------------------------------------</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        The following comments illustrate the shapes of the equality constraints gradients.</span>
 
 <span class="sd">        Gx =</span>
@@ -1325,7 +1326,7 @@
 <span class="sd">        +----+----+----+----+----+----+----+----+----+-----+</span>
 <span class="sd">            Gc : 2*It^2*Vm[T]  (at the Vm[T] column of the Vm group)</span>
 <span class="sd">            Gc2: -2*Pt @Pt, -2*Qt @Qt, 2*It*Vm[T]^2 @It, 0 @slV</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="n">ts_gx</span> <span class="o">=</span> <span class="n">timeit</span><span class="o">.</span><span class="n">default_timer</span><span class="p">()</span>
 
@@ -1433,7 +1434,7 @@
 
         <span class="c1"># INEQUALITY CONSTRAINTS GRAD ----------------------------------------------------------------------------------</span>
 
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        The following comments illustrate the shapes of the inequality</span>
 <span class="sd">        constraints gradient</span>
 
@@ -1486,7 +1487,7 @@
 <span class="sd">        +---------+</span>
 <span class="sd">        | Hvscsl  | n_sl_vsc</span>
 <span class="sd">        +---------+</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">ts_hx</span> <span class="o">=</span> <span class="n">timeit</span><span class="o">.</span><span class="n">default_timer</span><span class="p">()</span>
 
         <span class="n">Yf_mon</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">admittances</span><span class="o">.</span><span class="n">Yf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">br_mon_idx</span><span class="p">,</span> <span class="p">:]</span>
@@ -1766,7 +1767,7 @@
 
             <span class="n">te_fxx</span> <span class="o">=</span> <span class="n">timeit</span><span class="o">.</span><span class="n">default_timer</span><span class="p">()</span>
             <span class="c1"># EQUALITY CONSTRAINTS HESS ------------------------------------------------------------------------------------</span>
-<span class="w">            </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="w">            </span><span class="sd">'''</span>
 <span class="sd">            The following matrix represents the structure of the hessian matrix for the equality constraints</span>
 
 <span class="sd">                         N         N         Ng        Ng       nsl       ntapm       ntapt       ndc        vsc</span>
@@ -1799,7 +1800,7 @@
 <span class="sd">              loss   : d2/dIt2 = 2*a3</span>
 <span class="sd">              curdef : d2/dIt2 = 2*Vm[T]^2 ;  d2/dVm[T]2 = 2*It^2 ;</span>
 <span class="sd">                       d2/dIt dVm[T] = 4*It*Vm[T] ;  d2/dPt2 = d2/dQt2 = -2</span>
-<span class="sd">            &#39;&#39;&#39;</span>
+<span class="sd">            '''</span>
             <span class="n">ts_gxx</span> <span class="o">=</span> <span class="n">timeit</span><span class="o">.</span><span class="n">default_timer</span><span class="p">()</span>
             <span class="c1"># P</span>
             <span class="n">lam_p</span> <span class="o">=</span> <span class="n">lam</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">nbus</span><span class="p">]</span>
@@ -1908,7 +1909,7 @@
 
             <span class="n">te_gxx</span> <span class="o">=</span> <span class="n">timeit</span><span class="o">.</span><span class="n">default_timer</span><span class="p">()</span>
             <span class="c1"># INEQUALITY CONSTRAINTS HESS ----------------------------------------------------------------------------------</span>
-<span class="w">            </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="w">            </span><span class="sd">'''</span>
 <span class="sd">            The following matrix represents the structure of the hessian matrix for the inequality constraints</span>
 
 <span class="sd">                        N         N         Ng        Ng       nsl       ntapm       ntapt       ndc        vsc</span>
@@ -1936,7 +1937,7 @@
 <span class="sd">            vsc = [Pt | Qt | Pf | It | slV] band. The three VSC inequalities</span>
 <span class="sd">            (-It &lt;= 0, It - rate/Sb (- slV) &lt;= 0, -slV &lt;= 0) are all linear, so</span>
 <span class="sd">            their second derivative is zero</span>
-<span class="sd">               &#39;&#39;&#39;</span>
+<span class="sd">               '''</span>
 
             <span class="n">ts_hxx</span> <span class="o">=</span> <span class="n">timeit</span><span class="o">.</span><span class="n">default_timer</span><span class="p">()</span>
 
@@ -2102,12 +2103,12 @@
 
         <span class="c1"># # Save to csv fx, Gx, Hx, fxx, Gxx, Hxx</span>
         <span class="c1">#</span>
-        <span class="c1"># fx.tofile(&#39;fx_n.csv&#39;, sep=&#39;,&#39;)</span>
-        <span class="c1"># Gx.toarray().tofile(&#39;Gx_n.csv&#39;, sep=&#39;,&#39;)</span>
-        <span class="c1"># Hx.toarray().tofile(&#39;Hx_n.csv&#39;, sep=&#39;,&#39;)</span>
-        <span class="c1"># fxx.toarray().tofile(&#39;fxx_n.csv&#39;, sep=&#39;,&#39;)</span>
-        <span class="c1"># Gxx.toarray().tofile(&#39;Gxx_n.csv&#39;, sep=&#39;,&#39;)</span>
-        <span class="c1"># Hxx.toarray().tofile(&#39;Hxx_n.csv&#39;, sep=&#39;,&#39;)</span>
+        <span class="c1"># fx.tofile('fx_n.csv', sep=',')</span>
+        <span class="c1"># Gx.toarray().tofile('Gx_n.csv', sep=',')</span>
+        <span class="c1"># Hx.toarray().tofile('Hx_n.csv', sep=',')</span>
+        <span class="c1"># fxx.toarray().tofile('fxx_n.csv', sep=',')</span>
+        <span class="c1"># Gxx.toarray().tofile('Gxx_n.csv', sep=',')</span>
+        <span class="c1"># Hxx.toarray().tofile('Hxx_n.csv', sep=',')</span>
 
         <span class="c1">#</span>
         <span class="c1"># print(1000 * np.array([te_fx - ts_fx,</span>
@@ -2127,11 +2128,11 @@
 
     <span class="k">def</span><span class="w"> </span><span class="nf">compute_branch_power_derivatives</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span>
         <span class="n">csr_matrix</span><span class="p">,</span> <span class="n">lil_matrix</span><span class="p">,</span> <span class="n">lil_matrix</span><span class="p">,</span> <span class="n">csr_matrix</span><span class="p">,</span> <span class="n">lil_matrix</span><span class="p">,</span> <span class="n">lil_matrix</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        TODO: Move outside of the class</span>
 <span class="sd">        :return: First power derivatives with respect to the tap variables</span>
 <span class="sd">                [dSbusdm, dSfdm, dStdm, dSbusdt, dSfdtau, dStdtau]</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">ys</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">R</span> <span class="o">+</span> <span class="mf">1.0</span><span class="n">j</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">X</span> <span class="o">+</span> <span class="mf">1e-20</span><span class="p">)</span>
 
         <span class="n">nbr</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">all_tap_m</span><span class="p">)</span>
@@ -2166,7 +2167,7 @@
             <span class="n">dSfdtau</span><span class="p">[</span><span class="n">k</span><span class="p">,</span> <span class="n">k_pos</span><span class="p">]</span> <span class="o">=</span> <span class="n">Vf</span> <span class="o">*</span> <span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">conj</span><span class="p">(</span><span class="n">yk</span> <span class="o">*</span> <span class="n">Vt</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">mp</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="n">tau</span><span class="p">))</span>
             <span class="n">dStdtau</span><span class="p">[</span><span class="n">k</span><span class="p">,</span> <span class="n">k_pos</span><span class="p">]</span> <span class="o">=</span> <span class="n">Vt</span> <span class="o">*</span> <span class="o">-</span><span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">conj</span><span class="p">(</span><span class="n">yk</span> <span class="o">*</span> <span class="n">Vf</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">mp</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="n">tau</span><span class="p">))</span>
 
-        <span class="c1"># Bus power injection is computed using the &#39;from&#39; and &#39;to&#39; powers and their connectivity matrices</span>
+        <span class="c1"># Bus power injection is computed using the 'from' and 'to' powers and their connectivity matrices</span>
         <span class="n">dSbusdm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">admittances</span><span class="o">.</span><span class="n">Cf</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">dSfdm</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">admittances</span><span class="o">.</span><span class="n">Ct</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">dStdm</span>
         <span class="n">dSbusdt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">admittances</span><span class="o">.</span><span class="n">Cf</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">dSfdtau</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">admittances</span><span class="o">.</span><span class="n">Ct</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">dStdtau</span>
 
@@ -2184,13 +2185,13 @@
         <span class="n">lil_matrix</span><span class="p">,</span> <span class="n">lil_matrix</span><span class="p">,</span> <span class="n">lil_matrix</span><span class="p">,</span>
         <span class="n">lil_matrix</span><span class="p">,</span> <span class="n">lil_matrix</span><span class="p">,</span> <span class="n">lil_matrix</span><span class="p">]:</span>
 
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        TODO: Move outside of the class</span>
 <span class="sd">        :param lam: Lambda multiplier</span>
 <span class="sd">        :param mu: Mu multiplier</span>
 <span class="sd">        :return: Power second derivatives with respect to tap variables</span>
 
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">ys</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">R</span> <span class="o">+</span> <span class="mf">1.0</span><span class="n">j</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">X</span> <span class="o">+</span> <span class="mf">1e-20</span><span class="p">)</span>
 
         <span class="n">dSbusdmdm</span> <span class="o">=</span> <span class="n">lil_matrix</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">ntapm</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ntapm</span><span class="p">))</span>
@@ -2364,20 +2365,20 @@
 <div class="viewcode-block" id="NonLinearOptimalPfProblem.get_solution">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.OPF.Formulations.html#VeraGridEngine.Simulations.OPF.Formulations.ac_opf_problem.NonLinearOptimalPfProblem.get_solution">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_solution</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ips_results</span><span class="p">:</span> <span class="n">IpsSolution</span><span class="p">,</span> <span class="n">verbose</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">plot_error</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :param ips_results:</span>
 <span class="sd">        :param verbose:</span>
 <span class="sd">        :param plot_error:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">x2var</span><span class="p">(</span><span class="n">ips_results</span><span class="o">.</span><span class="n">x</span><span class="p">)</span>
 
         <span class="c1"># Save Results DataFrame for tests</span>
-        <span class="c1"># pd.DataFrame(Va).transpose().to_csv(&#39;REEresth.csv&#39;)</span>
-        <span class="c1"># pd.DataFrame(Vm).transpose().to_csv(&#39;REEresV.csv&#39;)</span>
-        <span class="c1"># pd.DataFrame(Pg_dis).transpose().to_csv(&#39;REEresP.csv&#39;)</span>
-        <span class="c1"># pd.DataFrame(Qg_dis).transpose().to_csv(&#39;REEresQ.csv&#39;)</span>
+        <span class="c1"># pd.DataFrame(Va).transpose().to_csv('REEresth.csv')</span>
+        <span class="c1"># pd.DataFrame(Vm).transpose().to_csv('REEresV.csv')</span>
+        <span class="c1"># pd.DataFrame(Pg_dis).transpose().to_csv('REEresP.csv')</span>
+        <span class="c1"># pd.DataFrame(Qg_dis).transpose().to_csv('REEresQ.csv')</span>
 
         <span class="n">Pg</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ngen</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsh</span><span class="p">)</span>
         <span class="n">Qg</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ngen</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsh</span><span class="p">)</span>
@@ -2435,50 +2436,50 @@
         <span class="n">tend</span> <span class="o">=</span> <span class="n">timeit</span><span class="o">.</span><span class="n">default_timer</span><span class="p">()</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">verbose</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">df_bus</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;Va (rad)&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">Va</span><span class="p">,</span> <span class="s1">&#39;Vm (p.u.)&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">Vm</span><span class="p">,</span>
-                                        <span class="s1">&#39;dual price (€/MW)&#39;</span><span class="p">:</span> <span class="n">lam_p</span><span class="p">,</span> <span class="s1">&#39;dual price (€/MVAr)&#39;</span><span class="p">:</span> <span class="n">lam_q</span><span class="p">})</span>
-            <span class="n">df_gen</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;P (MW)&#39;</span><span class="p">:</span> <span class="n">Pg</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">Sbase</span><span class="p">,</span> <span class="s1">&#39;Q (MVAr)&#39;</span><span class="p">:</span> <span class="n">Qg</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">Sbase</span><span class="p">})</span>
-            <span class="n">df_linkdc</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;P_dc (MW)&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">Pfdc</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">Sbase</span><span class="p">})</span>
+            <span class="n">df_bus</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="s1">'Va (rad)'</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">Va</span><span class="p">,</span> <span class="s1">'Vm (p.u.)'</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">Vm</span><span class="p">,</span>
+                                        <span class="s1">'dual price (€/MW)'</span><span class="p">:</span> <span class="n">lam_p</span><span class="p">,</span> <span class="s1">'dual price (€/MVAr)'</span><span class="p">:</span> <span class="n">lam_q</span><span class="p">})</span>
+            <span class="n">df_gen</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="s1">'P (MW)'</span><span class="p">:</span> <span class="n">Pg</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">Sbase</span><span class="p">,</span> <span class="s1">'Q (MVAr)'</span><span class="p">:</span> <span class="n">Qg</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">Sbase</span><span class="p">})</span>
+            <span class="n">df_linkdc</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="s1">'P_dc (MW)'</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">Pfdc</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">Sbase</span><span class="p">})</span>
 
-            <span class="n">df_slsf</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;Slacks Sf&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">sl_sf</span><span class="p">})</span>
-            <span class="n">df_slst</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;Slacks St&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">sl_st</span><span class="p">})</span>
-            <span class="n">df_slvmax</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;Slacks Vmax&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">sl_vmax</span><span class="p">})</span>
-            <span class="n">df_slvmin</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;Slacks Vmin&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">sl_vmin</span><span class="p">})</span>
-            <span class="n">df_trafo_m</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;V (p.u.)&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">tap_m</span><span class="p">},</span> <span class="n">index</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">k_m</span><span class="p">)</span>
-            <span class="n">df_trafo_tau</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;Tau (rad)&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">tap_tau</span><span class="p">},</span> <span class="n">index</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">k_tau</span><span class="p">)</span>
+            <span class="n">df_slsf</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="s1">'Slacks Sf'</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">sl_sf</span><span class="p">})</span>
+            <span class="n">df_slst</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="s1">'Slacks St'</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">sl_st</span><span class="p">})</span>
+            <span class="n">df_slvmax</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="s1">'Slacks Vmax'</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">sl_vmax</span><span class="p">})</span>
+            <span class="n">df_slvmin</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="s1">'Slacks Vmin'</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">sl_vmin</span><span class="p">})</span>
+            <span class="n">df_trafo_m</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="s1">'V (p.u.)'</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">tap_m</span><span class="p">},</span> <span class="n">index</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">k_m</span><span class="p">)</span>
+            <span class="n">df_trafo_tau</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="s1">'Tau (rad)'</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">tap_tau</span><span class="p">},</span> <span class="n">index</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">k_tau</span><span class="p">)</span>
             <span class="c1"># df_times = pd.DataFrame(data=times[1:], index=list(range(result.iterations)),</span>
-            <span class="c1">#                         columns=[&#39;t_modadm&#39;, &#39;t_f&#39;, &#39;t_g&#39;, &#39;t_h&#39;, &#39;t_fx&#39;, &#39;t_gx&#39;,</span>
-            <span class="c1">#                                  &#39;t_hx&#39;, &#39;t_fxx&#39;, &#39;t_gxx&#39;, &#39;t_hxx&#39;, &#39;t_nrstep&#39;,</span>
-            <span class="c1">#                                  &#39;t_mult&#39;, &#39;t_steps&#39;, &#39;t_cond&#39;, &#39;t_iter&#39;])</span>
+            <span class="c1">#                         columns=['t_modadm', 't_f', 't_g', 't_h', 't_fx', 't_gx',</span>
+            <span class="c1">#                                  't_hx', 't_fxx', 't_gxx', 't_hxx', 't_nrstep',</span>
+            <span class="c1">#                                  't_mult', 't_steps', 't_cond', 't_iter'])</span>
 
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Bus:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">df_bus</span><span class="p">)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;V-Trafos:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">df_trafo_m</span><span class="p">)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Tau-Trafos:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">df_trafo_tau</span><span class="p">)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Gen:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">df_gen</span><span class="p">)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Link DC:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">df_linkdc</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">"Bus:</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span> <span class="n">df_bus</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">"V-Trafos:</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span> <span class="n">df_trafo_m</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">"Tau-Trafos:</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span> <span class="n">df_trafo_tau</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">"Gen:</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span> <span class="n">df_gen</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">"Link DC:</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span> <span class="n">df_linkdc</span><span class="p">)</span>
 
-            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Qshunt min: &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Qsh_min</span><span class="p">))</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">'Qshunt min: '</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Qsh_min</span><span class="p">))</span>
 
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">acopf_mode</span> <span class="o">==</span> <span class="n">AcOpfMode</span><span class="o">.</span><span class="n">ACOPFslacks</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Slacks:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">df_slsf</span><span class="p">)</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Slacks:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">df_slst</span><span class="p">)</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Slacks:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">df_slvmax</span><span class="p">)</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Slacks:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">df_slvmin</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">"Slacks:</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span> <span class="n">df_slsf</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">"Slacks:</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span> <span class="n">df_slst</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">"Slacks:</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span> <span class="n">df_slvmax</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">"Slacks:</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span> <span class="n">df_slvmin</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimize_nodal_capacity</span><span class="p">:</span>
-                <span class="n">df_nodal_cap</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;Nodal capacity (MW)&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">slcap</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">Sbase</span><span class="p">},</span>
+                <span class="n">df_nodal_cap</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="s1">'Nodal capacity (MW)'</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">slcap</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">Sbase</span><span class="p">},</span>
                                             <span class="n">index</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">capacity_nodes_idx</span><span class="p">)</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Nodal Capacity:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">df_nodal_cap</span><span class="p">)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Error&quot;</span><span class="p">,</span> <span class="n">ips_results</span><span class="o">.</span><span class="n">error</span><span class="p">)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Gamma&quot;</span><span class="p">,</span> <span class="n">ips_results</span><span class="o">.</span><span class="n">gamma</span><span class="p">)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Sf&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Sf</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">"Nodal Capacity:</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span> <span class="n">df_nodal_cap</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">"Error"</span><span class="p">,</span> <span class="n">ips_results</span><span class="o">.</span><span class="n">error</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">"Gamma"</span><span class="p">,</span> <span class="n">ips_results</span><span class="o">.</span><span class="n">gamma</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">"Sf"</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Sf</span><span class="p">)</span>
 
             <span class="c1"># if self.options.verbose &gt; 1:</span>
-            <span class="c1">#     print(&#39;Times:\n&#39;, df_times)</span>
-            <span class="c1">#     print(&#39;Relative times:\n&#39;, 100 * df_times[[&#39;t_modadm&#39;, &#39;t_f&#39;, &#39;t_g&#39;, &#39;t_h&#39;, &#39;t_fx&#39;, &#39;t_gx&#39;,</span>
-            <span class="c1">#                                                &#39;t_hx&#39;, &#39;t_fxx&#39;, &#39;t_gxx&#39;, &#39;t_hxx&#39;, &#39;t_nrstep&#39;,</span>
-            <span class="c1">#                                                &#39;t_mult&#39;, &#39;t_steps&#39;, &#39;t_cond&#39;, &#39;t_iter&#39;]].div(</span>
-            <span class="c1">#         df_times[&#39;t_iter&#39;],</span>
+            <span class="c1">#     print('Times:\n', df_times)</span>
+            <span class="c1">#     print('Relative times:\n', 100 * df_times[['t_modadm', 't_f', 't_g', 't_h', 't_fx', 't_gx',</span>
+            <span class="c1">#                                                't_hx', 't_fxx', 't_gxx', 't_hxx', 't_nrstep',</span>
+            <span class="c1">#                                                't_mult', 't_steps', 't_cond', 't_iter']].div(</span>
+            <span class="c1">#         df_times['t_iter'],</span>
             <span class="c1">#         axis=0))</span>
 
         <span class="k">if</span> <span class="n">plot_error</span><span class="p">:</span>
@@ -2488,42 +2489,42 @@
 
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nbus</span><span class="p">):</span>
                 <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">ips_results</span><span class="o">.</span><span class="n">dlam</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">&gt;=</span> <span class="mf">1e-3</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s1">&#39;Nodal Power Balance convergence tolerance not achieved&#39;</span><span class="p">,</span>
-                                            <span class="n">device_property</span><span class="o">=</span><span class="s2">&quot;dlam&quot;</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s1">'Nodal Power Balance convergence tolerance not achieved'</span><span class="p">,</span>
+                                            <span class="n">device_property</span><span class="o">=</span><span class="s2">"dlam"</span><span class="p">,</span>
                                             <span class="n">device</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">),</span>
                                             <span class="n">value</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">ips_results</span><span class="o">.</span><span class="n">dlam</span><span class="p">[</span><span class="n">i</span><span class="p">]),</span>
-                                            <span class="n">expected_value</span><span class="o">=</span><span class="s1">&#39;&lt; 1e-3&#39;</span><span class="p">)</span>
+                                            <span class="n">expected_value</span><span class="o">=</span><span class="s1">'&lt; 1e-3'</span><span class="p">)</span>
 
                 <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">ips_results</span><span class="o">.</span><span class="n">dlam</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">nbus</span> <span class="o">+</span> <span class="n">i</span><span class="p">])</span> <span class="o">&gt;=</span> <span class="mf">1e-3</span><span class="p">:</span>  <span class="c1"># TODO: What is the difference with the previous?</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s1">&#39;Nodal Power Balance convergence tolerance not achieved&#39;</span><span class="p">,</span>
-                                            <span class="n">device_property</span><span class="o">=</span><span class="s2">&quot;dlam&quot;</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s1">'Nodal Power Balance convergence tolerance not achieved'</span><span class="p">,</span>
+                                            <span class="n">device_property</span><span class="o">=</span><span class="s2">"dlam"</span><span class="p">,</span>
                                             <span class="n">device</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">),</span>
                                             <span class="n">value</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">ips_results</span><span class="o">.</span><span class="n">dlam</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">nbus</span><span class="p">]),</span>
-                                            <span class="n">expected_value</span><span class="o">=</span><span class="s1">&#39;&lt; 1e-3&#39;</span><span class="p">)</span>
+                                            <span class="n">expected_value</span><span class="o">=</span><span class="s1">'&lt; 1e-3'</span><span class="p">)</span>
 
             <span class="k">for</span> <span class="n">pvbus</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">npv</span><span class="p">):</span>
                 <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">ips_results</span><span class="o">.</span><span class="n">dlam</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">nbus</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">+</span> <span class="n">pvbus</span><span class="p">])</span> <span class="o">&gt;=</span> <span class="mf">1e-3</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s1">&#39;PV voltage module convergence tolerance not achieved&#39;</span><span class="p">,</span>
-                                            <span class="n">device_property</span><span class="o">=</span><span class="s2">&quot;dlam&quot;</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s1">'PV voltage module convergence tolerance not achieved'</span><span class="p">,</span>
+                                            <span class="n">device_property</span><span class="o">=</span><span class="s2">"dlam"</span><span class="p">,</span>
                                             <span class="n">device</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pv</span><span class="p">[</span><span class="n">pvbus</span><span class="p">]),</span>
                                             <span class="n">value</span><span class="o">=</span><span class="nb">str</span><span class="p">((</span><span class="n">ips_results</span><span class="o">.</span><span class="n">dlam</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">nbus</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">+</span> <span class="n">pvbus</span><span class="p">])),</span>
-                                            <span class="n">expected_value</span><span class="o">=</span><span class="s1">&#39;&lt; 1e-3&#39;</span><span class="p">)</span>
+                                            <span class="n">expected_value</span><span class="o">=</span><span class="s1">'&lt; 1e-3'</span><span class="p">)</span>
 
             <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_br_mon</span><span class="p">):</span>
                 <span class="n">muz_f</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">ips_results</span><span class="o">.</span><span class="n">z</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">*</span> <span class="n">ips_results</span><span class="o">.</span><span class="n">mu</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
                 <span class="n">muz_t</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">ips_results</span><span class="o">.</span><span class="n">z</span><span class="p">[</span><span class="n">k</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_br_mon</span><span class="p">]</span> <span class="o">*</span> <span class="n">ips_results</span><span class="o">.</span><span class="n">mu</span><span class="p">[</span><span class="n">k</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_br_mon</span><span class="p">])</span>
                 <span class="k">if</span> <span class="n">muz_f</span> <span class="o">&gt;=</span> <span class="mf">1e-3</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s1">&#39;Branch rating &quot;from&quot; multipliers did not reach the tolerance&#39;</span><span class="p">,</span>
-                                            <span class="n">device_property</span><span class="o">=</span><span class="s2">&quot;mu · z&quot;</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s1">'Branch rating "from" multipliers did not reach the tolerance'</span><span class="p">,</span>
+                                            <span class="n">device_property</span><span class="o">=</span><span class="s2">"mu · z"</span><span class="p">,</span>
                                             <span class="n">device</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">br_mon_idx</span><span class="p">[</span><span class="n">k</span><span class="p">]),</span>
                                             <span class="n">value</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">muz_f</span><span class="p">),</span>
-                                            <span class="n">expected_value</span><span class="o">=</span><span class="s1">&#39;&lt; 1e-3&#39;</span><span class="p">)</span>
+                                            <span class="n">expected_value</span><span class="o">=</span><span class="s1">'&lt; 1e-3'</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">muz_t</span> <span class="o">&gt;=</span> <span class="mf">1e-3</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s1">&#39;Branch rating &quot;to&quot; multipliers did not reach the tolerance&#39;</span><span class="p">,</span>
-                                            <span class="n">device_property</span><span class="o">=</span><span class="s2">&quot;mu · z&quot;</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s1">'Branch rating "to" multipliers did not reach the tolerance'</span><span class="p">,</span>
+                                            <span class="n">device_property</span><span class="o">=</span><span class="s2">"mu · z"</span><span class="p">,</span>
                                             <span class="n">device</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">br_mon_idx</span><span class="p">[</span><span class="n">k</span><span class="p">]),</span>
                                             <span class="n">value</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">muz_t</span><span class="p">),</span>
-                                            <span class="n">expected_value</span><span class="o">=</span><span class="s1">&#39;&lt; 1e-3&#39;</span><span class="p">)</span>
+                                            <span class="n">expected_value</span><span class="o">=</span><span class="s1">'&lt; 1e-3'</span><span class="p">)</span>
 
             <span class="c1"># VSC inequalities (-It&lt;=0, It-rate&lt;=0)</span>
             <span class="n">_vsc_tail</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nvsc</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_vsc_lim</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_sl_vsc</span>
@@ -2534,47 +2535,47 @@
                     <span class="n">ips_results</span><span class="o">.</span><span class="n">z</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">nineq</span> <span class="o">-</span> <span class="n">_vsc_tail</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_disp_hvdc</span> <span class="o">+</span> <span class="n">link</span><span class="p">]</span> <span class="o">*</span> <span class="n">ips_results</span><span class="o">.</span><span class="n">mu</span><span class="p">[</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">nineq</span> <span class="o">-</span> <span class="n">_vsc_tail</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_disp_hvdc</span> <span class="o">+</span> <span class="n">link</span><span class="p">])</span>
                 <span class="k">if</span> <span class="n">muz_f</span> <span class="o">&gt;=</span> <span class="mf">1e-3</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s1">&#39;HVDC rating &quot;from&quot; multipliers did not reach the tolerance&#39;</span><span class="p">,</span>
-                                            <span class="n">device_property</span><span class="o">=</span><span class="s2">&quot;mu · z&quot;</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s1">'HVDC rating "from" multipliers did not reach the tolerance'</span><span class="p">,</span>
+                                            <span class="n">device_property</span><span class="o">=</span><span class="s2">"mu · z"</span><span class="p">,</span>
                                             <span class="n">device</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">link</span><span class="p">),</span>
                                             <span class="n">value</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">muz_f</span><span class="p">),</span>
-                                            <span class="n">expected_value</span><span class="o">=</span><span class="s1">&#39;&lt; 1e-3&#39;</span><span class="p">)</span>
+                                            <span class="n">expected_value</span><span class="o">=</span><span class="s1">'&lt; 1e-3'</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">muz_t</span> <span class="o">&gt;=</span> <span class="mf">1e-3</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s1">&#39;HVDC rating &quot;to&quot; multipliers did not reach the tolerance&#39;</span><span class="p">,</span>
-                                            <span class="n">device_property</span><span class="o">=</span><span class="s2">&quot;mu · z&quot;</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s1">'HVDC rating "to" multipliers did not reach the tolerance'</span><span class="p">,</span>
+                                            <span class="n">device_property</span><span class="o">=</span><span class="s2">"mu · z"</span><span class="p">,</span>
                                             <span class="n">device</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">link</span><span class="p">),</span>
                                             <span class="n">value</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">muz_t</span><span class="p">),</span>
-                                            <span class="n">expected_value</span><span class="o">=</span><span class="s1">&#39;&lt; 1e-3&#39;</span><span class="p">)</span>
+                                            <span class="n">expected_value</span><span class="o">=</span><span class="s1">'&lt; 1e-3'</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">acopf_mode</span> <span class="o">==</span> <span class="n">AcOpfMode</span><span class="o">.</span><span class="n">ACOPFslacks</span><span class="p">:</span>
                 <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_br_mon</span><span class="p">):</span>
                     <span class="k">if</span> <span class="n">overloads_sf</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">ips_tolerance</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">Sbase</span><span class="p">:</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s1">&#39;Branch overload in the from sense (MVA)&#39;</span><span class="p">,</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s1">'Branch overload in the from sense (MVA)'</span><span class="p">,</span>
                                                 <span class="n">device</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">br_mon_idx</span><span class="p">[</span><span class="n">k</span><span class="p">]),</span>
-                                                <span class="n">device_property</span><span class="o">=</span><span class="s2">&quot;Slack&quot;</span><span class="p">,</span>
+                                                <span class="n">device_property</span><span class="o">=</span><span class="s2">"Slack"</span><span class="p">,</span>
                                                 <span class="n">value</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">overloads_sf</span><span class="p">[</span><span class="n">k</span><span class="p">]),</span>
-                                                <span class="n">expected_value</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;&lt; </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">ips_tolerance</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="bp">self</span><span class="o">.</span><span class="n">Sbase</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+                                                <span class="n">expected_value</span><span class="o">=</span><span class="sa">f</span><span class="s1">'&lt; </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">ips_tolerance</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="bp">self</span><span class="o">.</span><span class="n">Sbase</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
 
                     <span class="k">if</span> <span class="n">overloads_st</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">ips_tolerance</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">Sbase</span><span class="p">:</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s1">&#39;Branch overload in the to sense (MVA)&#39;</span><span class="p">,</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s1">'Branch overload in the to sense (MVA)'</span><span class="p">,</span>
                                                 <span class="n">device</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">br_mon_idx</span><span class="p">[</span><span class="n">k</span><span class="p">]),</span>
-                                                <span class="n">device_property</span><span class="o">=</span><span class="s2">&quot;Slack&quot;</span><span class="p">,</span>
+                                                <span class="n">device_property</span><span class="o">=</span><span class="s2">"Slack"</span><span class="p">,</span>
                                                 <span class="n">value</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">overloads_st</span><span class="p">[</span><span class="n">k</span><span class="p">]),</span>
-                                                <span class="n">expected_value</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;&lt; </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">ips_tolerance</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="bp">self</span><span class="o">.</span><span class="n">Sbase</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+                                                <span class="n">expected_value</span><span class="o">=</span><span class="sa">f</span><span class="s1">'&lt; </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">ips_tolerance</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="bp">self</span><span class="o">.</span><span class="n">Sbase</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
 
                 <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">npq</span><span class="p">):</span>
                     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sl_vmax</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">ips_tolerance</span><span class="p">:</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s1">&#39;Overvoltage&#39;</span><span class="p">,</span>
-                                                <span class="n">device_property</span><span class="o">=</span><span class="s2">&quot;Slack&quot;</span><span class="p">,</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s1">'Overvoltage'</span><span class="p">,</span>
+                                                <span class="n">device_property</span><span class="o">=</span><span class="s2">"Slack"</span><span class="p">,</span>
                                                 <span class="n">device</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pq</span><span class="p">[</span><span class="n">i</span><span class="p">]),</span>
                                                 <span class="n">value</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sl_vmax</span><span class="p">[</span><span class="n">i</span><span class="p">]),</span>
-                                                <span class="n">expected_value</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;&gt;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">ips_tolerance</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+                                                <span class="n">expected_value</span><span class="o">=</span><span class="sa">f</span><span class="s1">'&gt;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">ips_tolerance</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
                     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sl_vmin</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">ips_tolerance</span><span class="p">:</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s1">&#39;Undervoltage&#39;</span><span class="p">,</span>
-                                                <span class="n">device_property</span><span class="o">=</span><span class="s2">&quot;Slack&quot;</span><span class="p">,</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s1">'Undervoltage'</span><span class="p">,</span>
+                                                <span class="n">device_property</span><span class="o">=</span><span class="s2">"Slack"</span><span class="p">,</span>
                                                 <span class="n">device</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pq</span><span class="p">[</span><span class="n">i</span><span class="p">]),</span>
                                                 <span class="n">value</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sl_vmin</span><span class="p">[</span><span class="n">i</span><span class="p">]),</span>
-                                                <span class="n">expected_value</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;&gt; </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">ips_tolerance</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+                                                <span class="n">expected_value</span><span class="o">=</span><span class="sa">f</span><span class="s1">'&gt; </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">ips_tolerance</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">verbose</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="p">):</span>

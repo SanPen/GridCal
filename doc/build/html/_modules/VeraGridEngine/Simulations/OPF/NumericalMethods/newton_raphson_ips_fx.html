@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Simulations.OPF.NumericalMethods.newton_raphson_ips_fx &mdash; VeraGrid 6.7.13 documentation</title>
+  <title>VeraGridEngine.Simulations.OPF.NumericalMethods.newton_raphson_ips_fx &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../../_static/documentation_options.js?v=16fbabd8"></script>
+      <script src="../../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../../_static/js/theme.js"></script>
@@ -124,14 +124,14 @@
 <div class="viewcode-block" id="step_calculation">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.OPF.NumericalMethods.html#VeraGridEngine.Simulations.OPF.NumericalMethods.newton_raphson_ips_fx.step_calculation">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">step_calculation</span><span class="p">(</span><span class="n">v</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">dv</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">tau</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.99995</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    This function calculates for each Lambda multiplier or its associated Slack variable</span>
 <span class="sd">    the maximum allowed step in order to not violate the KKT condition Lambda &gt; 0 and S &gt; 0</span>
 <span class="sd">    :param v: Array of multipliers or slack variables</span>
 <span class="sd">    :param dv: Variation calculated in the Newton step</span>
 <span class="sd">    :param tau: Factor to be not exactly 1</span>
 <span class="sd">    :return: step size value for the given multipliers</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">k</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flatnonzero</span><span class="p">(</span><span class="n">dv</span> <span class="o">&lt;</span> <span class="mf">0.0</span><span class="p">)</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">k</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
         <span class="n">alpha</span> <span class="o">=</span> <span class="nb">min</span><span class="p">([</span><span class="n">tau</span> <span class="o">*</span> <span class="nb">min</span><span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">/</span> <span class="p">(</span><span class="o">-</span><span class="n">dv</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">+</span> <span class="mf">1e-15</span><span class="p">)),</span> <span class="mi">1</span><span class="p">])</span>
@@ -146,12 +146,12 @@
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.OPF.NumericalMethods.html#VeraGridEngine.Simulations.OPF.NumericalMethods.newton_raphson_ips_fx.split">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">split</span><span class="p">(</span><span class="n">sol</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Split the solution vector in two</span>
 <span class="sd">    :param sol: solution vector</span>
 <span class="sd">    :param n: integer position at whic to split the solution</span>
 <span class="sd">    :return: A before, B after the splitting point</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="n">sol</span><span class="p">[:</span><span class="n">n</span><span class="p">],</span> <span class="n">sol</span><span class="p">[</span><span class="n">n</span><span class="p">:]</span></div>
 
 
@@ -160,14 +160,14 @@
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.OPF.NumericalMethods.html#VeraGridEngine.Simulations.OPF.NumericalMethods.newton_raphson_ips_fx.calc_error">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">calc_error</span><span class="p">(</span><span class="n">dx</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">dz</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">dmu</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">dlmbda</span><span class="p">:</span> <span class="n">Vec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Calculate the error of the process</span>
 <span class="sd">    :param dx: x increments array</span>
 <span class="sd">    :param dz: z increments array</span>
 <span class="sd">    :param dmu: mu increments array</span>
 <span class="sd">    :param dlmbda: lambda increments array</span>
 <span class="sd">    :return: max abs value of all the increments</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">err</span> <span class="o">=</span> <span class="mf">0.0</span>
 
     <span class="k">for</span> <span class="n">arr</span> <span class="ow">in</span> <span class="p">[</span><span class="n">dx</span><span class="p">,</span> <span class="n">dz</span><span class="p">,</span> <span class="n">dmu</span><span class="p">,</span> <span class="n">dlmbda</span><span class="p">]:</span>
@@ -184,11 +184,11 @@
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.OPF.NumericalMethods.html#VeraGridEngine.Simulations.OPF.NumericalMethods.newton_raphson_ips_fx.max_abs">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">max_abs</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">Vec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute max abs efficiently</span>
 <span class="sd">    :param x: State vector</span>
 <span class="sd">    :return: Inf-norm of the state vector</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">max_val</span> <span class="o">=</span> <span class="mf">0.0</span>
     <span class="k">for</span> <span class="n">x_val</span> <span class="ow">in</span> <span class="n">x</span><span class="p">:</span>
         <span class="n">x_abs</span> <span class="o">=</span> <span class="n">x_val</span> <span class="k">if</span> <span class="n">x_val</span> <span class="o">&gt;</span> <span class="mf">0.0</span> <span class="k">else</span> <span class="o">-</span><span class="n">x_val</span>
@@ -202,14 +202,14 @@
 <div class="viewcode-block" id="calc_feas_cond">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.OPF.NumericalMethods.html#VeraGridEngine.Simulations.OPF.NumericalMethods.newton_raphson_ips_fx.calc_feas_cond">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">calc_feas_cond</span><span class="p">(</span><span class="n">g</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">h</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">z</span><span class="p">:</span> <span class="n">Vec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Calculate the feasible conditions</span>
 <span class="sd">    :param g: Equality values</span>
 <span class="sd">    :param h: Inequality values</span>
 <span class="sd">    :param x: State vector</span>
 <span class="sd">    :param z: Vector of z slack variables</span>
 <span class="sd">    :return: Feasibility condition value</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">max_h</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">h</span><span class="p">)</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">h</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="mf">0.0</span>
     <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="n">max_abs</span><span class="p">(</span><span class="n">g</span><span class="p">),</span> <span class="n">max_h</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="nb">max</span><span class="p">(</span><span class="n">max_abs</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">max_abs</span><span class="p">(</span><span class="n">z</span><span class="p">)))</span></div>
 
@@ -218,13 +218,13 @@
 <div class="viewcode-block" id="calc_grad_cond">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.OPF.NumericalMethods.html#VeraGridEngine.Simulations.OPF.NumericalMethods.newton_raphson_ips_fx.calc_grad_cond">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">calc_grad_cond</span><span class="p">(</span><span class="n">lx</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">lam</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">mu</span><span class="p">:</span> <span class="n">Vec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    calculate the gradient conditions</span>
 <span class="sd">    :param lx: Gradient of the lagrangian</span>
 <span class="sd">    :param lam: Vector of lambda multipliers</span>
 <span class="sd">    :param mu: Vector of mu multipliers</span>
 <span class="sd">    :return: Gradient condition value</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="n">max_abs</span><span class="p">(</span><span class="n">lx</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="nb">max</span><span class="p">(</span><span class="n">max_abs</span><span class="p">(</span><span class="n">lam</span><span class="p">),</span> <span class="n">max_abs</span><span class="p">(</span><span class="n">mu</span><span class="p">)))</span></div>
 
 
@@ -232,12 +232,12 @@
 <div class="viewcode-block" id="calc_c_cond">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.OPF.NumericalMethods.html#VeraGridEngine.Simulations.OPF.NumericalMethods.newton_raphson_ips_fx.calc_c_cond">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">calc_c_cond</span><span class="p">(</span><span class="n">mu</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">z</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Vec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    :param mu: Vector of mu multipliers</span>
 <span class="sd">    :param z: Vector of z slack variables</span>
 <span class="sd">    :param x: State vector</span>
 <span class="sd">    :return: Vector of c-cond</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">mu</span> <span class="o">@</span> <span class="n">z</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="n">max_abs</span><span class="p">(</span><span class="n">x</span><span class="p">))</span></div>
 
 
@@ -245,12 +245,12 @@
 <div class="viewcode-block" id="calc_o_cond">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.OPF.NumericalMethods.html#VeraGridEngine.Simulations.OPF.NumericalMethods.newton_raphson_ips_fx.calc_o_cond">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">calc_o_cond</span><span class="p">(</span><span class="n">f</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">f_prev</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 
 <span class="sd">    :param f: Value of objective function</span>
 <span class="sd">    :param f_prev: Previous value of objective function</span>
 <span class="sd">    :return: Variation of the objective function</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="nb">abs</span><span class="p">(</span><span class="n">f</span> <span class="o">-</span> <span class="n">f_prev</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="nb">abs</span><span class="p">(</span><span class="n">f_prev</span><span class="p">))</span></div>
 
 
@@ -265,7 +265,7 @@
                        <span class="n">cost_cond</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
                        <span class="n">gamma</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
                        <span class="n">tol</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Check convergence, including the narrow large-case tail regime.</span>
 
 <span class="sd">    :param problem: Nonlinear OPF problem instance.</span>
@@ -277,7 +277,7 @@
 <span class="sd">    :param gamma: Barrier parameter.</span>
 <span class="sd">    :param tol: Main IPS tolerance.</span>
 <span class="sd">    :return: ``True`` when the iterate is accepted as converged.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">base_converged</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">feas_cond</span> <span class="o">&lt;</span> <span class="n">tol</span> <span class="ow">and</span> <span class="n">gradcond</span> <span class="o">&lt;</span> <span class="n">tol</span> <span class="ow">and</span> <span class="n">cost_cond</span> <span class="o">&lt;</span> <span class="n">tol</span> <span class="ow">and</span> <span class="n">gamma</span> <span class="o">&lt;</span> <span class="n">tol</span>
     <span class="k">if</span> <span class="n">base_converged</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">True</span>
@@ -324,7 +324,7 @@
                            <span class="n">alpha_d</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
                            <span class="n">sigma_floor</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-4</span><span class="p">,</span>
                            <span class="n">sigma_ceiling</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute one conservative Mehrotra-style centering parameter.</span>
 
 <span class="sd">    :param mu: Current inequality multipliers.</span>
@@ -336,7 +336,7 @@
 <span class="sd">    :param sigma_floor: Minimum centering parameter.</span>
 <span class="sd">    :param sigma_ceiling: Maximum centering parameter.</span>
 <span class="sd">    :return: Centering parameter clipped to a conservative interval.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">sigma_value</span><span class="p">:</span> <span class="nb">float</span>
 
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">mu</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
@@ -360,11 +360,11 @@
 <div class="viewcode-block" id="get_ips_linear_solver_candidates">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.OPF.NumericalMethods.html#VeraGridEngine.Simulations.OPF.NumericalMethods.newton_raphson_ips_fx.get_ips_linear_solver_candidates">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_ips_linear_solver_candidates</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">SparseSolver</span><span class="p">,</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">csc</span><span class="p">,</span> <span class="n">Vec</span><span class="p">],</span> <span class="n">Vec</span><span class="p">]]]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Build the ordered list of sparse linear solvers that IPS can try for one KKT system.</span>
 
 <span class="sd">    :return: Ordered ``(solver_type, linear_solver)`` pairs, from preferred to fallback.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">available_solver_types</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">SparseSolver</span><span class="p">]</span> <span class="o">=</span> <span class="n">get_available_sparse_solvers</span><span class="p">()</span>
     <span class="n">candidate_order</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">SparseSolver</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
     <span class="n">candidate_order</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">SparseSolver</span><span class="o">.</span><span class="n">Pardiso</span><span class="p">)</span>
@@ -401,7 +401,7 @@
                             <span class="n">linear_solver_candidates</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">SparseSolver</span><span class="p">,</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">csc</span><span class="p">,</span> <span class="n">Vec</span><span class="p">],</span> <span class="n">Vec</span><span class="p">]]],</span>
                             <span class="n">max_stepsize</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
                             <span class="n">residual_tol</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-6</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">Vec</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span> <span class="n">Union</span><span class="p">[</span><span class="n">SparseSolver</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span> <span class="nb">float</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Solve the KKT system while rejecting numerically broken linear solves early.</span>
 
 <span class="sd">    :param jac: KKT Jacobian matrix.</span>
@@ -410,7 +410,7 @@
 <span class="sd">    :param max_stepsize: Maximum accepted Newton direction norm.</span>
 <span class="sd">    :param residual_tol: Maximum accepted relative linear residual.</span>
 <span class="sd">    :return: ``(solution, solver_type, residual_ratio)``. ``solution`` and ``solver_type`` are ``None`` if all attempts fail.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">rhs_norm</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>
 
     <span class="c1"># Try each sparse backend in order and accept the first numerically sane Newton direction.</span>
@@ -468,9 +468,9 @@
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.OPF.NumericalMethods.html#VeraGridEngine.Simulations.OPF.NumericalMethods.newton_raphson_ips_fx.IpsFunctionReturn">[docs]</a>
 <span class="nd">@dataclass</span><span class="p">(</span><span class="n">slots</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">IpsFunctionReturn</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Represents the returning value of the interior point evaluation</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">f</span><span class="p">:</span> <span class="nb">float</span>  <span class="c1"># objective function value</span>
     <span class="n">G</span><span class="p">:</span> <span class="n">Vec</span>  <span class="c1"># equalities increment vector</span>
     <span class="n">H</span><span class="p">:</span> <span class="n">Vec</span>  <span class="c1"># inequalities increment vector</span>
@@ -489,10 +489,10 @@
 <div class="viewcode-block" id="IpsFunctionReturn.get_data">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.OPF.NumericalMethods.html#VeraGridEngine.Simulations.OPF.NumericalMethods.newton_raphson_ips_fx.IpsFunctionReturn.get_data">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_data</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">csc</span><span class="p">]]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Returns the structures in a list</span>
 <span class="sd">        :return: List of float, Vec, and csc</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">f</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">G</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">H</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">fx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Gx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Hx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">fxx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Gxx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Hxx</span><span class="p">]</span></div>
 
 
@@ -500,22 +500,22 @@
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.OPF.NumericalMethods.html#VeraGridEngine.Simulations.OPF.NumericalMethods.newton_raphson_ips_fx.IpsFunctionReturn.get_headers">[docs]</a>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_headers</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Returns the structures&#39; names</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Returns the structures' names</span>
 <span class="sd">        :return: list of str</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="p">[</span><span class="s1">&#39;f&#39;</span><span class="p">,</span> <span class="s1">&#39;G&#39;</span><span class="p">,</span> <span class="s1">&#39;H&#39;</span><span class="p">,</span> <span class="s1">&#39;fx&#39;</span><span class="p">,</span> <span class="s1">&#39;Gx&#39;</span><span class="p">,</span> <span class="s1">&#39;Hx&#39;</span><span class="p">,</span> <span class="s1">&#39;fxx&#39;</span><span class="p">,</span> <span class="s1">&#39;Gxx&#39;</span><span class="p">,</span> <span class="s1">&#39;Hxx&#39;</span><span class="p">]</span></div>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="p">[</span><span class="s1">'f'</span><span class="p">,</span> <span class="s1">'G'</span><span class="p">,</span> <span class="s1">'H'</span><span class="p">,</span> <span class="s1">'fx'</span><span class="p">,</span> <span class="s1">'Gx'</span><span class="p">,</span> <span class="s1">'Hx'</span><span class="p">,</span> <span class="s1">'fxx'</span><span class="p">,</span> <span class="s1">'Gxx'</span><span class="p">,</span> <span class="s1">'Hxx'</span><span class="p">]</span></div>
 
 
 <div class="viewcode-block" id="IpsFunctionReturn.compare">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.OPF.NumericalMethods.html#VeraGridEngine.Simulations.OPF.NumericalMethods.newton_raphson_ips_fx.IpsFunctionReturn.compare">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">compare</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="s2">&quot;IpsFunctionReturn&quot;</span><span class="p">,</span> <span class="n">h</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">csc</span><span class="p">]]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">compare</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="s2">"IpsFunctionReturn"</span><span class="p">,</span> <span class="n">h</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">csc</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Returns the comparison between this structure and another structure of this type</span>
 <span class="sd">        :param other: IpsFunctionReturn</span>
 <span class="sd">        :param h: finite differences step</span>
 <span class="sd">        :return: Dictionary with the structure name and the difference</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">errors</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">analytic_struct</span><span class="p">,</span> <span class="n">f_init_struct</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_data</span><span class="p">(),</span>
                                                                        <span class="n">other</span><span class="o">.</span><span class="n">get_data</span><span class="p">(),</span>
@@ -543,9 +543,9 @@
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.OPF.NumericalMethods.html#VeraGridEngine.Simulations.OPF.NumericalMethods.newton_raphson_ips_fx.IpsIterationHistory">[docs]</a>
 <span class="nd">@dataclass</span><span class="p">(</span><span class="n">slots</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">IpsIterationHistory</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compact IPS per-iteration history for debugging and solver comparisons.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">iteration</span><span class="p">:</span> <span class="n">Vec</span>
     <span class="n">objective</span><span class="p">:</span> <span class="n">Vec</span>
     <span class="n">feas_cond</span><span class="p">:</span> <span class="n">Vec</span>
@@ -563,9 +563,9 @@
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.OPF.NumericalMethods.html#VeraGridEngine.Simulations.OPF.NumericalMethods.newton_raphson_ips_fx.IpsSolution">[docs]</a>
 <span class="nd">@dataclass</span><span class="p">(</span><span class="n">slots</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">IpsSolution</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Represents the returning value of the interior point solution</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">x</span><span class="p">:</span> <span class="n">Vec</span>
     <span class="n">error</span><span class="p">:</span> <span class="nb">float</span>
     <span class="n">gamma</span><span class="p">:</span> <span class="nb">float</span>
@@ -595,7 +595,7 @@
                           <span class="n">sigma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span>
                           <span class="n">alpha_min</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-8</span><span class="p">,</span>
                           <span class="n">max_stepsize</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e10</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">IpsSolution</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Solve a non-linear problem of the form:</span>
 
 <span class="sd">        min: f(x)</span>
@@ -638,20 +638,20 @@
 <span class="sd">    :param alpha_min: Minimum accepted primal/dual step before declaring numeric failure</span>
 <span class="sd">    :param max_stepsize: Maximum allowed norm of the Newton direction before declaring numeric failure</span>
 <span class="sd">    :return: IpsSolution</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">linear_solver_candidates</span> <span class="o">=</span> <span class="n">get_ips_linear_solver_candidates</span><span class="p">()</span>
 
     <span class="n">t_start</span> <span class="o">=</span> <span class="n">timeit</span><span class="o">.</span><span class="n">default_timer</span><span class="p">()</span>
 
     <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="mf">0.5</span> <span class="o">&lt;=</span> <span class="n">xi</span> <span class="o">&lt;</span> <span class="mf">1.0</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;xi must be in [0.5, 1.0), got </span><span class="si">{</span><span class="n">xi</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"xi must be in [0.5, 1.0), got </span><span class="si">{</span><span class="n">xi</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="mf">0.0</span> <span class="o">&lt;</span> <span class="n">sigma</span> <span class="o">&lt;=</span> <span class="mf">1.0</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;sigma must be in (0.0, 1.0], got </span><span class="si">{</span><span class="n">sigma</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"sigma must be in (0.0, 1.0], got </span><span class="si">{</span><span class="n">sigma</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">alpha_min</span> <span class="o">&lt;=</span> <span class="mf">0.0</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;alpha_min must be positive, got </span><span class="si">{</span><span class="n">alpha_min</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"alpha_min must be positive, got </span><span class="si">{</span><span class="n">alpha_min</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">max_stepsize</span> <span class="o">&lt;=</span> <span class="mf">0.0</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;max_stepsize must be positive, got </span><span class="si">{</span><span class="n">max_stepsize</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"max_stepsize must be positive, got </span><span class="si">{</span><span class="n">max_stepsize</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
     <span class="c1"># Init iteration values</span>
     <span class="n">error</span> <span class="o">=</span> <span class="mf">1e6</span>
@@ -725,7 +725,7 @@
     <span class="n">alphad_history</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">max_iter</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
     <span class="n">step_norm_history</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">max_iter</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
 
-    <span class="n">objective_scale</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">problem</span><span class="p">,</span> <span class="s2">&quot;objective_scale&quot;</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
+    <span class="n">objective_scale</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">problem</span><span class="p">,</span> <span class="s2">"objective_scale"</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
     <span class="c1"># record initial values</span>
     <span class="n">feas_cond_evolution</span><span class="p">[</span><span class="n">iter_counter</span><span class="p">]</span> <span class="o">=</span> <span class="n">feas_cond</span>
     <span class="n">error_evolution</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">error</span>
@@ -766,7 +766,7 @@
             <span class="k">break</span>
 
         <span class="k">if</span> <span class="n">verbose</span> <span class="o">&gt;</span> <span class="mi">2</span> <span class="ow">and</span> <span class="n">linear_solver_used</span> <span class="o">!=</span> <span class="n">linear_solver_candidates</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">Fallback linear solver: </span><span class="si">{</span><span class="n">linear_solver_used</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">, residual=</span><span class="si">{</span><span class="n">linear_residual</span><span class="si">:</span><span class="s2">.3e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="se">\t</span><span class="s2">Fallback linear solver: </span><span class="si">{</span><span class="n">linear_solver_used</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">, residual=</span><span class="si">{</span><span class="n">linear_residual</span><span class="si">:</span><span class="s2">.3e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
         <span class="n">dx</span><span class="p">,</span> <span class="n">dlam</span> <span class="o">=</span> <span class="n">split</span><span class="p">(</span><span class="n">dxdlam</span><span class="p">,</span> <span class="n">problem</span><span class="o">.</span><span class="n">NV</span><span class="p">)</span>
 
@@ -873,20 +873,20 @@
                                        <span class="n">tol</span><span class="o">=</span><span class="n">tol</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">verbose</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Iteration: </span><span class="si">{</span><span class="n">iter_counter</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s2">&quot;-&quot;</span> <span class="o">*</span> <span class="mi">80</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'Iteration: </span><span class="si">{</span><span class="n">iter_counter</span><span class="si">}</span><span class="s1">'</span><span class="p">,</span> <span class="s2">"-"</span> <span class="o">*</span> <span class="mi">80</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">verbose</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
-                <span class="n">x_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="n">x</span><span class="p">,</span> <span class="s1">&#39;dx&#39;</span><span class="p">:</span> <span class="n">dx</span><span class="p">})</span>
-                <span class="n">eq_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;λ&#39;</span><span class="p">:</span> <span class="n">lam</span><span class="p">,</span> <span class="s1">&#39;dλ&#39;</span><span class="p">:</span> <span class="n">dlam</span><span class="p">})</span>
-                <span class="n">ineq_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;mu&#39;</span><span class="p">:</span> <span class="n">mu</span><span class="p">,</span> <span class="s1">&#39;z&#39;</span><span class="p">:</span> <span class="n">z</span><span class="p">,</span> <span class="s1">&#39;dmu&#39;</span><span class="p">:</span> <span class="n">dmu</span><span class="p">,</span> <span class="s1">&#39;dz&#39;</span><span class="p">:</span> <span class="n">dz</span><span class="p">})</span>
+                <span class="n">x_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="s1">'x'</span><span class="p">:</span> <span class="n">x</span><span class="p">,</span> <span class="s1">'dx'</span><span class="p">:</span> <span class="n">dx</span><span class="p">})</span>
+                <span class="n">eq_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="s1">'λ'</span><span class="p">:</span> <span class="n">lam</span><span class="p">,</span> <span class="s1">'dλ'</span><span class="p">:</span> <span class="n">dlam</span><span class="p">})</span>
+                <span class="n">ineq_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="s1">'mu'</span><span class="p">:</span> <span class="n">mu</span><span class="p">,</span> <span class="s1">'z'</span><span class="p">:</span> <span class="n">z</span><span class="p">,</span> <span class="s1">'dmu'</span><span class="p">:</span> <span class="n">dmu</span><span class="p">,</span> <span class="s1">'dz'</span><span class="p">:</span> <span class="n">dz</span><span class="p">})</span>
 
-                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;x:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">x_df</span><span class="p">)</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;EQ:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">eq_df</span><span class="p">)</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;INEQ:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">ineq_df</span><span class="p">)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">Gamma:&quot;</span><span class="p">,</span> <span class="n">gamma</span><span class="p">)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">Comp cond:&quot;</span><span class="p">,</span> <span class="n">comp_cond</span><span class="p">)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">Cost cond:&quot;</span><span class="p">,</span> <span class="n">cost_cond</span><span class="p">)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">Err:&quot;</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">Max Displacement:&quot;</span><span class="p">,</span> <span class="n">max_displ</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">"x:</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span> <span class="n">x_df</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">"EQ:</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span> <span class="n">eq_df</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">"INEQ:</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span> <span class="n">ineq_df</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">"</span><span class="se">\t</span><span class="s2">Gamma:"</span><span class="p">,</span> <span class="n">gamma</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">"</span><span class="se">\t</span><span class="s2">Comp cond:"</span><span class="p">,</span> <span class="n">comp_cond</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">"</span><span class="se">\t</span><span class="s2">Cost cond:"</span><span class="p">,</span> <span class="n">cost_cond</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">"</span><span class="se">\t</span><span class="s2">Err:"</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">"</span><span class="se">\t</span><span class="s2">Max Displacement:"</span><span class="p">,</span> <span class="n">max_displ</span><span class="p">)</span>
 
         <span class="c1"># Add an iteration step</span>
         <span class="n">iter_counter</span> <span class="o">+=</span> <span class="mi">1</span>
@@ -907,15 +907,15 @@
     <span class="n">t_end</span> <span class="o">=</span> <span class="n">timeit</span><span class="o">.</span><span class="n">default_timer</span><span class="p">()</span>
 
     <span class="k">if</span> <span class="n">verbose</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;SOLUTION&#39;</span><span class="p">,</span> <span class="s2">&quot;-&quot;</span> <span class="o">*</span> <span class="mi">80</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">x:&quot;</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">λ:&quot;</span><span class="p">,</span> <span class="n">lam</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">F.obj: </span><span class="si">{</span><span class="n">f</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">objective_scale</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">Err: </span><span class="si">{</span><span class="n">error</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">Iterations: </span><span class="si">{</span><span class="n">iter_counter</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">Max Displacement: </span><span class="si">{</span><span class="n">max_displ</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">Time elapsed (s): </span><span class="si">{</span><span class="n">t_end</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">t_start</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">Feas cond: &#39;</span><span class="p">,</span> <span class="n">feas_cond</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'SOLUTION'</span><span class="p">,</span> <span class="s2">"-"</span> <span class="o">*</span> <span class="mi">80</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="se">\t</span><span class="s2">x:"</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="se">\t</span><span class="s2">λ:"</span><span class="p">,</span> <span class="n">lam</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="se">\t</span><span class="s2">F.obj: </span><span class="si">{</span><span class="n">f</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">objective_scale</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="se">\t</span><span class="s2">Err: </span><span class="si">{</span><span class="n">error</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'</span><span class="se">\t</span><span class="s1">Iterations: </span><span class="si">{</span><span class="n">iter_counter</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'</span><span class="se">\t</span><span class="s1">Max Displacement: </span><span class="si">{</span><span class="n">max_displ</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'</span><span class="se">\t</span><span class="s1">Time elapsed (s): </span><span class="si">{</span><span class="n">t_end</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">t_start</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'</span><span class="se">\t</span><span class="s1">Feas cond: '</span><span class="p">,</span> <span class="n">feas_cond</span><span class="p">)</span>
 
     <span class="n">history</span> <span class="o">=</span> <span class="n">IpsIterationHistory</span><span class="p">(</span>
         <span class="n">iteration</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">iter_counter</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span>

@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Templates.Rms.basic_devices &mdash; VeraGrid 6.7.13 documentation</title>
+  <title>VeraGridEngine.Templates.Rms.basic_devices &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=16fbabd8"></script>
+      <script src="../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -121,22 +121,22 @@
 
 <div class="viewcode-block" id="get_pll_transform_rms">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Templates.Rms.html#VeraGridEngine.Templates.Rms.basic_devices.get_pll_transform_rms">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">get_pll_transform_rms</span><span class="p">(</span><span class="n">vfactory</span><span class="p">:</span> <span class="n">VarFactory</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;Pll_transform_rms&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RmsModelTemplate</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_pll_transform_rms</span><span class="p">(</span><span class="n">vfactory</span><span class="p">:</span> <span class="n">VarFactory</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"Pll_transform_rms"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RmsModelTemplate</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">     Pll</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">templ</span> <span class="o">=</span> <span class="n">RmsModelTemplate</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
     <span class="n">templ</span><span class="o">.</span><span class="n">tpe</span> <span class="o">=</span> <span class="n">DeviceType</span><span class="o">.</span><span class="n">NoDevice</span>
 
-    <span class="n">inputs</span> <span class="o">=</span> <span class="p">[</span><span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;Vm&quot;</span><span class="p">,</span> <span class="n">reference</span><span class="o">=</span><span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">Vm</span><span class="p">),</span>
-              <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;Va&quot;</span><span class="p">,</span> <span class="n">reference</span><span class="o">=</span><span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">Va</span><span class="p">),</span>
+    <span class="n">inputs</span> <span class="o">=</span> <span class="p">[</span><span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"Vm"</span><span class="p">,</span> <span class="n">reference</span><span class="o">=</span><span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">Vm</span><span class="p">),</span>
+              <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"Va"</span><span class="p">,</span> <span class="n">reference</span><span class="o">=</span><span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">Va</span><span class="p">),</span>
               <span class="p">]</span>
     <span class="c1">############### phase detector block ############################</span>
 
     <span class="c1"># phase detector Variables</span>
-    <span class="n">vd</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;vd&#39;</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s2">&quot;vd_reference&quot;</span><span class="p">)</span>
-    <span class="n">vq</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;vq&#39;</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s2">&quot;vq_reference&quot;</span><span class="p">)</span>
-    <span class="n">theta_phase_detect_blk</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;theta&#39;</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s2">&quot;theta_reference&quot;</span><span class="p">)</span>
+    <span class="n">vd</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'vd'</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s2">"vd_reference"</span><span class="p">)</span>
+    <span class="n">vq</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'vq'</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s2">"vq_reference"</span><span class="p">)</span>
+    <span class="n">theta_phase_detect_blk</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'theta'</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s2">"theta_reference"</span><span class="p">)</span>
 
     <span class="n">phase_detector_block</span> <span class="o">=</span> <span class="n">Block</span><span class="p">(</span>
 
@@ -150,7 +150,7 @@
             <span class="n">vd</span><span class="p">:</span> <span class="n">inputs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">sym</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">inputs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">theta_phase_detect_blk</span><span class="p">),</span>
             <span class="n">vq</span><span class="p">:</span> <span class="n">inputs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">sym</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">inputs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">theta_phase_detect_blk</span><span class="p">),</span>
         <span class="p">},</span>
-        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Phase Detector&quot;</span><span class="p">,</span>
+        <span class="n">name</span><span class="o">=</span><span class="s2">"Phase Detector"</span><span class="p">,</span>
         <span class="n">out_vars</span><span class="o">=</span><span class="p">[</span><span class="n">vd</span><span class="p">,</span> <span class="n">vq</span><span class="p">],</span>
         <span class="n">in_vars</span><span class="o">=</span><span class="p">[</span><span class="n">inputs</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">inputs</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">theta_phase_detect_blk</span><span class="p">]</span>
     <span class="p">)</span>
@@ -158,12 +158,12 @@
     <span class="c1">############### loop filter block ############################</span>
 
     <span class="c1"># Parameters</span>
-    <span class="n">Kp_pll</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;Kp_pll&#39;</span><span class="p">)</span>
-    <span class="n">Ki_pll</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;Ki_pll&#39;</span><span class="p">)</span>
+    <span class="n">Kp_pll</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'Kp_pll'</span><span class="p">)</span>
+    <span class="n">Ki_pll</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'Ki_pll'</span><span class="p">)</span>
 
     <span class="c1"># variables</span>
-    <span class="n">vd_pi_block</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;vd_pi_block&#39;</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s2">&quot;vd_reference&quot;</span><span class="p">)</span>
-    <span class="n">vq_pi_block</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;vq_pi_block&#39;</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s2">&quot;vq_reference&quot;</span><span class="p">)</span>
+    <span class="n">vd_pi_block</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'vd_pi_block'</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s2">"vd_reference"</span><span class="p">)</span>
+    <span class="n">vq_pi_block</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'vq_pi_block'</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s2">"vq_reference"</span><span class="p">)</span>
 
     <span class="n">event_dict</span> <span class="o">=</span> <span class="p">{</span>
         <span class="n">Kp_pll</span><span class="p">:</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_const</span><span class="p">(</span><span class="mf">0.001</span><span class="p">),</span>
@@ -174,7 +174,7 @@
                                   <span class="n">num</span><span class="o">=</span><span class="p">[</span><span class="n">Ki_pll</span><span class="p">,</span> <span class="n">Kp_pll</span><span class="p">],</span>
                                   <span class="n">den</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
                                   <span class="n">x</span><span class="o">=</span><span class="n">vd_pi_block</span><span class="p">,</span>
-                                  <span class="n">name</span><span class="o">=</span><span class="s1">&#39;PLL_integrator&#39;</span>
+                                  <span class="n">name</span><span class="o">=</span><span class="s1">'PLL_integrator'</span>
                                   <span class="p">)</span>
 
     <span class="n">loop_filter_block</span> <span class="o">=</span> <span class="n">Block</span><span class="p">(</span>
@@ -182,24 +182,24 @@
         <span class="n">out_vars</span><span class="o">=</span><span class="p">[</span><span class="n">omega</span><span class="p">],</span>
         <span class="n">event_dict</span><span class="o">=</span> <span class="n">event_dict</span><span class="p">,</span>
         <span class="n">children</span><span class="o">=</span> <span class="p">[</span><span class="n">PI_block</span><span class="p">],</span>
-        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Loop filter&quot;</span><span class="p">,</span>
+        <span class="n">name</span><span class="o">=</span><span class="s2">"Loop filter"</span><span class="p">,</span>
         <span class="n">init_eqs</span><span class="o">=</span><span class="p">{</span>
             <span class="n">omega</span><span class="p">:</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_const</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span>
 
         <span class="p">},</span>
     <span class="p">)</span>
 
-    <span class="n">omega</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;omega&quot;</span>
-    <span class="n">vfactory</span><span class="o">.</span><span class="n">add_shared_ref_to_var</span><span class="p">(</span><span class="n">omega</span><span class="p">,</span> <span class="s2">&quot;omega_reference&quot;</span><span class="p">)</span>
+    <span class="n">omega</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s2">"omega"</span>
+    <span class="n">vfactory</span><span class="o">.</span><span class="n">add_shared_ref_to_var</span><span class="p">(</span><span class="n">omega</span><span class="p">,</span> <span class="s2">"omega_reference"</span><span class="p">)</span>
 
     <span class="c1">############ VCO #############################################</span>
 
     <span class="c1"># Parameters</span>
-    <span class="n">fn</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;fn&#39;</span><span class="p">)</span>
+    <span class="n">fn</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'fn'</span><span class="p">)</span>
 
     <span class="c1"># variables</span>
-    <span class="n">omega_vco</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;omega_vco&#39;</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s2">&quot;omega_reference&quot;</span><span class="p">)</span>
-    <span class="n">theta</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;theta&#39;</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s2">&quot;theta_reference&quot;</span><span class="p">)</span>
+    <span class="n">omega_vco</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'omega_vco'</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s2">"omega_reference"</span><span class="p">)</span>
+    <span class="n">theta</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'theta'</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s2">"theta_reference"</span><span class="p">)</span>
 
     <span class="n">event_dict</span> <span class="o">=</span> <span class="p">{}</span>
 
@@ -207,7 +207,7 @@
         <span class="n">state_eqs</span><span class="o">=</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">fn</span> <span class="o">*</span> <span class="p">(</span><span class="n">omega_vco</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)],</span>
         <span class="n">state_vars</span><span class="o">=</span><span class="p">[</span><span class="n">theta</span><span class="p">],</span>
         <span class="n">event_dict</span><span class="o">=</span><span class="n">event_dict</span><span class="p">,</span>
-        <span class="n">name</span><span class="o">=</span> <span class="s1">&#39;VCO&#39;</span><span class="p">,</span>
+        <span class="n">name</span><span class="o">=</span> <span class="s1">'VCO'</span><span class="p">,</span>
         <span class="n">out_vars</span> <span class="o">=</span> <span class="p">[</span><span class="n">theta</span><span class="p">],</span>
         <span class="n">in_vars</span><span class="o">=</span> <span class="p">[</span><span class="n">omega_vco</span><span class="p">],</span>
         <span class="n">api_obj_mapping</span><span class="o">=</span><span class="p">{</span><span class="n">ParamPowerFlowReferenceType</span><span class="o">.</span><span class="n">freq</span><span class="p">:</span> <span class="n">fn</span><span class="p">},</span>
@@ -219,25 +219,25 @@
     <span class="n">templ</span><span class="o">.</span><span class="n">block</span><span class="o">.</span><span class="n">children</span> <span class="o">=</span> <span class="p">[</span><span class="n">phase_detector_block</span><span class="p">,</span> <span class="n">loop_filter_block</span><span class="p">,</span> <span class="n">vco_block</span><span class="p">]</span>
     <span class="n">templ</span><span class="o">.</span><span class="n">block</span><span class="o">.</span><span class="n">in_vars</span> <span class="o">=</span> <span class="n">inputs</span>
     <span class="n">templ</span><span class="o">.</span><span class="n">block</span><span class="o">.</span><span class="n">out_vars</span> <span class="o">=</span> <span class="p">[</span><span class="n">vd</span><span class="p">,</span> <span class="n">vq</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">omega</span><span class="p">]</span>
-    <span class="n">templ</span><span class="o">.</span><span class="n">block</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;Phase locked loop&quot;</span>
+    <span class="n">templ</span><span class="o">.</span><span class="n">block</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s2">"Phase locked loop"</span>
 
-    <span class="n">templ</span><span class="o">.</span><span class="n">comment</span> <span class="o">=</span> <span class="s1">&#39;Reusable VSC phase-locked-loop RMS control block&#39;</span>
+    <span class="n">templ</span><span class="o">.</span><span class="n">comment</span> <span class="o">=</span> <span class="s1">'Reusable VSC phase-locked-loop RMS control block'</span>
     <span class="k">return</span> <span class="n">templ</span></div>
 
 
 
 <div class="viewcode-block" id="get_pi_current_controller">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Templates.Rms.html#VeraGridEngine.Templates.Rms.basic_devices.get_pi_current_controller">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">get_pi_current_controller</span><span class="p">(</span><span class="n">vfactory</span><span class="p">:</span> <span class="n">VarFactory</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;current_ctrl_iq&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RmsModelTemplate</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_pi_current_controller</span><span class="p">(</span><span class="n">vfactory</span><span class="p">:</span> <span class="n">VarFactory</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"current_ctrl_iq"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RmsModelTemplate</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">     Current control iq</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">suffix</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;_</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="n">name</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
+<span class="sd">    """</span>
+    <span class="n">suffix</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"_</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span> <span class="k">if</span> <span class="n">name</span> <span class="k">else</span> <span class="s2">""</span>
     <span class="n">templ</span> <span class="o">=</span> <span class="n">RmsModelTemplate</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
     <span class="n">templ</span><span class="o">.</span><span class="n">tpe</span> <span class="o">=</span> <span class="n">DeviceType</span><span class="o">.</span><span class="n">NoDevice</span>
 
-    <span class="n">Kp_icl</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;Kp_icl&#39;</span><span class="p">)</span>  <span class="c1"># proportional gain for inner current loop</span>
-    <span class="n">Ki_icl</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;Ki_icl&#39;</span><span class="p">)</span>  <span class="c1"># integral gain for inner current loop</span>
+    <span class="n">Kp_icl</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'Kp_icl'</span><span class="p">)</span>  <span class="c1"># proportional gain for inner current loop</span>
+    <span class="n">Ki_icl</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'Ki_icl'</span><span class="p">)</span>  <span class="c1"># integral gain for inner current loop</span>
 
     <span class="n">block</span> <span class="o">=</span> <span class="n">Block</span><span class="p">()</span>
 
@@ -248,10 +248,10 @@
         <span class="n">Ki_icl</span><span class="p">:</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_const</span><span class="p">(</span><span class="mf">1.0</span><span class="p">),</span>
     <span class="p">}</span>
 
-    <span class="n">i_q</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;i_q&#39;</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s1">&#39;i_q_reference&#39;</span><span class="p">)</span>
-    <span class="n">i_q_ref_sat</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;i_q_ref_sat&#39;</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s1">&#39;i_q_ref_sat_reference&#39;</span><span class="p">)</span>
-    <span class="n">i_d</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;i_d&#39;</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s1">&#39;i_d_reference&#39;</span><span class="p">)</span>
-    <span class="n">i_d_ref_sat</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;i_d_ref_sat&#39;</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s1">&#39;i_d_ref_sat_reference&#39;</span><span class="p">)</span>
+    <span class="n">i_q</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'i_q'</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s1">'i_q_reference'</span><span class="p">)</span>
+    <span class="n">i_q_ref_sat</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'i_q_ref_sat'</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s1">'i_q_ref_sat_reference'</span><span class="p">)</span>
+    <span class="n">i_d</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'i_d'</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s1">'i_d_reference'</span><span class="p">)</span>
+    <span class="n">i_d_ref_sat</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'i_d_ref_sat'</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s1">'i_d_ref_sat_reference'</span><span class="p">)</span>
 
     <span class="n">inputs</span> <span class="o">=</span> <span class="p">[</span><span class="n">i_q</span><span class="p">,</span> <span class="n">i_q_ref_sat</span><span class="p">,</span> <span class="n">i_d</span><span class="p">,</span> <span class="n">i_d_ref_sat</span><span class="p">]</span>
 
@@ -259,27 +259,27 @@
                                            <span class="n">num</span><span class="o">=</span><span class="p">[</span><span class="n">Ki_icl</span><span class="p">,</span> <span class="n">Kp_icl</span><span class="p">],</span>
                                            <span class="n">den</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
                                            <span class="n">x</span><span class="o">=</span><span class="n">inputs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">inputs</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
-                                           <span class="n">name</span><span class="o">=</span><span class="s1">&#39;vq_hat&#39;</span><span class="p">,</span>
-                                           <span class="n">output_var_name</span> <span class="o">=</span> <span class="s1">&#39;vq_hat&#39;</span>
+                                           <span class="n">name</span><span class="o">=</span><span class="s1">'vq_hat'</span><span class="p">,</span>
+                                           <span class="n">output_var_name</span> <span class="o">=</span> <span class="s1">'vq_hat'</span>
                                            <span class="p">)</span>
 
     <span class="n">control_block_iq</span><span class="o">.</span><span class="n">init_eqs</span> <span class="o">=</span> <span class="p">{</span>
     <span class="p">}</span>
 
-    <span class="n">vfactory</span><span class="o">.</span><span class="n">add_shared_ref_to_var</span><span class="p">(</span><span class="n">vq_hat</span><span class="p">,</span> <span class="s2">&quot;vq_hat_reference&quot;</span><span class="p">)</span>
+    <span class="n">vfactory</span><span class="o">.</span><span class="n">add_shared_ref_to_var</span><span class="p">(</span><span class="n">vq_hat</span><span class="p">,</span> <span class="s2">"vq_hat_reference"</span><span class="p">)</span>
 
     <span class="n">control_block_id</span><span class="p">,</span> <span class="n">vd_hat</span> <span class="o">=</span> <span class="n">tf_to_block</span><span class="p">(</span><span class="n">vfactory</span><span class="p">,</span>
                                            <span class="n">num</span><span class="o">=</span><span class="p">[</span><span class="n">Ki_icl</span><span class="p">,</span> <span class="n">Kp_icl</span><span class="p">],</span>
                                            <span class="n">den</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
                                            <span class="n">x</span><span class="o">=</span><span class="n">inputs</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">inputs</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span>
-                                           <span class="n">name</span><span class="o">=</span><span class="s1">&#39;vq_hat&#39;</span><span class="p">,</span>
-                                           <span class="n">output_var_name</span><span class="o">=</span><span class="s1">&#39;vd_hat&#39;</span>
+                                           <span class="n">name</span><span class="o">=</span><span class="s1">'vq_hat'</span><span class="p">,</span>
+                                           <span class="n">output_var_name</span><span class="o">=</span><span class="s1">'vd_hat'</span>
                                            <span class="p">)</span>
 
     <span class="n">control_block_id</span><span class="o">.</span><span class="n">init_eqs</span> <span class="o">=</span> <span class="p">{</span>
     <span class="p">}</span>
 
-    <span class="n">vfactory</span><span class="o">.</span><span class="n">add_shared_ref_to_var</span><span class="p">(</span><span class="n">vd_hat</span><span class="p">,</span> <span class="s2">&quot;vd_hat_reference&quot;</span><span class="p">)</span>
+    <span class="n">vfactory</span><span class="o">.</span><span class="n">add_shared_ref_to_var</span><span class="p">(</span><span class="n">vd_hat</span><span class="p">,</span> <span class="s2">"vd_hat_reference"</span><span class="p">)</span>
 
     <span class="n">control_block_iq</span><span class="o">.</span><span class="n">in_vars</span> <span class="o">=</span> <span class="p">[</span><span class="n">i_q</span><span class="p">,</span> <span class="n">i_q_ref_sat</span><span class="p">]</span>
     <span class="n">control_block_iq</span><span class="o">.</span><span class="n">out_vars</span> <span class="o">=</span> <span class="p">[</span><span class="n">vq_hat</span><span class="p">]</span>
@@ -295,40 +295,40 @@
     <span class="n">templ</span><span class="o">.</span><span class="n">block</span> <span class="o">=</span> <span class="n">block</span>
 
 
-    <span class="n">templ</span><span class="o">.</span><span class="n">comment</span> <span class="o">=</span> <span class="s1">&#39;Reusable VSC PI current-controller RMS block&#39;</span>
+    <span class="n">templ</span><span class="o">.</span><span class="n">comment</span> <span class="o">=</span> <span class="s1">'Reusable VSC PI current-controller RMS block'</span>
     <span class="k">return</span> <span class="n">templ</span></div>
 
 
 
 <div class="viewcode-block" id="get_pi_power_controller">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Templates.Rms.html#VeraGridEngine.Templates.Rms.basic_devices.get_pi_power_controller">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">get_pi_power_controller</span><span class="p">(</span><span class="n">vfactory</span><span class="p">:</span> <span class="n">VarFactory</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;power_ctrl&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RmsModelTemplate</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_pi_power_controller</span><span class="p">(</span><span class="n">vfactory</span><span class="p">:</span> <span class="n">VarFactory</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"power_ctrl"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RmsModelTemplate</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">     Current control iq</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">suffix</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;_</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="n">name</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
+<span class="sd">    """</span>
+    <span class="n">suffix</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"_</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span> <span class="k">if</span> <span class="n">name</span> <span class="k">else</span> <span class="s2">""</span>
     <span class="n">templ</span> <span class="o">=</span> <span class="n">RmsModelTemplate</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
     <span class="n">templ</span><span class="o">.</span><span class="n">tpe</span> <span class="o">=</span> <span class="n">DeviceType</span><span class="o">.</span><span class="n">NoDevice</span>
 
     <span class="c1"># Parameters</span>
-    <span class="n">Kp_pol</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;Kp_pol&#39;</span><span class="p">)</span>  <span class="c1"># proportional gain for outer power loop</span>
-    <span class="n">Ki_pol</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;Ki_pol&#39;</span><span class="p">)</span>  <span class="c1"># integral gain for outer power loop</span>
-    <span class="n">Ki_vdc</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;ki_vdc&#39;</span><span class="p">)</span>  <span class="c1"># proportional gain for DC voltage control</span>
-    <span class="n">Kp_vdc</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;Kp_vdc&#39;</span><span class="p">)</span>  <span class="c1"># proportional gain for DC voltage control</span>
+    <span class="n">Kp_pol</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'Kp_pol'</span><span class="p">)</span>  <span class="c1"># proportional gain for outer power loop</span>
+    <span class="n">Ki_pol</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'Ki_pol'</span><span class="p">)</span>  <span class="c1"># integral gain for outer power loop</span>
+    <span class="n">Ki_vdc</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'ki_vdc'</span><span class="p">)</span>  <span class="c1"># proportional gain for DC voltage control</span>
+    <span class="n">Kp_vdc</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'Kp_vdc'</span><span class="p">)</span>  <span class="c1"># proportional gain for DC voltage control</span>
 
     <span class="c1"># Voltage references for control modes</span>
-    <span class="n">Vdc_ref</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;Vdc_ref&#39;</span><span class="p">)</span>
+    <span class="n">Vdc_ref</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'Vdc_ref'</span><span class="p">)</span>
 
     <span class="c1"># inputs</span>
-    <span class="n">P</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;P&#39;</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s1">&#39;P_reference&#39;</span><span class="p">)</span>
-    <span class="n">Q</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;Q&#39;</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s1">&#39;Q_reference&#39;</span><span class="p">)</span>
-    <span class="n">i_q_ref</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;i_q_ref&#39;</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s1">&#39;i_q_ref_reference&#39;</span><span class="p">)</span>
-    <span class="n">i_d_ref</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;i_d_ref&#39;</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s1">&#39;i_d_ref_reference&#39;</span><span class="p">)</span>
-    <span class="n">v_dc</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;v_dc&#39;</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s1">&#39;v_dc_reference&#39;</span><span class="p">)</span>
+    <span class="n">P</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'P'</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s1">'P_reference'</span><span class="p">)</span>
+    <span class="n">Q</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'Q'</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s1">'Q_reference'</span><span class="p">)</span>
+    <span class="n">i_q_ref</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'i_q_ref'</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s1">'i_q_ref_reference'</span><span class="p">)</span>
+    <span class="n">i_d_ref</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'i_d_ref'</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s1">'i_d_ref_reference'</span><span class="p">)</span>
+    <span class="n">v_dc</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'v_dc'</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s1">'v_dc_reference'</span><span class="p">)</span>
 
 
-    <span class="n">P_ref</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;P_ref&#39;</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s1">&#39;P_ref_reference&#39;</span><span class="p">)</span>
-    <span class="n">Q_ref</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;Q_ref&#39;</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s1">&#39;Q_ref_reference&#39;</span><span class="p">)</span>
+    <span class="n">P_ref</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'P_ref'</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s1">'P_ref_reference'</span><span class="p">)</span>
+    <span class="n">Q_ref</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'Q_ref'</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s1">'Q_ref_reference'</span><span class="p">)</span>
 
     <span class="n">event_dict</span> <span class="o">=</span> <span class="p">{</span>
         <span class="n">Kp_pol</span><span class="p">:</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_const</span><span class="p">(</span><span class="mf">0.05</span><span class="p">),</span>
@@ -354,21 +354,21 @@
                                      <span class="n">den</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
                                      <span class="n">x</span><span class="o">=</span><span class="n">P_ref</span> <span class="o">-</span> <span class="n">P</span><span class="p">,</span>
                                      <span class="n">y</span><span class="o">=</span><span class="n">i_q_ref</span><span class="p">,</span>
-                                     <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Pac_ctrl&#39;</span>
+                                     <span class="n">name</span><span class="o">=</span><span class="s1">'Pac_ctrl'</span>
                                      <span class="p">)</span>
-    <span class="c1"># vfactory.add_shared_ref_to_var(control_block_1.out_vars[0], &quot;iq_ref_ctrl_1&quot;)</span>
+    <span class="c1"># vfactory.add_shared_ref_to_var(control_block_1.out_vars[0], "iq_ref_ctrl_1")</span>
 
 
-    <span class="n">control_block_1</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;Pac_ctrl&#39;</span>
+    <span class="n">control_block_1</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s1">'Pac_ctrl'</span>
     <span class="c1">#</span>
     <span class="c1"># control_block_2, _ = tf_to_block(vfactory,</span>
     <span class="c1">#                                  num=[Ki_vdc, Kp_vdc],</span>
     <span class="c1">#                                  den=[0, 1],</span>
     <span class="c1">#                                  x=(v_dc - Vdc_ref),</span>
     <span class="c1">#                                  y=i_q_ref,</span>
-    <span class="c1">#                                  name=&#39;Vdc_ctrl&#39;</span>
+    <span class="c1">#                                  name='Vdc_ctrl'</span>
     <span class="c1">#                                  )</span>
-    <span class="c1"># control_block_2.name = &#39;Vdc_ctrl&#39;</span>
+    <span class="c1"># control_block_2.name = 'Vdc_ctrl'</span>
 
 
     <span class="n">control_block_2</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">tf_to_block</span><span class="p">(</span><span class="n">vfactory</span><span class="p">,</span>
@@ -376,7 +376,7 @@
                                     <span class="n">den</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
                                     <span class="n">x</span><span class="o">=</span><span class="n">Q_ref</span> <span class="o">-</span> <span class="n">Q</span><span class="p">,</span>
                                     <span class="n">y</span><span class="o">=</span><span class="n">i_d_ref</span><span class="p">,</span>
-                                    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Qac_ctrl&#39;</span>
+                                    <span class="n">name</span><span class="o">=</span><span class="s1">'Qac_ctrl'</span>
                                     <span class="p">)</span>
 
     <span class="n">control_block_1</span><span class="o">.</span><span class="n">in_vars</span> <span class="o">=</span> <span class="p">[</span><span class="n">P</span><span class="p">,</span> <span class="n">P_ref</span><span class="p">]</span>
@@ -391,47 +391,47 @@
 
     <span class="n">templ</span><span class="o">.</span><span class="n">block</span> <span class="o">=</span> <span class="n">block</span>
 
-    <span class="n">templ</span><span class="o">.</span><span class="n">comment</span> <span class="o">=</span> <span class="s1">&#39;Reusable VSC PI power-controller RMS block&#39;</span>
+    <span class="n">templ</span><span class="o">.</span><span class="n">comment</span> <span class="o">=</span> <span class="s1">'Reusable VSC PI power-controller RMS block'</span>
     <span class="k">return</span> <span class="n">templ</span></div>
 
 
 <div class="viewcode-block" id="get_gfl_electrical_block">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Templates.Rms.html#VeraGridEngine.Templates.Rms.basic_devices.get_gfl_electrical_block">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">get_gfl_electrical_block</span><span class="p">(</span><span class="n">vfactory</span><span class="p">:</span> <span class="n">VarFactory</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;gfl_electrical_eqs&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RmsModelTemplate</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_gfl_electrical_block</span><span class="p">(</span><span class="n">vfactory</span><span class="p">:</span> <span class="n">VarFactory</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"gfl_electrical_eqs"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RmsModelTemplate</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Gfl electrical equations block</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">suffix</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;_</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="n">name</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
+<span class="sd">    """</span>
+    <span class="n">suffix</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"_</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span> <span class="k">if</span> <span class="n">name</span> <span class="k">else</span> <span class="s2">""</span>
     <span class="n">templ</span> <span class="o">=</span> <span class="n">RmsModelTemplate</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
     <span class="n">templ</span><span class="o">.</span><span class="n">tpe</span> <span class="o">=</span> <span class="n">DeviceType</span><span class="o">.</span><span class="n">NoDevice</span>
 
     <span class="c1">#input vars</span>
-    <span class="n">Pt_vsc</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;Pt_vsc&#39;</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s1">&#39;Pt_vsc_reference&#39;</span><span class="p">)</span>
-    <span class="n">Qt_vsc</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;Qt_vsc&#39;</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s1">&#39;Qt_vsc_reference&#39;</span><span class="p">)</span>
+    <span class="n">Pt_vsc</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'Pt_vsc'</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s1">'Pt_vsc_reference'</span><span class="p">)</span>
+    <span class="n">Qt_vsc</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'Qt_vsc'</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s1">'Qt_vsc_reference'</span><span class="p">)</span>
 
     <span class="c1"># variables from pll</span>
-    <span class="n">v_d_g</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;v_d_g&#39;</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s1">&#39;vd_reference&#39;</span><span class="p">)</span>
-    <span class="n">v_q_g</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;v_q_g&#39;</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s1">&#39;vq_reference&#39;</span><span class="p">)</span>
-    <span class="n">theta</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;theta&#39;</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s1">&#39;theta_reference&#39;</span><span class="p">)</span>
-    <span class="n">omega</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;omega&#39;</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s1">&#39;omega_reference&#39;</span><span class="p">)</span>
+    <span class="n">v_d_g</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'v_d_g'</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s1">'vd_reference'</span><span class="p">)</span>
+    <span class="n">v_q_g</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'v_q_g'</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s1">'vq_reference'</span><span class="p">)</span>
+    <span class="n">theta</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'theta'</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s1">'theta_reference'</span><span class="p">)</span>
+    <span class="n">omega</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'omega'</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s1">'omega_reference'</span><span class="p">)</span>
 
     <span class="c1"># variables from control</span>
-    <span class="n">vq_hat</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;vq_hat&#39;</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s1">&#39;vq_hat_reference&#39;</span><span class="p">)</span>
-    <span class="n">vd_hat</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;vd_hat&#39;</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s1">&#39;vd_hat_reference&#39;</span><span class="p">)</span>
+    <span class="n">vq_hat</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'vq_hat'</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s1">'vq_hat_reference'</span><span class="p">)</span>
+    <span class="n">vd_hat</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'vd_hat'</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s1">'vd_hat_reference'</span><span class="p">)</span>
 
     <span class="c1"># electrical block variables</span>
-    <span class="n">v_d_c</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;v_d_c&#39;</span><span class="p">)</span>
-    <span class="n">v_q_c</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;v_q_c&#39;</span><span class="p">)</span>
-    <span class="n">i_d</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;i_d&#39;</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s1">&#39;i_d_reference&#39;</span><span class="p">)</span>
-    <span class="n">i_q</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;i_q&#39;</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s1">&#39;i_q_reference&#39;</span><span class="p">)</span>
-    <span class="n">P</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;P&#39;</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s1">&#39;P_reference&#39;</span><span class="p">)</span>
-    <span class="n">Q</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;Q&#39;</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s1">&#39;Q_reference&#39;</span><span class="p">)</span>
-    <span class="n">dt_id</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_diff_var</span><span class="p">(</span><span class="s1">&#39;dt_id&#39;</span><span class="p">,</span> <span class="n">base_var</span><span class="o">=</span><span class="n">i_d</span><span class="p">)</span>
-    <span class="n">dt_iq</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_diff_var</span><span class="p">(</span><span class="s1">&#39;dt_iq&#39;</span><span class="p">,</span> <span class="n">base_var</span><span class="o">=</span><span class="n">i_q</span><span class="p">)</span>
+    <span class="n">v_d_c</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'v_d_c'</span><span class="p">)</span>
+    <span class="n">v_q_c</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'v_q_c'</span><span class="p">)</span>
+    <span class="n">i_d</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'i_d'</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s1">'i_d_reference'</span><span class="p">)</span>
+    <span class="n">i_q</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'i_q'</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s1">'i_q_reference'</span><span class="p">)</span>
+    <span class="n">P</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'P'</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s1">'P_reference'</span><span class="p">)</span>
+    <span class="n">Q</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'Q'</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s1">'Q_reference'</span><span class="p">)</span>
+    <span class="n">dt_id</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_diff_var</span><span class="p">(</span><span class="s1">'dt_id'</span><span class="p">,</span> <span class="n">base_var</span><span class="o">=</span><span class="n">i_d</span><span class="p">)</span>
+    <span class="n">dt_iq</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_diff_var</span><span class="p">(</span><span class="s1">'dt_iq'</span><span class="p">,</span> <span class="n">base_var</span><span class="o">=</span><span class="n">i_q</span><span class="p">)</span>
 
     <span class="c1"># electrical block parameters</span>
-    <span class="n">R</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;R&#39;</span><span class="p">)</span>
-    <span class="n">L</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;L&#39;</span><span class="p">)</span>
+    <span class="n">R</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'R'</span><span class="p">)</span>
+    <span class="n">L</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'L'</span><span class="p">)</span>
 
     <span class="n">api_obj_mapping</span> <span class="o">=</span> <span class="p">{</span>
         <span class="n">ParamPowerFlowReferenceType</span><span class="o">.</span><span class="n">R1</span><span class="p">:</span> <span class="n">R</span><span class="p">,</span>
@@ -470,33 +470,33 @@
         <span class="n">api_obj_mapping</span><span class="o">=</span><span class="n">api_obj_mapping</span><span class="p">,</span>
     <span class="p">)</span>
 
-    <span class="n">electrical_block</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;electrical equations&quot;</span>
+    <span class="n">electrical_block</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s2">"electrical equations"</span>
 
     <span class="n">templ</span><span class="o">.</span><span class="n">block</span> <span class="o">=</span> <span class="n">electrical_block</span>
 
-    <span class="n">templ</span><span class="o">.</span><span class="n">comment</span> <span class="o">=</span> <span class="s1">&#39;Grid-following converter electrical-equations RMS block&#39;</span>
+    <span class="n">templ</span><span class="o">.</span><span class="n">comment</span> <span class="o">=</span> <span class="s1">'Grid-following converter electrical-equations RMS block'</span>
     <span class="k">return</span> <span class="n">templ</span></div>
 
 
 
 <div class="viewcode-block" id="get_gfl_converter_line_rms_block">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Templates.Rms.html#VeraGridEngine.Templates.Rms.basic_devices.get_gfl_converter_line_rms_block">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">get_gfl_converter_line_rms_block</span><span class="p">(</span><span class="n">vfactory</span><span class="p">:</span> <span class="n">VarFactory</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;gfl_converter_line&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RmsModelTemplate</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_gfl_converter_line_rms_block</span><span class="p">(</span><span class="n">vfactory</span><span class="p">:</span> <span class="n">VarFactory</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"gfl_converter_line"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RmsModelTemplate</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Line between converter internal AC bus (from) and grid bus (to).</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">templ</span> <span class="o">=</span> <span class="n">get_line_rms_template</span><span class="p">(</span><span class="n">vfactory</span><span class="o">=</span><span class="n">vfactory</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
     <span class="n">block</span> <span class="o">=</span> <span class="n">templ</span><span class="o">.</span><span class="n">block</span>
 
-    <span class="n">vfactory</span><span class="o">.</span><span class="n">add_shared_ref_to_var</span><span class="p">(</span><span class="n">block</span><span class="o">.</span><span class="n">in_vars</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s2">&quot;Vm_c_reference&quot;</span><span class="p">)</span>
-    <span class="n">vfactory</span><span class="o">.</span><span class="n">add_shared_ref_to_var</span><span class="p">(</span><span class="n">block</span><span class="o">.</span><span class="n">in_vars</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s2">&quot;Va_c_reference&quot;</span><span class="p">)</span>
-    <span class="n">vfactory</span><span class="o">.</span><span class="n">add_shared_ref_to_var</span><span class="p">(</span><span class="n">block</span><span class="o">.</span><span class="n">in_vars</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="s2">&quot;Vm_g_reference&quot;</span><span class="p">)</span>
-    <span class="n">vfactory</span><span class="o">.</span><span class="n">add_shared_ref_to_var</span><span class="p">(</span><span class="n">block</span><span class="o">.</span><span class="n">in_vars</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="s2">&quot;Va_g_reference&quot;</span><span class="p">)</span>
+    <span class="n">vfactory</span><span class="o">.</span><span class="n">add_shared_ref_to_var</span><span class="p">(</span><span class="n">block</span><span class="o">.</span><span class="n">in_vars</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s2">"Vm_c_reference"</span><span class="p">)</span>
+    <span class="n">vfactory</span><span class="o">.</span><span class="n">add_shared_ref_to_var</span><span class="p">(</span><span class="n">block</span><span class="o">.</span><span class="n">in_vars</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s2">"Va_c_reference"</span><span class="p">)</span>
+    <span class="n">vfactory</span><span class="o">.</span><span class="n">add_shared_ref_to_var</span><span class="p">(</span><span class="n">block</span><span class="o">.</span><span class="n">in_vars</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="s2">"Vm_g_reference"</span><span class="p">)</span>
+    <span class="n">vfactory</span><span class="o">.</span><span class="n">add_shared_ref_to_var</span><span class="p">(</span><span class="n">block</span><span class="o">.</span><span class="n">in_vars</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="s2">"Va_g_reference"</span><span class="p">)</span>
 
-    <span class="n">vfactory</span><span class="o">.</span><span class="n">add_shared_ref_to_var</span><span class="p">(</span><span class="n">block</span><span class="o">.</span><span class="n">out_vars</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s2">&quot;Pf_line_reference&quot;</span><span class="p">)</span>
-    <span class="n">vfactory</span><span class="o">.</span><span class="n">add_shared_ref_to_var</span><span class="p">(</span><span class="n">block</span><span class="o">.</span><span class="n">out_vars</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s2">&quot;Pt_line_reference&quot;</span><span class="p">)</span>
-    <span class="n">vfactory</span><span class="o">.</span><span class="n">add_shared_ref_to_var</span><span class="p">(</span><span class="n">block</span><span class="o">.</span><span class="n">out_vars</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="s2">&quot;Qf_line_reference&quot;</span><span class="p">)</span>
-    <span class="n">vfactory</span><span class="o">.</span><span class="n">add_shared_ref_to_var</span><span class="p">(</span><span class="n">block</span><span class="o">.</span><span class="n">out_vars</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="s2">&quot;Qt_line_reference&quot;</span><span class="p">)</span>
+    <span class="n">vfactory</span><span class="o">.</span><span class="n">add_shared_ref_to_var</span><span class="p">(</span><span class="n">block</span><span class="o">.</span><span class="n">out_vars</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s2">"Pf_line_reference"</span><span class="p">)</span>
+    <span class="n">vfactory</span><span class="o">.</span><span class="n">add_shared_ref_to_var</span><span class="p">(</span><span class="n">block</span><span class="o">.</span><span class="n">out_vars</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s2">"Pt_line_reference"</span><span class="p">)</span>
+    <span class="n">vfactory</span><span class="o">.</span><span class="n">add_shared_ref_to_var</span><span class="p">(</span><span class="n">block</span><span class="o">.</span><span class="n">out_vars</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="s2">"Qf_line_reference"</span><span class="p">)</span>
+    <span class="n">vfactory</span><span class="o">.</span><span class="n">add_shared_ref_to_var</span><span class="p">(</span><span class="n">block</span><span class="o">.</span><span class="n">out_vars</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="s2">"Qt_line_reference"</span><span class="p">)</span>
 
     <span class="n">block</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
 
@@ -506,19 +506,19 @@
 
 <div class="viewcode-block" id="get_gfl_converter_bus_block">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Templates.Rms.html#VeraGridEngine.Templates.Rms.basic_devices.get_gfl_converter_bus_block">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">get_gfl_converter_bus_block</span><span class="p">(</span><span class="n">vfactory</span><span class="p">:</span> <span class="n">VarFactory</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;gfl_converter_bus&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RmsModelTemplate</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_gfl_converter_bus_block</span><span class="p">(</span><span class="n">vfactory</span><span class="p">:</span> <span class="n">VarFactory</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"gfl_converter_bus"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RmsModelTemplate</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Define the internal converter AC bus from its dq voltage in the PLL frame.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">templ</span> <span class="o">=</span> <span class="n">RmsModelTemplate</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
     <span class="n">templ</span><span class="o">.</span><span class="n">tpe</span> <span class="o">=</span> <span class="n">DeviceType</span><span class="o">.</span><span class="n">NoDevice</span>
 
-    <span class="n">Vm_c</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;Vm_c&quot;</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s2">&quot;Vm_c_reference&quot;</span><span class="p">)</span>
-    <span class="n">Va_c</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;Va_c&quot;</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s2">&quot;Va_c_reference&quot;</span><span class="p">)</span>
-    <span class="n">theta</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;theta_c&quot;</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s2">&quot;theta_reference&quot;</span><span class="p">)</span>
+    <span class="n">Vm_c</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"Vm_c"</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s2">"Vm_c_reference"</span><span class="p">)</span>
+    <span class="n">Va_c</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"Va_c"</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s2">"Va_c_reference"</span><span class="p">)</span>
+    <span class="n">theta</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"theta_c"</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s2">"theta_reference"</span><span class="p">)</span>
 
-    <span class="n">v_d_c</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;v_d_c_bus&quot;</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s2">&quot;v_d_c_reference&quot;</span><span class="p">)</span>
-    <span class="n">v_q_c</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;v_q_c_bus&quot;</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s2">&quot;v_q_c_reference&quot;</span><span class="p">)</span>
+    <span class="n">v_d_c</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"v_d_c_bus"</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s2">"v_d_c_reference"</span><span class="p">)</span>
+    <span class="n">v_q_c</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"v_q_c_bus"</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s2">"v_q_c_reference"</span><span class="p">)</span>
 
     <span class="n">block</span> <span class="o">=</span> <span class="n">Block</span><span class="p">(</span>
         <span class="n">algebraic_eqs</span><span class="o">=</span><span class="p">[</span>
@@ -537,7 +537,7 @@
 
     <span class="n">templ</span><span class="o">.</span><span class="n">block</span> <span class="o">=</span> <span class="n">block</span>
 
-    <span class="n">templ</span><span class="o">.</span><span class="n">comment</span> <span class="o">=</span> <span class="s1">&#39;Grid-following converter AC-bus interface RMS block&#39;</span>
+    <span class="n">templ</span><span class="o">.</span><span class="n">comment</span> <span class="o">=</span> <span class="s1">'Grid-following converter AC-bus interface RMS block'</span>
     <span class="k">return</span> <span class="n">templ</span></div>
 
 
@@ -545,27 +545,27 @@
 <div class="viewcode-block" id="get_gfl_voltage_control_electrical_block">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Templates.Rms.html#VeraGridEngine.Templates.Rms.basic_devices.get_gfl_voltage_control_electrical_block">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_gfl_voltage_control_electrical_block</span><span class="p">(</span><span class="n">vfactory</span><span class="p">:</span> <span class="n">VarFactory</span><span class="p">,</span>
-                                             <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;gfl_voltage_control_electrical&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RmsModelTemplate</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+                                             <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"gfl_voltage_control_electrical"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RmsModelTemplate</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Electrical voltage-control constraints separated from the line model.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">templ</span> <span class="o">=</span> <span class="n">RmsModelTemplate</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
     <span class="n">templ</span><span class="o">.</span><span class="n">tpe</span> <span class="o">=</span> <span class="n">DeviceType</span><span class="o">.</span><span class="n">NoDevice</span>
 
-    <span class="n">v_d_c</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;v_d_c_ctrl&quot;</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s2">&quot;v_d_c_reference&quot;</span><span class="p">)</span>
-    <span class="n">v_q_c</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;v_q_c_ctrl&quot;</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s2">&quot;v_q_c_reference&quot;</span><span class="p">)</span>
+    <span class="n">v_d_c</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"v_d_c_ctrl"</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s2">"v_d_c_reference"</span><span class="p">)</span>
+    <span class="n">v_q_c</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"v_q_c_ctrl"</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s2">"v_q_c_reference"</span><span class="p">)</span>
 
-    <span class="n">v_d_g</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;v_d_g_ctrl&quot;</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s2">&quot;vd_reference&quot;</span><span class="p">)</span>
-    <span class="n">v_q_g</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;v_q_g_ctrl&quot;</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s2">&quot;vq_reference&quot;</span><span class="p">)</span>
-    <span class="n">omega</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;omega_ctrl&quot;</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s2">&quot;omega_reference&quot;</span><span class="p">)</span>
+    <span class="n">v_d_g</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"v_d_g_ctrl"</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s2">"vd_reference"</span><span class="p">)</span>
+    <span class="n">v_q_g</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"v_q_g_ctrl"</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s2">"vq_reference"</span><span class="p">)</span>
+    <span class="n">omega</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"omega_ctrl"</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s2">"omega_reference"</span><span class="p">)</span>
 
-    <span class="n">vd_hat</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;vd_hat_ctrl&quot;</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s2">&quot;vd_hat_reference&quot;</span><span class="p">)</span>
-    <span class="n">vq_hat</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;vq_hat_ctrl&quot;</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s2">&quot;vq_hat_reference&quot;</span><span class="p">)</span>
+    <span class="n">vd_hat</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"vd_hat_ctrl"</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s2">"vd_hat_reference"</span><span class="p">)</span>
+    <span class="n">vq_hat</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"vq_hat_ctrl"</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s2">"vq_hat_reference"</span><span class="p">)</span>
 
-    <span class="n">i_d</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;i_d_ctrl&quot;</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s2">&quot;i_d_reference&quot;</span><span class="p">)</span>
-    <span class="n">i_q</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;i_q_ctrl&quot;</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s2">&quot;i_q_reference&quot;</span><span class="p">)</span>
+    <span class="n">i_d</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"i_d_ctrl"</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s2">"i_d_reference"</span><span class="p">)</span>
+    <span class="n">i_q</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"i_q_ctrl"</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s2">"i_q_reference"</span><span class="p">)</span>
 
-    <span class="n">L</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;L&quot;</span><span class="p">)</span>
+    <span class="n">L</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"L"</span><span class="p">)</span>
 
     <span class="n">block</span> <span class="o">=</span> <span class="n">Block</span><span class="p">(</span>
         <span class="n">algebraic_eqs</span><span class="o">=</span><span class="p">[</span>
@@ -590,7 +590,7 @@
 
     <span class="n">templ</span><span class="o">.</span><span class="n">block</span> <span class="o">=</span> <span class="n">block</span>
 
-    <span class="n">templ</span><span class="o">.</span><span class="n">comment</span> <span class="o">=</span> <span class="s1">&#39;Grid-following converter voltage-control electrical RMS block&#39;</span>
+    <span class="n">templ</span><span class="o">.</span><span class="n">comment</span> <span class="o">=</span> <span class="s1">'Grid-following converter voltage-control electrical RMS block'</span>
     <span class="k">return</span> <span class="n">templ</span></div>
 
 
@@ -598,21 +598,21 @@
 <div class="viewcode-block" id="get_gfl_line_current_measurement_block">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Templates.Rms.html#VeraGridEngine.Templates.Rms.basic_devices.get_gfl_line_current_measurement_block">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_gfl_line_current_measurement_block</span><span class="p">(</span><span class="n">vfactory</span><span class="p">:</span> <span class="n">VarFactory</span><span class="p">,</span>
-                                           <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;gfl_line_current_measurement&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RmsModelTemplate</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+                                           <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"gfl_line_current_measurement"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RmsModelTemplate</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Derive dq current feedback from the grid-side line power.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">templ</span> <span class="o">=</span> <span class="n">RmsModelTemplate</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
     <span class="n">templ</span><span class="o">.</span><span class="n">tpe</span> <span class="o">=</span> <span class="n">DeviceType</span><span class="o">.</span><span class="n">NoDevice</span>
 
-    <span class="n">Pt_line</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;Pt_line&quot;</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s2">&quot;Pt_line_reference&quot;</span><span class="p">)</span>
-    <span class="n">Qt_line</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;Qt_line&quot;</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s2">&quot;Qt_line_reference&quot;</span><span class="p">)</span>
+    <span class="n">Pt_line</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"Pt_line"</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s2">"Pt_line_reference"</span><span class="p">)</span>
+    <span class="n">Qt_line</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"Qt_line"</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s2">"Qt_line_reference"</span><span class="p">)</span>
 
-    <span class="n">v_d_g</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;v_d_g_power&quot;</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s2">&quot;vd_reference&quot;</span><span class="p">)</span>
-    <span class="n">v_q_g</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;v_q_g_power&quot;</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s2">&quot;vq_reference&quot;</span><span class="p">)</span>
+    <span class="n">v_d_g</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"v_d_g_power"</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s2">"vd_reference"</span><span class="p">)</span>
+    <span class="n">v_q_g</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"v_q_g_power"</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s2">"vq_reference"</span><span class="p">)</span>
 
-    <span class="n">i_d</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;i_d&quot;</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s2">&quot;i_d_reference&quot;</span><span class="p">)</span>
-    <span class="n">i_q</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;i_q&quot;</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s2">&quot;i_q_reference&quot;</span><span class="p">)</span>
+    <span class="n">i_d</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"i_d"</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s2">"i_d_reference"</span><span class="p">)</span>
+    <span class="n">i_q</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"i_q"</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s2">"i_q_reference"</span><span class="p">)</span>
 
     <span class="n">eps</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_const</span><span class="p">(</span><span class="mf">1e-11</span><span class="p">)</span>
     <span class="n">v2</span> <span class="o">=</span> <span class="n">v_d_g</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">v_q_g</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">eps</span>
@@ -636,34 +636,34 @@
 
     <span class="n">templ</span><span class="o">.</span><span class="n">block</span> <span class="o">=</span> <span class="n">block</span>
 
-    <span class="n">templ</span><span class="o">.</span><span class="n">comment</span> <span class="o">=</span> <span class="s1">&#39;Grid-following converter line-current measurement RMS block&#39;</span>
+    <span class="n">templ</span><span class="o">.</span><span class="n">comment</span> <span class="o">=</span> <span class="s1">'Grid-following converter line-current measurement RMS block'</span>
     <span class="k">return</span> <span class="n">templ</span></div>
 
 
 
 <div class="viewcode-block" id="get_pi_power_controller_from_line">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Templates.Rms.html#VeraGridEngine.Templates.Rms.basic_devices.get_pi_power_controller_from_line">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">get_pi_power_controller_from_line</span><span class="p">(</span><span class="n">vfactory</span><span class="p">:</span> <span class="n">VarFactory</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;power_ctrl_line&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RmsModelTemplate</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_pi_power_controller_from_line</span><span class="p">(</span><span class="n">vfactory</span><span class="p">:</span> <span class="n">VarFactory</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"power_ctrl_line"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RmsModelTemplate</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Power controller using converter power directly from line Pt/Qt.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">templ</span> <span class="o">=</span> <span class="n">RmsModelTemplate</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
     <span class="n">templ</span><span class="o">.</span><span class="n">tpe</span> <span class="o">=</span> <span class="n">DeviceType</span><span class="o">.</span><span class="n">NoDevice</span>
 
-    <span class="n">Kp_pol</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;Kp_pol&#39;</span><span class="p">)</span>
-    <span class="n">Ki_pol</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;Ki_pol&#39;</span><span class="p">)</span>
-    <span class="n">Ki_vdc</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;ki_vdc&#39;</span><span class="p">)</span>
-    <span class="n">Kp_vdc</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;Kp_vdc&#39;</span><span class="p">)</span>
-    <span class="n">Vdc_ref</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;Vdc_ref&#39;</span><span class="p">)</span>
+    <span class="n">Kp_pol</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'Kp_pol'</span><span class="p">)</span>
+    <span class="n">Ki_pol</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'Ki_pol'</span><span class="p">)</span>
+    <span class="n">Ki_vdc</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'ki_vdc'</span><span class="p">)</span>
+    <span class="n">Kp_vdc</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'Kp_vdc'</span><span class="p">)</span>
+    <span class="n">Vdc_ref</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'Vdc_ref'</span><span class="p">)</span>
 
-    <span class="n">Pt_line</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;Pt_line_ctrl&#39;</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s1">&#39;Pt_line_reference&#39;</span><span class="p">)</span>
-    <span class="n">Qt_line</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;Qt_line_ctrl&#39;</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s1">&#39;Qt_line_reference&#39;</span><span class="p">)</span>
-    <span class="n">i_q_ref</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;i_q_ref&#39;</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s1">&#39;i_q_ref_reference&#39;</span><span class="p">)</span>
-    <span class="n">i_d_ref</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;i_d_ref&#39;</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s1">&#39;i_d_ref_reference&#39;</span><span class="p">)</span>
-    <span class="n">v_dc</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;v_dc&#39;</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s1">&#39;v_dc_reference&#39;</span><span class="p">)</span>
+    <span class="n">Pt_line</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'Pt_line_ctrl'</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s1">'Pt_line_reference'</span><span class="p">)</span>
+    <span class="n">Qt_line</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'Qt_line_ctrl'</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s1">'Qt_line_reference'</span><span class="p">)</span>
+    <span class="n">i_q_ref</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'i_q_ref'</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s1">'i_q_ref_reference'</span><span class="p">)</span>
+    <span class="n">i_d_ref</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'i_d_ref'</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s1">'i_d_ref_reference'</span><span class="p">)</span>
+    <span class="n">v_dc</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'v_dc'</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s1">'v_dc_reference'</span><span class="p">)</span>
 
-    <span class="n">P_ref</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;P_ref&#39;</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s1">&#39;P_ref_reference&#39;</span><span class="p">)</span>
-    <span class="n">Q_ref</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;Q_ref&#39;</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s1">&#39;Q_ref_reference&#39;</span><span class="p">)</span>
+    <span class="n">P_ref</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'P_ref'</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s1">'P_ref_reference'</span><span class="p">)</span>
+    <span class="n">Q_ref</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'Q_ref'</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s1">'Q_ref_reference'</span><span class="p">)</span>
 
     <span class="n">event_dict</span> <span class="o">=</span> <span class="p">{</span>
         <span class="n">Kp_pol</span><span class="p">:</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_const</span><span class="p">(</span><span class="mf">0.05</span><span class="p">),</span>
@@ -680,7 +680,7 @@
                                      <span class="n">den</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
                                      <span class="n">x</span><span class="o">=</span><span class="n">P_ref</span> <span class="o">+</span> <span class="n">Pt_line</span><span class="p">,</span>
                                      <span class="n">y</span><span class="o">=</span><span class="n">i_q_ref</span><span class="p">,</span>
-                                     <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Pac_ctrl_line&#39;</span>
+                                     <span class="n">name</span><span class="o">=</span><span class="s1">'Pac_ctrl_line'</span>
                                      <span class="p">)</span>
 
     <span class="n">control_block_2</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">tf_to_block</span><span class="p">(</span><span class="n">vfactory</span><span class="p">,</span>
@@ -688,7 +688,7 @@
                                      <span class="n">den</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
                                      <span class="n">x</span><span class="o">=</span><span class="n">Q_ref</span> <span class="o">+</span> <span class="n">Qt_line</span><span class="p">,</span>
                                      <span class="n">y</span><span class="o">=</span><span class="n">i_d_ref</span><span class="p">,</span>
-                                     <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Qac_ctrl_line&#39;</span>
+                                     <span class="n">name</span><span class="o">=</span><span class="s1">'Qac_ctrl_line'</span>
                                      <span class="p">)</span>
 
     <span class="n">control_block_1</span><span class="o">.</span><span class="n">in_vars</span> <span class="o">=</span> <span class="p">[</span><span class="n">Pt_line</span><span class="p">,</span> <span class="n">P_ref</span><span class="p">]</span>
@@ -705,37 +705,37 @@
 
     <span class="n">templ</span><span class="o">.</span><span class="n">block</span> <span class="o">=</span> <span class="n">block</span>
 
-    <span class="n">templ</span><span class="o">.</span><span class="n">comment</span> <span class="o">=</span> <span class="s1">&#39;Grid-following converter line power-controller RMS block&#39;</span>
+    <span class="n">templ</span><span class="o">.</span><span class="n">comment</span> <span class="o">=</span> <span class="s1">'Grid-following converter line power-controller RMS block'</span>
     <span class="k">return</span> <span class="n">templ</span></div>
 
 
 
 <div class="viewcode-block" id="get_gfl_losses_from_line_block">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Templates.Rms.html#VeraGridEngine.Templates.Rms.basic_devices.get_gfl_losses_from_line_block">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">get_gfl_losses_from_line_block</span><span class="p">(</span><span class="n">vfactory</span><span class="p">:</span> <span class="n">VarFactory</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;gfl_losses_line&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RmsModelTemplate</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_gfl_losses_from_line_block</span><span class="p">(</span><span class="n">vfactory</span><span class="p">:</span> <span class="n">VarFactory</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"gfl_losses_line"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RmsModelTemplate</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Losses/output block using line Pt/Qt directly.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">templ</span> <span class="o">=</span> <span class="n">RmsModelTemplate</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
     <span class="n">templ</span><span class="o">.</span><span class="n">tpe</span> <span class="o">=</span> <span class="n">DeviceType</span><span class="o">.</span><span class="n">NoDevice</span>
 
-    <span class="n">i_d</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s1">&#39;i_d_reference&#39;</span><span class="p">)</span>
-    <span class="n">i_q</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;iq&#39;</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s1">&#39;i_q_reference&#39;</span><span class="p">)</span>
-    <span class="n">Pt_line</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;Pt_line_losses&#39;</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s1">&#39;Pt_line_reference&#39;</span><span class="p">)</span>
-    <span class="n">Qt_line</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;Qt_line_losses&#39;</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s1">&#39;Qt_line_reference&#39;</span><span class="p">)</span>
+    <span class="n">i_d</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'id'</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s1">'i_d_reference'</span><span class="p">)</span>
+    <span class="n">i_q</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'iq'</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s1">'i_q_reference'</span><span class="p">)</span>
+    <span class="n">Pt_line</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'Pt_line_losses'</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s1">'Pt_line_reference'</span><span class="p">)</span>
+    <span class="n">Qt_line</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'Qt_line_losses'</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s1">'Qt_line_reference'</span><span class="p">)</span>
 
-    <span class="n">Pt_vsc</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;Pt_vsc&#39;</span><span class="p">,</span> <span class="n">reference</span><span class="o">=</span><span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">Pt</span><span class="p">,</span>
-                              <span class="n">shared_reference</span><span class="o">=</span><span class="s1">&#39;Pt_vsc_reference&#39;</span><span class="p">)</span>
-    <span class="n">Qt_vsc</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;Qt_vsc&#39;</span><span class="p">,</span> <span class="n">reference</span><span class="o">=</span><span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">Qt</span><span class="p">,</span>
-                              <span class="n">shared_reference</span><span class="o">=</span><span class="s1">&#39;Qt_vsc_reference&#39;</span><span class="p">)</span>
-    <span class="n">Pf_vsc</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;Pf_vsc&#39;</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s1">&#39;Pf_vsc_reference&#39;</span><span class="p">)</span>
+    <span class="n">Pt_vsc</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'Pt_vsc'</span><span class="p">,</span> <span class="n">reference</span><span class="o">=</span><span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">Pt</span><span class="p">,</span>
+                              <span class="n">shared_reference</span><span class="o">=</span><span class="s1">'Pt_vsc_reference'</span><span class="p">)</span>
+    <span class="n">Qt_vsc</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'Qt_vsc'</span><span class="p">,</span> <span class="n">reference</span><span class="o">=</span><span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">Qt</span><span class="p">,</span>
+                              <span class="n">shared_reference</span><span class="o">=</span><span class="s1">'Qt_vsc_reference'</span><span class="p">)</span>
+    <span class="n">Pf_vsc</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'Pf_vsc'</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s1">'Pf_vsc_reference'</span><span class="p">)</span>
 
-    <span class="n">bt</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;bt&#39;</span><span class="p">)</span>
-    <span class="n">gt</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;gt&#39;</span><span class="p">)</span>
-    <span class="n">Qf</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;Qf&#39;</span><span class="p">)</span>
-    <span class="n">a0</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;a0&#39;</span><span class="p">)</span>
-    <span class="n">a1</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;a1&#39;</span><span class="p">)</span>
-    <span class="n">a2</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;a2&#39;</span><span class="p">)</span>
+    <span class="n">bt</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'bt'</span><span class="p">)</span>
+    <span class="n">gt</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'gt'</span><span class="p">)</span>
+    <span class="n">Qf</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'Qf'</span><span class="p">)</span>
+    <span class="n">a0</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'a0'</span><span class="p">)</span>
+    <span class="n">a1</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'a1'</span><span class="p">)</span>
+    <span class="n">a2</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'a2'</span><span class="p">)</span>
 
     <span class="n">api_obj_mapping</span> <span class="o">=</span> <span class="p">{</span>
         <span class="n">ParamPowerFlowReferenceType</span><span class="o">.</span><span class="n">alpha1</span><span class="p">:</span> <span class="n">a0</span><span class="p">,</span>
@@ -777,35 +777,35 @@
 
     <span class="n">templ</span><span class="o">.</span><span class="n">block</span> <span class="o">=</span> <span class="n">block</span>
 
-    <span class="n">templ</span><span class="o">.</span><span class="n">comment</span> <span class="o">=</span> <span class="s1">&#39;Grid-following converter line-loss RMS block&#39;</span>
+    <span class="n">templ</span><span class="o">.</span><span class="n">comment</span> <span class="o">=</span> <span class="s1">'Grid-following converter line-loss RMS block'</span>
     <span class="k">return</span> <span class="n">templ</span></div>
 
 
 <div class="viewcode-block" id="get_gfl_current_limiter_block">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Templates.Rms.html#VeraGridEngine.Templates.Rms.basic_devices.get_gfl_current_limiter_block">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">get_gfl_current_limiter_block</span><span class="p">(</span><span class="n">vfactory</span><span class="p">:</span> <span class="n">VarFactory</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;electrical&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RmsModelTemplate</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_gfl_current_limiter_block</span><span class="p">(</span><span class="n">vfactory</span><span class="p">:</span> <span class="n">VarFactory</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"electrical"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RmsModelTemplate</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Gfl electrical equations block</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">suffix</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;_</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="n">name</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
+<span class="sd">    """</span>
+    <span class="n">suffix</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"_</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span> <span class="k">if</span> <span class="n">name</span> <span class="k">else</span> <span class="s2">""</span>
     <span class="n">templ</span> <span class="o">=</span> <span class="n">RmsModelTemplate</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
     <span class="n">templ</span><span class="o">.</span><span class="n">tpe</span> <span class="o">=</span> <span class="n">DeviceType</span><span class="o">.</span><span class="n">NoDevice</span>
 
     <span class="c1"># limiter block input variables</span>
-    <span class="n">i_d_lim</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;i_d_lim&#39;</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s1">&#39;i_d_reference&#39;</span><span class="p">)</span>
-    <span class="n">i_q_lim</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;i_q_lim&#39;</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s1">&#39;i_q_reference&#39;</span><span class="p">)</span>
+    <span class="n">i_d_lim</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'i_d_lim'</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s1">'i_d_reference'</span><span class="p">)</span>
+    <span class="n">i_q_lim</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'i_q_lim'</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s1">'i_q_reference'</span><span class="p">)</span>
 
     <span class="c1"># limiter block constants</span>
     <span class="n">I_max</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_const</span><span class="p">(</span><span class="mf">1.2</span><span class="p">)</span>
 
     <span class="c1"># limiter block variables</span>
-    <span class="n">i_d_ref</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;i_d_ref&#39;</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s1">&#39;i_d_ref_reference&#39;</span><span class="p">)</span>
-    <span class="n">i_q_ref</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;i_q_ref&#39;</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s1">&#39;i_q_ref_reference&#39;</span><span class="p">)</span>
+    <span class="n">i_d_ref</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'i_d_ref'</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s1">'i_d_ref_reference'</span><span class="p">)</span>
+    <span class="n">i_q_ref</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'i_q_ref'</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s1">'i_q_ref_reference'</span><span class="p">)</span>
     <span class="n">id_max</span> <span class="o">=</span> <span class="n">sym</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">sym</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">I_max</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">sym</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">i_q_lim</span><span class="p">,</span> <span class="n">i_q_ref</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_const</span><span class="p">(</span><span class="mf">1e-5</span><span class="p">)))</span>
     <span class="n">i_d_ref_sat</span> <span class="o">=</span> <span class="n">sym</span><span class="o">.</span><span class="n">hard_sat</span><span class="p">(</span><span class="n">i_d_ref</span><span class="p">,</span> <span class="o">-</span><span class="n">id_max</span><span class="p">,</span> <span class="n">id_max</span><span class="p">)</span>
     <span class="n">i_q_ref_sat</span> <span class="o">=</span> <span class="n">sym</span><span class="o">.</span><span class="n">hard_sat</span><span class="p">(</span><span class="n">i_q_ref</span><span class="p">,</span> <span class="o">-</span><span class="n">I_max</span><span class="p">,</span> <span class="n">I_max</span><span class="p">)</span>
-    <span class="n">i_d_ref_sat_var</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;i_d_ref_sat&#39;</span><span class="p">)</span>
-    <span class="n">i_q_ref_sat_var</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;i_q_ref_sat&#39;</span><span class="p">)</span>
+    <span class="n">i_d_ref_sat_var</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'i_d_ref_sat'</span><span class="p">)</span>
+    <span class="n">i_q_ref_sat_var</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'i_q_ref_sat'</span><span class="p">)</span>
 
     <span class="n">current_limiter_block</span> <span class="o">=</span> <span class="n">Block</span><span class="p">(</span>
         <span class="n">algebraic_eqs</span><span class="o">=</span><span class="p">[</span><span class="n">i_d_ref_sat_var</span> <span class="o">-</span> <span class="n">i_d_ref_sat</span><span class="p">,</span>
@@ -822,41 +822,41 @@
         <span class="p">}</span>
     <span class="p">)</span>
 
-    <span class="n">current_limiter_block</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;current limiters&quot;</span>
+    <span class="n">current_limiter_block</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s2">"current limiters"</span>
     <span class="n">templ</span><span class="o">.</span><span class="n">block</span> <span class="o">=</span> <span class="n">current_limiter_block</span>
 
-    <span class="n">templ</span><span class="o">.</span><span class="n">comment</span> <span class="o">=</span> <span class="s1">&#39;Grid-following converter current-limiter RMS block&#39;</span>
+    <span class="n">templ</span><span class="o">.</span><span class="n">comment</span> <span class="o">=</span> <span class="s1">'Grid-following converter current-limiter RMS block'</span>
     <span class="k">return</span> <span class="n">templ</span></div>
 
 
 <div class="viewcode-block" id="get_gfl_losses_block">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Templates.Rms.html#VeraGridEngine.Templates.Rms.basic_devices.get_gfl_losses_block">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">get_gfl_losses_block</span><span class="p">(</span><span class="n">vfactory</span><span class="p">:</span> <span class="n">VarFactory</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;gfl_losses&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RmsModelTemplate</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_gfl_losses_block</span><span class="p">(</span><span class="n">vfactory</span><span class="p">:</span> <span class="n">VarFactory</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"gfl_losses"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RmsModelTemplate</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Gfl losses block</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">suffix</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;_</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="n">name</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
+<span class="sd">    """</span>
+    <span class="n">suffix</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"_</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span> <span class="k">if</span> <span class="n">name</span> <span class="k">else</span> <span class="s2">""</span>
     <span class="n">templ</span> <span class="o">=</span> <span class="n">RmsModelTemplate</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
     <span class="n">templ</span><span class="o">.</span><span class="n">tpe</span> <span class="o">=</span> <span class="n">DeviceType</span><span class="o">.</span><span class="n">NoDevice</span>
 
     <span class="c1"># input vars</span>
-    <span class="n">i_d</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s1">&#39;i_d_reference&#39;</span><span class="p">)</span>
-    <span class="n">i_q</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;iq&#39;</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s1">&#39;i_q_reference&#39;</span><span class="p">)</span>
-    <span class="n">P</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;P&#39;</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s1">&#39;P_reference&#39;</span><span class="p">)</span>
-    <span class="n">Q</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;Q&#39;</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s1">&#39;Q_reference&#39;</span><span class="p">)</span>
+    <span class="n">i_d</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'id'</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s1">'i_d_reference'</span><span class="p">)</span>
+    <span class="n">i_q</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'iq'</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s1">'i_q_reference'</span><span class="p">)</span>
+    <span class="n">P</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'P'</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s1">'P_reference'</span><span class="p">)</span>
+    <span class="n">Q</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'Q'</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s1">'Q_reference'</span><span class="p">)</span>
 
     <span class="c1"># Vars:</span>
-    <span class="n">Pt_vsc</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;Pt_vsc&#39;</span><span class="p">,</span> <span class="n">reference</span><span class="o">=</span> <span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">Pt</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span> <span class="s1">&#39;Pt_vsc_reference&#39;</span><span class="p">)</span>
-    <span class="n">Qt_vsc</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;Qt_vsc&#39;</span><span class="p">,</span> <span class="n">reference</span><span class="o">=</span> <span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">Qt</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span> <span class="s1">&#39;Qt_vsc_reference&#39;</span><span class="p">)</span>
-    <span class="n">Pf_vsc</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;Pf_vsc&#39;</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span> <span class="s1">&#39;Pf_vsc_reference&#39;</span><span class="p">)</span>
+    <span class="n">Pt_vsc</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'Pt_vsc'</span><span class="p">,</span> <span class="n">reference</span><span class="o">=</span> <span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">Pt</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span> <span class="s1">'Pt_vsc_reference'</span><span class="p">)</span>
+    <span class="n">Qt_vsc</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'Qt_vsc'</span><span class="p">,</span> <span class="n">reference</span><span class="o">=</span> <span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">Qt</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span> <span class="s1">'Qt_vsc_reference'</span><span class="p">)</span>
+    <span class="n">Pf_vsc</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'Pf_vsc'</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span> <span class="s1">'Pf_vsc_reference'</span><span class="p">)</span>
 
     <span class="c1"># Parameters:</span>
-    <span class="n">bt</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;bt&#39;</span><span class="p">)</span>
-    <span class="n">gt</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;gt&#39;</span><span class="p">)</span>
-    <span class="n">Qf</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;Qf&#39;</span><span class="p">)</span>
-    <span class="n">a0</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;a0&#39;</span><span class="p">)</span>
-    <span class="n">a1</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;a1&#39;</span><span class="p">)</span>
-    <span class="n">a2</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;a2&#39;</span><span class="p">)</span>
+    <span class="n">bt</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'bt'</span><span class="p">)</span>
+    <span class="n">gt</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'gt'</span><span class="p">)</span>
+    <span class="n">Qf</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'Qf'</span><span class="p">)</span>
+    <span class="n">a0</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'a0'</span><span class="p">)</span>
+    <span class="n">a1</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'a1'</span><span class="p">)</span>
+    <span class="n">a2</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'a2'</span><span class="p">)</span>
 
     <span class="n">api_obj_mapping</span> <span class="o">=</span> <span class="p">{</span>
         <span class="n">ParamPowerFlowReferenceType</span><span class="o">.</span><span class="n">alpha1</span><span class="p">:</span> <span class="n">a0</span><span class="p">,</span>
@@ -905,7 +905,7 @@
 
     <span class="n">templ</span><span class="o">.</span><span class="n">block</span> <span class="o">=</span> <span class="n">losses_block</span>
 
-    <span class="n">templ</span><span class="o">.</span><span class="n">comment</span> <span class="o">=</span> <span class="s1">&#39;Grid-following converter loss RMS block&#39;</span>
+    <span class="n">templ</span><span class="o">.</span><span class="n">comment</span> <span class="o">=</span> <span class="s1">'Grid-following converter loss RMS block'</span>
     <span class="k">return</span> <span class="n">templ</span></div>
 
 
@@ -916,18 +916,18 @@
 
 <div class="viewcode-block" id="get_gfl_converter_rms">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Templates.Rms.html#VeraGridEngine.Templates.Rms.basic_devices.get_gfl_converter_rms">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">get_gfl_converter_rms</span><span class="p">(</span><span class="n">vfactory</span><span class="p">:</span> <span class="n">VarFactory</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;current_ctrl_iq&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RmsModelTemplate</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_gfl_converter_rms</span><span class="p">(</span><span class="n">vfactory</span><span class="p">:</span> <span class="n">VarFactory</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"current_ctrl_iq"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RmsModelTemplate</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">     Current control iq</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">suffix</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;_</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="n">name</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
+<span class="sd">    """</span>
+    <span class="n">suffix</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"_</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span> <span class="k">if</span> <span class="n">name</span> <span class="k">else</span> <span class="s2">""</span>
     <span class="n">templ</span> <span class="o">=</span> <span class="n">RmsModelTemplate</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
     <span class="n">templ</span><span class="o">.</span><span class="n">tpe</span> <span class="o">=</span> <span class="n">DeviceType</span><span class="o">.</span><span class="n">NoDevice</span>
 
     <span class="c1"># input variables</span>
-    <span class="n">Vm</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;Vm&#39;</span><span class="p">,</span> <span class="n">reference</span><span class="o">=</span> <span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">Vm</span><span class="p">)</span>
-    <span class="n">Va</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;Va&#39;</span><span class="p">,</span> <span class="n">reference</span><span class="o">=</span><span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">Va</span><span class="p">)</span>
-    <span class="n">v_dc</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;v_dc&#39;</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s1">&#39;v_dc_reference&#39;</span><span class="p">)</span>
+    <span class="n">Vm</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'Vm'</span><span class="p">,</span> <span class="n">reference</span><span class="o">=</span> <span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">Vm</span><span class="p">)</span>
+    <span class="n">Va</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'Va'</span><span class="p">,</span> <span class="n">reference</span><span class="o">=</span><span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">Va</span><span class="p">)</span>
+    <span class="n">v_dc</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'v_dc'</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s1">'v_dc_reference'</span><span class="p">)</span>
 
 
     <span class="n">inputs</span> <span class="o">=</span> <span class="p">[</span><span class="n">Vm</span><span class="p">,</span> <span class="n">Va</span><span class="p">,</span> <span class="n">v_dc</span><span class="p">]</span>
@@ -950,7 +950,7 @@
     <span class="n">block</span><span class="o">.</span><span class="n">out_vars</span> <span class="o">=</span> <span class="n">out_vars</span>
     <span class="n">templ</span><span class="o">.</span><span class="n">block</span> <span class="o">=</span> <span class="n">block</span>
 
-    <span class="n">templ</span><span class="o">.</span><span class="n">comment</span> <span class="o">=</span> <span class="s1">&#39;Reusable grid-following converter RMS control block&#39;</span>
+    <span class="n">templ</span><span class="o">.</span><span class="n">comment</span> <span class="o">=</span> <span class="s1">'Reusable grid-following converter RMS control block'</span>
     <span class="k">return</span> <span class="n">templ</span></div>
 
 
@@ -958,20 +958,20 @@
 <div class="viewcode-block" id="get_gfl_converter_rms_electrical">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Templates.Rms.html#VeraGridEngine.Templates.Rms.basic_devices.get_gfl_converter_rms_electrical">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_gfl_converter_rms_electrical</span><span class="p">(</span><span class="n">vfactory</span><span class="p">:</span> <span class="n">VarFactory</span><span class="p">,</span>
-                                     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;gfl_converter_rms_electrical&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RmsModelTemplate</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+                                     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"gfl_converter_rms_electrical"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RmsModelTemplate</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    GFL converter using a separate RMS line for the electrical connection.</span>
 
 <span class="sd">    The line is oriented from converter internal AC bus (c) to grid bus (g).</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">templ</span> <span class="o">=</span> <span class="n">RmsModelTemplate</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
     <span class="n">templ</span><span class="o">.</span><span class="n">tpe</span> <span class="o">=</span> <span class="n">DeviceType</span><span class="o">.</span><span class="n">NoDevice</span>
 
-    <span class="n">Vm</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;Vm&quot;</span><span class="p">,</span> <span class="n">reference</span><span class="o">=</span><span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">Vm</span><span class="p">,</span>
-                          <span class="n">shared_reference</span><span class="o">=</span><span class="s2">&quot;Vm_g_reference&quot;</span><span class="p">)</span>
-    <span class="n">Va</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;Va&quot;</span><span class="p">,</span> <span class="n">reference</span><span class="o">=</span><span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">Va</span><span class="p">,</span>
-                          <span class="n">shared_reference</span><span class="o">=</span><span class="s2">&quot;Va_g_reference&quot;</span><span class="p">)</span>
-    <span class="n">v_dc</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;v_dc&quot;</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s2">&quot;v_dc_reference&quot;</span><span class="p">)</span>
+    <span class="n">Vm</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"Vm"</span><span class="p">,</span> <span class="n">reference</span><span class="o">=</span><span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">Vm</span><span class="p">,</span>
+                          <span class="n">shared_reference</span><span class="o">=</span><span class="s2">"Vm_g_reference"</span><span class="p">)</span>
+    <span class="n">Va</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"Va"</span><span class="p">,</span> <span class="n">reference</span><span class="o">=</span><span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">Va</span><span class="p">,</span>
+                          <span class="n">shared_reference</span><span class="o">=</span><span class="s2">"Va_g_reference"</span><span class="p">)</span>
+    <span class="n">v_dc</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"v_dc"</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s2">"v_dc_reference"</span><span class="p">)</span>
 
     <span class="n">inputs</span> <span class="o">=</span> <span class="p">[</span><span class="n">Vm</span><span class="p">,</span> <span class="n">Va</span><span class="p">,</span> <span class="n">v_dc</span><span class="p">]</span>
 
@@ -1013,7 +1013,7 @@
 
     <span class="n">templ</span><span class="o">.</span><span class="n">block</span> <span class="o">=</span> <span class="n">block</span>
 
-    <span class="n">templ</span><span class="o">.</span><span class="n">comment</span> <span class="o">=</span> <span class="s1">&#39;Grid-following converter electrical RMS block&#39;</span>
+    <span class="n">templ</span><span class="o">.</span><span class="n">comment</span> <span class="o">=</span> <span class="s1">'Grid-following converter electrical RMS block'</span>
     <span class="k">return</span> <span class="n">templ</span></div>
 
 </pre></div>

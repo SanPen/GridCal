@@ -16,6 +16,8 @@ from VeraGridEngine.Utils.Symbolic.symbolic import Const, Var
 from VeraGridEngine.IO.fmu.Elements.bindings import FmuImportConfig
 from VeraGridEngine.IO.fmu.fmu_device_integration import CompositeEmtBoundaryUpdater
 from VeraGridEngine.IO.fmu.model_exchange import (
+    RmsFmuMeDeviceAdapter,
+    EmtFmuMeDeviceAdapter,
     FmuMeDomain,
     FmuMeDeviceAdapter,
     FmuMeSolverPolicy,
@@ -90,6 +92,15 @@ class _CurrentPointCouplingProblem:
         "me_initialize_count",
         "cs_close_count",
         "me_close_count",
+        "derivative_rate",
+        "quadratic_rate",
+        "rate_change",
+        "initial_candidate_value",
+        "active_derivative_rate",
+        "gathered_state_value",
+        "jacobian_evaluations",
+        "residual_evaluations",
+        "last_update_time",
     )
 
     def __init__(
@@ -99,6 +110,10 @@ class _CurrentPointCouplingProblem:
         initial_event_time: float | None = None,
         corrected_event_time: float | None = None,
         initial_state_value: float | None = None,
+        derivative_rate: float = 1.0,
+        quadratic_rate: float = 0.0,
+        rate_change: tuple[float, float] | None = None,
+        initial_candidate_value: float = 1.0,
     ) -> None:
         """Initialize the bounded one-state solver contract.
 
@@ -108,6 +123,10 @@ class _CurrentPointCouplingProblem:
         :param corrected_event_time: Event exposed after a Newton correction.
         :param initial_state_value: Optional state value written by CS
             initialization.
+        :param derivative_rate: Constant term of the analytic state derivative.
+        :param quadratic_rate: Coefficient multiplying the squared state.
+        :param rate_change: Optional target time and replacement constant rate.
+        :param initial_candidate_value: Seed used to exercise finite-candidate guards.
         :return: None.
         """
 
@@ -131,6 +150,16 @@ class _CurrentPointCouplingProblem:
         self.me_initialize_count: int = 0
         self.cs_close_count: int = 0
         self.me_close_count: int = 0
+        # Keep the scalar oracle and gathered point in this existing test owner.
+        self.derivative_rate: float = derivative_rate
+        self.quadratic_rate: float = quadratic_rate
+        self.rate_change: tuple[float, float] | None = rate_change
+        self.initial_candidate_value: float = initial_candidate_value
+        self.active_derivative_rate: float = derivative_rate
+        self.gathered_state_value: float = initial_candidate_value
+        self.jacobian_evaluations: int = 0
+        self.residual_evaluations: int = 0
+        self.last_update_time: float = 0.0
 
     def get_x0(self) -> np.ndarray:
         """Return the accepted initial state.
@@ -138,7 +167,7 @@ class _CurrentPointCouplingProblem:
         :return: One-state initial vector.
         """
 
-        return np.array([1.0], dtype=float)
+        return np.array((self.initial_candidate_value,), dtype=float)
 
     def get_all_vars_number(self) -> int:
         """Return the complete state-vector size.
@@ -239,6 +268,12 @@ class _CurrentPointCouplingProblem:
             pass
         else:
             raise AssertionError("Current-point equation update is invalid")
+        # Scheduled rates let rejection be exercised after accepted macro samples.
+        self.last_update_time = t
+        if self.rate_change is not None and t >= self.rate_change[0]:
+            self.active_derivative_rate = self.rate_change[1]
+        else:
+            self.active_derivative_rate = self.derivative_rate
 
     def update_input_matrices_by_model(
         self,
@@ -253,7 +288,7 @@ class _CurrentPointCouplingProblem:
         """
 
         if x_snapshot.size == 1 and dx_snapshot.size == 1:
-            pass
+            self.gathered_state_value = float(x_snapshot[0])
         else:
             raise AssertionError("Current-point vector gather is invalid")
 
@@ -293,25 +328,35 @@ class _CurrentPointCouplingProblem:
         x_snapshot: np.ndarray,
         dx_snapshot: np.ndarray,
     ) -> np.ndarray:
-        """Return a constant derivative that forces one Newton correction.
+        """Evaluate the independent scalar constant-plus-quadratic derivative.
 
         :param x_snapshot: Current network snapshot.
         :param dx_snapshot: Current differential snapshot.
-        :return: Unit derivative.
+        :return: Analytic derivative at the supplied state.
         """
 
         if x_snapshot.size == 1 and dx_snapshot.size == 1:
-            return np.ones(1, dtype=float)
+            self.residual_evaluations += 1
+            derivative: float = (
+                self.active_derivative_rate
+                + self.quadratic_rate * float(x_snapshot[0]) * float(x_snapshot[0])
+            )
+            return np.array((derivative,), dtype=float)
         else:
             raise AssertionError("Current-point state residual is invalid")
 
     def rhs_state_vec(self) -> np.ndarray:
         """Return the gathered vectorized state derivative.
 
-        :return: Unit derivative.
+        :return: Analytic derivative at the most recently gathered state.
         """
 
-        return np.ones(1, dtype=float)
+        self.residual_evaluations += 1
+        derivative: float = (
+            self.active_derivative_rate
+            + self.quadratic_rate * self.gathered_state_value * self.gathered_state_value
+        )
+        return np.array((derivative,), dtype=float)
 
     def get_j11(
         self,
@@ -324,11 +369,13 @@ class _CurrentPointCouplingProblem:
         :param x_snapshot: Current network snapshot.
         :param dx_snapshot: Current differential snapshot.
         :param step_size: Positive local step size.
-        :return: One-by-one zero CSC matrix.
+        :return: One-by-one analytic derivative Jacobian in CSC storage.
         """
 
         if x_snapshot.size == 1 and dx_snapshot.size == 1 and step_size > 0.0:
-            return sp.csc_matrix((1, 1), dtype=float)
+            self.jacobian_evaluations += 1
+            derivative: float = 2.0 * self.quadratic_rate * float(x_snapshot[0])
+            return sp.csc_matrix(np.array(((derivative,),), dtype=float))
         else:
             raise AssertionError("Current-point J11 contract is invalid")
 
@@ -393,11 +440,13 @@ class _CurrentPointCouplingProblem:
         """Return the gathered vectorized J11 block.
 
         :param step_size: Positive local step size.
-        :return: One-by-one zero CSC matrix.
+        :return: One-by-one analytic derivative Jacobian in CSC storage.
         """
 
         if step_size > 0.0:
-            return sp.csc_matrix((1, 1), dtype=float)
+            self.jacobian_evaluations += 1
+            derivative: float = 2.0 * self.quadratic_rate * self.gathered_state_value
+            return sp.csc_matrix(np.array(((derivative,),), dtype=float))
         else:
             raise AssertionError("Current-point vector J11 is invalid")
 
@@ -1913,6 +1962,41 @@ def test_backward_euler_state_and_shared_evaluation_bounds() -> None:
     assert owner_budget.get_consumed_count() == 100000
 
 
+@pytest.mark.parametrize("event_time", (None, 0.5))
+def test_me_device_retry_restores_adapter_owned_state(event_time: float | None) -> None:
+    """Restore local outputs and EMT clock using the same runtime call budget.
+
+    :param event_time: Event arming request for a source or another device.
+    :return: None; reevaluation, extra calls or stale clock/output state fail.
+    """
+    budget: FmuMeEvaluationBudget = FmuMeEvaluationBudget(23)
+    restored: dict[VarPowerFlowReferenceType, float] = dict(((VarPowerFlowReferenceType.P, 4.0),))
+    rms: RmsFmuMeDeviceAdapter = object.__new__(RmsFmuMeDeviceAdapter)
+    emt: EmtFmuMeDeviceAdapter = object.__new__(EmtFmuMeDeviceAdapter)
+    adapter: RmsFmuMeDeviceAdapter | EmtFmuMeDeviceAdapter
+    for adapter in (rms, emt):
+        runtime: Mock = Mock(spec=FmuMeDeviceAdapter)
+        runtime.prepare_state_event_retry.return_value = (4.0,)
+        runtime.map_bound_output_values.return_value = restored
+        adapter.runtime_adapter = runtime
+        adapter.last_outputs = dict(((VarPowerFlowReferenceType.P, -99.0),))
+        if isinstance(adapter, EmtFmuMeDeviceAdapter):
+            adapter.last_time = 1.0
+            adapter.pending_previous_time = 0.0
+        else:
+            pass
+        assert adapter.prepare_state_event_retry(event_time, budget) == restored
+        assert adapter.last_outputs == restored and adapter.last_outputs is not restored
+        runtime.prepare_state_event_retry.assert_called_once_with(event_time=event_time, evaluation_budget=budget)
+        runtime.map_bound_output_values.assert_called_once_with((4.0,))
+        assert len(runtime.mock_calls) == 2
+        if isinstance(adapter, EmtFmuMeDeviceAdapter):
+            assert adapter.last_time == 0.0 and adapter.pending_previous_time is None
+        else:
+            pass
+    assert budget.get_consumed_count() == 0
+
+
 def test_fmi_me_budget_survives_localized_retry_rms() -> None:
     """Share one RMS budget across localization and coordinated rollback.
 
@@ -1920,7 +2004,7 @@ def test_fmi_me_budget_survives_localized_retry_rms() -> None:
     """
 
     localized_times: tuple[float, float, float] = (0.5, 0.5000000001, 0.75)
-    wrappers: list[SimpleNamespace] = [SimpleNamespace()] * 3
+    wrappers: list[Mock] = [Mock()] * 3
     wrapper_index: int
     for wrapper_index in range(3):
         runtime_adapter: Mock = Mock()
@@ -1930,12 +2014,9 @@ def test_fmi_me_budget_survives_localized_retry_rms() -> None:
         runtime_adapter.prepare_state_event_retry.return_value = (1.0,)
         mapped_outputs: dict[VarPowerFlowReferenceType, float] = dict()
         mapped_outputs[VarPowerFlowReferenceType.P] = 1.0
-        runtime_adapter._map_bound_output_values.return_value = mapped_outputs
-        wrappers[wrapper_index] = SimpleNamespace(
-            runtime_adapter=runtime_adapter,
-            last_outputs=dict(),
-            apply_outputs=Mock(),
-        )
+        wrappers[wrapper_index] = Mock(spec=RmsFmuMeDeviceAdapter)
+        wrappers[wrapper_index].runtime_adapter = runtime_adapter
+        wrappers[wrapper_index].prepare_state_event_retry.return_value = mapped_outputs
     shared_budget: FmuMeEvaluationBudget = FmuMeEvaluationBudget(100000)
     problem: SimpleNamespace = SimpleNamespace(
         _fmu_me_adapters=wrappers,
@@ -1952,13 +2033,10 @@ def test_fmi_me_budget_survives_localized_retry_rms() -> None:
 
     assert retry_time == pytest.approx(0.5)
     expected_event_times: tuple[float | None, ...] = (0.5, 0.5, None)
-    wrapper: SimpleNamespace
+    wrapper: Mock
     for wrapper_index in range(3):
         wrapper = wrappers[wrapper_index]
-        wrapper.runtime_adapter.prepare_state_event_retry.assert_called_once_with(
-            event_time=expected_event_times[wrapper_index],
-            evaluation_budget=shared_budget,
-        )
+        wrapper.prepare_state_event_retry.assert_called_once_with(expected_event_times[wrapper_index], shared_budget)
         wrapper.apply_outputs.assert_called_once()
 
 
@@ -1987,11 +2065,12 @@ def test_fmi_me_budget_survives_localized_retry_emt() -> None:
     me_runtime_adapter: Mock = Mock()
     me_runtime_adapter.get_pending_state_event_time.return_value = 0.5
     me_runtime_adapter.prepare_state_event_retry.return_value = (1.0,)
-    me_runtime_adapter._map_bound_output_values.return_value = me_outputs
+    me_runtime_adapter.map_bound_output_values.return_value = me_outputs
     me_adapter: Mock = Mock()
     me_adapter.last_time = 0.0
     me_adapter.pending_previous_time = 0.0
     me_adapter.runtime_adapter = me_runtime_adapter
+    me_adapter.prepare_state_event_retry.return_value = me_outputs
     me_adapter.advance.return_value = me_outputs
     updater: CompositeEmtBoundaryUpdater = CompositeEmtBoundaryUpdater(
         problem=problem,
@@ -2009,10 +2088,7 @@ def test_fmi_me_budget_survives_localized_retry_emt() -> None:
     assert retry_time == pytest.approx(0.5)
     me_adapter.advance.assert_called_once()
     cs_adapter.advance.assert_not_called()
-    me_runtime_adapter.prepare_state_event_retry.assert_called_once_with(
-        event_time=0.5,
-        evaluation_budget=updater.me_evaluation_budget,
-    )
+    me_adapter.prepare_state_event_retry.assert_called_once_with(0.5, updater.me_evaluation_budget)
     problem.commit_boundary.assert_not_called()
     updater.resolve_step(accepted=False, params=params)
     problem.commit_boundary.assert_not_called()
@@ -2808,3 +2884,222 @@ def test_fmi_three_me_spec_rejects_non_continuous_runtime_inputs(
                 output_variable_names=tuple(),
                 worker_limits=worker_limits,
             )
+
+
+@pytest.mark.parametrize("solver_class", (
+    BackEulerImplicitIntegration, BackEulerImplicitIntegrationVec,
+    BackEulerImplicitIntegrationFullVec,
+))
+@pytest.mark.parametrize(
+    "derivative_rate,quadratic_rate,budget,tolerance,expected_converged,expected_last,expected_corrections",
+    (
+        (1.0, 0.0, 1, 1e-10, True, 1.1, 1),
+        (0.0, 0.0, 0, 1e-10, True, 1.0, 0),
+        (1.0, 0.0, 0, 1e-10, False, 1.0, 0),
+        (0.0, 1.0, 1, 1e-6, False, 1.0, 1),
+        (0.0, 1.0, 1, 0.002, True, 1.125, 1),
+    ),
+)
+def test_rms_backward_euler_accepts_final_correction(
+    solver_class: type[BackEulerImplicitIntegration] | type[BackEulerImplicitIntegrationVec] | type[BackEulerImplicitIntegrationFullVec],
+    derivative_rate: float,
+    quadratic_rate: float,
+    budget: int,
+    tolerance: float,
+    expected_converged: bool,
+    expected_last: float,
+    expected_corrections: int,
+) -> None:
+    """Judge actual final residuals without exceeding the correction budget.
+
+    :param solver_class: Existing public backward Euler implementation.
+    :param derivative_rate: Constant derivative oracle coefficient.
+    :param quadratic_rate: Squared-state derivative oracle coefficient.
+    :param budget: Maximum allowed Newton corrections.
+    :param tolerance: Strict residual tolerance passed to the solver.
+    :param expected_converged: Analytically expected step acceptance.
+    :param expected_last: Last available accepted state value.
+    :param expected_corrections: Required Jacobian/correction count.
+    :return: None.
+    """
+    problem: _CurrentPointCouplingProblem = _CurrentPointCouplingProblem(
+        enable_cs=False, derivative_rate=derivative_rate, quadratic_rate=quadratic_rate,
+    )
+    solver: BackEulerImplicitIntegration | BackEulerImplicitIntegrationVec | BackEulerImplicitIntegrationFullVec = solver_class(
+        problem=problem, t0=0.0, t_end=0.1, h=0.1, max_iter=budget, tolerance=tolerance,
+    )
+    times: np.ndarray
+    values: np.ndarray
+    initialized: bool
+    converged: bool
+    times, values, initialized, converged = solver.simulate()
+    assert initialized
+    assert converged == expected_converged
+    expected_rows: int = 2 if expected_converged else 1
+    assert times.shape == (expected_rows,)
+    assert values.shape == (expected_rows, 1)
+    np.testing.assert_allclose(values[-1, 0], expected_last, rtol=0, atol=1e-12)
+    assert problem.jacobian_evaluations == expected_corrections
+    assert problem.jacobian_evaluations <= budget
+    assert problem.resolve_acceptances == list((expected_converged,))
+    assert problem.me_close_count == 1
+    assert problem.cs_close_count == 0
+    if expected_converged:
+        # Compute the accepted-state residual independently of the solver flag.
+        final_residual: float = (
+            float(values[-1, 0]) - 1.0
+            - 0.1 * (derivative_rate + quadratic_rate * float(values[-1, 0]) ** 2)
+        )
+        assert math.isfinite(final_residual)
+        assert abs(final_residual) < tolerance
+        np.testing.assert_allclose(times, (0.0, 0.1), rtol=0, atol=1e-12)
+    else:
+        np.testing.assert_array_equal(times, np.zeros(1, dtype=float))
+
+
+@pytest.mark.parametrize("solver_class", (
+    BackEulerImplicitIntegration, BackEulerImplicitIntegrationVec,
+    BackEulerImplicitIntegrationFullVec,
+))
+@pytest.mark.parametrize(
+    "derivative_rate,initial_candidate,step,tolerance,budget,expected_converged,expected_last,expected_corrections",
+    (
+        (1.0, 1.0, 5e-7, 1e-10, 2, True, 1.0000005, 1),
+        (1.0, 1.0, 1e-4, 1e-3, 2, True, 1.0, 0),
+        (1.0, 1.0, 0.1, 0.1, 1, True, 1.1, 1),
+        (math.nan, 1.0, 0.1, 1e-10, 2, False, 1.0, 0),
+        (math.inf, 1.0, 0.1, 1e-10, 2, False, 1.0, 0),
+        (-math.inf, 1.0, 0.1, 1e-10, 2, False, 1.0, 0),
+        (0.0, math.nan, 0.1, 1e-10, 2, False, math.nan, 0),
+        (0.0, math.inf, 0.1, 1e-10, 2, False, math.inf, 0),
+        (0.0, -math.inf, 0.1, 1e-10, 2, False, -math.inf, 0),
+        (1e308, 1e308, 1.0, 1e-10, 2, False, 1e308, 1),
+    ),
+)
+def test_rms_backward_euler_respects_tolerance_and_rejects_invalid_candidates(
+    solver_class: type[BackEulerImplicitIntegration] | type[BackEulerImplicitIntegrationVec] | type[BackEulerImplicitIntegrationFullVec],
+    derivative_rate: float,
+    initial_candidate: float,
+    step: float,
+    tolerance: float,
+    budget: int,
+    expected_converged: bool,
+    expected_last: float,
+    expected_corrections: int,
+) -> None:
+    """Respect user tolerance and reject nonfinite inputs before linear solves.
+
+    :param solver_class: Existing public backward Euler implementation.
+    :param derivative_rate: Constant derivative, including invalid probe values.
+    :param initial_candidate: Supplied initial point used by the candidate guard.
+    :param step: Single requested macro step.
+    :param tolerance: Caller-selected strict residual tolerance.
+    :param budget: Maximum allowed Newton corrections.
+    :param expected_converged: Expected acceptance of the requested step.
+    :param expected_last: Last available state, including raw invalid initial data.
+    :param expected_corrections: Analytically required Jacobian count.
+    :return: None.
+    """
+    problem: _CurrentPointCouplingProblem = _CurrentPointCouplingProblem(
+        enable_cs=False, derivative_rate=derivative_rate,
+        initial_candidate_value=initial_candidate,
+    )
+    solver: BackEulerImplicitIntegration | BackEulerImplicitIntegrationVec | BackEulerImplicitIntegrationFullVec = solver_class(
+        problem=problem, t0=0.0, t_end=step, h=step, max_iter=budget, tolerance=tolerance,
+    )
+    times: np.ndarray
+    values: np.ndarray
+    initialized: bool
+    converged: bool
+    times, values, initialized, converged = solver.simulate()
+    # Initial algebraic projection has no equations here; its meaning is unchanged.
+    assert initialized
+    assert converged == expected_converged
+    expected_rows: int = 2 if expected_converged else 1
+    assert times.shape == (expected_rows,)
+    assert values.shape == (expected_rows, 1)
+    np.testing.assert_equal(values[-1, 0], expected_last)
+    # Scalar damping retains a finite point; the two vector backends overflow.
+    expected_correction_count: int = (
+        budget if derivative_rate == 1e308 and solver_class is BackEulerImplicitIntegration
+        else expected_corrections
+    )
+    assert problem.jacobian_evaluations == expected_correction_count
+    if math.isfinite(initial_candidate):
+        # No invalid corrected point may reach the FMI ME input consumer.
+        presented_snapshot: np.ndarray
+        for presented_snapshot in problem.me_advance_snapshots:
+            assert np.all(np.isfinite(presented_snapshot))
+    else:
+        pass
+    assert problem.resolve_acceptances == list((expected_converged,))
+    assert problem.me_close_count == 1
+    assert problem.cs_close_count == 0
+    if expected_converged:
+        final_residual: float = float(values[-1, 0]) - initial_candidate - step * derivative_rate
+        assert math.isfinite(final_residual)
+        assert abs(final_residual) < tolerance
+    else:
+        assert problem.logger.add_error.call_count >= 1
+        if not math.isfinite(initial_candidate):
+            assert problem.residual_evaluations == 0
+        elif derivative_rate == 1e308:
+            assert problem.residual_evaluations == expected_correction_count + (
+                1 if solver_class is BackEulerImplicitIntegration else 0
+            )
+        else:
+            assert problem.residual_evaluations == 1
+
+
+@pytest.mark.parametrize("solver_class", (
+    BackEulerImplicitIntegration, BackEulerImplicitIntegrationVec,
+    BackEulerImplicitIntegrationFullVec,
+))
+@pytest.mark.parametrize("failure_time,retry_time,expected_rows,accepted_local_count", (
+    (0.1, None, 1, 0), (0.2, None, 2, 1), (0.1, 0.05, 1, 1),
+))
+def test_rms_backward_euler_preserves_prefix_on_rejection(
+    solver_class: type[BackEulerImplicitIntegration] | type[BackEulerImplicitIntegrationVec] | type[BackEulerImplicitIntegrationFullVec],
+    failure_time: float,
+    retry_time: float | None,
+    expected_rows: int,
+    accepted_local_count: int,
+) -> None:
+    """Retain completed macro samples and prepared earlier FMI retries.
+
+    :param solver_class: Existing public backward Euler implementation.
+    :param failure_time: Local target where the derivative becomes invalid.
+    :param retry_time: Optional earlier ME retry inside the first macro step.
+    :param expected_rows: Initial plus completed macro samples to expose.
+    :param accepted_local_count: Converged local boundaries before rejection.
+    :return: None.
+    """
+    problem: _CurrentPointCouplingProblem = _CurrentPointCouplingProblem(
+        enable_cs=False, initial_event_time=retry_time, rate_change=(failure_time, math.nan),
+    )
+    solver: BackEulerImplicitIntegration | BackEulerImplicitIntegrationVec | BackEulerImplicitIntegrationFullVec = solver_class(
+        problem=problem, t0=0.0, t_end=0.3, h=0.1, max_iter=2, tolerance=1e-10,
+    )
+    times: np.ndarray
+    values: np.ndarray
+    initialized: bool
+    converged: bool
+    times, values, initialized, converged = solver.simulate()
+    assert initialized
+    assert not converged
+    assert times.shape == (expected_rows,)
+    assert values.shape == (expected_rows, 1)
+    expected_times: np.ndarray = np.arange(expected_rows, dtype=float) * 0.1
+    np.testing.assert_allclose(times, expected_times, rtol=0, atol=1e-12)
+    np.testing.assert_allclose(values[:, 0], 1.0 + expected_times, rtol=0, atol=1e-12)
+    expected_resolutions: list[bool] = list((True,)) * accepted_local_count
+    expected_resolutions.append(False)
+    assert problem.resolve_acceptances == expected_resolutions
+    assert problem.jacobian_evaluations == accepted_local_count
+    assert problem.last_update_time == pytest.approx(failure_time, rel=0, abs=1e-12)
+    assert problem.me_close_count == 1
+    assert problem.cs_close_count == 0
+    if solver_class is BackEulerImplicitIntegrationFullVec:
+        assert problem.operation_log.count("native_commit") == 0
+    else:
+        assert problem.operation_log.count("native_commit") == accepted_local_count

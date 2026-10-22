@@ -12,10 +12,13 @@ from VeraGridEngine.Simulations.NTC.ntc_opf_strict import run_linear_ntc_opf_str
 from VeraGridEngine.Simulations.driver_template import DriverTemplate
 from VeraGridEngine.Simulations.NTC.ntc_options import OptimalNetTransferCapacityOptions
 from VeraGridEngine.Simulations.NTC.ntc_results import OptimalNetTransferCapacityResults
+from VeraGridEngine.Simulations.OPF.opf_results import OptimalPowerFlowResults
+from VeraGridEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
+from VeraGridEngine.DataStructures.numerical_circuit import NumericalCircuit
 from VeraGridEngine.basic_structures import Logger
-from VeraGridEngine.enumerations import SimulationTypes, TapPhaseControl
+from VeraGridEngine.enumerations import SimulationTypes, TapPhaseControl, AvailableTransferMode
 from VeraGridEngine.Devices.Parents.controllable_branch_parent import ControllableBranchParent
-from VeraGridEngine.basic_structures import ObjVec, IntVec, BoolVec
+from VeraGridEngine.basic_structures import ObjVec, IntVec, BoolVec, Vec
 
 
 def select_ntc_contingency_groups(grid: MultiCircuit,
@@ -89,6 +92,113 @@ def collect_contingency_group_device_names(grid: MultiCircuit) -> ObjVec:
                 parts.append(cnt_list[i_c].device_name)
             names[i_g] = "; ".join(parts)
     return names
+
+
+def get_ntc_operating_point_as_opf_results(grid: MultiCircuit,
+                                           t_idx: int | None,
+                                           bus_change: Vec,
+                                           phase_shift: Vec,
+                                           hvdc_flow: Vec,
+                                           vsc_flow: Vec,
+                                           transfer_method: AvailableTransferMode) -> OptimalPowerFlowResults:
+    """
+    Express one NTC operating point as OPF results, so a power flow reproduces its flows.
+
+    The power flow takes OPF results through the "OPF results to power flow" option: the
+    generators, batteries and load shedding set the injections, the angles fix the phase
+    shifters and the HVDC and converter flows fix the links. The NTC stores its injection change
+    per bus, so every bus change is split among the devices that carry it with the same weights
+    the transfer method uses. Any split adds up to the bus change, which is all the flows see.
+
+    :param grid: circuit the NTC was solved on
+    :param t_idx: time step of the operating point, or None for the snapshot
+    :param bus_change: NTC injection change per bus (MW), real or complex
+    :param phase_shift: NTC angle per branch (rad)
+    :param hvdc_flow: NTC HVDC flows (MW)
+    :param vsc_flow: NTC converter flows, leaving the DC side (MW)
+    :param transfer_method: transfer method of that NTC run
+    :return: snapshot shaped OPF results holding the NTC operating point
+    """
+    # the grid values at that time step, which the NTC started from
+    nc: NumericalCircuit = compile_numerical_circuit_at(circuit=grid, t_idx=t_idx)
+
+    # empty snapshot OPF results with the dimensions of the grid, filled below
+    F: IntVec
+    T: IntVec
+    F, T = grid.get_branch_FT(add_vsc=False, add_hvdc=False, add_switch=True)
+    F_hvdc: IntVec
+    T_hvdc: IntVec
+    F_hvdc, T_hvdc = grid.get_hvdc_FT()
+    opf_results: OptimalPowerFlowResults = OptimalPowerFlowResults(
+        bus_names=grid.get_bus_names(),
+        branch_names=grid.get_branch_names(add_hvdc=False, add_vsc=False, add_switch=True),
+        load_names=grid.get_load_names(),
+        generator_names=grid.get_generator_names(),
+        shunt_like_names=grid.get_shunt_like_devices_names(),
+        battery_names=grid.get_battery_names(),
+        hvdc_names=grid.get_hvdc_names(),
+        vsc_names=grid.get_vsc_names(),
+        bus_types=np.ones(grid.get_bus_number(), dtype=int),
+        area_names=grid.get_area_names(),
+        fluid_node_names=grid.get_fluid_node_names(),
+        fluid_path_names=grid.get_fluid_path_names(),
+        fluid_inj_names=grid.get_fluid_injection_names(),
+        F=F,
+        T=T,
+        F_hvdc=F_hvdc,
+        T_hvdc=T_hvdc,
+        bus_area_indices=grid.get_bus_area_indices()
+    )
+
+    # per device transfer weights, with the signs get_transfer_power_scaling_per_bus uses
+    gen_injection: Vec = nc.generator_data.p * nc.generator_data.active
+    load_injection: Vec = -np.real(nc.load_data.S) * nc.load_data.active
+    battery_injection: Vec = nc.battery_data.p * nc.battery_data.active
+
+    # The NTC base is perfectly balanced (get_base_power). The generators absorb the imbalance in
+    # proportion to their injection. Without this the power flow slack would take it instead.
+    imbalance: float = float(gen_injection.sum() + battery_injection.sum() + load_injection.sum())
+    gen_total: float = float(gen_injection.sum())
+    balanced_gen: Vec = gen_injection.copy()
+    if imbalance != 0.0 and gen_total != 0.0:
+        balanced_gen -= gen_injection / gen_total * imbalance
+    else:
+        pass  # already balanced, or nothing generates (the NTC cannot run then)
+    # Only the loads take the OPF load shedding in the power flow (get_load_data, where they come
+    # first), so they carry the load side of every bus change. 
+    n_load: int = opf_results.load_shedding.shape[0]
+    load_bus_idx: IntVec = nc.load_data.bus_idx[:n_load]
+    gen_weight: Vec = np.zeros(nc.generator_data.nelm)
+    load_weight: Vec = np.zeros(n_load)
+    if transfer_method == AvailableTransferMode.InstalledPower:
+        gen_weight = nc.generator_data.installed_p * nc.generator_data.active
+    elif transfer_method == AvailableTransferMode.Generation:
+        gen_weight = gen_injection
+    elif transfer_method == AvailableTransferMode.Load:
+        load_weight = load_injection[:n_load]
+    else:
+        gen_weight = gen_injection
+        load_weight = -load_injection[:n_load]
+
+    # share of every device in its bus change
+    bus_weight: Vec = (np.bincount(nc.generator_data.bus_idx, weights=gen_weight, minlength=nc.nbus)
+                       + np.bincount(load_bus_idx, weights=load_weight, minlength=nc.nbus))
+    gen_bus_weight: Vec = bus_weight[nc.generator_data.bus_idx]
+    load_bus_weight: Vec = bus_weight[load_bus_idx]
+    bus_change_mw: Vec = np.real(np.asarray(bus_change, dtype=complex))
+    gen_change: Vec = np.divide(bus_change_mw[nc.generator_data.bus_idx] * gen_weight, gen_bus_weight,
+                                out=np.zeros(nc.generator_data.nelm), where=gen_bus_weight != 0)
+    load_change: Vec = np.divide(bus_change_mw[load_bus_idx] * load_weight, load_bus_weight,
+                                 out=np.zeros(n_load), where=load_bus_weight != 0)
+
+    # fill the operating point into the arrays the results already hold
+    opf_results.generator_power[:] = np.where(nc.generator_data.active, balanced_gen, nc.generator_data.p) + gen_change
+    opf_results.battery_power[:] = nc.battery_data.p
+    opf_results.load_shedding[:] = load_change
+    opf_results.tap_angle[:] = phase_shift
+    opf_results.hvdc_Pf[:] = hvdc_flow
+    opf_results.vsc_Pf[:] = vsc_flow
+    return opf_results
 
 
 class OptimalNetTransferCapacityDriver(DriverTemplate):

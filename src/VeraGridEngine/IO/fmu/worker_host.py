@@ -9,7 +9,7 @@ from VeraGridEngine.enumerations import FmiThreeWorkerHostState
 
 import math
 from multiprocessing import get_context
-from multiprocessing.connection import Connection
+from multiprocessing.connection import Connection, wait
 from multiprocessing.context import BaseContext
 from multiprocessing.process import BaseProcess
 from pathlib import Path
@@ -666,6 +666,9 @@ class FmiThreeWorkerHost:
     ) -> FmiThreeWorkerResponse:
         """Send one request and receive one correlated response before deadline.
 
+        Process exit wakes the wait even when another handle keeps the Pipe
+        open. A readable response takes precedence over simultaneous exit.
+
         :param request: Typed request for the single in-flight transition.
         :param expected_response_kind: Successful response required by the caller.
         :return: Correlated successful response.
@@ -677,6 +680,14 @@ class FmiThreeWorkerHost:
         else:
             self._release_after_failure(
                 "FMI 3 worker connection is unavailable",
+                allow_graceful_join=False,
+            )
+        process: BaseProcess | None = self._process
+        if process is not None:
+            process_sentinel: int = process.sentinel
+        else:
+            self._release_after_failure(
+                "FMI 3 worker process is unavailable",
                 allow_graceful_join=False,
             )
         try:
@@ -704,9 +715,22 @@ class FmiThreeWorkerHost:
         remaining_seconds: float = response_deadline - time.monotonic()
         try:
             if remaining_seconds > 0.0:
-                response_available: bool = connection.poll(remaining_seconds)
+                # A duplicated peer handle can suppress Pipe EOF after a
+                # bootstrap failure, so process death must wake this wait too.
+                ready_objects: list[Connection | int] = wait(
+                    (connection, process_sentinel),
+                    timeout=remaining_seconds,
+                )
+                response_available: bool = connection in ready_objects
+                process_exited: bool = process_sentinel in ready_objects
+                if process_exited and not response_available:
+                    # Prefer a terminal response sent just before process exit.
+                    response_available = connection.poll(0.0)
+                else:
+                    pass
             else:
                 response_available = False
+                process_exited = False
         except (OSError, ValueError) as error:
             self._release_after_failure(
                 f"FMI 3 worker response polling failed: {error}",
@@ -715,6 +739,17 @@ class FmiThreeWorkerHost:
         if response_available:
             pass
         else:
+            if process_exited:
+                # The signalled sentinel proves death; reap without replacing
+                # the natural exit code by terminating an already dead worker.
+                process.join(timeout=0.0)
+                self._release_after_failure(
+                    f"FMI 3 worker exited with code {process.exitcode} before "
+                    f"response for request {request.request_id}",
+                    allow_graceful_join=True,
+                )
+            else:
+                pass
             self._release_after_failure(
                 f"FMI 3 worker response timed out for request {request.request_id}",
                 allow_graceful_join=False,

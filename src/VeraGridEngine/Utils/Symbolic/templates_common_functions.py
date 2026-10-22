@@ -25,7 +25,7 @@ from VeraGridEngine.Utils.Symbolic.bus_emt_template import (BusEmtTemplate,
                                                            get_bus_emt_template,
                                                            get_bus_mask,
                                                            get_bus_emt_algebraic_vars)
-from VeraGridEngine.Devices.Parents.dynamic_bus_parent import EmtBusConnectionSide, EmtBusConnectedModelRecord
+from VeraGridEngine.Devices.Parents.dynamic_bus_parent import EmtBusConnectionSide
 
 
 def _find_block_by_uid(root_block: Block,
@@ -1255,28 +1255,9 @@ def reconcile_saved_emt_model_against_current_topology(device: Any,
         pass
 
     if _is_branch_like_device(device):
-        # Empty and previously grid-built shells follow the current static
-        # topology. A non-empty replacement shell remains authoritative for the
-        # pass, which preserves explicit editor/test topology substitutions.
-        from_shell_requires_grid_sync: bool = (device.bus_from.emt_model.empty()
-                                                or device.bus_from.is_emt_model_grid_synchronized())
-        if from_shell_requires_grid_sync:
-            synchronize_emt_bus_shell_with_grid(bus=device.bus_from,
-                                                grid=grid,
-                                                var_factory=var_factory,
-                                                device_to_skip=device)
-        else:
-            pass
-
-        to_shell_requires_grid_sync: bool = (device.bus_to.emt_model.empty()
-                                              or device.bus_to.is_emt_model_grid_synchronized())
-        if to_shell_requires_grid_sync:
-            synchronize_emt_bus_shell_with_grid(bus=device.bus_to,
-                                                grid=grid,
-                                                var_factory=var_factory,
-                                                device_to_skip=device)
-        else:
-            pass
+        # Every terminal follows static topology, irrespective of how its bus model was assigned.
+        synchronize_emt_bus_shell_with_grid(bus=device.bus_from, grid=grid, var_factory=var_factory)
+        synchronize_emt_bus_shell_with_grid(bus=device.bus_to, grid=grid, var_factory=var_factory)
         # Legacy archives keep terminal semantics in external_mapping only.
         # Recover them before the mapping is cleared and rebuilt from live bus
         # phases, so the original equation variables remain authoritative.
@@ -1347,7 +1328,7 @@ def _build_bus_shell_voltage_mapping(bus: Any) -> Dict[VarPowerFlowReferenceType
     return voltage_mapping
 
 
-def _detect_bus_shell_ac_mask(model: Block) -> List[bool] | None:
+def _detect_bus_shell_ac_mask(bus_model: Block) -> List[bool] | None:
     """
     Detect the AC phase mask represented by one EMT bus shell.
 
@@ -1355,23 +1336,24 @@ def _detect_bus_shell_ac_mask(model: Block) -> List[bool] | None:
     :return: Mask ordered as ``[N, A, B, C]``, or ``None`` when malformed.
     """
     try:
-        get_bus_emt_algebraic_vars(model)
+        get_bus_emt_algebraic_vars(bus_model)
     except (AttributeError, TypeError, ValueError):
         return None
     else:
         pass
 
     return list([
-        model.external_mapping.get(VarPowerFlowReferenceType.v_N, None) is not None,
-        model.external_mapping.get(VarPowerFlowReferenceType.v_A, None) is not None,
-        model.external_mapping.get(VarPowerFlowReferenceType.v_B, None) is not None,
-        model.external_mapping.get(VarPowerFlowReferenceType.v_C, None) is not None,
+        bus_model.external_mapping.get(VarPowerFlowReferenceType.v_N, None) is not None,
+        bus_model.external_mapping.get(VarPowerFlowReferenceType.v_A, None) is not None,
+        bus_model.external_mapping.get(VarPowerFlowReferenceType.v_B, None) is not None,
+        bus_model.external_mapping.get(VarPowerFlowReferenceType.v_C, None) is not None,
     ])
 
 
 def _bus_shell_matches_expected_voltage_contract(bus: Any,
                                                  model: Block,
-                                                 expected_mask: List[bool] | None) -> bool:
+                                                 expected_mask: List[bool] | None,
+                                                 old_mask: List[bool] | None) -> bool:
     """
     Check whether one EMT bus shell exposes the expected voltage contract.
 
@@ -1395,172 +1377,217 @@ def _bus_shell_matches_expected_voltage_contract(bus: Any,
         else:
             return True
     else:
-        detected_mask: List[bool] | None = _detect_bus_shell_ac_mask(model=model)
-        if detected_mask is None or expected_mask is None:
+
+        if old_mask is None or expected_mask is None:
             return False
         elif model.external_mapping.get(VarPowerFlowReferenceType.Vdc, None) is not None:
             return False
-        elif detected_mask != expected_mask:
+        elif old_mask != expected_mask:
             return False
         else:
             return True
 
 
-def emt_bus_shell_matches_grid_topology(bus: Any, grid: Any) -> bool:
-    """
-    Check whether one existing EMT bus shell matches the current static topology.
+def _get_emt_terminal_references(side: EmtBusConnectionSide) -> tuple[tuple[VarPowerFlowReferenceType, VarPowerFlowReferenceType, VarPowerFlowReferenceType], ...]:
+    """Return bus voltage, device voltage and current refs for one terminal.
 
-    :param bus: Bus that owns the EMT shell.
-    :param grid: Circuit used to derive the authoritative phase mask.
-    :return: ``True`` when the existing shell matches the current grid contract.
+    :param side: Device terminal attached to the bus.
+    :return: Reference triples ordered as DC, N, A, B, C.
     """
-    expected_mask: List[bool] | None
-
-    if bus.is_dc:
-        expected_mask = None
+    if side == EmtBusConnectionSide.FROM:
+        return (
+            (VarPowerFlowReferenceType.Vdc, VarPowerFlowReferenceType.Vf_dc, VarPowerFlowReferenceType.If_dc),
+            (VarPowerFlowReferenceType.v_N, VarPowerFlowReferenceType.vf_N, VarPowerFlowReferenceType.if_N),
+            (VarPowerFlowReferenceType.v_A, VarPowerFlowReferenceType.vf_A, VarPowerFlowReferenceType.if_A),
+            (VarPowerFlowReferenceType.v_B, VarPowerFlowReferenceType.vf_B, VarPowerFlowReferenceType.if_B),
+            (VarPowerFlowReferenceType.v_C, VarPowerFlowReferenceType.vf_C, VarPowerFlowReferenceType.if_C),
+        )
+    elif side == EmtBusConnectionSide.TO:
+        return (
+            (VarPowerFlowReferenceType.Vdc, VarPowerFlowReferenceType.Vt_dc, VarPowerFlowReferenceType.It_dc),
+            (VarPowerFlowReferenceType.v_N, VarPowerFlowReferenceType.vt_N, VarPowerFlowReferenceType.it_N),
+            (VarPowerFlowReferenceType.v_A, VarPowerFlowReferenceType.vt_A, VarPowerFlowReferenceType.it_A),
+            (VarPowerFlowReferenceType.v_B, VarPowerFlowReferenceType.vt_B, VarPowerFlowReferenceType.it_B),
+            (VarPowerFlowReferenceType.v_C, VarPowerFlowReferenceType.vt_C, VarPowerFlowReferenceType.it_C),
+        )
     else:
-        expected_mask = get_bus_mask(grid=grid, bus=bus)
+        return (
+            (VarPowerFlowReferenceType.Vdc, VarPowerFlowReferenceType.Vdc, VarPowerFlowReferenceType.Idc),
+            (VarPowerFlowReferenceType.v_N, VarPowerFlowReferenceType.v_N, VarPowerFlowReferenceType.i_N),
+            (VarPowerFlowReferenceType.v_A, VarPowerFlowReferenceType.v_A, VarPowerFlowReferenceType.i_A),
+            (VarPowerFlowReferenceType.v_B, VarPowerFlowReferenceType.v_B, VarPowerFlowReferenceType.i_B),
+            (VarPowerFlowReferenceType.v_C, VarPowerFlowReferenceType.v_C, VarPowerFlowReferenceType.i_C),
+        )
 
-    return _bus_shell_matches_expected_voltage_contract(bus=bus,
-                                                        model=bus.emt_model,
-                                                        expected_mask=expected_mask)
 
+def _disconnect_emt_terminal(model: Block, bus_model: Block,
+                             side: EmtBusConnectionSide, var_factory: VarFactory) -> None:
+    """Remove old terminal edges before replacing a bus model.
 
-def _cleanup_bus_shell_var_factory_state(model: Block,
-                                         var_factory: VarFactory) -> None:
-    """
-    Remove one discarded bus shell from the shared var-factory registries.
-
-    :param model: Discarded bus shell.
-    :param var_factory: Shared symbolic variable factory.
+    :param model: Connected device model.
+    :param bus_model: Previous bus model.
+    :param side: Connected terminal.
+    :param var_factory: Factory owning the symbolic connections.
     :return: None.
     """
-    stale_vars: List[Var] = list()
-    stale_var: Var
-    connected_uid: int
+    bus_ref: VarPowerFlowReferenceType
+    voltage_ref: VarPowerFlowReferenceType
+    current_ref: VarPowerFlowReferenceType
+    source: Var
+    target: Var
+    mapped_target: Var | None
+    for bus_ref, voltage_ref, current_ref in _get_emt_terminal_references(side):
+        for source in bus_model.out_vars:
+            if source.ref == bus_ref:
+                # Remove both root and legacy mapping edges through the normal API.
+                for target in model.in_vars:
+                    if target.ref == voltage_ref:
+                        var_factory.remove_connection(var_to_disconnect=target, outgoing_var=source)
+                    else:
+                        pass
+                mapped_target = model.external_mapping.get(voltage_ref, None)
+                if mapped_target is not None:
+                    var_factory.remove_connection(var_to_disconnect=mapped_target, outgoing_var=source)
+                else:
+                    pass
+            else:
+                pass
 
-    stale_vars.extend(model.algebraic_vars)
-    stale_vars.extend(model.out_vars)
 
-    for stale_var in stale_vars:
-        if stale_var.non_mutable_uid in var_factory.get_vars_dict():
-            del var_factory.get_vars_dict()[stale_var.non_mutable_uid]
+def _rebind_emt_terminal(model: Block, bus_model: Block,
+                         side: EmtBusConnectionSide, var_factory: VarFactory) -> None:
+    """Adapt one terminal interface and bind it to the rebuilt bus.
+
+    :param model: Connected device model whose other terminal must be preserved.
+    :param bus_model: Rebuilt bus model.
+    :param side: Terminal to adapt.
+    :param var_factory: Factory owning device variables and connections.
+    :return: None.
+    """
+    references: tuple[tuple[VarPowerFlowReferenceType, VarPowerFlowReferenceType, VarPowerFlowReferenceType], ...] = _get_emt_terminal_references(side)
+    voltage_refs: set[VarPowerFlowReferenceType] = set(entry[1] for entry in references)
+    current_refs: set[VarPowerFlowReferenceType] = set(entry[2] for entry in references)
+    # Legacy editor interfaces may carry the bus ref instead of a side-specific ref.
+    # The external mapping identifies which existing variables belong to this terminal.
+    mapped_input_uids: set[int] = set()
+    mapped_input: Var | None
+    terminal_ref: VarPowerFlowReferenceType
+    for terminal_ref in voltage_refs:
+        mapped_input = model.external_mapping.get(terminal_ref, None)
+        if mapped_input is not None:
+            mapped_input_uids.add(mapped_input.non_mutable_uid)
         else:
             pass
-
-    stale_uids: set[int] = set(var.non_mutable_uid for var in stale_vars)
-    connections_dict: Dict[int, List[Any]] = var_factory.get_connections_dict()
-    connected_uid_list: List[int] = list(connections_dict.keys())
-
-    for connected_uid in connected_uid_list:
-        if connected_uid in stale_uids:
-            del connections_dict[connected_uid]
-        else:
-            filtered_connections: List[Any] = list()
-            connection: Any
-            for connection in connections_dict[connected_uid]:
-                if connection.non_mutable_uid in stale_uids:
-                    pass
-                else:
-                    filtered_connections.append(connection)
-
-            if len(filtered_connections) == 0:
-                del connections_dict[connected_uid]
+    # Replace lists rather than mutating lists potentially shared by old measurements.
+    inputs: List[Var] = list(var for var in model.in_vars
+                             if var.ref not in voltage_refs and var.non_mutable_uid not in mapped_input_uids)
+    outputs: List[Var] = list(var for var in model.out_vars if var.ref not in current_refs)
+    bus_ref: VarPowerFlowReferenceType
+    voltage_ref: VarPowerFlowReferenceType
+    current_ref: VarPowerFlowReferenceType
+    bus_var: Var | None
+    input_var: Var | None
+    output_var: Var | None
+    candidate: Var
+    for bus_ref, voltage_ref, current_ref in references:
+        bus_var = bus_model.external_mapping.get(bus_ref, None)
+        if bus_var is not None:
+            input_var = model.external_mapping.get(voltage_ref, None)
+            if input_var is None or all(candidate is not input_var for candidate in model.in_vars):
+                input_var = None
             else:
-                connections_dict[connected_uid] = filtered_connections
+                pass
+            output_var = None
+            for candidate in model.in_vars:
+                if candidate.ref == voltage_ref:
+                    input_var = candidate
+                else:
+                    pass
+            for candidate in model.out_vars:
+                if candidate.ref == current_ref:
+                    output_var = candidate
+                else:
+                    pass
+            if input_var is None:
+                input_var = var_factory.add_var(name=voltage_ref.name, reference=voltage_ref,
+                                                network_conn=bus_var.network_conn, uid=bus_var.uid)
+            else:
+                pass
+            if output_var is None:
+                output_var = var_factory.add_var(name=current_ref.name, reference=current_ref, network_conn=True)
+            else:
+                pass
+            # Canonical terminal refs keep FROM and TO distinct for reference-only wiring.
+            input_var.ref = voltage_ref
+            inputs.append(input_var)
+            outputs.append(output_var)
+            model.external_mapping[voltage_ref] = input_var
+            model.external_mapping[current_ref] = output_var
+            var_factory.add_connection(var_to_subs=input_var, incoming_var=bus_var)
+        else:
+            model.external_mapping.pop(voltage_ref, None)
+            model.external_mapping.pop(current_ref, None)
+    model.in_vars = inputs
+    model.out_vars = outputs
 
 
 def synchronize_emt_bus_shell_with_grid(bus: Any,
                                         grid: Any,
-                                        var_factory: VarFactory,
-                                        device_to_skip: Any | None = None) -> EmtBusShellSyncResult:
-    """
-    Synchronize one EMT bus shell with the current static topology.
+                                        var_factory: VarFactory) -> EmtBusShellSyncResult:
+    """Rebuild a stale bus and reconnect non-empty device models found in the grid.
 
-    :param bus: Bus whose EMT shell must match the current topology.
-    :param grid: Circuit used to derive the authoritative phase mask.
-    :param var_factory: Shared symbolic variable factory.
-    :param device_to_skip: Optional device currently being reconciled elsewhere.
-    :return: Detailed synchronization result.
+    :param bus: Bus whose EMT phases must match the static topology.
+    :param grid: Circuit providing topology and the authoritative bus factory.
+    :param var_factory: Factory owning connected device variables.
+    :return: Whether the bus was rebuilt and its previous and current masks.
     """
-    expected_mask: List[bool] | None
+    expected_mask: List[bool] | None = None
     old_mask: List[bool] | None = None
-    rebuild_required: bool = False
-    connected_devices: List[Any] = list()
-    record: EmtBusConnectedModelRecord
-    model: Block = bus.emt_model
-
-    if bus.is_dc:
-        expected_mask = None
-    else:
+    old_model: Block = bus.emt_model
+    if not bus.is_dc:
         expected_mask = get_bus_mask(grid=grid, bus=bus)
-
-    if model.empty():
-        rebuild_required = True
     else:
-        old_mask = _detect_bus_shell_ac_mask(model=model)
-        if _bus_shell_matches_expected_voltage_contract(bus=bus,
-                                                       model=model,
-                                                       expected_mask=expected_mask):
-            rebuild_required = False
-        else:
-            rebuild_required = True
-
+        pass
+    if not old_model.empty():
+        old_mask = _detect_bus_shell_ac_mask(bus_model=old_model)
+    else:
+        pass
+    rebuild_required: bool = old_model.empty() or not _bus_shell_matches_expected_voltage_contract(
+        bus=bus, model=old_model, expected_mask=expected_mask, old_mask=old_mask)
+    endpoints: List[tuple[Block, EmtBusConnectionSide]] = list()
+    device: Any
+    model: Block
+    side: EmtBusConnectionSide
     if rebuild_required:
-        for record in bus.get_emt_models_connected():
-            if record.get_device() in connected_devices:
-                pass
+        # Static topology is the only source of connected devices; no bus registry is needed.
+        for device in grid.get_injection_devices_iter():
+            if device.bus is bus and not device.emt_model.empty():
+                endpoints.append((device.emt_model, EmtBusConnectionSide.BUS))
             else:
-                connected_devices.append(record.get_device())
-
-        if not model.empty():
-            _cleanup_bus_shell_var_factory_state(model=model, var_factory=var_factory)
-        else:
-            pass
-
+                pass
+        for device in grid.get_branches_iter(add_vsc=True, add_hvdc=True, add_switch=True):
+            if not device.emt_model.empty():
+                if device.bus_from is bus:
+                    endpoints.append((device.emt_model, EmtBusConnectionSide.FROM))
+                else:
+                    pass
+                if device.bus_to is bus:
+                    endpoints.append((device.emt_model, EmtBusConnectionSide.TO))
+                else:
+                    pass
+            else:
+                pass
+        for model, side in endpoints:
+            _disconnect_emt_terminal(model=model, bus_model=old_model, side=side, var_factory=var_factory)
+        # Unused variables remain in the factory; only their active edges are removed.
         get_bus_emt_template(grid=grid, bus=bus)
-        reconnect_registered_emt_models_for_bus(bus=bus,
-                                                var_factory=var_factory,
-                                                device_to_skip=device_to_skip)
-        connect_pending_injection_bus_variables_emt(bus=bus,
-                                                    var_factory=var_factory)
-
-        for record in bus.get_emt_models_connected():
-            if record.get_device() in connected_devices:
-                pass
-            else:
-                connected_devices.append(record.get_device())
-
-        for device in connected_devices:
-            if device_to_skip is not None:
-                if device is device_to_skip:
-                    pass
-                else:
-                    if _has_materialized_emt_model(device=device):
-                        unify_saved_emt_model_root_contract(device=device)
-                        synchronize_saved_emt_root_contract_identity(device=device)
-                        synchronize_saved_emt_root_contract_from_bus(device=device)
-                    else:
-                        pass
-            else:
-                if _has_materialized_emt_model(device=device):
-                    unify_saved_emt_model_root_contract(device=device)
-                    synchronize_saved_emt_root_contract_identity(device=device)
-                    synchronize_saved_emt_root_contract_from_bus(device=device)
-                else:
-                    pass
-
+        for model, side in endpoints:
+            _rebind_emt_terminal(model=model, bus_model=bus.emt_model, side=side, var_factory=var_factory)
         bus.mark_emt_model_grid_synchronized()
-        return EmtBusShellSyncResult(changed=True,
-                                     old_mask=old_mask,
-                                     new_mask=expected_mask,
-                                     voltage_vars=_build_bus_shell_voltage_mapping(bus=bus))
     else:
-        bus.mark_emt_model_grid_synchronized()
-        return EmtBusShellSyncResult(changed=False,
-                                     old_mask=old_mask,
-                                     new_mask=expected_mask,
-                                     voltage_vars=_build_bus_shell_voltage_mapping(bus=bus))
+        pass
+    return EmtBusShellSyncResult(changed=rebuild_required, old_mask=old_mask,
+                                 new_mask=expected_mask, voltage_vars=_build_bus_shell_voltage_mapping(bus=bus))
 
 
 def _has_materialized_emt_model(device: Any) -> bool:
@@ -1581,242 +1608,6 @@ def _has_materialized_emt_model(device: Any) -> bool:
             return True
     else:
         return False
-
-
-def _is_entry_side_still_connected_to_bus(bus: Any,
-                                          record: EmtBusConnectedModelRecord) -> bool:
-    """
-    Check whether one registered EMT endpoint still belongs to this bus.
-
-    The bus registry can accumulate stale entries when one device changes model,
-    clears its EMT template, or changes topology. Before reconnecting, the bus
-    must verify that each record still matches the actual current bus endpoint.
-
-    :param bus: Bus whose registry is being validated.
-    :param record: Registered EMT endpoint.
-    :return: ``True`` when the record still belongs to this bus.
-    """
-    device: Any = record.get_device()
-    side: EmtBusConnectionSide = record.get_side()
-
-    if side == EmtBusConnectionSide.BUS:
-        if device.bus is bus:
-            return True
-        else:
-            return False
-    else:
-        if side == EmtBusConnectionSide.FROM:
-            if device.bus_from is bus:
-                return True
-            else:
-                return False
-        else:
-            if side == EmtBusConnectionSide.TO:
-                if device.bus_to is bus:
-                    return True
-                else:
-                    return False
-            else:
-                return False
-
-
-def _is_entry_model_still_current(record: EmtBusConnectedModelRecord) -> bool:
-    """
-    Check whether one registered EMT endpoint still points to the device current model.
-
-    The registry must stop referencing old block instances after one device
-    assigns a fresh EMT template block. Comparing against ``device.emt_model`` is
-    the direct way to detect that stale state.
-
-    :param record: Registered EMT endpoint.
-    :return: ``True`` when the record still points to the live device model.
-    """
-    device: Any = record.get_device()
-    model: Block = record.get_model()
-
-    if isinstance(device.emt_model, Block):
-        if device.emt_model is model:
-            if model.empty():
-                return False
-            else:
-                return True
-        else:
-            return False
-    else:
-        return False
-
-
-def cleanup_connected_emt_models_for_bus(bus: Any) -> None:
-    """
-    Remove stale EMT endpoint records from one bus-local registry.
-
-    The cleanup runs before every bus-driven reconnect so the algorithm only
-    touches live endpoints that still belong to the bus and still reference the
-    current device EMT model block.
-
-    :param bus: Bus whose EMT endpoint registry must be cleaned.
-    :return: None.
-    """
-    cleaned_records: list[EmtBusConnectedModelRecord] = list()
-    record: EmtBusConnectedModelRecord
-
-    for record in bus.get_emt_models_connected():
-        side_is_valid: bool = _is_entry_side_still_connected_to_bus(bus=bus, record=record)
-        model_is_valid: bool = _is_entry_model_still_current(record=record)
-
-        if side_is_valid:
-            if model_is_valid:
-                cleaned_records.append(record)
-            else:
-                pass
-        else:
-            pass
-
-    bus.clear_emt_models_connected()
-
-    for record in cleaned_records:
-        bus.add_or_replace_emt_model_connected(device=record.get_device(),
-                                               emt_model=record.get_model(),
-                                               side=record.get_side(),
-                                               device_tpe=record.get_device_tpe())
-
-
-def reconnect_registered_emt_models_for_bus(bus: Any,
-                                            var_factory: VarFactory,
-                                            device_to_skip: Any | None = None) -> None:
-    """
-    Reconnect every live registered EMT endpoint for one rebuilt bus shell.
-
-    Rebuilding the bus shell changes the symbolic voltage variables. The bus must
-    therefore rebind each registered EMT endpoint using the same connection rule
-    that was used during the original device-to-bus attachment.
-
-    :param bus: Bus whose connected EMT endpoints must be rebound.
-    :param var_factory: Shared variable factory.
-    :param device_to_skip: Optional device currently being reconciled elsewhere.
-    :return: None.
-    """
-    cleanup_connected_emt_models_for_bus(bus=bus)
-
-    record: EmtBusConnectedModelRecord
-    for record in bus.get_emt_models_connected():
-        device: Any = record.get_device()
-        model: Block = record.get_model()
-        side: EmtBusConnectionSide = record.get_side()
-        device_tpe: DeviceType = record.get_device_tpe()
-
-        if device_to_skip is not None:
-            if device is device_to_skip:
-                pass
-                continue
-            else:
-                pass
-        else:
-            pass
-
-        if side == EmtBusConnectionSide.BUS:
-            # Single-bus EMT devices consume the bus shell directly, so the
-            # reconnect rule is the one-to-one injection helper.
-            connect_injection_emt(bus.emt_model, model, var_factory)
-        else:
-            if device_tpe == DeviceType.VscDevice:
-                # VSCs use a dedicated EMT interface and therefore cannot be
-                # rebound with the generic branch helper.
-                if side == EmtBusConnectionSide.FROM:
-                    connect_vsc_emt_from(bus.emt_model,
-                                         model,
-                                         var_factory,
-                                         is_dc_bus=device.bus_from.is_dc)
-                else:
-                    if side == EmtBusConnectionSide.TO:
-                        connect_vsc_emt_to(bus.emt_model,
-                                           model,
-                                           var_factory,
-                                           is_dc_bus=device.bus_to.is_dc)
-                    else:
-                        pass
-            else:
-                if side == EmtBusConnectionSide.FROM:
-                    connect_line_emt_from(bus.emt_model, model, var_factory)
-                else:
-                    if side == EmtBusConnectionSide.TO:
-                        connect_line_emt_to(bus.emt_model, model, var_factory)
-                    else:
-                        pass
-
-
-def register_connected_emt_model(bus: Any,
-                                 device: Any,
-                                 model: Block,
-                                 side: EmtBusConnectionSide) -> None:
-    """
-    Register one live EMT endpoint on one bus.
-
-    The registry key is maintained at the bus level so future bus-shell rebuilds
-    can rebind the connected model deterministically without requiring a global
-    circuit scan.
-
-    :param bus: Bus that owns the registry.
-    :param device: Owning device of the EMT model.
-    :param model: Materialized EMT model block.
-    :param side: Semantic bus side used by the connection.
-    :return: None.
-    """
-    bus.add_or_replace_emt_model_connected(device=device,
-                                           emt_model=model,
-                                           side=side,
-                                           device_tpe=device.device_type)
-
-
-def unregister_connected_emt_model(bus: Any,
-                                   device: Any,
-                                   side: EmtBusConnectionSide | None = None) -> None:
-    """
-    Remove one device EMT endpoint registration from one bus.
-
-    :param bus: Bus that owns the registry.
-    :param device: Device whose registration must be removed.
-    :param side: Optional side filter.
-    :return: None.
-    """
-    if bus is None:
-        return
-    else:
-        bus.remove_emt_model_connected_for_device(device=device, side=side)
-
-
-def unregister_connected_emt_model_from_attached_buses(device: Any) -> None:
-    """
-    Remove stale bus endpoint registrations for one device from all its attached buses.
-
-    This cleanup step runs before one device assigns or clears an EMT model so no
-    bus registry keeps references to an obsolete block instance.
-
-    :param device: Device whose bus registrations must be removed.
-    :return: None.
-    """
-    branch_devices: list[DeviceType] = list([DeviceType.BranchDevice,
-                                             DeviceType.LineDevice,
-                                             DeviceType.Transformer2WDevice,
-                                             DeviceType.Transformer3WDevice,
-                                             DeviceType.DCLineDevice,
-                                             DeviceType.HVDCLineDevice,
-                                             DeviceType.SwitchDevice,
-                                             DeviceType.SeriesReactanceDevice,
-                                             DeviceType.UpfcDevice,
-                                             DeviceType.VscDevice])
-
-    if device.device_type in branch_devices:
-        unregister_connected_emt_model(bus=device.bus_from,
-                                       device=device,
-                                       side=EmtBusConnectionSide.FROM)
-        unregister_connected_emt_model(bus=device.bus_to,
-                                       device=device,
-                                       side=EmtBusConnectionSide.TO)
-    else:
-        unregister_connected_emt_model(bus=device.bus,
-                                       device=device,
-                                       side=EmtBusConnectionSide.BUS)
 
 
 def register_saved_emt_model_vars_for_device(device: Any,
@@ -2697,6 +2488,28 @@ def connect_line_phasor_rms_to(mdl1: Block, mdl2: Block, var_factory:VarFactory)
         var_factory.add_connections([inpt], [outp])
 
 
+def connect_models_by_reference(mdl1: Block, mdl2: Block, var_factory: VarFactory) -> None:
+    """Connect block outputs to inputs with the same non-empty power-flow reference.
+
+    :param mdl1: First block to connect.
+    :param mdl2: Second block to connect.
+    :param var_factory: Factory owning both blocks.
+    :return: None.
+    """
+    source_model: Block
+    target_model: Block
+    source: Var
+    target: Var
+    # Match both directions without using shared_ref or matching unreferenced ports.
+    for source_model, target_model in ((mdl1, mdl2), (mdl2, mdl1)):
+        for source in source_model.out_vars:
+            for target in target_model.in_vars:
+                if source.ref is not None and source.ref == target.ref:
+                    var_factory.add_connection(var_to_subs=target, incoming_var=source)
+                else:
+                    pass
+
+
 def connect_models(mdl1: Block, mdl2: Block, var_factory:VarFactory):
     """
     This function substitutes input variables for output variables to connect two rms models
@@ -3008,13 +2821,6 @@ def connect_pending_injection_bus_variables_emt(bus: Any,
                 # Deferred injection models must be rebound using the same
                 # connection primitive as eagerly connected EMT injections.
                 connect_injection_emt(bus.emt_model, pending_device.emt_model, var_factory)
-                # Once the pending model is finally wired, the bus must retain a
-                # persistent registry entry so any future bus-shell rebuild can
-                # rebind it without rediscovering the circuit topology.
-                register_connected_emt_model(bus=bus,
-                                             device=pending_device,
-                                             model=pending_device.emt_model,
-                                             side=EmtBusConnectionSide.BUS)
                 bus.remove_pending_emt_device(pending_device)
 
 
@@ -3106,8 +2912,6 @@ def attach_emt_model_to_buses(device: Any,
                                              DeviceType.UpfcDevice,
                                              DeviceType.VscDevice])
 
-    unregister_connected_emt_model_from_attached_buses(device=device)
-
     if device.device_type in branch_devices:
         if device.bus_from.emt_model.empty():
             raise ValueError(f"Connection Bus EMT model cannot be empty, initialize {device.bus_from.name} EMT model")
@@ -3119,10 +2923,6 @@ def attach_emt_model_to_buses(device: Any,
                                          bus=device.bus_from,
                                          side=EmtBusConnectionSide.FROM,
                                          var_factory=var_factory)
-        register_connected_emt_model(bus=device.bus_from,
-                                     device=device,
-                                     model=model,
-                                     side=EmtBusConnectionSide.FROM)
 
         if device.bus_to.emt_model.empty():
             raise ValueError(f"Connection Bus EMT model cannot be empty, initialize {device.bus_to.name} EMT model")
@@ -3134,10 +2934,6 @@ def attach_emt_model_to_buses(device: Any,
                                          bus=device.bus_to,
                                          side=EmtBusConnectionSide.TO,
                                          var_factory=var_factory)
-        register_connected_emt_model(bus=device.bus_to,
-                                     device=device,
-                                     model=model,
-                                     side=EmtBusConnectionSide.TO)
 
         # Non-VSC branch devices expose bus-side EMT voltage contracts through
         # root external-mapping vars such as ``vf_A`` and ``vt_A``. The symbolic
@@ -3160,10 +2956,6 @@ def attach_emt_model_to_buses(device: Any,
             raise ValueError(f"Connection Bus EMT model cannot be empty, initialize {device.bus.name} EMT model")
         else:
             connect_injection_emt(device.bus.emt_model, model, var_factory)
-            register_connected_emt_model(bus=device.bus,
-                                         device=device,
-                                         model=model,
-                                         side=EmtBusConnectionSide.BUS)
             seed_template_derived_dynamic_connection_intents(device=device)
             rematerialize_saved_dynamic_connection_intents(device=device,
                                                            var_factory=var_factory)

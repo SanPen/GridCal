@@ -20,14 +20,6 @@ VeraGridEngine.Simulations.OPF.Formulations.linear\_opf\_ts module
    :show-inheritance:
    :undoc-members:
 
-VeraGridEngine.Simulations.OPF.Formulations.linear\_opf\_ts\_b module
----------------------------------------------------------------------
-
-.. automodule:: VeraGridEngine.Simulations.OPF.Formulations.linear_opf_ts_b
-   :members:
-   :show-inheritance:
-   :undoc-members:
-
 Module contents
 ---------------
 

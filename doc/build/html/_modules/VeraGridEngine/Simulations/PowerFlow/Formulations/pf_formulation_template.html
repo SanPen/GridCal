@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Simulations.PowerFlow.Formulations.pf_formulation_template &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Simulations.PowerFlow.Formulations.pf_formulation_template &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/license.html">📜 License</a></li>
@@ -114,34 +115,34 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Simulations.PowerFlow.power_flow_results</span><span class="w"> </span><span class="kn">import</span> <span class="n">NumericPowerFlowResults</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Simulations.PowerFlow.power_flow_options</span><span class="w"> </span><span class="kn">import</span> <span class="n">PowerFlowOptions</span>
 
-<span class="n">pd</span><span class="o">.</span><span class="n">set_option</span><span class="p">(</span><span class="s1">&#39;display.float_format&#39;</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">{:.6f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">)</span>
+<span class="n">pd</span><span class="o">.</span><span class="n">set_option</span><span class="p">(</span><span class="s1">'display.float_format'</span><span class="p">,</span> <span class="s1">'</span><span class="si">{:.6f}</span><span class="s1">'</span><span class="o">.</span><span class="n">format</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="PfFormulationTemplate">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow.Formulations.html#VeraGridEngine.Simulations.PowerFlow.Formulations.pf_formulation_template.PfFormulationTemplate">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">PfFormulationTemplate</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Base Power Flow Formulation class</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;V&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;_Vm&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;_Va&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Scalc&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;options&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;_f&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;_error&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;_converged&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;_controls_tol&quot;</span><span class="p">,</span>
+        <span class="s2">"V"</span><span class="p">,</span>
+        <span class="s2">"_Vm"</span><span class="p">,</span>
+        <span class="s2">"_Va"</span><span class="p">,</span>
+        <span class="s2">"Scalc"</span><span class="p">,</span>
+        <span class="s2">"options"</span><span class="p">,</span>
+        <span class="s2">"_f"</span><span class="p">,</span>
+        <span class="s2">"_error"</span><span class="p">,</span>
+        <span class="s2">"_converged"</span><span class="p">,</span>
+        <span class="s2">"_controls_tol"</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">V0</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span> <span class="n">options</span><span class="p">:</span> <span class="n">PowerFlowOptions</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :param V0:</span>
 <span class="sd">        :param options:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">V</span> <span class="o">=</span> <span class="n">V0</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_Vm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">V0</span><span class="p">)</span>
@@ -161,124 +162,124 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">converged</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Converged?</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_converged</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">error</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Converged?</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_error</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">f</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Converged?</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_f</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">Va</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Voltage angles</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Va</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">Vm</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Voltage modules</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Vm</span>
 
 <div class="viewcode-block" id="PfFormulationTemplate.x2var">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow.Formulations.html#VeraGridEngine.Simulations.PowerFlow.Formulations.pf_formulation_template.PfFormulationTemplate.x2var">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">x2var</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Vec</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Convert X to decision variables</span>
 <span class="sd">        :param x: solution vector</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">pass</span></div>
 
 
 <div class="viewcode-block" id="PfFormulationTemplate.var2x">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow.Formulations.html#VeraGridEngine.Simulations.PowerFlow.Formulations.pf_formulation_template.PfFormulationTemplate.var2x">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">var2x</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Convert the internal decision variables into the vector</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">pass</span></div>
 
 
 <div class="viewcode-block" id="PfFormulationTemplate.check_error">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow.Formulations.html#VeraGridEngine.Simulations.PowerFlow.Formulations.pf_formulation_template.PfFormulationTemplate.check_error">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">check_error</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Vec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">Vec</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Check error of the solution without affecting the problem</span>
 <span class="sd">        :param x: Solution vector</span>
 <span class="sd">        :return: error</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="mf">1e20</span><span class="p">,</span> <span class="n">x</span></div>
 
 
 <div class="viewcode-block" id="PfFormulationTemplate.update">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow.Formulations.html#VeraGridEngine.Simulations.PowerFlow.Formulations.pf_formulation_template.PfFormulationTemplate.update">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">update_controls</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">Vec</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Update the problem</span>
 <span class="sd">        :param x: Solution vector</span>
 <span class="sd">        :param update_controls: Update controls</span>
 <span class="sd">        :return: error, converged, x, f</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">error</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">converged</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">var2x</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_f</span></div>
 
 
 <div class="viewcode-block" id="PfFormulationTemplate.size">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow.Formulations.html#VeraGridEngine.Simulations.PowerFlow.Formulations.pf_formulation_template.PfFormulationTemplate.size">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">size</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Size of the jacobian matrix</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="mi">0</span></div>
 
 
 <div class="viewcode-block" id="PfFormulationTemplate.fx">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow.Formulations.html#VeraGridEngine.Simulations.PowerFlow.Formulations.pf_formulation_template.PfFormulationTemplate.fx">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">fx</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">pass</span></div>
 
 
 <div class="viewcode-block" id="PfFormulationTemplate.Jacobian">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow.Formulations.html#VeraGridEngine.Simulations.PowerFlow.Formulations.pf_formulation_template.PfFormulationTemplate.Jacobian">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">Jacobian</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CSC</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">pass</span></div>
 
 
 <div class="viewcode-block" id="PfFormulationTemplate.solve_step_from_f">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow.Formulations.html#VeraGridEngine.Simulations.PowerFlow.Formulations.pf_formulation_template.PfFormulationTemplate.solve_step_from_f">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">solve_step_from_f</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f</span><span class="p">:</span> <span class="n">Vec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Vec</span><span class="p">,</span> <span class="nb">bool</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :param f: Function residual</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># Compute the Jacobian</span>
         <span class="n">J</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Jacobian</span><span class="p">()</span>  <span class="c1"># Assumes the internal vars were updated already with self.x2var()</span>
 
@@ -288,13 +289,13 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">verbose</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
             <span class="n">cols</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">7</span><span class="p">])</span>
             <span class="n">rows</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">7</span><span class="p">])</span>
-            <span class="c1"># print(&quot;J original:\n&quot;, pd.DataFrame(J.toarray()))</span>
-            <span class="c1"># print(&quot;J mod:\n&quot;, pd.DataFrame(J.toarray()[:, cols][rows, :]).to_string(index=False))</span>
-            <span class="c1"># print(&quot;F:\n&quot;, f[rows])</span>
-            <span class="c1"># print(&quot;dx:\n&quot;, dx[cols])</span>
+            <span class="c1"># print("J original:\n", pd.DataFrame(J.toarray()))</span>
+            <span class="c1"># print("J mod:\n", pd.DataFrame(J.toarray()[:, cols][rows, :]).to_string(index=False))</span>
+            <span class="c1"># print("F:\n", f[rows])</span>
+            <span class="c1"># print("dx:\n", dx[cols])</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">verbose</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
                 <span class="n">Jdf</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">J</span><span class="o">.</span><span class="n">toarray</span><span class="p">())</span>
-                <span class="n">Jdf</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;J.csv&#39;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">float_format</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%.4f</span><span class="s1">&#39;</span><span class="p">)</span>
+                <span class="n">Jdf</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="sa">f</span><span class="s1">'J.csv'</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">float_format</span><span class="o">=</span><span class="s1">'</span><span class="si">%.4f</span><span class="s1">'</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">dx</span><span class="p">,</span> <span class="n">ok</span></div>
 
@@ -302,10 +303,10 @@
 <div class="viewcode-block" id="PfFormulationTemplate.solve_step">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow.Formulations.html#VeraGridEngine.Simulations.PowerFlow.Formulations.pf_formulation_template.PfFormulationTemplate.solve_step">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">solve_step</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Vec</span><span class="p">,</span> <span class="nb">bool</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="c1"># Solve the sparse system</span>
         <span class="n">dx</span><span class="p">,</span> <span class="n">ok</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">solve_step_from_f</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_f</span><span class="p">)</span>
@@ -316,11 +317,11 @@
 <div class="viewcode-block" id="PfFormulationTemplate.get_x_names">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow.Formulations.html#VeraGridEngine.Simulations.PowerFlow.Formulations.pf_formulation_template.PfFormulationTemplate.get_x_names">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_x_names</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Names matching x</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">cols</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s1">&#39;x </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var2x</span><span class="p">())]</span>
+<span class="sd">        """</span>
+        <span class="n">cols</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s1">'x </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">'</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var2x</span><span class="p">())]</span>
 
         <span class="k">return</span> <span class="n">cols</span></div>
 
@@ -328,12 +329,12 @@
 <div class="viewcode-block" id="PfFormulationTemplate.get_fx_names">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow.Formulations.html#VeraGridEngine.Simulations.PowerFlow.Formulations.pf_formulation_template.PfFormulationTemplate.get_fx_names">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_fx_names</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Names matching fx</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
-        <span class="n">rows</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s1">&#39;f </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">f</span><span class="p">)]</span>
+        <span class="n">rows</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s1">'f </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">'</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">f</span><span class="p">)]</span>
 
         <span class="k">return</span> <span class="n">rows</span></div>
 
@@ -341,10 +342,10 @@
 <div class="viewcode-block" id="PfFormulationTemplate.get_jacobian_df">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow.Formulations.html#VeraGridEngine.Simulations.PowerFlow.Formulations.pf_formulation_template.PfFormulationTemplate.get_jacobian_df">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_jacobian_df</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">J</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">autodiff</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the Jacobian DataFrame</span>
 <span class="sd">        :return: DataFrame</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="n">J</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">J</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Jacobian</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
@@ -357,12 +358,12 @@
 <div class="viewcode-block" id="PfFormulationTemplate.get_f_df">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow.Formulations.html#VeraGridEngine.Simulations.PowerFlow.Formulations.pf_formulation_template.PfFormulationTemplate.get_f_df">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_f_df</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the f(x) DataFrame</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
             <span class="n">data</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_f</span> <span class="k">if</span> <span class="n">f</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">f</span><span class="p">,</span>
-            <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;f(x)&quot;</span><span class="p">],</span>
+            <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">"f(x)"</span><span class="p">],</span>
             <span class="n">index</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">get_fx_names</span><span class="p">()</span>
         <span class="p">)</span></div>
 
@@ -370,12 +371,12 @@
 <div class="viewcode-block" id="PfFormulationTemplate.get_x_df">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow.Formulations.html#VeraGridEngine.Simulations.PowerFlow.Formulations.pf_formulation_template.PfFormulationTemplate.get_x_df">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_x_df</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the x DataFrame</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
             <span class="n">data</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">var2x</span><span class="p">()</span> <span class="k">if</span> <span class="n">x</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">x</span><span class="p">,</span>
-            <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">],</span>
+            <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">"x"</span><span class="p">],</span>
             <span class="n">index</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">get_x_names</span><span class="p">()</span>
         <span class="p">)</span></div>
 
@@ -383,10 +384,10 @@
 <div class="viewcode-block" id="PfFormulationTemplate.get_solution">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow.Formulations.html#VeraGridEngine.Simulations.PowerFlow.Formulations.pf_formulation_template.PfFormulationTemplate.get_solution">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_solution</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">elapsed</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">iterations</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NumericPowerFlowResults</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">pass</span></div>
 </div>
 

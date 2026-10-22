@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Simulations.StateEstimation.state_estimation &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Simulations.StateEstimation.state_estimation &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/license.html">📜 License</a></li>
@@ -131,22 +132,22 @@
                 <span class="n">inputs</span><span class="p">:</span> <span class="n">StateEstimationInput</span><span class="p">,</span> <span class="n">pvpq</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span>
                 <span class="n">load_per_bus</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span>
                 <span class="n">fixed_slack</span><span class="p">:</span> <span class="nb">bool</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Get the arrays for calculation</span>
 <span class="sd">    :param Ybus: Admittance matrix</span>
-<span class="sd">    :param Yf: &quot;from&quot; admittance matrix</span>
-<span class="sd">    :param Yt: &quot;to&quot; admittance matrix</span>
+<span class="sd">    :param Yf: "from" admittance matrix</span>
+<span class="sd">    :param Yt: "to" admittance matrix</span>
 <span class="sd">    :param V: Voltages complex vector</span>
-<span class="sd">    :param f: array of &quot;from&quot; indices of branches</span>
-<span class="sd">    :param t: array of &quot;to&quot; indices of branches</span>
-<span class="sd">    :param Cf: Connectivity matrix &quot;from&quot;</span>
-<span class="sd">    :param Ct: Connectivity matrix &quot;to&quot;</span>
+<span class="sd">    :param f: array of "from" indices of branches</span>
+<span class="sd">    :param t: array of "to" indices of branches</span>
+<span class="sd">    :param Cf: Connectivity matrix "from"</span>
+<span class="sd">    :param Ct: Connectivity matrix "to"</span>
 <span class="sd">    :param inputs: instance of StateEstimationInput</span>
 <span class="sd">    :param pvpq: array of pq|pv bus indices</span>
 <span class="sd">    :param load_per_bus: Array of load per bus in p.u. (used to compute the Pg and Qg measurements)</span>
 <span class="sd">    :param fixed_slack: if true, the measurements on the slack bus are omitted</span>
 <span class="sd">    :return: H (jacobian), h (residual), S (power injections)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">n</span> <span class="o">=</span> <span class="n">Ybus</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
     <span class="c1"># compute currents</span>
@@ -186,7 +187,7 @@
     <span class="n">dVa_dVa</span> <span class="o">=</span> <span class="n">csc_matrix</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">n</span><span class="p">))[</span><span class="n">np</span><span class="o">.</span><span class="n">ix_</span><span class="p">(</span><span class="n">inputs</span><span class="o">.</span><span class="n">va_idx</span><span class="p">,</span> <span class="n">pvpq</span><span class="p">)])</span>
 
     <span class="k">if</span> <span class="n">fixed_slack</span><span class="p">:</span>
-        <span class="c1"># With the fixed slack, we don&#39;t need to compute the derivative values for the slack Vm</span>
+        <span class="c1"># With the fixed slack, we don't need to compute the derivative values for the slack Vm</span>
         <span class="n">dP_dVm</span> <span class="o">=</span> <span class="n">dS_dVm</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ix_</span><span class="p">(</span><span class="n">inputs</span><span class="o">.</span><span class="n">p_idx</span><span class="p">,</span> <span class="n">pvpq</span><span class="p">)]</span><span class="o">.</span><span class="n">real</span>
         <span class="n">dQ_dVm</span> <span class="o">=</span> <span class="n">dS_dVm</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ix_</span><span class="p">(</span><span class="n">inputs</span><span class="o">.</span><span class="n">q_idx</span><span class="p">,</span> <span class="n">pvpq</span><span class="p">)]</span><span class="o">.</span><span class="n">imag</span>
         <span class="n">dPg_dVm</span> <span class="o">=</span> <span class="n">dS_dVm</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ix_</span><span class="p">(</span><span class="n">inputs</span><span class="o">.</span><span class="n">pg_idx</span><span class="p">,</span> <span class="n">pvpq</span><span class="p">)]</span><span class="o">.</span><span class="n">real</span>
@@ -256,15 +257,15 @@
                                     <span class="n">se_input</span><span class="p">:</span> <span class="n">StateEstimationInput</span><span class="p">,</span>
                                     <span class="n">Sbase</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
                                     <span class="n">use_current_squared_meas</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Vec</span><span class="p">,</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">ObjVec</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    get_measurements_and_deviations the measurements into &quot;measurements&quot; and &quot;sigma&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    get_measurements_and_deviations the measurements into "measurements" and "sigma"</span>
 <span class="sd">    ordering: Pinj, Pflow, Qinj, Qflow, Iflow, Vm</span>
 <span class="sd">    :param t: time step</span>
 <span class="sd">    :param se_input: StateEstimationInput object</span>
 <span class="sd">    :param Sbase: base power in MVA (i.e. 100 MVA)</span>
 <span class="sd">    :param use_current_squared_meas: use squared current measurements?</span>
 <span class="sd">    :return: measurements vector in per-unit, sigma vector in per-unit</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">nz</span> <span class="o">=</span> <span class="n">se_input</span><span class="o">.</span><span class="n">size</span><span class="p">()</span>
     <span class="n">measurements</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nz</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">)</span>
@@ -331,24 +332,24 @@
            <span class="n">HtWH</span><span class="p">:</span> <span class="n">csc_matrix</span><span class="p">,</span>
            <span class="n">c_threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">4.0</span><span class="p">,</span>
            <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    From RELIABLE BAD DATA PROCESSING FOR REAL-TIME STATE ESTIMATION, 1983</span>
-<span class="sd">    Monticelli &amp; Garcia (1983) &#39;b-test&#39; bad data detection</span>
+<span class="sd">    Monticelli &amp; Garcia (1983) 'b-test' bad data detection</span>
 <span class="sd">    :param sigma2: sigma 2</span>
 <span class="sd">    :param H: Jacobian at the solution (m x k)</span>
 <span class="sd">    :param dz: residuals r = z - h(x^) (length m)</span>
 <span class="sd">    :param HtWH: G = H^T W H (k x k)</span>
-<span class="sd">    :param c_threshold: detection threshold &#39;c&#39; (use 4.0 as in the paper)</span>
+<span class="sd">    :param c_threshold: detection threshold 'c' (use 4.0 as in the paper)</span>
 <span class="sd">    :param logger: Logger</span>
 <span class="sd">    :return:</span>
-<span class="sd">        &#39;r&#39;      : residuals r_i</span>
-<span class="sd">        &#39;sigma2&#39; : sigma_i^2</span>
-<span class="sd">        &#39;Pii&#39;    : residual variances P_ii</span>
-<span class="sd">        &#39;rN&#39;     : normalized residuals r_i / sqrt(P_ii)</span>
-<span class="sd">        &#39;imax&#39;   : index of largest |rN|</span>
-<span class="sd">        &#39;b&#39;      : b at imax</span>
-<span class="sd">        &#39;is_bad&#39; : bool</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">        'r'      : residuals r_i</span>
+<span class="sd">        'sigma2' : sigma_i^2</span>
+<span class="sd">        'Pii'    : residual variances P_ii</span>
+<span class="sd">        'rN'     : normalized residuals r_i / sqrt(P_ii)</span>
+<span class="sd">        'imax'   : index of largest |rN|</span>
+<span class="sd">        'b'      : b at imax</span>
+<span class="sd">        'is_bad' : bool</span>
+<span class="sd">    """</span>
 
     <span class="n">m</span><span class="p">,</span> <span class="n">k</span> <span class="o">=</span> <span class="n">H</span><span class="o">.</span><span class="n">shape</span>
 
@@ -357,7 +358,7 @@
     <span class="n">lu</span> <span class="o">=</span> <span class="n">factorized</span><span class="p">(</span><span class="n">HtWH</span><span class="o">.</span><span class="n">tocsc</span><span class="p">())</span>
     <span class="c1"># For the system to be observable the eigenvalues should be greater than zero -&gt; matrix pos definate</span>
     <span class="n">eigvals</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">eigsh</span><span class="p">(</span><span class="n">HtWH</span><span class="p">)</span>
-    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">eigvals</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">),</span> <span class="s2">&quot;Unobservable-System&quot;</span>
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">eigvals</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">),</span> <span class="s2">"Unobservable-System"</span>
 
     <span class="c1"># Compute h_i = H_i G^{-1} H_i^T and then Pii = sigma_i^2 - h_i</span>
     <span class="c1"># Do it row-by-row but reusing the factorization</span>
@@ -388,7 +389,7 @@
             <span class="k">elif</span> <span class="n">Pii</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mf">1e-10</span><span class="p">:</span>  <span class="c1"># Too small - likely numerical error</span>
                 <span class="n">Pii</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mf">1e-10</span><span class="p">,</span> <span class="n">sigma2</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="mf">0.01</span><span class="p">)</span>  <span class="c1"># Conservative estimate</span>
             <span class="k">elif</span> <span class="n">Pii</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">sigma2</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>  <span class="c1"># Impossible physically</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Pii[</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">] &gt; sigma2[</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">] (</span><span class="si">{</span><span class="n">Pii</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">:</span><span class="s2">.2e</span><span class="si">}</span><span class="s2"> &gt; </span><span class="si">{</span><span class="n">sigma2</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">:</span><span class="s2">.2e</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Pii[</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">] &gt; sigma2[</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">] (</span><span class="si">{</span><span class="n">Pii</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">:</span><span class="s2">.2e</span><span class="si">}</span><span class="s2"> &gt; </span><span class="si">{</span><span class="n">sigma2</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">:</span><span class="s2">.2e</span><span class="si">}</span><span class="s2">)"</span><span class="p">)</span>
                 <span class="n">Pii</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">sigma2</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="mf">0.5</span>  <span class="c1"># Reasonable default</span>
     <span class="n">r</span> <span class="o">=</span> <span class="n">dz</span>
     <span class="n">rN</span> <span class="o">=</span> <span class="n">r</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">Pii</span><span class="p">)</span>
@@ -426,7 +427,7 @@
                 <span class="n">prefer_correct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
                 <span class="n">fixed_slack</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
                 <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NumericStateEstimationResults</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Solve the state estimation problem using the Levenberg-Marquadt method</span>
 <span class="sd">    :param nc: instance of NumericalCircuit</span>
 <span class="sd">    :param Ybus: Admittance matrix</span>
@@ -444,12 +445,12 @@
 <span class="sd">    :param tol: Tolerance</span>
 <span class="sd">    :param max_iter: Maximum nuber of iterations</span>
 <span class="sd">    :param verbose: Verbosity level</span>
-<span class="sd">    :param c_threshold: Bad data detection threshold &#39;c&#39; (4 as default)</span>
+<span class="sd">    :param c_threshold: Bad data detection threshold 'c' (4 as default)</span>
 <span class="sd">    :param prefer_correct: if true the measurements are corrected instead of deleted</span>
 <span class="sd">    :param fixed_slack: if true, the measurements on the slack bus are omitted</span>
 <span class="sd">    :param logger: log it out</span>
 <span class="sd">    :return: NumericPowerFlowResults instance</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
     <span class="c1"># confidence_value = 0.95</span>
     <span class="n">bad_data_detected</span> <span class="o">=</span> <span class="kc">False</span>
@@ -518,7 +519,7 @@
         <span class="c1">#         r, sigma2, Pii, rN, imax, b, bad_data_detected = b_test(sigma2=sigma2, H=H, dz=dz, HtWH=Gx,</span>
         <span class="c1">#                                                             c_threshold=c_threshold, logger=logger)</span>
         <span class="c1">#     except AssertionError as e:</span>
-        <span class="c1">#         if str(e) == &quot;Unobservable-System&quot;:</span>
+        <span class="c1">#         if str(e) == "Unobservable-System":</span>
         <span class="c1">#             return NumericStateEstimationResults(V=V,</span>
         <span class="c1">#                                                  Scalc=Scalc,</span>
         <span class="c1">#                                                  norm_f=norm_f,</span>
@@ -534,10 +535,10 @@
         <span class="c1">#             if Pii[imax] &gt; 1e-10:  # if the value is not corrected in b_test alone</span>
         <span class="c1">#                 z_tilde_imax = z[imax] - (sigma[imax] ** 2 / Pii[imax]) * r[imax]</span>
         <span class="c1">#</span>
-        <span class="c1">#                 logger.add_info(&quot;Measurement corrected&quot;,</span>
+        <span class="c1">#                 logger.add_info("Measurement corrected",</span>
         <span class="c1">#                                 device=measurements[imax].device.name,</span>
         <span class="c1">#                                 device_class=measurements[imax].device_type.value,</span>
-        <span class="c1">#                                 device_property=&quot;value&quot;,</span>
+        <span class="c1">#                                 device_property="value",</span>
         <span class="c1">#                                 value=z[imax],</span>
         <span class="c1">#                                 expected_value=z_tilde_imax)</span>
         <span class="c1">#</span>
@@ -546,8 +547,8 @@
         <span class="c1">#             else:</span>
         <span class="c1">#                 # Pii is very small - this is likely a critical measurement</span>
         <span class="c1">#                 # TODO -&gt; Do not delete</span>
-        <span class="c1">#                 logger.add_warning(f&quot;Measurement {imax} appears critical (Pii={Pii[imax]:.2e})&quot;)</span>
-        <span class="c1">#                 # Don&#39;t correct critical measurements, just remove them</span>
+        <span class="c1">#                 logger.add_warning(f"Measurement {imax} appears critical (Pii={Pii[imax]:.2e})")</span>
+        <span class="c1">#                 # Don't correct critical measurements, just remove them</span>
         <span class="c1">#                 # delete measurements</span>
         <span class="c1">#                 mask = np.ones(len(z), dtype=int)</span>
         <span class="c1">#                 mask[imax] = 0</span>
@@ -563,12 +564,12 @@
         <span class="c1">#                 W = diags(cov).tocsc()</span>
         <span class="c1">#         else:</span>
         <span class="c1">#</span>
-        <span class="c1">#             logger.add_info(&quot;Measurement deleted&quot;,</span>
+        <span class="c1">#             logger.add_info("Measurement deleted",</span>
         <span class="c1">#                             device=measurements[imax].device.name,</span>
         <span class="c1">#                             device_class=measurements[imax].device_type.value,</span>
-        <span class="c1">#                             device_property=&quot;value&quot;,</span>
+        <span class="c1">#                             device_property="value",</span>
         <span class="c1">#                             value=z[imax],</span>
-        <span class="c1">#                             expected_value=&quot;&quot;)</span>
+        <span class="c1">#                             expected_value="")</span>
         <span class="c1">#</span>
         <span class="c1">#             # delete measurements</span>
         <span class="c1">#             mask = np.ones(len(z), dtype=int)</span>
@@ -610,7 +611,7 @@
             <span class="c1"># if verbose &gt; 1:</span>
             <span class="c1">#     dva = np.zeros(n)</span>
             <span class="c1">#     dva[: n_no_slack] = dVa</span>
-            <span class="c1">#     df = pd.DataFrame(data={&quot;dVa&quot;: dva, &quot;dVm&quot;: dVm, &quot;Va&quot;: Va, &quot;Vm&quot;: Vm})</span>
+            <span class="c1">#     df = pd.DataFrame(data={"dVa": dva, "dVm": dVm, "Va": Va, "Vm": Vm})</span>
             <span class="c1">#     print(df)</span>
 
             <span class="c1"># update system</span>
@@ -651,7 +652,7 @@
         <span class="n">error_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">norm_f</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">verbose</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Norm_f </span><span class="si">{</span><span class="n">norm_f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Norm_f </span><span class="si">{</span><span class="n">norm_f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
         <span class="c1"># update loops</span>
         <span class="n">iter_</span> <span class="o">+=</span> <span class="mi">1</span>
@@ -723,7 +724,7 @@
                 <span class="n">prefer_correct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
                 <span class="n">fixed_slack</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
                 <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NumericStateEstimationResults</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Solve the state estimation problem using the Levenberg-Marquadt method</span>
 <span class="sd">    :param nc: instance of NumericalCircuit</span>
 <span class="sd">    :param Ybus: Admittance matrix</span>
@@ -741,12 +742,12 @@
 <span class="sd">    :param tol: Tolerance</span>
 <span class="sd">    :param max_iter: Maximum nuber of iterations</span>
 <span class="sd">    :param verbose: Verbosity level</span>
-<span class="sd">    :param c_threshold: Bad data detection threshold &#39;c&#39; (4 as default)</span>
+<span class="sd">    :param c_threshold: Bad data detection threshold 'c' (4 as default)</span>
 <span class="sd">    :param prefer_correct: if true the measurements are corrected instead of deleted</span>
 <span class="sd">    :param fixed_slack: if true, the measurements on the slack bus are omitted</span>
 <span class="sd">    :param logger: log it out</span>
 <span class="sd">    :return: NumericPowerFlowResults instance</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
     <span class="c1"># confidence_value = 0.95</span>
     <span class="n">bad_data_detected</span> <span class="o">=</span> <span class="kc">False</span>
@@ -822,10 +823,10 @@
         <span class="c1">#             if Pii[imax] &gt; 1e-10:  # if the value is not corrected in b_test alone</span>
         <span class="c1">#                 z_tilde_imax = z[imax] - (sigma[imax] ** 2 / Pii[imax]) * r[imax]</span>
         <span class="c1">#</span>
-        <span class="c1">#                 logger.add_info(&quot;Measurement corrected&quot;,</span>
+        <span class="c1">#                 logger.add_info("Measurement corrected",</span>
         <span class="c1">#                                 device=measurements[imax].device.name,</span>
         <span class="c1">#                                 device_class=measurements[imax].device_type.value,</span>
-        <span class="c1">#                                 device_property=&quot;value&quot;,</span>
+        <span class="c1">#                                 device_property="value",</span>
         <span class="c1">#                                 value=z[imax],</span>
         <span class="c1">#                                 expected_value=z_tilde_imax)</span>
         <span class="c1">#</span>
@@ -833,8 +834,8 @@
         <span class="c1">#                 z[imax] = z_tilde_imax</span>
         <span class="c1">#             else:</span>
         <span class="c1">#                 # Pii is very small - this is likely a critical measurement</span>
-        <span class="c1">#                 logger.add_warning(f&quot;Measurement {imax} appears critical (Pii={Pii[imax]:.2e})&quot;)</span>
-        <span class="c1">#                 # Don&#39;t correct critical measurements, just remove them</span>
+        <span class="c1">#                 logger.add_warning(f"Measurement {imax} appears critical (Pii={Pii[imax]:.2e})")</span>
+        <span class="c1">#                 # Don't correct critical measurements, just remove them</span>
         <span class="c1">#                 # delete measurements</span>
         <span class="c1">#                 mask = np.ones(len(z), dtype=int)</span>
         <span class="c1">#                 mask[imax] = 0</span>
@@ -850,12 +851,12 @@
         <span class="c1">#                 W = diags(cov).tocsc()</span>
         <span class="c1">#         else:</span>
         <span class="c1">#</span>
-        <span class="c1">#             logger.add_info(&quot;Measurement deleted&quot;,</span>
+        <span class="c1">#             logger.add_info("Measurement deleted",</span>
         <span class="c1">#                             device=measurements[imax].device.name,</span>
         <span class="c1">#                             device_class=measurements[imax].device_type.value,</span>
-        <span class="c1">#                             device_property=&quot;value&quot;,</span>
+        <span class="c1">#                             device_property="value",</span>
         <span class="c1">#                             value=z[imax],</span>
-        <span class="c1">#                             expected_value=&quot;&quot;)</span>
+        <span class="c1">#                             expected_value="")</span>
         <span class="c1">#</span>
         <span class="c1">#             # delete measurements</span>
         <span class="c1">#             mask = np.ones(len(z), dtype=int)</span>
@@ -874,7 +875,7 @@
         <span class="k">if</span> <span class="n">verbose</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
             <span class="n">dva</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
             <span class="n">dva</span><span class="p">[:</span> <span class="n">n_no_slack</span><span class="p">]</span> <span class="o">=</span> <span class="n">dVa</span>
-            <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;dVa&quot;</span><span class="p">:</span> <span class="n">dva</span><span class="p">,</span> <span class="s2">&quot;dVm&quot;</span><span class="p">:</span> <span class="n">dVm</span><span class="p">,</span> <span class="s2">&quot;Va&quot;</span><span class="p">:</span> <span class="n">Va</span><span class="p">,</span> <span class="s2">&quot;Vm&quot;</span><span class="p">:</span> <span class="n">Vm</span><span class="p">})</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="s2">"dVa"</span><span class="p">:</span> <span class="n">dva</span><span class="p">,</span> <span class="s2">"dVm"</span><span class="p">:</span> <span class="n">dVm</span><span class="p">,</span> <span class="s2">"Va"</span><span class="p">:</span> <span class="n">Va</span><span class="p">,</span> <span class="s2">"Vm"</span><span class="p">:</span> <span class="n">Vm</span><span class="p">})</span>
             <span class="nb">print</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
 
         <span class="c1"># compute the convergence</span>
@@ -884,7 +885,7 @@
         <span class="n">error_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">norm_f</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">verbose</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Norm_f </span><span class="si">{</span><span class="n">norm_f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Norm_f </span><span class="si">{</span><span class="n">norm_f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
         <span class="c1"># update loops</span>
         <span class="n">iter_</span> <span class="o">+=</span> <span class="mi">1</span>
@@ -956,7 +957,7 @@
                           <span class="n">prefer_correct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
                           <span class="n">fixed_slack</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
                           <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NumericStateEstimationResults</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Linearize the non-linear measurement model around the current state estimate (Jacobian H)</span>
 
 <span class="sd">    Solve the linear WLS problem: Δx = 1/(HᵀWH)HᵀWdz</span>
@@ -964,7 +965,7 @@
 <span class="sd">    Update the state: x = x + Δx</span>
 
 <span class="sd">    Repeat until convergence</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
     <span class="n">logger</span> <span class="o">=</span> <span class="n">logger</span> <span class="k">if</span> <span class="n">logger</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">Logger</span><span class="p">()</span>
 
@@ -1063,8 +1064,8 @@
         <span class="n">error_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">norm_f</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">verbose</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Iter </span><span class="si">{</span><span class="n">iter_</span><span class="si">}</span><span class="s2">: norm_f = </span><span class="si">{</span><span class="n">norm_f</span><span class="si">:</span><span class="s2">.6e</span><span class="si">}</span><span class="s2">, obj_val = </span><span class="si">{</span><span class="n">obj_val</span><span class="si">:</span><span class="s2">.6e</span><span class="si">}</span><span class="s2">, &quot;</span>
-                  <span class="sa">f</span><span class="s2">&quot;relax = </span><span class="si">{</span><span class="n">relaxation</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Iter </span><span class="si">{</span><span class="n">iter_</span><span class="si">}</span><span class="s2">: norm_f = </span><span class="si">{</span><span class="n">norm_f</span><span class="si">:</span><span class="s2">.6e</span><span class="si">}</span><span class="s2">, obj_val = </span><span class="si">{</span><span class="n">obj_val</span><span class="si">:</span><span class="s2">.6e</span><span class="si">}</span><span class="s2">, "</span>
+                  <span class="sa">f</span><span class="s2">"relax = </span><span class="si">{</span><span class="n">relaxation</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
         <span class="n">iter_</span> <span class="o">+=</span> <span class="mi">1</span>
 
@@ -1080,7 +1081,7 @@
         <span class="c1">#             z_tilde_imax = z[imax] - (sigma[imax] ** 2 / Pii[imax]) * r[imax]</span>
         <span class="c1">#             z[imax] = z_tilde_imax</span>
         <span class="c1">#             if verbose &gt; 0:</span>
-        <span class="c1">#                 logger.add_info(f&quot;Corrected measurement {imax}&quot;)</span>
+        <span class="c1">#                 logger.add_info(f"Corrected measurement {imax}")</span>
 
     <span class="c1"># Final processing</span>
     <span class="n">Sf</span><span class="p">,</span> <span class="n">St</span><span class="p">,</span> <span class="n">If</span><span class="p">,</span> <span class="n">It</span><span class="p">,</span> <span class="n">Vbranch</span><span class="p">,</span> <span class="n">loading</span><span class="p">,</span> <span class="n">losses</span><span class="p">,</span> <span class="n">Sbus</span> <span class="o">=</span> <span class="n">power_flow_post_process_nonlinear</span><span class="p">(</span>
@@ -1090,7 +1091,7 @@
     <span class="p">)</span>
 
     <span class="n">end_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;State estimation completed in </span><span class="si">{</span><span class="n">iter_</span><span class="si">}</span><span class="s2"> iterations, time: </span><span class="si">{</span><span class="n">end_time</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">start_time</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">s&quot;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"State estimation completed in </span><span class="si">{</span><span class="n">iter_</span><span class="si">}</span><span class="s2"> iterations, time: </span><span class="si">{</span><span class="n">end_time</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">start_time</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">s"</span><span class="p">)</span>
 
 
     <span class="k">return</span> <span class="n">NumericStateEstimationResults</span><span class="p">(</span><span class="n">V</span><span class="o">=</span><span class="n">V</span><span class="p">,</span>
@@ -1144,11 +1145,11 @@
                                <span class="n">prefer_correct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
                                <span class="n">fixed_slack</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
                                <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NumericStateEstimationResults</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Fast decoupled WLS state estimator using LU decomposition.</span>
 <span class="sd">    Active power -&gt; angles</span>
 <span class="sd">    Reactive power -&gt; voltage magnitudes</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
     <span class="n">logger</span> <span class="k">if</span> <span class="n">logger</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">Logger</span><span class="p">()</span>
     <span class="n">load_per_bus</span> <span class="o">=</span> <span class="n">nc</span><span class="o">.</span><span class="n">load_data</span><span class="o">.</span><span class="n">get_injections_per_bus</span><span class="p">()</span> <span class="o">/</span> <span class="n">nc</span><span class="o">.</span><span class="n">Sbase</span>
@@ -1167,7 +1168,7 @@
                                                              <span class="n">se_input</span><span class="o">=</span><span class="n">se_input</span><span class="p">,</span>
                                                              <span class="n">Sbase</span><span class="o">=</span><span class="n">nc</span><span class="o">.</span><span class="n">Sbase</span><span class="p">,</span>
                                                              <span class="n">use_current_squared_meas</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-    <span class="n">W</span> <span class="o">=</span> <span class="n">diags</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">/</span> <span class="n">sigma</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;csc&quot;</span><span class="p">)</span>
+    <span class="n">W</span> <span class="o">=</span> <span class="n">diags</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">/</span> <span class="n">sigma</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">"csc"</span><span class="p">)</span>
 
     <span class="c1"># --- Create measurement type mapping based on processing order ---</span>
     <span class="c1"># The measurements are processed in this fixed order:</span>
@@ -1189,21 +1190,21 @@
     <span class="n">measurement_types</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">count</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">counts</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">i</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">]:</span>  <span class="c1"># p_inj, pg_inj, pf_value, pt_value</span>
-            <span class="n">measurement_types</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="s1">&#39;P&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="n">count</span><span class="p">)</span>
+            <span class="n">measurement_types</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="s1">'P'</span><span class="p">]</span> <span class="o">*</span> <span class="n">count</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">i</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">]:</span>  <span class="c1"># q_inj, qg_inj, qf_value, qt_value</span>
-            <span class="n">measurement_types</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="s1">&#39;Q&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="n">count</span><span class="p">)</span>
+            <span class="n">measurement_types</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="s1">'Q'</span><span class="p">]</span> <span class="o">*</span> <span class="n">count</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>  <span class="c1"># current and voltage measurements (I, V, θ)</span>
-            <span class="n">measurement_types</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="s1">&#39;Other&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="n">count</span><span class="p">)</span>
+            <span class="n">measurement_types</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="s1">'Other'</span><span class="p">]</span> <span class="o">*</span> <span class="n">count</span><span class="p">)</span>
 
     <span class="n">measurement_types</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">measurement_types</span><span class="p">)</span>
 
     <span class="c1"># Create indices for active and reactive measurements</span>
-    <span class="n">a_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">measurement_types</span> <span class="o">==</span> <span class="s1">&#39;P&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>  <span class="c1"># Active power measurements</span>
-    <span class="n">r_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">measurement_types</span> <span class="o">==</span> <span class="s1">&#39;Q&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>  <span class="c1"># Reactive power measurements</span>
+    <span class="n">a_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">measurement_types</span> <span class="o">==</span> <span class="s1">'P'</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>  <span class="c1"># Active power measurements</span>
+    <span class="n">r_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">measurement_types</span> <span class="o">==</span> <span class="s1">'Q'</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>  <span class="c1"># Reactive power measurements</span>
 
     <span class="k">if</span> <span class="n">verbose</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Active power measurements: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">a_idx</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Reactive power measurements: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">r_idx</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Active power measurements: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">a_idx</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Reactive power measurements: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">r_idx</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
     <span class="n">relax_theta</span> <span class="o">=</span> <span class="mf">1.0</span>  <span class="c1"># angle relaxation</span>
     <span class="n">relax_V</span> <span class="o">=</span> <span class="mf">0.5</span>  <span class="c1"># voltage relaxation</span>
@@ -1222,7 +1223,7 @@
         <span class="n">H</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">Scalc</span> <span class="o">=</span> <span class="n">Jacobian_SE</span><span class="p">(</span><span class="n">Ybus</span><span class="p">,</span> <span class="n">Yf</span><span class="p">,</span> <span class="n">Yt</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">F</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">Cf</span><span class="p">,</span> <span class="n">Ct</span><span class="p">,</span>
                                   <span class="n">se_input</span><span class="p">,</span> <span class="n">non_slack_buses</span><span class="p">,</span> <span class="n">load_per_bus</span><span class="p">,</span> <span class="n">fixed_slack</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">H</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="n">z</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;H rows (</span><span class="si">{</span><span class="n">H</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">) != len(z) (</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">z</span><span class="p">)</span><span class="si">}</span><span class="s2">) - check measurement ordering&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"H rows (</span><span class="si">{</span><span class="n">H</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">) != len(z) (</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">z</span><span class="p">)</span><span class="si">}</span><span class="s2">) - check measurement ordering"</span><span class="p">)</span>
 
         <span class="n">dz</span> <span class="o">=</span> <span class="n">z</span> <span class="o">-</span> <span class="n">h</span>
 
@@ -1232,7 +1233,7 @@
         <span class="n">Ga</span> <span class="o">=</span> <span class="n">Ha</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">Wa</span> <span class="o">@</span> <span class="n">Ha</span>
         <span class="k">if</span> <span class="n">Ga</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="c1"># Ga_reg = Ga + eps_base * np.diag(np.max(np.abs(Ga), axis=0))</span>
-            <span class="n">Ga</span> <span class="o">=</span> <span class="n">Ga</span> <span class="o">+</span> <span class="n">reg_eps</span> <span class="o">*</span> <span class="n">diags</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">Ga</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;csc&#39;</span><span class="p">)</span>
+            <span class="n">Ga</span> <span class="o">=</span> <span class="n">Ga</span> <span class="o">+</span> <span class="n">reg_eps</span> <span class="o">*</span> <span class="n">diags</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">Ga</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">'csc'</span><span class="p">)</span>
 
         <span class="c1"># --- 3) Compute Ta</span>
         <span class="n">Ta</span> <span class="o">=</span> <span class="n">Ha</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">Wa</span> <span class="o">@</span> <span class="n">dz</span><span class="p">[</span><span class="n">a_idx</span><span class="p">]</span> <span class="o">/</span> <span class="mi">1</span>
@@ -1260,7 +1261,7 @@
         <span class="n">Gr</span> <span class="o">=</span> <span class="n">Hr</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">Wr</span> <span class="o">@</span> <span class="n">Hr</span>
         <span class="k">if</span> <span class="n">Gr</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="c1"># Gr_reg = Gr + eps_base * np.diag(np.max(np.abs(Gr), axis=0))</span>
-            <span class="n">Gr</span> <span class="o">=</span> <span class="n">Gr</span> <span class="o">+</span> <span class="n">reg_eps_v</span> <span class="o">*</span> <span class="n">diags</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">Gr</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;csc&#39;</span><span class="p">)</span>
+            <span class="n">Gr</span> <span class="o">=</span> <span class="n">Gr</span> <span class="o">+</span> <span class="n">reg_eps_v</span> <span class="o">*</span> <span class="n">diags</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">Gr</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">'csc'</span><span class="p">)</span>
 
         <span class="c1"># --- 7) Compute Tr and solve Gr * dV = Tr</span>
         <span class="n">dz_r_scaled</span> <span class="o">=</span> <span class="n">dz</span><span class="p">[</span><span class="n">r_idx</span><span class="p">]</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">Vm</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">)</span>
@@ -1283,13 +1284,13 @@
         <span class="n">norm_f</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">max_theta_update</span><span class="p">,</span> <span class="n">max_V_update</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">verbose</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Iter </span><span class="si">{</span><span class="n">iter_count</span><span class="si">}</span><span class="s2">: max update = </span><span class="si">{</span><span class="n">norm_f</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">, max |dz| = </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">dz</span><span class="p">))</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Iter </span><span class="si">{</span><span class="n">iter_count</span><span class="si">}</span><span class="s2">: max update = </span><span class="si">{</span><span class="n">norm_f</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">, max |dz| = </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">dz</span><span class="p">))</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
         <span class="c1"># simple divergence guard</span>
         <span class="k">if</span> <span class="n">norm_f</span> <span class="o">&gt;</span> <span class="n">previous_max_update</span> <span class="o">*</span> <span class="mi">5</span> <span class="ow">and</span> <span class="n">iter_count</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">verbose</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Divergence detected at iteration </span><span class="si">{</span><span class="n">iter_count</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Updates: theta=</span><span class="si">{</span><span class="n">max_theta_update</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">, V=</span><span class="si">{</span><span class="n">max_V_update</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Divergence detected at iteration </span><span class="si">{</span><span class="n">iter_count</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Updates: theta=</span><span class="si">{</span><span class="n">max_theta_update</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">, V=</span><span class="si">{</span><span class="n">max_V_update</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
             <span class="k">break</span>
 
         <span class="n">previous_max_update</span> <span class="o">=</span> <span class="n">norm_f</span>
@@ -1298,7 +1299,7 @@
             <span class="c1"># so its a bit lower, but it also provides same(very) result for all tests with more stricter tol</span>
             <span class="n">converged</span> <span class="o">=</span> <span class="kc">True</span>
             <span class="k">if</span> <span class="n">verbose</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Converged at iter </span><span class="si">{</span><span class="n">iter_count</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Converged at iter </span><span class="si">{</span><span class="n">iter_count</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
             <span class="k">break</span>
 
     <span class="n">Sf</span><span class="p">,</span> <span class="n">St</span><span class="p">,</span> <span class="n">If</span><span class="p">,</span> <span class="n">It</span><span class="p">,</span> <span class="n">Vbranch</span><span class="p">,</span> <span class="n">loading</span><span class="p">,</span> <span class="n">losses</span><span class="p">,</span> <span class="n">Sbus</span> <span class="o">=</span> <span class="n">power_flow_post_process_nonlinear</span><span class="p">(</span>

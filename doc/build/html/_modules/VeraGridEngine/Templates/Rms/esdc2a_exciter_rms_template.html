@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Templates.Rms.esdc2a_exciter_rms_template &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Templates.Rms.esdc2a_exciter_rms_template &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/license.html">📜 License</a></li>
@@ -106,7 +107,7 @@
 <span class="c1"># License, v. 2.0. If a copy of the MPL was not distributed with this</span>
 <span class="c1"># file, You can obtain one at https://mozilla.org/MPL/2.0/.</span>
 <span class="c1"># SPDX-License-Identifier: MPL-2.0</span>
-<span class="sd">&quot;&quot;&quot;Standard IEEE ESDC2A direct-current excitation-system RMS model.&quot;&quot;&quot;</span>
+<span class="sd">"""Standard IEEE ESDC2A direct-current excitation-system RMS model."""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
@@ -123,23 +124,23 @@
 <div class="viewcode-block" id="Esdc2aRmsParameters">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Templates.Rms.html#VeraGridEngine.Templates.Rms.esdc2a_exciter_rms_template.Esdc2aRmsParameters">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">Esdc2aRmsParameters</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Numerical parameters for one ESDC2A excitation system.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Numerical parameters for one ESDC2A excitation system."""</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;tr&quot;</span><span class="p">,</span> <span class="s2">&quot;ka&quot;</span><span class="p">,</span> <span class="s2">&quot;ta&quot;</span><span class="p">,</span> <span class="s2">&quot;tb&quot;</span><span class="p">,</span> <span class="s2">&quot;tc&quot;</span><span class="p">,</span> <span class="s2">&quot;vrmax&quot;</span><span class="p">,</span> <span class="s2">&quot;vrmin&quot;</span><span class="p">,</span> <span class="s2">&quot;ke&quot;</span><span class="p">,</span> <span class="s2">&quot;te&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;kf&quot;</span><span class="p">,</span> <span class="s2">&quot;tf1&quot;</span><span class="p">,</span> <span class="s2">&quot;e1&quot;</span><span class="p">,</span> <span class="s2">&quot;se1&quot;</span><span class="p">,</span> <span class="s2">&quot;e2&quot;</span><span class="p">,</span> <span class="s2">&quot;se2&quot;</span><span class="p">,</span>
+        <span class="s2">"tr"</span><span class="p">,</span> <span class="s2">"ka"</span><span class="p">,</span> <span class="s2">"ta"</span><span class="p">,</span> <span class="s2">"tb"</span><span class="p">,</span> <span class="s2">"tc"</span><span class="p">,</span> <span class="s2">"vrmax"</span><span class="p">,</span> <span class="s2">"vrmin"</span><span class="p">,</span> <span class="s2">"ke"</span><span class="p">,</span> <span class="s2">"te"</span><span class="p">,</span>
+        <span class="s2">"kf"</span><span class="p">,</span> <span class="s2">"tf1"</span><span class="p">,</span> <span class="s2">"e1"</span><span class="p">,</span> <span class="s2">"se1"</span><span class="p">,</span> <span class="s2">"e2"</span><span class="p">,</span> <span class="s2">"se2"</span><span class="p">,</span>
     <span class="p">)</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">:</span> <span class="s2">&quot;Esdc2aRmsParameters&quot;</span><span class="p">,</span> <span class="n">values</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="o">...</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Store the fifteen ESDC2A parameters.</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">:</span> <span class="s2">"Esdc2aRmsParameters"</span><span class="p">,</span> <span class="n">values</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="o">...</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Store the fifteen ESDC2A parameters.</span>
 
 <span class="sd">        :param values: ``TR,KA,TA,TB,TC,VRMAX,VRMIN,KE,TE,KF,TF1,E1,SE1,E2,SE2``.</span>
 <span class="sd">        :return: None.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">values</span><span class="p">)</span> <span class="o">==</span> <span class="mi">15</span><span class="p">:</span>
             <span class="k">pass</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;ESDC2A requires 15 values; received </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">values</span><span class="p">)</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"ESDC2A requires 15 values; received </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">values</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
         <span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">tr</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ka</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ta</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tb</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tc</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">vrmax</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">vrmin</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ke</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">te</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">kf</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tf1</span><span class="p">,</span>
@@ -149,14 +150,14 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_parameter</span><span class="p">(</span><span class="n">block</span><span class="p">:</span> <span class="n">Block</span><span class="p">,</span> <span class="n">vfactory</span><span class="p">:</span> <span class="n">VarFactory</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Var</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Add one event parameter.</span>
+<span class="w">    </span><span class="sd">"""Add one event parameter.</span>
 
 <span class="sd">    :param block: Owning block.</span>
 <span class="sd">    :param vfactory: Shared variable factory.</span>
 <span class="sd">    :param name: Parameter name.</span>
 <span class="sd">    :param value: Default value.</span>
 <span class="sd">    :return: Parameter variable.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">variable</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
     <span class="n">block</span><span class="o">.</span><span class="n">event_dict</span><span class="p">[</span><span class="n">variable</span><span class="p">]</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_const</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="n">value</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">variable</span>
@@ -168,14 +169,14 @@
     <span class="n">e2_var</span><span class="p">:</span> <span class="n">Var</span><span class="p">,</span>
     <span class="n">se2_var</span><span class="p">:</span> <span class="n">Var</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Expr</span><span class="p">,</span> <span class="n">Expr</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return threshold and quadratic coefficient through two saturation points.</span>
+<span class="w">    </span><span class="sd">"""Return threshold and quadratic coefficient through two saturation points.</span>
 
 <span class="sd">    :param e1_var: First voltage point.</span>
 <span class="sd">    :param se1_var: First saturation factor.</span>
 <span class="sd">    :param e2_var: Second voltage point.</span>
 <span class="sd">    :param se2_var: Second saturation factor.</span>
 <span class="sd">    :return: Saturation threshold and coefficient.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">ratio</span><span class="p">:</span> <span class="n">Expr</span> <span class="o">=</span> <span class="n">sym</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">se1_var</span> <span class="o">*</span> <span class="n">e1_var</span> <span class="o">/</span> <span class="p">(</span><span class="n">se2_var</span> <span class="o">*</span> <span class="n">e2_var</span><span class="p">))</span>
     <span class="n">threshold</span><span class="p">:</span> <span class="n">Expr</span> <span class="o">=</span> <span class="p">(</span><span class="n">e1_var</span> <span class="o">-</span> <span class="n">ratio</span> <span class="o">*</span> <span class="n">e2_var</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">sym</span><span class="o">.</span><span class="n">Const</span><span class="p">(</span><span class="mf">1.0</span><span class="p">)</span> <span class="o">-</span> <span class="n">ratio</span><span class="p">)</span>
     <span class="n">coefficient</span><span class="p">:</span> <span class="n">Expr</span> <span class="o">=</span> <span class="n">se1_var</span> <span class="o">*</span> <span class="n">e1_var</span> <span class="o">/</span> <span class="p">(</span><span class="n">e1_var</span> <span class="o">-</span> <span class="n">threshold</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
@@ -186,28 +187,28 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Templates.Rms.html#VeraGridEngine.Templates.Rms.esdc2a_exciter_rms_template.get_esdc2a_exciter_rms_template">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_esdc2a_exciter_rms_template</span><span class="p">(</span>
     <span class="n">vfactory</span><span class="p">:</span> <span class="n">VarFactory</span><span class="p">,</span>
-    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;ESDC2A exciter RMS template&quot;</span><span class="p">,</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"ESDC2A exciter RMS template"</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RmsModelTemplate</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Build the standard five-state ESDC2A realization.</span>
+<span class="w">    </span><span class="sd">"""Build the standard five-state ESDC2A realization.</span>
 
 <span class="sd">    :param vfactory: Shared symbolic variable factory.</span>
 <span class="sd">    :param name: Template name.</span>
 <span class="sd">    :return: ESDC2A exciter template.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">template</span><span class="p">:</span> <span class="n">RmsModelTemplate</span> <span class="o">=</span> <span class="n">RmsModelTemplate</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
     <span class="n">template</span><span class="o">.</span><span class="n">tpe</span> <span class="o">=</span> <span class="n">DeviceType</span><span class="o">.</span><span class="n">GeneratorDevice</span>
-    <span class="n">vm_var</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;Vm_&quot;</span><span class="p">,</span> <span class="n">reference</span><span class="o">=</span><span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">Vm</span><span class="p">)</span>
-    <span class="n">vf_var</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;Vf&quot;</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s2">&quot;vf_reference&quot;</span><span class="p">)</span>
-    <span class="n">vpss_var</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;vpss&quot;</span><span class="p">)</span>
-    <span class="n">lg_state</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;LG_y&quot;</span><span class="p">)</span>
-    <span class="n">ll_state</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;LL_x&quot;</span><span class="p">)</span>
-    <span class="n">la_state</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;LA_y&quot;</span><span class="p">)</span>
-    <span class="n">int_state</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;INT_y&quot;</span><span class="p">)</span>
-    <span class="n">wf_state</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;WF_x&quot;</span><span class="p">)</span>
+    <span class="n">vm_var</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"Vm_"</span><span class="p">,</span> <span class="n">reference</span><span class="o">=</span><span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">Vm</span><span class="p">)</span>
+    <span class="n">vf_var</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"Vf"</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s2">"vf_reference"</span><span class="p">)</span>
+    <span class="n">vpss_var</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"vpss"</span><span class="p">)</span>
+    <span class="n">lg_state</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"LG_y"</span><span class="p">)</span>
+    <span class="n">ll_state</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"LL_x"</span><span class="p">)</span>
+    <span class="n">la_state</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"LA_y"</span><span class="p">)</span>
+    <span class="n">int_state</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"INT_y"</span><span class="p">)</span>
+    <span class="n">wf_state</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"WF_x"</span><span class="p">)</span>
     <span class="n">block</span><span class="p">:</span> <span class="n">Block</span> <span class="o">=</span> <span class="n">Block</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
     <span class="n">names</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;TR&quot;</span><span class="p">,</span> <span class="s2">&quot;KA&quot;</span><span class="p">,</span> <span class="s2">&quot;TA&quot;</span><span class="p">,</span> <span class="s2">&quot;TB&quot;</span><span class="p">,</span> <span class="s2">&quot;TC&quot;</span><span class="p">,</span> <span class="s2">&quot;VRMAX&quot;</span><span class="p">,</span> <span class="s2">&quot;VRMIN&quot;</span><span class="p">,</span> <span class="s2">&quot;KE&quot;</span><span class="p">,</span> <span class="s2">&quot;TE&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;KF&quot;</span><span class="p">,</span> <span class="s2">&quot;TF1&quot;</span><span class="p">,</span> <span class="s2">&quot;E1&quot;</span><span class="p">,</span> <span class="s2">&quot;SE1&quot;</span><span class="p">,</span> <span class="s2">&quot;E2&quot;</span><span class="p">,</span> <span class="s2">&quot;SE2&quot;</span><span class="p">,</span>
+        <span class="s2">"TR"</span><span class="p">,</span> <span class="s2">"KA"</span><span class="p">,</span> <span class="s2">"TA"</span><span class="p">,</span> <span class="s2">"TB"</span><span class="p">,</span> <span class="s2">"TC"</span><span class="p">,</span> <span class="s2">"VRMAX"</span><span class="p">,</span> <span class="s2">"VRMIN"</span><span class="p">,</span> <span class="s2">"KE"</span><span class="p">,</span> <span class="s2">"TE"</span><span class="p">,</span>
+        <span class="s2">"KF"</span><span class="p">,</span> <span class="s2">"TF1"</span><span class="p">,</span> <span class="s2">"E1"</span><span class="p">,</span> <span class="s2">"SE1"</span><span class="p">,</span> <span class="s2">"E2"</span><span class="p">,</span> <span class="s2">"SE2"</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">defaults</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
         <span class="mf">0.02</span><span class="p">,</span> <span class="mf">50.0</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.02</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">3.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span>
@@ -222,12 +223,12 @@
         <span class="n">tr_var</span><span class="p">,</span> <span class="n">ka_var</span><span class="p">,</span> <span class="n">ta_var</span><span class="p">,</span> <span class="n">tb_var</span><span class="p">,</span> <span class="n">tc_var</span><span class="p">,</span> <span class="n">vrmax_var</span><span class="p">,</span> <span class="n">vrmin_var</span><span class="p">,</span>
         <span class="n">ke_var</span><span class="p">,</span> <span class="n">te_var</span><span class="p">,</span> <span class="n">kf_var</span><span class="p">,</span> <span class="n">tf1_var</span><span class="p">,</span> <span class="n">e1_var</span><span class="p">,</span> <span class="n">se1_var</span><span class="p">,</span> <span class="n">e2_var</span><span class="p">,</span> <span class="n">se2_var</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">=</span> <span class="n">parameters</span>
-    <span class="n">vref_hold</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">_parameter</span><span class="p">(</span><span class="n">block</span><span class="p">,</span> <span class="n">vfactory</span><span class="p">,</span> <span class="s2">&quot;vref0&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-    <span class="n">vi_var</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;vi&quot;</span><span class="p">)</span>
-    <span class="n">ll_output</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;LL_y&quot;</span><span class="p">)</span>
-    <span class="n">wf_output</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;WF_y&quot;</span><span class="p">)</span>
-    <span class="n">se_var</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;Se&quot;</span><span class="p">)</span>
-    <span class="n">vfe_var</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;VFE&quot;</span><span class="p">)</span>
+    <span class="n">vref_hold</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">_parameter</span><span class="p">(</span><span class="n">block</span><span class="p">,</span> <span class="n">vfactory</span><span class="p">,</span> <span class="s2">"vref0"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">vi_var</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"vi"</span><span class="p">)</span>
+    <span class="n">ll_output</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"LL_y"</span><span class="p">)</span>
+    <span class="n">wf_output</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"WF_y"</span><span class="p">)</span>
+    <span class="n">se_var</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"Se"</span><span class="p">)</span>
+    <span class="n">vfe_var</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"VFE"</span><span class="p">)</span>
     <span class="n">saturation_threshold</span><span class="p">,</span> <span class="n">saturation_coefficient</span> <span class="o">=</span> <span class="n">_saturation_coefficients</span><span class="p">(</span>
         <span class="n">e1_var</span><span class="p">,</span> <span class="n">se1_var</span><span class="p">,</span> <span class="n">e2_var</span><span class="p">,</span> <span class="n">se2_var</span>
     <span class="p">)</span>
@@ -275,7 +276,7 @@
     <span class="n">template</span><span class="o">.</span><span class="n">block</span><span class="o">.</span><span class="n">children</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">block</span><span class="p">)</span>
     <span class="n">template</span><span class="o">.</span><span class="n">block</span><span class="o">.</span><span class="n">in_vars</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">block</span><span class="o">.</span><span class="n">in_vars</span><span class="p">)</span>
     <span class="n">template</span><span class="o">.</span><span class="n">block</span><span class="o">.</span><span class="n">out_vars</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">block</span><span class="o">.</span><span class="n">out_vars</span><span class="p">)</span>
-    <span class="n">template</span><span class="o">.</span><span class="n">comment</span> <span class="o">=</span> <span class="s1">&#39;Generator ESDC2A exciter RMS model&#39;</span>
+    <span class="n">template</span><span class="o">.</span><span class="n">comment</span> <span class="o">=</span> <span class="s1">'Generator ESDC2A exciter RMS model'</span>
     <span class="k">return</span> <span class="n">template</span></div>
 
 
@@ -287,16 +288,16 @@
     <span class="n">parameters</span><span class="p">:</span> <span class="n">Esdc2aRmsParameters</span><span class="p">,</span>
     <span class="n">vfactory</span><span class="p">:</span> <span class="n">VarFactory</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Configure one ESDC2A block.</span>
+<span class="w">    </span><span class="sd">"""Configure one ESDC2A block.</span>
 
 <span class="sd">    :param block: ESDC2A symbolic block.</span>
 <span class="sd">    :param parameters: Numerical record.</span>
 <span class="sd">    :param vfactory: Shared variable factory.</span>
 <span class="sd">    :return: None.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">names</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;TR&quot;</span><span class="p">,</span> <span class="s2">&quot;KA&quot;</span><span class="p">,</span> <span class="s2">&quot;TA&quot;</span><span class="p">,</span> <span class="s2">&quot;TB&quot;</span><span class="p">,</span> <span class="s2">&quot;TC&quot;</span><span class="p">,</span> <span class="s2">&quot;VRMAX&quot;</span><span class="p">,</span> <span class="s2">&quot;VRMIN&quot;</span><span class="p">,</span> <span class="s2">&quot;KE&quot;</span><span class="p">,</span> <span class="s2">&quot;TE&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;KF&quot;</span><span class="p">,</span> <span class="s2">&quot;TF1&quot;</span><span class="p">,</span> <span class="s2">&quot;E1&quot;</span><span class="p">,</span> <span class="s2">&quot;SE1&quot;</span><span class="p">,</span> <span class="s2">&quot;E2&quot;</span><span class="p">,</span> <span class="s2">&quot;SE2&quot;</span><span class="p">,</span>
+        <span class="s2">"TR"</span><span class="p">,</span> <span class="s2">"KA"</span><span class="p">,</span> <span class="s2">"TA"</span><span class="p">,</span> <span class="s2">"TB"</span><span class="p">,</span> <span class="s2">"TC"</span><span class="p">,</span> <span class="s2">"VRMAX"</span><span class="p">,</span> <span class="s2">"VRMIN"</span><span class="p">,</span> <span class="s2">"KE"</span><span class="p">,</span> <span class="s2">"TE"</span><span class="p">,</span>
+        <span class="s2">"KF"</span><span class="p">,</span> <span class="s2">"TF1"</span><span class="p">,</span> <span class="s2">"E1"</span><span class="p">,</span> <span class="s2">"SE1"</span><span class="p">,</span> <span class="s2">"E2"</span><span class="p">,</span> <span class="s2">"SE2"</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">values</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
         <span class="n">parameters</span><span class="o">.</span><span class="n">tr</span><span class="p">,</span> <span class="n">parameters</span><span class="o">.</span><span class="n">ka</span><span class="p">,</span> <span class="n">parameters</span><span class="o">.</span><span class="n">ta</span><span class="p">,</span> <span class="n">parameters</span><span class="o">.</span><span class="n">tb</span><span class="p">,</span>
@@ -314,7 +315,7 @@
             <span class="n">block</span><span class="o">.</span><span class="n">event_dict</span><span class="p">[</span><span class="n">matches</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_const</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="n">value</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">parameter_name</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;Expected one ESDC2A parameter </span><span class="si">{</span><span class="n">parameter_name</span><span class="si">!r}</span><span class="s2">; found </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">matches</span><span class="p">)</span><span class="si">}</span><span class="s2">.&quot;</span>
+                <span class="sa">f</span><span class="s2">"Expected one ESDC2A parameter </span><span class="si">{</span><span class="n">parameter_name</span><span class="si">!r}</span><span class="s2">; found </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">matches</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span>
             <span class="p">)</span></div>
 
 </pre></div>

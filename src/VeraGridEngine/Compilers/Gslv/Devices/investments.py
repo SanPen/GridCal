@@ -53,7 +53,7 @@ def convert_investment(
                          code=str(elm.code),
                          name=elm.name,
                          device_idtag=elm.device_idtag,
-                         group=groups_dict[elm.group],
+                         group=None if elm.group is None else groups_dict[elm.group],
                          CAPEX=elm.CAPEX,
                          OPEX=0.0,
                          status=elm.status, )

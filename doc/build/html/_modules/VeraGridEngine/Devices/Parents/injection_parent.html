@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Devices.Parents.injection_parent &mdash; VeraGrid 6.7.13 documentation</title>
+  <title>VeraGridEngine.Devices.Parents.injection_parent &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=16fbabd8"></script>
+      <script src="../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -130,200 +130,200 @@
 <div class="viewcode-block" id="InjectionParent">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Parents.html#VeraGridEngine.Devices.Parents.injection_parent.InjectionParent">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">InjectionParent</span><span class="p">(</span><span class="n">DynamicDevice</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Parent class for Injections</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s1">&#39;_bus&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_active&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_active_prof&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_mttf&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_mttr&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_Cost&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_Cost_prof&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_capex&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_opex&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;facility&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;technologies&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_scalable&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_shift_key&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_longitude&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_latitude&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_shift_key_prof&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_use_kw&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_bus_pos&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_conn&#39;</span><span class="p">,</span>
-        <span class="s2">&quot;_phN&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;_phA&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;_phB&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;_phC&quot;</span><span class="p">,</span>
-        <span class="s1">&#39;color&#39;</span><span class="p">,</span>
+        <span class="s1">'_bus'</span><span class="p">,</span>
+        <span class="s1">'_active'</span><span class="p">,</span>
+        <span class="s1">'_active_prof'</span><span class="p">,</span>
+        <span class="s1">'_mttf'</span><span class="p">,</span>
+        <span class="s1">'_mttr'</span><span class="p">,</span>
+        <span class="s1">'_Cost'</span><span class="p">,</span>
+        <span class="s1">'_Cost_prof'</span><span class="p">,</span>
+        <span class="s1">'_capex'</span><span class="p">,</span>
+        <span class="s1">'_opex'</span><span class="p">,</span>
+        <span class="s1">'facility'</span><span class="p">,</span>
+        <span class="s1">'technologies'</span><span class="p">,</span>
+        <span class="s1">'_scalable'</span><span class="p">,</span>
+        <span class="s1">'_shift_key'</span><span class="p">,</span>
+        <span class="s1">'_longitude'</span><span class="p">,</span>
+        <span class="s1">'_latitude'</span><span class="p">,</span>
+        <span class="s1">'_shift_key_prof'</span><span class="p">,</span>
+        <span class="s1">'_use_kw'</span><span class="p">,</span>
+        <span class="s1">'_bus_pos'</span><span class="p">,</span>
+        <span class="s1">'_conn'</span><span class="p">,</span>
+        <span class="s2">"_phN"</span><span class="p">,</span>
+        <span class="s2">"_phA"</span><span class="p">,</span>
+        <span class="s2">"_phB"</span><span class="p">,</span>
+        <span class="s2">"_phC"</span><span class="p">,</span>
+        <span class="s1">'color'</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="n">LOCAL_PROPERTY_DECLARATIONS</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">GCProp</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;bus&#39;</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'bus'</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">''</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="n">DeviceType</span><span class="o">.</span><span class="n">BusDevice</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Connection bus&#39;</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">'Connection bus'</span><span class="p">,</span>
             <span class="n">editable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="nb">list</span><span class="p">([</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">TP</span><span class="p">]),</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;active&#39;</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'active'</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">''</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">bool</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Is the load active?&#39;</span><span class="p">,</span>
-            <span class="n">profile_name</span><span class="o">=</span><span class="s1">&#39;active_prof&#39;</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">'Is the load active?'</span><span class="p">,</span>
+            <span class="n">profile_name</span><span class="o">=</span><span class="s1">'active_prof'</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">PF</span><span class="p">,</span> <span class="n">PrpCat</span><span class="o">.</span><span class="n">OPF</span><span class="p">,</span> <span class="n">PrpCat</span><span class="o">.</span><span class="n">CON</span><span class="p">],</span>
             <span class="n">dyn_ref</span><span class="o">=</span><span class="n">ParamPowerFlowReferenceType</span><span class="o">.</span><span class="n">device_active</span><span class="p">,</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;color&#39;</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'color'</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">''</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Color to paint the element in the map diagram&#39;</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">'Color to paint the element in the map diagram'</span><span class="p">,</span>
             <span class="n">is_color</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">TP</span><span class="p">],</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;mttf&#39;</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;h&#39;</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'mttf'</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">'h'</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Mean time to failure&#39;</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">'Mean time to failure'</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">REL</span><span class="p">],</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;mttr&#39;</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;h&#39;</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'mttr'</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">'h'</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Mean time to recovery&#39;</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">'Mean time to recovery'</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">REL</span><span class="p">],</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;capex&#39;</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;e/MW&#39;</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'capex'</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">'e/MW'</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Cost of investment. Used in expansion planning.&#39;</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">'Cost of investment. Used in expansion planning.'</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">INV</span><span class="p">],</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;opex&#39;</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;e/MWh&#39;</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'opex'</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">'e/MWh'</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Cost of operation. Used in expansion planning.&#39;</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">'Cost of operation. Used in expansion planning.'</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">INV</span><span class="p">],</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;Cost&#39;</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;e/MWh&#39;</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'Cost'</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">'e/MWh'</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Cost of not served energy. Used in OPF.&#39;</span><span class="p">,</span>
-            <span class="n">profile_name</span><span class="o">=</span><span class="s1">&#39;Cost_prof&#39;</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">'Cost of not served energy. Used in OPF.'</span><span class="p">,</span>
+            <span class="n">profile_name</span><span class="o">=</span><span class="s1">'Cost_prof'</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="nb">list</span><span class="p">([</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">OPF</span><span class="p">,</span> <span class="n">PrpCat</span><span class="o">.</span><span class="n">NTC</span><span class="p">]),</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;facility&#39;</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'facility'</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">''</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="n">DeviceType</span><span class="o">.</span><span class="n">FacilityDevice</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Facility where this is located&#39;</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">'Facility where this is located'</span><span class="p">,</span>
             <span class="n">editable</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="nb">list</span><span class="p">([</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">OPF</span><span class="p">,</span> <span class="n">PrpCat</span><span class="o">.</span><span class="n">TP</span><span class="p">]),</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;technologies&#39;</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;p.u.&#39;</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'technologies'</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">'p.u.'</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="n">SubObjectType</span><span class="o">.</span><span class="n">Associations</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Technologies associations to injections&#39;</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">'Technologies associations to injections'</span><span class="p">,</span>
             <span class="n">display</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">OPF</span><span class="p">],</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;scalable&#39;</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'scalable'</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">''</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">bool</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Is the injection scalable? (only for data compatibility)&#39;</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">'Is the injection scalable?'</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">OPF</span><span class="p">],</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;shift_key&#39;</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'shift_key'</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">''</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Shift key for net transfer capacity&#39;</span><span class="p">,</span>
-            <span class="n">profile_name</span><span class="o">=</span><span class="s2">&quot;shift_key_prof&quot;</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">'Shift key for net transfer capacity'</span><span class="p">,</span>
+            <span class="n">profile_name</span><span class="o">=</span><span class="s2">"shift_key_prof"</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">NTC</span><span class="p">],</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;longitude&#39;</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;deg&#39;</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'longitude'</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">'deg'</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;longitude of the injection.&#39;</span><span class="p">,</span>
-            <span class="n">profile_name</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">'longitude of the injection.'</span><span class="p">,</span>
+            <span class="n">profile_name</span><span class="o">=</span><span class="s1">''</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">TP</span><span class="p">],</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;latitude&#39;</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;deg&#39;</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'latitude'</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">'deg'</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;latitude of the injection.&#39;</span><span class="p">,</span>
-            <span class="n">profile_name</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">'latitude of the injection.'</span><span class="p">,</span>
+            <span class="n">profile_name</span><span class="o">=</span><span class="s1">''</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">TP</span><span class="p">],</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;use_kw&#39;</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'use_kw'</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">''</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">bool</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Consider the injections in kW and kVAr?&#39;</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">'Consider the injections in kW and kVAr?'</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="nb">list</span><span class="p">([</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">PF</span><span class="p">,</span> <span class="n">PrpCat</span><span class="o">.</span><span class="n">OPF</span><span class="p">,</span> <span class="n">PrpCat</span><span class="o">.</span><span class="n">NTC</span><span class="p">]),</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;conn&#39;</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'conn'</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">''</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="n">ShuntConnectionType</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Connection type for 3-phase studies&#39;</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">'Connection type for 3-phase studies'</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">SC</span><span class="p">,</span> <span class="n">PrpCat</span><span class="o">.</span><span class="n">PF3</span><span class="p">],</span>
             <span class="n">dyn_ref</span><span class="o">=</span><span class="n">ParamPowerFlowReferenceType</span><span class="o">.</span><span class="n">injection_connection_type</span><span class="p">,</span>
         <span class="p">),</span>
 
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;phN&#39;</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'phN'</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">''</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">bool</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Is the neutral connected?&#39;</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">'Is the neutral connected?'</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">SC</span><span class="p">,</span> <span class="n">PrpCat</span><span class="o">.</span><span class="n">PF3</span><span class="p">,</span> <span class="n">PrpCat</span><span class="o">.</span><span class="n">EMT</span><span class="p">],</span>
             <span class="n">display</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="p">),</span>
 
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;phA&#39;</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'phA'</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">''</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">bool</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Is phase A connected?&#39;</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">'Is phase A connected?'</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">SC</span><span class="p">,</span> <span class="n">PrpCat</span><span class="o">.</span><span class="n">PF3</span><span class="p">,</span> <span class="n">PrpCat</span><span class="o">.</span><span class="n">EMT</span><span class="p">],</span>
         <span class="p">),</span>
 
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;phB&#39;</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'phB'</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">''</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">bool</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Is phase B connected?&#39;</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">'Is phase B connected?'</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">SC</span><span class="p">,</span> <span class="n">PrpCat</span><span class="o">.</span><span class="n">PF3</span><span class="p">,</span> <span class="n">PrpCat</span><span class="o">.</span><span class="n">EMT</span><span class="p">],</span>
         <span class="p">),</span>
 
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;phC&#39;</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'phC'</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">''</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">bool</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Is phase C connected?&#39;</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">'Is phase C connected?'</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">SC</span><span class="p">,</span> <span class="n">PrpCat</span><span class="o">.</span><span class="n">PF3</span><span class="p">,</span> <span class="n">PrpCat</span><span class="o">.</span><span class="n">EMT</span><span class="p">],</span>
         <span class="p">),</span>
 
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;bus_pos&#39;</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'bus_pos'</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">''</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Aid to locate devices on a busbar&#39;</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">'Aid to locate devices on a busbar'</span><span class="p">,</span>
             <span class="n">display</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="p">),</span>
     <span class="p">)</span>
@@ -344,10 +344,10 @@
                  <span class="n">longitude</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
                  <span class="n">latitude</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
                  <span class="n">color</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        InjectionTemplate</span>
 <span class="sd">        :param name: Name of the device</span>
-<span class="sd">        :param idtag: unique id of the device (if None or &quot;&quot; a new one is generated)</span>
+<span class="sd">        :param idtag: unique id of the device (if None or "" a new one is generated)</span>
 <span class="sd">        :param code: secondary code for compatibility</span>
 <span class="sd">        :param bus: snapshot bus object</span>
 <span class="sd">        :param active:active state</span>
@@ -358,7 +358,7 @@
 <span class="sd">        :param opex: operational expenditures (maintainance cost)</span>
 <span class="sd">        :param build_status: BuildStatus</span>
 <span class="sd">        :param device_type: DeviceType</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="n">DynamicDevice</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                                <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
@@ -407,14 +407,14 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">bus_pos</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">color</span> <span class="o">=</span> <span class="n">color</span> <span class="k">if</span> <span class="n">color</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s2">&quot;#909090&quot;</span>  <span class="c1"># light gray</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">color</span> <span class="o">=</span> <span class="n">color</span> <span class="k">if</span> <span class="n">color</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s2">"#909090"</span>  <span class="c1"># light gray</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">bus</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Bus</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Bus</span>
 <span class="sd">        :return: Bus</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bus</span>
 
     <span class="nd">@bus</span><span class="o">.</span><span class="n">setter</span>
@@ -425,14 +425,14 @@
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">Bus</span><span class="p">):</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_bus</span> <span class="o">=</span> <span class="n">val</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">val</span><span class="p">))</span> <span class="o">+</span> <span class="s1">&#39;not supported to be set into a bus&#39;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">val</span><span class="p">))</span> <span class="o">+</span> <span class="s1">'not supported to be set into a bus'</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">active_prof</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ProfileBool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Cost profile</span>
 <span class="sd">        :return: Profile</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_active_prof</span>
 
     <span class="nd">@active_prof</span><span class="o">.</span><span class="n">setter</span>
@@ -442,24 +442,24 @@
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_active_prof</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">arr</span><span class="o">=</span><span class="n">val</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">val</span><span class="p">))</span> <span class="o">+</span> <span class="s1">&#39;not supported to be set into a active_prof&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">val</span><span class="p">))</span> <span class="o">+</span> <span class="s1">'not supported to be set into a active_prof'</span><span class="p">)</span>
 
 <div class="viewcode-block" id="InjectionParent.get_active_at">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Parents.html#VeraGridEngine.Devices.Parents.injection_parent.InjectionParent.get_active_at">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_active_at</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        :param t:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">get_at</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">active</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">active_prof</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span></div>
 
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">Cost_prof</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ProfileFloat</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Cost profile</span>
 <span class="sd">        :return: Profile</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Cost_prof</span>
 
     <span class="nd">@Cost_prof</span><span class="o">.</span><span class="n">setter</span>
@@ -469,24 +469,24 @@
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_Cost_prof</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">arr</span><span class="o">=</span><span class="n">val</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">val</span><span class="p">))</span> <span class="o">+</span> <span class="s1">&#39;not supported to be set into a Cost_prof&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">val</span><span class="p">))</span> <span class="o">+</span> <span class="s1">'not supported to be set into a Cost_prof'</span><span class="p">)</span>
 
 <div class="viewcode-block" id="InjectionParent.get_Cost_at">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Parents.html#VeraGridEngine.Devices.Parents.injection_parent.InjectionParent.get_Cost_at">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_Cost_at</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        :param t:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">get_at</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Cost</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Cost_prof</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span></div>
 
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">shift_key_prof</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ProfileFloat</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Cost profile</span>
 <span class="sd">        :return: Profile</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_shift_key_prof</span>
 
     <span class="nd">@shift_key_prof</span><span class="o">.</span><span class="n">setter</span>
@@ -496,32 +496,32 @@
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_shift_key_prof</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">arr</span><span class="o">=</span><span class="n">val</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">val</span><span class="p">))</span> <span class="o">+</span> <span class="s1">&#39;not supported to be set into a shift_key_prof&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">val</span><span class="p">))</span> <span class="o">+</span> <span class="s1">'not supported to be set into a shift_key_prof'</span><span class="p">)</span>
 
 <div class="viewcode-block" id="InjectionParent.get_shift_key_at">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Parents.html#VeraGridEngine.Devices.Parents.injection_parent.InjectionParent.get_shift_key_at">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_shift_key_at</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        :param t:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">get_at</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shift_key</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">shift_key_prof</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span></div>
 
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">use_kw</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_use_kw</span>
 
     <span class="nd">@use_kw</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">use_kw</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">bool</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Setter</span>
 <span class="sd">        :param val: bool</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">val</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">auto_update_enabled</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">val</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_use_kw</span><span class="p">:</span>
@@ -533,10 +533,10 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">conn</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ShuntConnectionType</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_conn</span>
 
     <span class="nd">@conn</span><span class="o">.</span><span class="n">setter</span>
@@ -553,50 +553,50 @@
 <div class="viewcode-block" id="InjectionParent.get_S_with_sign">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Parents.html#VeraGridEngine.Devices.Parents.injection_parent.InjectionParent.get_S_with_sign">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_S_with_sign</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">complex</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="nb">complex</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="InjectionParent.get_Sprof_with_sign">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Parents.html#VeraGridEngine.Devices.Parents.injection_parent.InjectionParent.get_Sprof_with_sign">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_Sprof_with_sign</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CxVec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">active_prof</span><span class="o">.</span><span class="n">size</span><span class="p">(),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="InjectionParent.associate_technology">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Parents.html#VeraGridEngine.Devices.Parents.injection_parent.InjectionParent.associate_technology">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">associate_technology</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tech</span><span class="p">:</span> <span class="n">Technology</span><span class="p">,</span> <span class="n">val</span><span class="o">=</span><span class="mf">1.0</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Associate a technology with this injection device</span>
 <span class="sd">        :param tech:</span>
 <span class="sd">        :param val:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">technologies</span><span class="o">.</span><span class="n">add_object</span><span class="p">(</span><span class="n">tech</span><span class="p">,</span> <span class="n">val</span><span class="o">=</span><span class="n">val</span><span class="p">)</span></div>
 
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">tech_list</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">ALL_DEV_TYPES</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Bus</span>
 <span class="sd">        :return: Bus</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">technologies</span><span class="o">.</span><span class="n">to_list</span><span class="p">()</span>
 
 <div class="viewcode-block" id="InjectionParent.get_first_technology">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Parents.html#VeraGridEngine.Devices.Parents.injection_parent.InjectionParent.get_first_technology">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_first_technology</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Technology</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the first technology available</span>
 <span class="sd">        :return: Technology</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">association</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">technologies</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="k">return</span> <span class="n">association</span><span class="o">.</span><span class="n">api_object</span>
         <span class="k">return</span> <span class="kc">None</span></div>
@@ -605,22 +605,22 @@
 <div class="viewcode-block" id="InjectionParent.get_bus_pos">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Parents.html#VeraGridEngine.Devices.Parents.injection_parent.InjectionParent.get_bus_pos">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_bus_pos</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bus</span><span class="p">:</span> <span class="n">Bus</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the bus position</span>
-<span class="sd">        NOTE: don&#39;t remove the void bus argument</span>
+<span class="sd">        NOTE: don't remove the void bus argument</span>
 <span class="sd">        :param bus: Bus</span>
 <span class="sd">        :return: bus_pos</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">bus_pos</span></div>
 
 
 <div class="viewcode-block" id="InjectionParent.try_to_find_coordinates">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Parents.html#VeraGridEngine.Devices.Parents.injection_parent.InjectionParent.try_to_find_coordinates">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">try_to_find_coordinates</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the latitude and</span>
 <span class="sd">        :return: longitude, latitude</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">latitude</span> <span class="o">==</span> <span class="mf">0.0</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">longitude</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
             <span class="n">lon</span><span class="p">,</span> <span class="n">lat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bus</span><span class="o">.</span><span class="n">get_coordinates</span><span class="p">()</span>
 
@@ -637,9 +637,9 @@
 <div class="viewcode-block" id="InjectionParent.color_by_main_technology">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Parents.html#VeraGridEngine.Devices.Parents.injection_parent.InjectionParent.color_by_main_technology">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">color_by_main_technology</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Set the color of the dominant technology</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">mx</span> <span class="o">=</span> <span class="mf">0.0</span>
         <span class="n">col</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">color</span>
         <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">technologies</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
@@ -651,9 +651,9 @@
 <div class="viewcode-block" id="InjectionParent.color_by_main_owner">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Parents.html#VeraGridEngine.Devices.Parents.injection_parent.InjectionParent.color_by_main_owner">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">color_by_main_owner</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Set the color of the dominant owner</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">mx</span> <span class="o">=</span> <span class="mf">0.0</span>
         <span class="n">col</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">color</span>
         <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">owners</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
@@ -666,218 +666,218 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">active</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get ``active``.</span>
 
 <span class="sd">        :return: bool</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_active</span>
 
     <span class="nd">@active</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">active</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Set ``active``.</span>
 
 <span class="sd">        :param val: Value to assign.</span>
 <span class="sd">        :return: None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_active</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">mttf</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get ``mttf``.</span>
 
 <span class="sd">        :return: float</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mttf</span>
 
     <span class="nd">@mttf</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">mttf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Set ``mttf``.</span>
 
 <span class="sd">        :param val: Value to assign.</span>
 <span class="sd">        :return: None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_mttf</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">mttr</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get ``mttr``.</span>
 
 <span class="sd">        :return: float</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mttr</span>
 
     <span class="nd">@mttr</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">mttr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Set ``mttr``.</span>
 
 <span class="sd">        :param val: Value to assign.</span>
 <span class="sd">        :return: None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_mttr</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">capex</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get ``capex``.</span>
 
 <span class="sd">        :return: float</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_capex</span>
 
     <span class="nd">@capex</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">capex</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Set ``capex``.</span>
 
 <span class="sd">        :param val: Value to assign.</span>
 <span class="sd">        :return: None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_capex</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">opex</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get ``opex``.</span>
 
 <span class="sd">        :return: float</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_opex</span>
 
     <span class="nd">@opex</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">opex</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Set ``opex``.</span>
 
 <span class="sd">        :param val: Value to assign.</span>
 <span class="sd">        :return: None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_opex</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">Cost</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get ``Cost``.</span>
 
 <span class="sd">        :return: float</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Cost</span>
 
     <span class="nd">@Cost</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">Cost</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Set ``Cost``.</span>
 
 <span class="sd">        :param val: Value to assign.</span>
 <span class="sd">        :return: None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_Cost</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">scalable</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get ``scalable``.</span>
 
 <span class="sd">        :return: bool</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scalable</span>
 
     <span class="nd">@scalable</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">scalable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Set ``scalable``.</span>
 
 <span class="sd">        :param val: Value to assign.</span>
 <span class="sd">        :return: None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_scalable</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">shift_key</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get ``shift_key``.</span>
 
 <span class="sd">        :return: float</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_shift_key</span>
 
     <span class="nd">@shift_key</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">shift_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Set ``shift_key``.</span>
 
 <span class="sd">        :param val: Value to assign.</span>
 <span class="sd">        :return: None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_shift_key</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">longitude</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get ``longitude``.</span>
 
 <span class="sd">        :return: float</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_longitude</span>
 
     <span class="nd">@longitude</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">longitude</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Set ``longitude``.</span>
 
 <span class="sd">        :param val: Value to assign.</span>
 <span class="sd">        :return: None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_longitude</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">latitude</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get ``latitude``.</span>
 
 <span class="sd">        :return: float</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_latitude</span>
 
     <span class="nd">@latitude</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">latitude</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Set ``latitude``.</span>
 
 <span class="sd">        :param val: Value to assign.</span>
 <span class="sd">        :return: None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_latitude</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">bus_pos</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get ``bus_pos``.</span>
 
 <span class="sd">        :return: int</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bus_pos</span>
 
     <span class="nd">@bus_pos</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">bus_pos</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Set ``bus_pos``.</span>
 
 <span class="sd">        :param val: Value to assign.</span>
 <span class="sd">        :return: None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_bus_pos</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">phN</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_phN</span>
 
     <span class="nd">@phN</span><span class="o">.</span><span class="n">setter</span>
@@ -885,13 +885,13 @@
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="nb">bool</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_phN</span> <span class="o">=</span> <span class="n">val</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">val</span><span class="si">}</span><span class="s1"> is not an bool.&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="n">val</span><span class="si">}</span><span class="s1"> is not an bool.'</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">phA</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_phA</span>
 
     <span class="nd">@phA</span><span class="o">.</span><span class="n">setter</span>
@@ -899,13 +899,13 @@
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="nb">bool</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_phA</span> <span class="o">=</span> <span class="n">val</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">val</span><span class="si">}</span><span class="s1"> is not an bool.&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="n">val</span><span class="si">}</span><span class="s1"> is not an bool.'</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">phB</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_phB</span>
 
     <span class="nd">@phB</span><span class="o">.</span><span class="n">setter</span>
@@ -913,13 +913,13 @@
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="nb">bool</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_phB</span> <span class="o">=</span> <span class="n">val</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">val</span><span class="si">}</span><span class="s1"> is not an bool.&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="n">val</span><span class="si">}</span><span class="s1"> is not an bool.'</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">phC</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_phC</span>
 
     <span class="nd">@phC</span><span class="o">.</span><span class="n">setter</span>
@@ -927,7 +927,7 @@
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="nb">bool</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_phC</span> <span class="o">=</span> <span class="n">val</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">val</span><span class="si">}</span><span class="s1"> is not an bool.&#39;</span><span class="p">)</span></div>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="n">val</span><span class="si">}</span><span class="s1"> is not an bool.'</span><span class="p">)</span></div>
 
 </pre></div>
 

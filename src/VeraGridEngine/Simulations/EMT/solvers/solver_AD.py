@@ -681,7 +681,7 @@ class JitAdSolver:
         '_predictor', '_runtime_param_count', '_static_parameter_buffer', '_full_parameter_buffer',
         '_residual_buffer', '_trial_state_buffer', '_trial_residual_buffer',
         '_backend_build_stats', '_last_runtime_stats', '_last_sim_loop_time', '_cancel_checker', '_progress_signal',
-        '_newton_tolerance'
+        '_newton_tolerance', '_use_compiled_runtime_parameters'
     ]
     def __init__(self,
                  problem: EmtProblemTemplate,
@@ -696,7 +696,8 @@ class JitAdSolver:
                  newton_diag_config: NewtonDiagnosticsConfig | None = None,
                  progress_signal: DummySignal | None = None,
                  cancel_checker: Callable[[], bool] | None = None,
-                 newton_tolerance: float = 1.0e-6)-> None:
+                 newton_tolerance: float = 1.0e-6,
+                 use_compiled_runtime_parameters: bool = True)-> None:
         """
         Initializes the JIT AD Solver.
 
@@ -716,12 +717,16 @@ class JitAdSolver:
         :type dense_threshold: int
         :param verbose: Print compilation and simulation timings.
         :type verbose: bool
-        :param newton_max_iter: Maximum Newton iterations per local EMT substep.
+        :param newton_max_iter: Maximum Newton corrections per local EMT substep.
+            The final corrected candidate is checked without another correction.
         :type newton_max_iter: int
         :param newton_tolerance: Absolute infinity-norm tolerance for Newton residual convergence.
         :type newton_tolerance: float
         :param progress_signal: Optional progress signal updated during the simulation loop.
         :type progress_signal: DummySignal | None
+        :param use_compiled_runtime_parameters: Use the compiled runtime-parameter evaluator. Disable only for
+            numerical equivalence validation against the legacy interpreted evaluator.
+        :type use_compiled_runtime_parameters: bool
         """
         self.problem = problem
         self.t0 = t0
@@ -732,6 +737,7 @@ class JitAdSolver:
         self.verbose = verbose
         self.newton_max_iter: int = int(newton_max_iter)
         self._newton_tolerance: float = float(newton_tolerance)
+        self._use_compiled_runtime_parameters: bool = bool(use_compiled_runtime_parameters)
         if not np.isfinite(self._newton_tolerance) or self._newton_tolerance <= 0.0:
             raise ValueError("newton_tolerance must be finite and greater than zero.")
         self.t_end = t_end
@@ -782,15 +788,19 @@ class JitAdSolver:
         self._progress_signal: DummySignal | None = progress_signal
         self._cancel_checker = cancel_checker
 
-    def build_jit_ad(self, only_jacobian: bool = False)-> None:
+    def build_jit_ad(self, only_jacobian: bool = False,
+                     method: DynamicIntegrationMethod | None = None) -> None:
         """
         Compiles the residual kernel using batching and prepares the Sparse AD Jacobian.
 
         :param only_jacobian: If True, skips residual compilation (used by Vectorized Engine fallback).
         :type only_jacobian: bool
+        :param method: Effective discretization; defaults to the requested method.
+        :return: None; kernels and Jacobians are cached by effective method.
         :rtype: None
         """
-        if self.method in self.jit_kernels_ad and not only_jacobian:
+        effective_method: DynamicIntegrationMethod = self.method if method is None else method
+        if effective_method in self.jit_kernels_ad and not only_jacobian:
             return
         else:
             pass
@@ -799,7 +809,7 @@ class JitAdSolver:
 
         if self.verbose:
             print(
-                f"--- [JIT-AD] Compiling {'Jacobian ONLY' if only_jacobian else 'Implicit Kernel + AD Jacobian'} ({self.method}) ---")
+                f"--- [JIT-AD] Compiling {'Jacobian ONLY' if only_jacobian else 'Implicit Kernel + AD Jacobian'} ({effective_method}) ---")
         else:
             pass
 
@@ -819,8 +829,20 @@ class JitAdSolver:
         equations.extend(self.algebraic_eqs)
 
         # --- PART 1: RESIDUALS (Batched) ---
-        if not only_jacobian and self.method not in self.jit_kernels_ad:
-            compiler = EquationCompiler(variables=sorted_vars, parameters=all_params, method=self.method)
+        if not only_jacobian and effective_method not in self.jit_kernels_ad:
+            compiler = EquationCompiler(variables=sorted_vars, parameters=all_params, method=effective_method)
+            # Fix the in-place residual contract before integration starts so
+            # Numba compiles every generated batch during backend construction
+            # instead of lazily compiling it in the first Newton iteration.
+            residual_signature: Any = nb.void(
+                nb.float64[:],
+                nb.float64[:],
+                nb.float64[:],
+                nb.float64[:],
+                nb.float64,
+                nb.float64[:],
+                nb.float64[:],
+            )
             BATCH_SIZE = 100
             n_eqs = len(equations)
             batched_kernels: List[Callable] = list()
@@ -831,16 +853,21 @@ class JitAdSolver:
 
             for i in range(0, n_eqs, BATCH_SIZE):
                 chunk = equations[i: i + BATCH_SIZE]
-                fname = f"jit_step_{self.method}_ad_part_{i}"
+                fname = f"jit_step_{effective_method}_ad_part_{i}"
                 py_func = compiler.compile(chunk, func_name=fname, use_cse=True, offset=i, inplace=True)
-                jit_func = _safe_njit(py_func, cache=True, fastmath=True)
+                jit_func = _safe_njit(
+                    py_func=py_func,
+                    cache=True,
+                    fastmath=True,
+                    signature=residual_signature,
+                )
                 batched_kernels.append(jit_func)
 
             if self.verbose:
                 print(f"   [JIT-AD] Residual Batches compiled in {time.perf_counter() - t0:.4f}s")
             else:
                 pass
-            self.jit_kernels_ad[self.method] = batched_kernels
+            self.jit_kernels_ad[effective_method] = batched_kernels
             residual_elapsed_s: float = time.perf_counter() - t0
             self._backend_build_stats['residual_compile_s'] += residual_elapsed_s
             self._backend_build_stats['residual_batches'] += float(len(batched_kernels))
@@ -849,11 +876,11 @@ class JitAdSolver:
             pass
 
         # --- PART 2: JACOBIAN (O(N) setup, needed for normal and Vectorized fallback) ---
-        if self.method not in self.jit_jacobian_ad:
+        if effective_method not in self.jit_jacobian_ad:
             jacobian_t0: float = time.perf_counter()
             jac = SparseADJacobian(equations=equations, variables=sorted_vars, parameters=all_params,
-                                   method=self.method, use_cse=True)
-            self.jit_jacobian_ad[self.method] = jac
+                                   method=effective_method, use_cse=True)
+            self.jit_jacobian_ad[effective_method] = jac
             jacobian_elapsed_s: float = time.perf_counter() - jacobian_t0
             self._backend_build_stats['jacobian_compile_s'] += jacobian_elapsed_s
             self._backend_build_stats['jacobian_builds'] += 1.0
@@ -876,7 +903,8 @@ class JitAdSolver:
         :param dx0: Initial derivative vector.
         :param params0: Initial event parameters.
         :param boundary_updater: Optional override for the problem boundary updater.
-        :return: A tuple containing the time vector and state trajectory matrix.
+        :return: Matching completed macro prefixes for time, state and derivative,
+                 followed by initialization and convergence flags.
         """
         t_start = time.time()
         method = self.method
@@ -889,6 +917,21 @@ class JitAdSolver:
         else:
             pass
 
+        # Problem construction, initialization, and event-group selection are
+        # complete before the solver starts. Activate the finalized compiled
+        # runtime equations so every time-step update avoids symbolic traversal.
+        if self._use_compiled_runtime_parameters:
+            self.problem.enable_compiled_runtime_parameter_evaluator()
+        else:
+            pass
+
+        # A fresh BDF2 call first obtains a real second state with backward Euler.
+        bdf2_startup_pending: bool = method == DynamicIntegrationMethod.DaeBDF2
+        if bdf2_startup_pending:
+            self.build_jit_ad(method=DynamicIntegrationMethod.DaeBackEuler)
+        else:
+            pass
+
         kernel_list = self.jit_kernels_ad[method]
         current_jacobian = self.jit_jacobian_ad[method]
 
@@ -897,9 +940,9 @@ class JitAdSolver:
 
         use_dense_solver = (n_eqs <= self.dense_threshold)
 
-        pr = profile.Profile()
-        pr.disable()
-        pr.enable()
+        # pr = profile.Profile()
+        # pr.disable()
+        # pr.enable()
 
         t = np.linspace(self.t0, self.t_end, self.steps + 1, dtype=np.float64)
         self.t = t
@@ -921,6 +964,20 @@ class JitAdSolver:
         x_prev = x0.copy()
         dx_prev = dx0.copy()
         x_prev2 = x0.copy()
+        # AD kernels use runtime-variable history; public derivatives use UID order.
+        base_slopes: Vec = np.zeros(x_prev.size if bdf2_startup_pending else 0, dtype=np.float64)
+        diff_base_indices: np.ndarray = np.full(dx_prev.size if bdf2_startup_pending else 0, -1, dtype=np.int64)
+        if bdf2_startup_pending:
+            differential: Var
+            for differential in self.problem.get_diff_vars():
+                if differential.base_var is not None:
+                    diff_index: int = self.problem.uid2idx_diff[differential.uid]
+                    diff_base_indices[diff_index] = self.problem.uid2idx_vars.get(differential.base_var.uid, -1)
+                else:
+                    pass
+            kernel_derivatives: Vec = base_slopes
+        else:
+            kernel_derivatives = dx_prev
         x_iter = x0.copy()
         trial_x = self._trial_state_buffer
         trial_res = self._trial_residual_buffer
@@ -983,6 +1040,8 @@ class JitAdSolver:
         else:
             pass
 
+        # Only completed macro rows are published after a local rejection.
+        completed_samples: int = 1
         loop_start: float = time.perf_counter()
         total_newton_iterations: int = 0
         jacobian_evaluation_count: int = 0
@@ -1055,6 +1114,12 @@ class JitAdSolver:
 
                 x_iter[:] = x_prev
 
+                effective_method: DynamicIntegrationMethod = (
+                    DynamicIntegrationMethod.DaeBackEuler if bdf2_startup_pending else method
+                )
+                kernel_list = self.jit_kernels_ad[effective_method]
+                current_jacobian = self.jit_jacobian_ad[effective_method]
+
                 # PREDICTOR
                 if i == 0 and is_first_local_step and method == DynamicIntegrationMethod.DaeTrapezoidal:
                     self._predictor.predict(
@@ -1070,17 +1135,22 @@ class JitAdSolver:
                 substep_converged: bool = state_event_retry_time is not None
                 newton_iteration_count: int
                 if state_event_retry_time is None:
-                    newton_iteration_count = self.newton_max_iter
+                    newton_iteration_count = self.newton_max_iter + 1
                 else:
                     newton_iteration_count = 0
                 for k in range(newton_iteration_count):
+                    # Check in Python, outside fastmath, before assembling a candidate.
+                    if not np.all(np.isfinite(x_iter)):
+                        break
+                    else:
+                        pass
                     total_newton_iterations += 1
                     ctx = NewtonSolveContext(
                         t=float(t_curr),
                         step_idx=int(i),
                         newton_iter=int(k),
                         phase="jit_ad",
-                        method=str(method),
+                        method=str(effective_method),
                     )
 
                     # The residual buffer is reused across Newton iterations so
@@ -1091,14 +1161,26 @@ class JitAdSolver:
                         x_iter=x_iter,
                         full_params=full_params,
                         x_prev=x_prev,
-                        dx_prev=dx_prev,
+                        dx_prev=kernel_derivatives,
                         h_eff=h_eff,
                         x_prev2=x_prev2,
                         residual_out=res,
                     )
 
+                    # The compiled norm may hide NaN entries; inspect the full buffer.
+                    if not np.all(np.isfinite(res)):
+                        break
+                    else:
+                        pass
+
                     if res_norm_inf < self._newton_tolerance:
                         substep_converged = True
+                        break
+                    else:
+                        pass
+
+                    # Validate the last iterate even when the correction budget is exhausted.
+                    if k >= self.newton_max_iter:
                         break
                     else:
                         pass
@@ -1108,7 +1190,7 @@ class JitAdSolver:
                         states=x_iter,
                         params=full_params,
                         history=x_prev,
-                        d_history=dx_prev,
+                        d_history=kernel_derivatives,
                         h=h_eff,
                         history2=x_prev2,
                     )
@@ -1134,7 +1216,7 @@ class JitAdSolver:
                             kernel_list=kernel_list,
                             full_params=full_params,
                             x_prev=x_prev,
-                            dx_prev=dx_prev,
+                            dx_prev=kernel_derivatives,
                             h_eff=h_eff,
                             x_prev2=x_prev2,
                         )
@@ -1155,6 +1237,10 @@ class JitAdSolver:
                     converged = False
                     if i == 0 and is_first_local_step:
                         well_initialized = False
+                    else:
+                        pass
+                else:
+                    pass
 
                 if state_event_retry_time is None:
                     state_event_retry_time = resolve_solver_boundary_step(
@@ -1164,6 +1250,12 @@ class JitAdSolver:
                         committed_time=float(t_curr),
                         committed_state=x_iter,
                     )
+                else:
+                    pass
+
+                # Resolve rejection once, then stop before any accepted history changes.
+                if not substep_converged:
+                    break
                 else:
                     pass
 
@@ -1177,29 +1269,45 @@ class JitAdSolver:
                 if state_event_retry_time is not None:
                     x_iter[:] = x_prev
                 else:
-                    if method == DynamicIntegrationMethod.DaeTrapezoidal:
+                    if method == DynamicIntegrationMethod.DaeBDF2:
+                        # Compute from both untouched accepted states, then scatter
+                        # by base UID before committing either history buffer.
+                        if bdf2_startup_pending:
+                            base_slopes[:] = (x_iter - x_prev) / h_eff
+                        else:
+                            base_slopes[:] = (1.5 * x_iter - 2.0 * x_prev + 0.5 * x_prev2) / h_eff
+                        base_index: int
+                        for diff_index, base_index in enumerate(diff_base_indices):
+                            if base_index >= 0:
+                                dx_prev[diff_index] = base_slopes[base_index]
+                            else:
+                                pass
+                        bdf2_startup_pending = False
+                    elif method == DynamicIntegrationMethod.DaeTrapezoidal:
                         dx_prev[:n_states] = (
                                 (2.0 / h_eff) * (x_iter[:n_states] - x_prev[:n_states]) - dx_prev[:n_states]
                         )
-                    elif method == DynamicIntegrationMethod.DaeBDF2:
-                        x_prev2 = x_prev.copy()
                     else:
                         dx_prev[:n_states] = (
                                 (x_iter[:n_states] - x_prev[:n_states]) / h_eff
                         )
 
-                    if method != DynamicIntegrationMethod.DaeBDF2:
-                        x_prev2 = x_prev.copy()
-                    else:
-                        pass
+                    x_prev2[:] = x_prev
 
                     x_prev[:] = x_iter
                     t_local_prev = t_curr
                     is_first_local_step = False
 
 
+            # A partially accepted macro interval is not an output sample.
+            if not converged:
+                break
+            else:
+                pass
+
             self.y[i + 1, :] = x_prev
             self.dy[i + 1, :] = dx_prev
+            completed_samples += 1
 
         self._last_sim_loop_time = time.perf_counter() - loop_start
         self._last_runtime_stats = dict(
@@ -1207,17 +1315,17 @@ class JitAdSolver:
             total_newton_iterations=float(total_newton_iterations),
             jacobian_evaluations=float(jacobian_evaluation_count),
             aligned_substeps=float(aligned_substep_count),
-            macro_steps=float(self.steps),
+            macro_steps=float(completed_samples - 1),
         )
 
         if self.verbose:
             print(f"JIT (AD) Finished: {time.time() - t_start:.4f}s")
         else:
             pass
-
-        pr.disable()
-        pr.dump_stats("profile_grid_for_loads_jac_batching_10_seconds.pstat")
-        return self.t, self.y, self.dy, well_initialized, converged
+        #
+        # pr.disable()
+        # pr.dump_stats("profile_grid_for_loads_simulation_1_second_v4.pstat")
+        return t[:completed_samples].copy(), self.y[:completed_samples, :].copy(), self.dy[:completed_samples, :].copy(), well_initialized, converged
 
     def get_backend_build_stats(self) -> Dict[str, float]:
         """

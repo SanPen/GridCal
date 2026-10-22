@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Topology.admittance_matrices &mdash; VeraGrid 6.7.13 documentation</title>
+  <title>VeraGridEngine.Topology.admittance_matrices &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=16fbabd8"></script>
+      <script src="../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/js/theme.js"></script>
@@ -122,7 +122,7 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">csc_equal</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">sp</span><span class="o">.</span><span class="n">csc_matrix</span><span class="p">,</span>
               <span class="n">B</span><span class="p">:</span> <span class="n">sp</span><span class="o">.</span><span class="n">csc_matrix</span><span class="p">,</span>
               <span class="n">tol</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Return True iff two CSC matrices are equal</span>
 <span class="sd">    (up-to a tolerance for floating–point data).</span>
 
@@ -140,7 +140,7 @@
 <span class="sd">      result is independent of internal index ordering.</span>
 <span class="sd">    * Works for any SciPy sparse subtype (CSR, COO …) after</span>
 <span class="sd">      `.tocsc()`.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># 1. quick rejections</span>
     <span class="k">if</span> <span class="n">A</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="n">B</span><span class="o">.</span><span class="n">shape</span> <span class="ow">or</span> <span class="n">A</span><span class="o">.</span><span class="n">dtype</span> <span class="o">!=</span> <span class="n">B</span><span class="o">.</span><span class="n">dtype</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">False</span>
@@ -163,11 +163,11 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">_prepare_branch_maps</span><span class="p">(</span><span class="n">nbus</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">nbranch</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">F</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">T</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span>
                          <span class="n">Yf_indices</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">Yf_indptr</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span>
                          <span class="n">Ybus_indices</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">Ybus_indptr</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Build a map to the matrices to update (Ybus, Yf, Yt)</span>
 
 <span class="sd">    Preconditions:</span>
-<span class="sd">        * Yf / Yt were built with the &#39;row == branch index&#39; pattern.</span>
+<span class="sd">        * Yf / Yt were built with the 'row == branch index' pattern.</span>
 <span class="sd">        * Yf and Yt share the same indices / indptr (as produced earlier).</span>
 <span class="sd">        * Ybus contains exactly one entry per (row,col) pair.</span>
 
@@ -180,7 +180,7 @@
 <span class="sd">    :param Ybus_indptr: CSC index pointers of Ybus</span>
 <span class="sd">    :return: pos_yff, pos_yft, pos_ytf, pos_ytt   (nbranch,) int32</span>
 <span class="sd">             pos_b_ii, pos_b_ij, pos_b_ji, pos_b_jj  (nbranch,) int32</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">pos_yff</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">nbranch</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
     <span class="n">pos_yft</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">nbranch</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
@@ -234,7 +234,7 @@
                               <span class="n">Yf_data</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span> <span class="n">Yt_data</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span> <span class="n">Ybus_data</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span>
                               <span class="n">pos_yff</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">pos_yft</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">pos_ytf</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">pos_ytt</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span>
                               <span class="n">pos_b_ii</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">pos_b_ij</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">pos_b_ji</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">pos_b_jj</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Update Yf, Yt, Ybus *in place*.  All arrays are pre-allocated.</span>
 <span class="sd">    :param idx: branches you change</span>
 <span class="sd">    :param new_yff:</span>
@@ -253,7 +253,7 @@
 <span class="sd">    :param pos_b_ji:</span>
 <span class="sd">    :param pos_b_jj:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">for</span> <span class="n">k_idx</span><span class="p">,</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">idx</span><span class="p">):</span>
         <span class="c1"># ---- Yf ----------------------------------------------------</span>
@@ -284,20 +284,20 @@
 <div class="viewcode-block" id="AdmittanceMatrices">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Topology.html#VeraGridEngine.Topology.admittance_matrices.AdmittanceMatrices">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">AdmittanceMatrices</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Class to store admittance matrices</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;Ybus&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Yf&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Yt&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Cf&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Ct&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;yff&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;yft&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;ytf&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;ytt&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Yshunt_bus&quot;</span><span class="p">,</span>
+        <span class="s2">"Ybus"</span><span class="p">,</span>
+        <span class="s2">"Yf"</span><span class="p">,</span>
+        <span class="s2">"Yt"</span><span class="p">,</span>
+        <span class="s2">"Cf"</span><span class="p">,</span>
+        <span class="s2">"Ct"</span><span class="p">,</span>
+        <span class="s2">"yff"</span><span class="p">,</span>
+        <span class="s2">"yft"</span><span class="p">,</span>
+        <span class="s2">"ytf"</span><span class="p">,</span>
+        <span class="s2">"ytt"</span><span class="p">,</span>
+        <span class="s2">"Yshunt_bus"</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
@@ -311,28 +311,28 @@
                  <span class="n">ytf</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span>
                  <span class="n">ytt</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span>
                  <span class="n">Yshunt_bus</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Constructor</span>
 <span class="sd">        :param Ybus: Admittance matrix</span>
-<span class="sd">        :param Yf: Admittance matrix of the branches with their &quot;from&quot; bus</span>
-<span class="sd">        :param Yt: Admittance matrix of the branches with their &quot;to&quot; bus</span>
-<span class="sd">        :param Cf: Connectivity matrix of the branches with their &quot;from&quot; bus</span>
-<span class="sd">        :param Ct: Connectivity matrix of the branches with their &quot;to&quot; bus</span>
+<span class="sd">        :param Yf: Admittance matrix of the branches with their "from" bus</span>
+<span class="sd">        :param Yt: Admittance matrix of the branches with their "to" bus</span>
+<span class="sd">        :param Cf: Connectivity matrix of the branches with their "from" bus</span>
+<span class="sd">        :param Ct: Connectivity matrix of the branches with their "to" bus</span>
 <span class="sd">        :param yff: admittance from-from primitives vector</span>
 <span class="sd">        :param yft: admittance from-to primitives vector</span>
 <span class="sd">        :param ytf: admittance to-from primitives vector</span>
 <span class="sd">        :param ytt: admittance to-to primitives vector</span>
 <span class="sd">        :param Yshunt_bus: array of shunt admittances per bus</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">Ybus</span> <span class="o">=</span> <span class="n">Ybus</span> <span class="k">if</span> <span class="n">Ybus</span><span class="o">.</span><span class="n">format</span> <span class="o">==</span> <span class="s1">&#39;csc&#39;</span> <span class="k">else</span> <span class="n">Ybus</span><span class="o">.</span><span class="n">tocsc</span><span class="p">()</span>
+<span class="sd">        """</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Ybus</span> <span class="o">=</span> <span class="n">Ybus</span> <span class="k">if</span> <span class="n">Ybus</span><span class="o">.</span><span class="n">format</span> <span class="o">==</span> <span class="s1">'csc'</span> <span class="k">else</span> <span class="n">Ybus</span><span class="o">.</span><span class="n">tocsc</span><span class="p">()</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">Yf</span> <span class="o">=</span> <span class="n">Yf</span> <span class="k">if</span> <span class="n">Yf</span><span class="o">.</span><span class="n">format</span> <span class="o">==</span> <span class="s1">&#39;csc&#39;</span> <span class="k">else</span> <span class="n">Yf</span><span class="o">.</span><span class="n">tocsc</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Yf</span> <span class="o">=</span> <span class="n">Yf</span> <span class="k">if</span> <span class="n">Yf</span><span class="o">.</span><span class="n">format</span> <span class="o">==</span> <span class="s1">'csc'</span> <span class="k">else</span> <span class="n">Yf</span><span class="o">.</span><span class="n">tocsc</span><span class="p">()</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">Yt</span> <span class="o">=</span> <span class="n">Yt</span> <span class="k">if</span> <span class="n">Yt</span><span class="o">.</span><span class="n">format</span> <span class="o">==</span> <span class="s1">&#39;csc&#39;</span> <span class="k">else</span> <span class="n">Yt</span><span class="o">.</span><span class="n">tocsc</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Yt</span> <span class="o">=</span> <span class="n">Yt</span> <span class="k">if</span> <span class="n">Yt</span><span class="o">.</span><span class="n">format</span> <span class="o">==</span> <span class="s1">'csc'</span> <span class="k">else</span> <span class="n">Yt</span><span class="o">.</span><span class="n">tocsc</span><span class="p">()</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">Cf</span> <span class="o">=</span> <span class="n">Cf</span> <span class="k">if</span> <span class="n">Cf</span><span class="o">.</span><span class="n">format</span> <span class="o">==</span> <span class="s1">&#39;csc&#39;</span> <span class="k">else</span> <span class="n">Cf</span><span class="o">.</span><span class="n">tocsc</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Cf</span> <span class="o">=</span> <span class="n">Cf</span> <span class="k">if</span> <span class="n">Cf</span><span class="o">.</span><span class="n">format</span> <span class="o">==</span> <span class="s1">'csc'</span> <span class="k">else</span> <span class="n">Cf</span><span class="o">.</span><span class="n">tocsc</span><span class="p">()</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">Ct</span> <span class="o">=</span> <span class="n">Ct</span> <span class="k">if</span> <span class="n">Ct</span><span class="o">.</span><span class="n">format</span> <span class="o">==</span> <span class="s1">&#39;csc&#39;</span> <span class="k">else</span> <span class="n">Ct</span><span class="o">.</span><span class="n">tocsc</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Ct</span> <span class="o">=</span> <span class="n">Ct</span> <span class="k">if</span> <span class="n">Ct</span><span class="o">.</span><span class="n">format</span> <span class="o">==</span> <span class="s1">'csc'</span> <span class="k">else</span> <span class="n">Ct</span><span class="o">.</span><span class="n">tocsc</span><span class="p">()</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">yff</span> <span class="o">=</span> <span class="n">yff</span>
 
@@ -349,14 +349,14 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">modify_taps_all</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                         <span class="n">m</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">m2</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
                         <span class="n">tau</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">tau2</span><span class="p">:</span> <span class="n">Vec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">sp</span><span class="o">.</span><span class="n">csc_matrix</span><span class="p">,</span> <span class="n">sp</span><span class="o">.</span><span class="n">csc_matrix</span><span class="p">,</span> <span class="n">sp</span><span class="o">.</span><span class="n">csc_matrix</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Compute the new admittance matrix given the tap variation</span>
 <span class="sd">        :param m: previous tap module (nbr)</span>
 <span class="sd">        :param m2: new tap module (nbr)</span>
 <span class="sd">        :param tau: previous tap angle (nbr)</span>
 <span class="sd">        :param tau2: new tap angle (nbr)</span>
 <span class="sd">        :return: Ybus, Yf, Yt</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="c1"># update all primitives</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">yff</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">yff</span> <span class="o">*</span> <span class="p">(</span><span class="n">m</span> <span class="o">*</span> <span class="n">m</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">m2</span> <span class="o">*</span> <span class="n">m2</span><span class="p">))</span>
@@ -378,7 +378,7 @@
                     <span class="n">m_prev</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">m_new</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
                     <span class="n">tau_prev</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">tau_new</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
                     <span class="n">idx</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">sp</span><span class="o">.</span><span class="n">csc_matrix</span><span class="p">,</span> <span class="n">sp</span><span class="o">.</span><span class="n">csc_matrix</span><span class="p">,</span> <span class="n">sp</span><span class="o">.</span><span class="n">csc_matrix</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Compute the new admittance matrix given the tap variation</span>
 <span class="sd">        :param m_prev: previous tap module (length of idx)</span>
 <span class="sd">        :param m_new: new tap module (length of idx)</span>
@@ -389,7 +389,7 @@
 <span class="sd">                    very hard to maintain indices that apply only to m, </span>
 <span class="sd">                    indices that apply only to tau and indices that apply to both</span>
 <span class="sd">        :return: Ybus, Yf, Yt</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="c1"># add arrays must have the same size as idx</span>
         <span class="n">lidx</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
@@ -414,10 +414,10 @@
 
 <div class="viewcode-block" id="AdmittanceMatrices.copy">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Topology.html#VeraGridEngine.Topology.admittance_matrices.AdmittanceMatrices.copy">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;AdmittanceMatrices&quot;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"AdmittanceMatrices"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get a deep copy</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">AdmittanceMatrices</span><span class="p">(</span><span class="n">Ybus</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">Ybus</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span>
                                   <span class="n">Yf</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">Yf</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span>
                                   <span class="n">Yt</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">Yt</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span>
@@ -430,7 +430,7 @@
                                   <span class="n">Yshunt_bus</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">Yshunt_bus</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span></div>
 
 
-    <span class="k">def</span><span class="w"> </span><span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="s2">&quot;AdmittanceMatrices&quot;</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="s2">"AdmittanceMatrices"</span><span class="p">):</span>
         <span class="n">ok</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="n">ok</span> <span class="o">=</span> <span class="n">ok</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">yff</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">yff</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
         <span class="n">ok</span> <span class="o">=</span> <span class="n">ok</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">yft</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">yft</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
@@ -459,7 +459,7 @@
                         <span class="n">conn</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span>
                         <span class="n">seq</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
                         <span class="n">add_windings_phase</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AdmittanceMatrices</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute the complete admittance matrices for the general power flow methods (Newton-Raphson based)</span>
 
 <span class="sd">    :param R: array of branch resistance (p.u.)</span>
@@ -467,17 +467,17 @@
 <span class="sd">    :param G: array of branch conductance (p.u.)</span>
 <span class="sd">    :param B: array of branch susceptance (p.u.)</span>
 <span class="sd">    :param tap_module: array of tap modules (for all Branches, regardless of their type)</span>
-<span class="sd">    :param vtap_f: array of virtual taps at the &quot;from&quot; side</span>
-<span class="sd">    :param vtap_t: array of virtual taps at the &quot;to&quot; side</span>
+<span class="sd">    :param vtap_f: array of virtual taps at the "from" side</span>
+<span class="sd">    :param vtap_t: array of virtual taps at the "to" side</span>
 <span class="sd">    :param tap_angle: array of tap angles (for all Branches, regardless of their type)</span>
-<span class="sd">    :param Cf: Connectivity branch-bus &quot;from&quot; with the branch states computed</span>
-<span class="sd">    :param Ct: Connectivity branch-bus &quot;to&quot; with the branch states computed</span>
+<span class="sd">    :param Cf: Connectivity branch-bus "from" with the branch states computed</span>
+<span class="sd">    :param Ct: Connectivity branch-bus "to" with the branch states computed</span>
 <span class="sd">    :param Yshunt_bus: array of shunts equivalent power per bus, from the shunt devices (p.u.)</span>
 <span class="sd">    :param seq: Sequence [0, 1, 2]</span>
 <span class="sd">    :param conn: array of windings connections codes (numpy array of WindingsConnection values)</span>
 <span class="sd">    :param add_windings_phase: Add the phases of the transformer windings (for short circuits mainly)</span>
 <span class="sd">    :return: Admittance instance</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># form the admittance matrices</span>
     <span class="n">ys</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="p">(</span><span class="n">R</span> <span class="o">+</span> <span class="mf">1.0</span><span class="n">j</span> <span class="o">*</span> <span class="p">(</span><span class="n">X</span> <span class="o">+</span> <span class="mf">1e-20</span><span class="p">))</span>  <span class="c1"># series admittance</span>
     <span class="n">ysh_2</span> <span class="o">=</span> <span class="p">(</span><span class="n">G</span> <span class="o">+</span> <span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="n">B</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.0</span>  <span class="c1"># shunt admittance</span>
@@ -530,7 +530,7 @@
             <span class="n">ytf</span> <span class="o">=</span> <span class="o">-</span><span class="n">ys</span> <span class="o">/</span> <span class="p">(</span><span class="n">tap_module</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mf">1.0</span><span class="n">j</span> <span class="o">*</span> <span class="n">tap_angle</span><span class="p">)</span> <span class="o">*</span> <span class="n">vtap_t</span> <span class="o">*</span> <span class="n">vtap_f</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">conj</span><span class="p">(</span><span class="n">factor_psh</span><span class="p">)</span>
             <span class="n">ytt</span> <span class="o">=</span> <span class="p">(</span><span class="n">ys</span> <span class="o">+</span> <span class="n">ysh_2</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">vtap_t</span> <span class="o">*</span> <span class="n">vtap_t</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Unsupported sequence when computing the admittance matrix sequence=</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">seq</span><span class="p">))</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">'Unsupported sequence when computing the admittance matrix sequence=</span><span class="si">{}</span><span class="s1">'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">seq</span><span class="p">))</span>
 
     <span class="k">else</span><span class="p">:</span>  <span class="c1"># original</span>
 
@@ -549,13 +549,13 @@
 
 
 
-<span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">inline</span><span class="o">=</span><span class="s2">&quot;always&quot;</span><span class="p">)</span>
+<span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">inline</span><span class="o">=</span><span class="s2">"always"</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">_sum_in_place</span><span class="p">(</span><span class="n">arr</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    exclusive prefix-sum in-place</span>
 <span class="sd">    :param arr: some array, it is modified in-place</span>
 <span class="sd">    :return: total of arr</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">s</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">arr</span><span class="o">.</span><span class="n">size</span><span class="p">):</span>
         <span class="n">tmp</span> <span class="o">=</span> <span class="n">arr</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
@@ -566,7 +566,7 @@
 
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">_build_Yf_Yt</span><span class="p">(</span><span class="n">nbus</span><span class="p">,</span> <span class="n">nbr</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">F</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">T</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">yff</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span> <span class="n">yft</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span> <span class="n">ytf</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span> <span class="n">ytt</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    branch matrices (identical pattern ⇒ share indices/indptr)</span>
 <span class="sd">    :param nbus:</span>
 <span class="sd">    :param nbr:</span>
@@ -577,7 +577,7 @@
 <span class="sd">    :param ytf:</span>
 <span class="sd">    :param ytt:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># 1. count nnz per column</span>
     <span class="n">nnz_col</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nbus</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nbr</span><span class="p">):</span>
@@ -621,7 +621,7 @@
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">_build_Ybus</span><span class="p">(</span><span class="n">nbus</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">nbr</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">F</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">T</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span>
                 <span class="n">yff</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span> <span class="n">yft</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span> <span class="n">ytf</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span> <span class="n">ytt</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span> <span class="n">Ysh</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">CxVec</span><span class="p">,</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">IntVec</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Build Ybus</span>
 <span class="sd">    :param nbus:</span>
 <span class="sd">    :param nbr:</span>
@@ -633,7 +633,7 @@
 <span class="sd">    :param ytt:</span>
 <span class="sd">    :param Ysh:</span>
 <span class="sd">    :return: (data, indices, indptr)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">raw_nnz</span> <span class="o">=</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">nbr</span> <span class="o">+</span> <span class="n">nbus</span>  <span class="c1"># i-i, i-j, j-i, j-j + shunts</span>
 
@@ -724,32 +724,32 @@
 <div class="viewcode-block" id="AdmittanceMatricesFast">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Topology.html#VeraGridEngine.Topology.admittance_matrices.AdmittanceMatricesFast">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">AdmittanceMatricesFast</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Class to store admittance matrices</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;Ybus&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Yf&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Yt&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;F&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;T&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;ys&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;ysh2&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;vtap_f&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;vtap_t&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;yff&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;yft&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;ytf&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;ytt&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Yshunt_bus&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;pos_yff&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;pos_yft&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;pos_ytf&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;pos_ytt&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;pos_b_ii&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;pos_b_ij&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;pos_b_ji&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;pos_b_jj&quot;</span><span class="p">,</span>
+        <span class="s2">"Ybus"</span><span class="p">,</span>
+        <span class="s2">"Yf"</span><span class="p">,</span>
+        <span class="s2">"Yt"</span><span class="p">,</span>
+        <span class="s2">"F"</span><span class="p">,</span>
+        <span class="s2">"T"</span><span class="p">,</span>
+        <span class="s2">"ys"</span><span class="p">,</span>
+        <span class="s2">"ysh2"</span><span class="p">,</span>
+        <span class="s2">"vtap_f"</span><span class="p">,</span>
+        <span class="s2">"vtap_t"</span><span class="p">,</span>
+        <span class="s2">"yff"</span><span class="p">,</span>
+        <span class="s2">"yft"</span><span class="p">,</span>
+        <span class="s2">"ytf"</span><span class="p">,</span>
+        <span class="s2">"ytt"</span><span class="p">,</span>
+        <span class="s2">"Yshunt_bus"</span><span class="p">,</span>
+        <span class="s2">"pos_yff"</span><span class="p">,</span>
+        <span class="s2">"pos_yft"</span><span class="p">,</span>
+        <span class="s2">"pos_ytf"</span><span class="p">,</span>
+        <span class="s2">"pos_ytt"</span><span class="p">,</span>
+        <span class="s2">"pos_b_ii"</span><span class="p">,</span>
+        <span class="s2">"pos_b_ij"</span><span class="p">,</span>
+        <span class="s2">"pos_b_ji"</span><span class="p">,</span>
+        <span class="s2">"pos_b_jj"</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
@@ -767,13 +767,13 @@
                  <span class="n">ytf</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span>
                  <span class="n">ytt</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span>
                  <span class="n">Yshunt_bus</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Constructor</span>
 <span class="sd">        :param Ybus: Admittance matrix</span>
-<span class="sd">        :param Yf: Admittance matrix of the branches with their &quot;from&quot; bus</span>
-<span class="sd">        :param Yt: Admittance matrix of the branches with their &quot;to&quot; bus</span>
-<span class="sd">        :param F: Branches array of &quot;from&quot; bus</span>
-<span class="sd">        :param T: CBranches array of &quot;to&quot; bus</span>
+<span class="sd">        :param Yf: Admittance matrix of the branches with their "from" bus</span>
+<span class="sd">        :param Yt: Admittance matrix of the branches with their "to" bus</span>
+<span class="sd">        :param F: Branches array of "from" bus</span>
+<span class="sd">        :param T: CBranches array of "to" bus</span>
 <span class="sd">        :param ys: series admittance {ys = 1.0 / (R + 1.0j * (X + 1e-20))}</span>
 <span class="sd">        :param ysh2: shunt admittance {ysh_2 = (G + 1j * B) / 2.0}</span>
 <span class="sd">        :param vtap_f: array of from virtual taps</span>
@@ -783,10 +783,10 @@
 <span class="sd">        :param ytf: admittance to-from primitives vector</span>
 <span class="sd">        :param ytt: admittance to-to primitives vector</span>
 <span class="sd">        :param Yshunt_bus: array of shunt admittances per bus</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">Ybus</span> <span class="o">=</span> <span class="n">Ybus</span> <span class="k">if</span> <span class="n">Ybus</span><span class="o">.</span><span class="n">format</span> <span class="o">==</span> <span class="s1">&#39;csc&#39;</span> <span class="k">else</span> <span class="n">Ybus</span><span class="o">.</span><span class="n">tocsc</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">Yf</span> <span class="o">=</span> <span class="n">Yf</span> <span class="k">if</span> <span class="n">Yf</span><span class="o">.</span><span class="n">format</span> <span class="o">==</span> <span class="s1">&#39;csc&#39;</span> <span class="k">else</span> <span class="n">Yf</span><span class="o">.</span><span class="n">tocsc</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">Yt</span> <span class="o">=</span> <span class="n">Yt</span> <span class="k">if</span> <span class="n">Yt</span><span class="o">.</span><span class="n">format</span> <span class="o">==</span> <span class="s1">&#39;csc&#39;</span> <span class="k">else</span> <span class="n">Yt</span><span class="o">.</span><span class="n">tocsc</span><span class="p">()</span>
+<span class="sd">        """</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Ybus</span> <span class="o">=</span> <span class="n">Ybus</span> <span class="k">if</span> <span class="n">Ybus</span><span class="o">.</span><span class="n">format</span> <span class="o">==</span> <span class="s1">'csc'</span> <span class="k">else</span> <span class="n">Ybus</span><span class="o">.</span><span class="n">tocsc</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Yf</span> <span class="o">=</span> <span class="n">Yf</span> <span class="k">if</span> <span class="n">Yf</span><span class="o">.</span><span class="n">format</span> <span class="o">==</span> <span class="s1">'csc'</span> <span class="k">else</span> <span class="n">Yf</span><span class="o">.</span><span class="n">tocsc</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Yt</span> <span class="o">=</span> <span class="n">Yt</span> <span class="k">if</span> <span class="n">Yt</span><span class="o">.</span><span class="n">format</span> <span class="o">==</span> <span class="s1">'csc'</span> <span class="k">else</span> <span class="n">Yt</span><span class="o">.</span><span class="n">tocsc</span><span class="p">()</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">F</span> <span class="o">=</span> <span class="n">F</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">T</span> <span class="o">=</span> <span class="n">T</span>
@@ -816,10 +816,10 @@
 <div class="viewcode-block" id="AdmittanceMatricesFast.initialize_update">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Topology.html#VeraGridEngine.Topology.admittance_matrices.AdmittanceMatricesFast.initialize_update">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">initialize_update</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Build the indices to later update the matrix easily</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pos_yff</span><span class="p">,</span>
          <span class="bp">self</span><span class="o">.</span><span class="n">pos_yft</span><span class="p">,</span>
          <span class="bp">self</span><span class="o">.</span><span class="n">pos_ytf</span><span class="p">,</span>
@@ -839,12 +839,12 @@
 <div class="viewcode-block" id="AdmittanceMatricesFast.modify_taps_fast">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Topology.html#VeraGridEngine.Topology.admittance_matrices.AdmittanceMatricesFast.modify_taps_fast">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">modify_taps_fast</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">,</span> <span class="n">tap_module</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">tap_angle</span><span class="p">:</span> <span class="n">Vec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Modify in-place Ybus, Yf and Yt</span>
 <span class="sd">        :param idx: indices of the branches to modify. Both the tap angle and module are updated for every index.</span>
 <span class="sd">        :param tap_module: Tap modules of the positions given by idx</span>
 <span class="sd">        :param tap_angle: Tap angles of the positions given by idx</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pos_yff</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">yff</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">initialize_update</span><span class="p">()</span>  <span class="c1"># your forgot to initialize...</span>
 
@@ -884,10 +884,10 @@
 
 <div class="viewcode-block" id="AdmittanceMatricesFast.copy">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Topology.html#VeraGridEngine.Topology.admittance_matrices.AdmittanceMatricesFast.copy">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;AdmittanceMatricesFast&quot;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"AdmittanceMatricesFast"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get a deep copy</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">res</span> <span class="o">=</span> <span class="n">AdmittanceMatricesFast</span><span class="p">(</span><span class="n">Ybus</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">Ybus</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span>
                                      <span class="n">Yf</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">Yf</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span>
                                      <span class="n">Yt</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">Yt</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span>
@@ -913,7 +913,7 @@
         <span class="k">return</span> <span class="n">res</span></div>
 
 
-    <span class="k">def</span><span class="w"> </span><span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="s2">&quot;AdmittanceMatricesFast&quot;</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="s2">"AdmittanceMatricesFast"</span><span class="p">):</span>
         <span class="n">ok</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="n">ok</span> <span class="o">=</span> <span class="n">ok</span> <span class="ow">and</span> <span class="n">csc_equal</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Ybus</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">Ybus</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-10</span><span class="p">)</span>
         <span class="n">ok</span> <span class="o">=</span> <span class="n">ok</span> <span class="ow">and</span> <span class="n">csc_equal</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Yf</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">Yf</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-10</span><span class="p">)</span>
@@ -936,7 +936,7 @@
                              <span class="n">Yshunt_bus</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span>
                              <span class="n">F</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span>
                              <span class="n">T</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AdmittanceMatricesFast</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Hardcore build of admittance matrices</span>
 <span class="sd">    :param nbus: number of nodes</span>
 <span class="sd">    :param R: array of branch resistance (p.u.)</span>
@@ -944,8 +944,8 @@
 <span class="sd">    :param G: array of branch conductance (p.u.)</span>
 <span class="sd">    :param B: array of branch susceptance (p.u.)</span>
 <span class="sd">    :param tap_module: array of tap modules (for all Branches, regardless of their type)</span>
-<span class="sd">    :param vtap_f: array of virtual taps at the &quot;from&quot; side</span>
-<span class="sd">    :param vtap_t: array of virtual taps at the &quot;to&quot; side</span>
+<span class="sd">    :param vtap_f: array of virtual taps at the "from" side</span>
+<span class="sd">    :param vtap_t: array of virtual taps at the "to" side</span>
 <span class="sd">    :param tap_angle: array of tap angles (for all Branches, regardless of their type)</span>
 <span class="sd">    :param Yshunt_bus: array of shunts equivalent power per bus, from the shunt devices (p.u.)</span>
 <span class="sd">    :param F: Array of branch-from bus indices</span>
@@ -953,7 +953,7 @@
 <span class="sd">    :param Cf: Cf to pass along</span>
 <span class="sd">    :param Ct: Ct to pass along</span>
 <span class="sd">    :return: Yf, Yt, Ybus</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">ys</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="p">(</span><span class="n">R</span> <span class="o">+</span> <span class="mf">1.0</span><span class="n">j</span> <span class="o">*</span> <span class="p">(</span><span class="n">X</span> <span class="o">+</span> <span class="mf">1e-20</span><span class="p">))</span>  <span class="c1"># series admittance</span>
     <span class="n">ysh_2</span> <span class="o">=</span> <span class="p">(</span><span class="n">G</span> <span class="o">+</span> <span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="n">B</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.0</span>  <span class="c1"># shunt admittance</span>
@@ -993,12 +993,12 @@
 <div class="viewcode-block" id="SeriesAdmittanceMatrices">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Topology.html#VeraGridEngine.Topology.admittance_matrices.SeriesAdmittanceMatrices">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">SeriesAdmittanceMatrices</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Admittance matrices for HELM and the AC linear methods</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;Yseries&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Yshunt&quot;</span><span class="p">,</span>
+        <span class="s2">"Yseries"</span><span class="p">,</span>
+        <span class="s2">"Yshunt"</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Yseries</span><span class="p">:</span> <span class="n">sp</span><span class="o">.</span><span class="n">csc_matrix</span><span class="p">,</span> <span class="n">Yshunt</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">):</span>
@@ -1021,7 +1021,7 @@
                               <span class="n">Cf</span><span class="p">:</span> <span class="n">sp</span><span class="o">.</span><span class="n">csc_matrix</span><span class="p">,</span>
                               <span class="n">Ct</span><span class="p">:</span> <span class="n">sp</span><span class="o">.</span><span class="n">csc_matrix</span><span class="p">,</span>
                               <span class="n">Yshunt_bus</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SeriesAdmittanceMatrices</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute the complete admittance matrices for the helm method and others that may require them</span>
 <span class="sd">    :param R: array of branch resistance (p.u.)</span>
 <span class="sd">    :param X: array of branch reactance (p.u.)</span>
@@ -1029,14 +1029,14 @@
 <span class="sd">    :param B: array of branch susceptance (p.u.)</span>
 <span class="sd">    :param active: array of active branches (bool)</span>
 <span class="sd">    :param tap_module: array of tap modules (for all Branches, regardless of their type)</span>
-<span class="sd">    :param vtap_f: array of virtual taps at the &quot;from&quot; side</span>
-<span class="sd">    :param vtap_t: array of virtual taps at the &quot;to&quot; side</span>
+<span class="sd">    :param vtap_f: array of virtual taps at the "from" side</span>
+<span class="sd">    :param vtap_t: array of virtual taps at the "to" side</span>
 <span class="sd">    :param tap_angle: array of tap angles (for all Branches, regardless of their type)</span>
-<span class="sd">    :param Cf: Connectivity branch-bus &quot;from&quot; with the branch states computed</span>
-<span class="sd">    :param Ct: Connectivity branch-bus &quot;to&quot; with the branch states computed</span>
+<span class="sd">    :param Cf: Connectivity branch-bus "from" with the branch states computed</span>
+<span class="sd">    :param Ct: Connectivity branch-bus "to" with the branch states computed</span>
 <span class="sd">    :param Yshunt_bus: array of shunts equivalent power per bus (p.u.)</span>
 <span class="sd">    :return: Yseries, Yshunt</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">ys</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="p">(</span><span class="n">R</span> <span class="o">+</span> <span class="mf">1.0</span><span class="n">j</span> <span class="o">*</span> <span class="n">X</span> <span class="o">+</span> <span class="mf">1e-20</span><span class="p">)</span>  <span class="c1"># series admittance</span>
     <span class="n">ysh</span> <span class="o">=</span> <span class="p">(</span><span class="n">G</span> <span class="o">+</span> <span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="n">B</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>  <span class="c1"># shunt admittance</span>
@@ -1072,12 +1072,12 @@
 <div class="viewcode-block" id="FastDecoupledAdmittanceMatrices">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Topology.html#VeraGridEngine.Topology.admittance_matrices.FastDecoupledAdmittanceMatrices">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">FastDecoupledAdmittanceMatrices</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Admittance matrices for Fast decoupled method</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;B1&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;B2&quot;</span><span class="p">,</span>
+        <span class="s2">"B1"</span><span class="p">,</span>
+        <span class="s2">"B2"</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">B1</span><span class="p">:</span> <span class="n">sp</span><span class="o">.</span><span class="n">csc_matrix</span><span class="p">,</span> <span class="n">B2</span><span class="p">:</span> <span class="n">sp</span><span class="o">.</span><span class="n">csc_matrix</span><span class="p">):</span>
@@ -1096,18 +1096,18 @@
                                        <span class="n">vtap_t</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
                                        <span class="n">Cf</span><span class="p">:</span> <span class="n">sp</span><span class="o">.</span><span class="n">csc_matrix</span><span class="p">,</span>
                                        <span class="n">Ct</span><span class="p">:</span> <span class="n">sp</span><span class="o">.</span><span class="n">csc_matrix</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FastDecoupledAdmittanceMatrices</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute the admittance matrices for the fast decoupled method</span>
 <span class="sd">    :param X: array of branch reactance (p.u.)</span>
 <span class="sd">    :param B: array of branch susceptance (p.u.)</span>
 <span class="sd">    :param tap_module: array of tap modules (for all Branches, regardless of their type)</span>
 <span class="sd">    :param active: array of active branches (bool)</span>
-<span class="sd">    :param vtap_f: array of virtual taps at the &quot;from&quot; side</span>
-<span class="sd">    :param vtap_t: array of virtual taps at the &quot;to&quot; side</span>
-<span class="sd">    :param Cf: Connectivity branch-bus &quot;from&quot; with the branch states computed</span>
-<span class="sd">    :param Ct: Connectivity branch-bus &quot;to&quot; with the branch states computed</span>
-<span class="sd">    :return: B&#39; and B&#39;&#39;</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    :param vtap_f: array of virtual taps at the "from" side</span>
+<span class="sd">    :param vtap_t: array of virtual taps at the "to" side</span>
+<span class="sd">    :param Cf: Connectivity branch-bus "from" with the branch states computed</span>
+<span class="sd">    :param Ct: Connectivity branch-bus "to" with the branch states computed</span>
+<span class="sd">    :return: B' and B''</span>
+<span class="sd">    """</span>
 
     <span class="n">b1</span> <span class="o">=</span> <span class="n">active</span> <span class="o">/</span> <span class="p">(</span><span class="n">X</span> <span class="o">+</span> <span class="mf">1e-20</span><span class="p">)</span>
     <span class="n">b1_tt</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">diags</span><span class="p">(</span><span class="n">b1</span><span class="p">)</span>
@@ -1132,14 +1132,14 @@
 <div class="viewcode-block" id="LinearAdmittanceMatrices">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Topology.html#VeraGridEngine.Topology.admittance_matrices.LinearAdmittanceMatrices">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">LinearAdmittanceMatrices</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Admittance matrices for linear methods (DC power flow, PTDF, ...)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;Bbus&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Bf&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Gbus&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Gf&quot;</span><span class="p">,</span>
+        <span class="s2">"Bbus"</span><span class="p">,</span>
+        <span class="s2">"Bf"</span><span class="p">,</span>
+        <span class="s2">"Gbus"</span><span class="p">,</span>
+        <span class="s2">"Gf"</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Bbus</span><span class="p">:</span> <span class="n">sp</span><span class="o">.</span><span class="n">csc_matrix</span><span class="p">,</span> <span class="n">Bf</span><span class="p">:</span> <span class="n">sp</span><span class="o">.</span><span class="n">csc_matrix</span><span class="p">,</span> <span class="n">Gbus</span><span class="p">:</span> <span class="n">sp</span><span class="o">.</span><span class="n">csc_matrix</span><span class="p">,</span> <span class="n">Gf</span><span class="p">:</span> <span class="n">sp</span><span class="o">.</span><span class="n">csc_matrix</span><span class="p">):</span>
@@ -1151,23 +1151,23 @@
 <div class="viewcode-block" id="LinearAdmittanceMatrices.get_Bred">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Topology.html#VeraGridEngine.Topology.admittance_matrices.LinearAdmittanceMatrices.get_Bred">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_Bred</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pqpv</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">sp</span><span class="o">.</span><span class="n">csc_matrix</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get Bred or Bpqpv for the PTDF and DC power flow</span>
 <span class="sd">        :param pqpv: list of non-slack indices</span>
 <span class="sd">        :return: B[pqpv, pqpv]</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">Bbus</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ix_</span><span class="p">(</span><span class="n">pqpv</span><span class="p">,</span> <span class="n">pqpv</span><span class="p">)]</span><span class="o">.</span><span class="n">tocsc</span><span class="p">()</span></div>
 
 
 <div class="viewcode-block" id="LinearAdmittanceMatrices.get_Bslack">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Topology.html#VeraGridEngine.Topology.admittance_matrices.LinearAdmittanceMatrices.get_Bslack">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_Bslack</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pqpv</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">vd</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">sp</span><span class="o">.</span><span class="n">csc_matrix</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get Bslack for the PTDF and DC power flow</span>
 <span class="sd">        :param pqpv: list of non-slack indices</span>
 <span class="sd">        :param vd: list of slack ndices</span>
 <span class="sd">        :return: B[pqpv, vd]</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">Bbus</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ix_</span><span class="p">(</span><span class="n">pqpv</span><span class="p">,</span> <span class="n">vd</span><span class="p">)]</span><span class="o">.</span><span class="n">tocsc</span><span class="p">()</span></div>
 </div>
 
@@ -1184,19 +1184,19 @@
                                <span class="n">Ct</span><span class="p">:</span> <span class="n">sp</span><span class="o">.</span><span class="n">csc_matrix</span><span class="p">,</span>
                                <span class="n">ac</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span>
                                <span class="n">dc</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">LinearAdmittanceMatrices</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Compute the linear admittances for methods such as the &quot;DC power flow&quot; of the PTDF</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Compute the linear admittances for methods such as the "DC power flow" of the PTDF</span>
 <span class="sd">    :param nbr: Number of Branches</span>
 <span class="sd">    :param X: array of branch reactance (p.u.)</span>
 <span class="sd">    :param R: array of branch resistance (p.u.)</span>
 <span class="sd">    :param m: array of branch tap modules (p.u.)</span>
 <span class="sd">    :param active: array of branch active (bool)</span>
-<span class="sd">    :param Cf: Connectivity branch-bus &quot;from&quot; with the branch states computed</span>
-<span class="sd">    :param Ct: Connectivity branch-bus &quot;to&quot; with the branch states computed</span>
+<span class="sd">    :param Cf: Connectivity branch-bus "from" with the branch states computed</span>
+<span class="sd">    :param Ct: Connectivity branch-bus "to" with the branch states computed</span>
 <span class="sd">    :param ac: array of ac Branches indices</span>
 <span class="sd">    :param dc: array of dc Branches indices</span>
 <span class="sd">    :return: Bbus, Bf</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">b</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="p">(</span><span class="n">X</span> <span class="o">*</span> <span class="n">active</span> <span class="o">*</span> <span class="n">m</span> <span class="o">+</span> <span class="mf">1e-20</span><span class="p">)</span>  <span class="c1"># for ac Branches</span>
     <span class="n">b_tt</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">diags</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>  <span class="c1"># This is Bd from the</span>
     <span class="n">Bf</span> <span class="o">=</span> <span class="n">b_tt</span> <span class="o">*</span> <span class="n">Cf</span> <span class="o">-</span> <span class="n">b_tt</span> <span class="o">*</span> <span class="n">Ct</span>
@@ -1209,8 +1209,8 @@
     <span class="n">Gt</span> <span class="o">=</span> <span class="o">-</span><span class="n">g_tt</span> <span class="o">*</span> <span class="n">Cf</span> <span class="o">+</span> <span class="n">g_tt</span> <span class="o">*</span> <span class="n">Ct</span>
     <span class="n">Gbus</span> <span class="o">=</span> <span class="n">Cf</span><span class="o">.</span><span class="n">T</span> <span class="o">*</span> <span class="n">Gf</span> <span class="o">+</span> <span class="n">Ct</span><span class="o">.</span><span class="n">T</span> <span class="o">*</span> <span class="n">Gt</span>
 
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    According to the KULeuven document &quot;DC power flow in unit commitment models&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    According to the KULeuven document "DC power flow in unit commitment models"</span>
 <span class="sd">    The DC power flow is:</span>
 <span class="sd">    </span>
 <span class="sd">    Pbus = (A^T x Bd x A) x bus_angles + (Bd x A)^T x branch_angles</span>
@@ -1222,7 +1222,7 @@
 <span class="sd">    If we solve for bus angles:</span>
 <span class="sd">    </span>
 <span class="sd">    bus_angles = Bbus^-1 x (Pbus - Btau x branch_angles)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">return</span> <span class="n">LinearAdmittanceMatrices</span><span class="p">(</span><span class="n">Bbus</span><span class="o">=</span><span class="n">Bbus</span><span class="p">,</span> <span class="n">Bf</span><span class="o">=</span><span class="n">Bf</span><span class="p">,</span> <span class="n">Gbus</span><span class="o">=</span><span class="n">Gbus</span><span class="p">,</span> <span class="n">Gf</span><span class="o">=</span><span class="n">Gf</span><span class="p">)</span></div>
 

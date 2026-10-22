@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Devices.Branches.vsc &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Devices.Branches.vsc &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/license.html">📜 License</a></li>
@@ -125,348 +126,348 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Branches.html#VeraGridEngine.Devices.Branches.vsc.VSC">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">VSC</span><span class="p">(</span><span class="n">BranchParent</span><span class="p">):</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s1">&#39;_u_setpoint_min&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_u_setpoint_max&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_u_setpoint&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_du_setpoint&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_Q_min&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_Q_max&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_alpha1&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_alpha2&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_alpha3&#39;</span><span class="p">,</span>
+        <span class="s1">'_u_setpoint_min'</span><span class="p">,</span>
+        <span class="s1">'_u_setpoint_max'</span><span class="p">,</span>
+        <span class="s1">'_u_setpoint'</span><span class="p">,</span>
+        <span class="s1">'_du_setpoint'</span><span class="p">,</span>
+        <span class="s1">'_Q_min'</span><span class="p">,</span>
+        <span class="s1">'_Q_max'</span><span class="p">,</span>
+        <span class="s1">'_alpha1'</span><span class="p">,</span>
+        <span class="s1">'_alpha2'</span><span class="p">,</span>
+        <span class="s1">'_alpha3'</span><span class="p">,</span>
         <span class="c1"># Final dynamic data consumed by the RMS adapter.</span>
         <span class="c1"># r_series/x_series cannot be recovered from alpha3 because it combines losses;</span>
         <span class="c1"># dc_voltage_base may differ from the bus base; the capacitance</span>
         <span class="c1"># MMC capacitance already reduces Cmod/Nsm, and the reactor DC side is binary.</span>
-        <span class="s1">&#39;_r_series&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_x_series&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_dc_voltage_base&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_dc_link_capacitance_uf&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_mmc_arm_capacitance_uf&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_mmc_consider_arm_reactor_dc&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_control1&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_control1_prof&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_control1_dev&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_control1_dev_prof&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_control1_val&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_control1_val_prof&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_control1_val_min&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_control1_val_max&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_control1_val_droop&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_control1_val_droop_prof&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_control1_droop_val&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_control1_droop_val_prof&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_control1_droop_val_min&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_control1_droop_val_max&#39;</span><span class="p">,</span>
+        <span class="s1">'_r_series'</span><span class="p">,</span>
+        <span class="s1">'_x_series'</span><span class="p">,</span>
+        <span class="s1">'_dc_voltage_base'</span><span class="p">,</span>
+        <span class="s1">'_dc_link_capacitance_uf'</span><span class="p">,</span>
+        <span class="s1">'_mmc_arm_capacitance_uf'</span><span class="p">,</span>
+        <span class="s1">'_mmc_consider_arm_reactor_dc'</span><span class="p">,</span>
+        <span class="s1">'_control1'</span><span class="p">,</span>
+        <span class="s1">'_control1_prof'</span><span class="p">,</span>
+        <span class="s1">'_control1_dev'</span><span class="p">,</span>
+        <span class="s1">'_control1_dev_prof'</span><span class="p">,</span>
+        <span class="s1">'_control1_val'</span><span class="p">,</span>
+        <span class="s1">'_control1_val_prof'</span><span class="p">,</span>
+        <span class="s1">'_control1_val_min'</span><span class="p">,</span>
+        <span class="s1">'_control1_val_max'</span><span class="p">,</span>
+        <span class="s1">'_control1_val_droop'</span><span class="p">,</span>
+        <span class="s1">'_control1_val_droop_prof'</span><span class="p">,</span>
+        <span class="s1">'_control1_droop_val'</span><span class="p">,</span>
+        <span class="s1">'_control1_droop_val_prof'</span><span class="p">,</span>
+        <span class="s1">'_control1_droop_val_min'</span><span class="p">,</span>
+        <span class="s1">'_control1_droop_val_max'</span><span class="p">,</span>
 
-        <span class="s1">&#39;_control2&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_control2_prof&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_control2_dev&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_control2_dev_prof&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_control2_val&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_control2_val_prof&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_control2_val_min&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_control2_val_max&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_control2_val_droop&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_control2_val_droop_prof&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_control2_droop_val&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_control2_droop_val_prof&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_control2_droop_val_min&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_control2_droop_val_max&#39;</span><span class="p">,</span>
+        <span class="s1">'_control2'</span><span class="p">,</span>
+        <span class="s1">'_control2_prof'</span><span class="p">,</span>
+        <span class="s1">'_control2_dev'</span><span class="p">,</span>
+        <span class="s1">'_control2_dev_prof'</span><span class="p">,</span>
+        <span class="s1">'_control2_val'</span><span class="p">,</span>
+        <span class="s1">'_control2_val_prof'</span><span class="p">,</span>
+        <span class="s1">'_control2_val_min'</span><span class="p">,</span>
+        <span class="s1">'_control2_val_max'</span><span class="p">,</span>
+        <span class="s1">'_control2_val_droop'</span><span class="p">,</span>
+        <span class="s1">'_control2_val_droop_prof'</span><span class="p">,</span>
+        <span class="s1">'_control2_droop_val'</span><span class="p">,</span>
+        <span class="s1">'_control2_droop_val_prof'</span><span class="p">,</span>
+        <span class="s1">'_control2_droop_val_min'</span><span class="p">,</span>
+        <span class="s1">'_control2_droop_val_max'</span><span class="p">,</span>
 
-        <span class="s1">&#39;_fault_control&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_fault_control_prof&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_bus_dc_n&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_min_ac_voltage&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_ysvs&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_x&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_y&#39;</span><span class="p">,</span>
+        <span class="s1">'_fault_control'</span><span class="p">,</span>
+        <span class="s1">'_fault_control_prof'</span><span class="p">,</span>
+        <span class="s1">'_bus_dc_n'</span><span class="p">,</span>
+        <span class="s1">'_min_ac_voltage'</span><span class="p">,</span>
+        <span class="s1">'_ysvs'</span><span class="p">,</span>
+        <span class="s1">'_x'</span><span class="p">,</span>
+        <span class="s1">'_y'</span><span class="p">,</span>
 
-        <span class="s1">&#39;_phN&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_phA&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_phB&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_phC&#39;</span><span class="p">,</span>
+        <span class="s1">'_phN'</span><span class="p">,</span>
+        <span class="s1">'_phA'</span><span class="p">,</span>
+        <span class="s1">'_phB'</span><span class="p">,</span>
+        <span class="s1">'_phC'</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="n">LOCAL_PROPERTY_DECLARATIONS</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">GCProp</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;bus_dc_n&#39;</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'bus_dc_n'</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s2">""</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="n">DeviceType</span><span class="o">.</span><span class="n">BusDevice</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;DC negative bus&#39;</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">'DC negative bus'</span><span class="p">,</span>
             <span class="n">editable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">PF</span><span class="p">],</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;alpha1&#39;</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'alpha1'</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">''</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Losses constant parameter (IEC 62751-2 loss Correction, idle loss).&#39;</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">'Losses constant parameter (IEC 62751-2 loss Correction, idle loss).'</span><span class="p">,</span>
             <span class="n">dyn_ref</span><span class="o">=</span><span class="n">ParamPowerFlowReferenceType</span><span class="o">.</span><span class="n">alpha1</span><span class="p">,</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;alpha2&#39;</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'alpha2'</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">''</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Losses linear parameter (IEC 62751-2 loss Correction, Switching loss).&#39;</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">'Losses linear parameter (IEC 62751-2 loss Correction, Switching loss).'</span><span class="p">,</span>
             <span class="n">dyn_ref</span><span class="o">=</span><span class="n">ParamPowerFlowReferenceType</span><span class="o">.</span><span class="n">alpha2</span><span class="p">,</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;alpha3&#39;</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'alpha3'</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">''</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Losses quadratic parameter (IEC 62751-2 loss Correction, resistive loss).&#39;</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">'Losses quadratic parameter (IEC 62751-2 loss Correction, resistive loss).'</span><span class="p">,</span>
             <span class="n">dyn_ref</span><span class="o">=</span><span class="n">ParamPowerFlowReferenceType</span><span class="o">.</span><span class="n">alpha3</span><span class="p">,</span>
         <span class="p">),</span>
         <span class="c1"># Persist only the six irreducible dynamic inputs owned by the adapter.</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;r_series&#39;</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;p.u.&#39;</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'r_series'</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">'p.u.'</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Converter series-reactor resistance on the converter base.&#39;</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">'Converter series-reactor resistance on the converter base.'</span><span class="p">,</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;x_series&#39;</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;p.u.&#39;</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'x_series'</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">'p.u.'</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Converter series-reactor reactance on the converter base.&#39;</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">'Converter series-reactor reactance on the converter base.'</span><span class="p">,</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;dc_voltage_base&#39;</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;kV&#39;</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'dc_voltage_base'</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">'kV'</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Native converter DC voltage base used by dynamic models.&#39;</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">'Native converter DC voltage base used by dynamic models.'</span><span class="p">,</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;dc_link_capacitance_uf&#39;</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;uF&#39;</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'dc_link_capacitance_uf'</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">'uF'</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Equivalent capacitance directly across the DC terminals.&#39;</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">'Equivalent capacitance directly across the DC terminals.'</span><span class="p">,</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;mmc_arm_capacitance_uf&#39;</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;uF&#39;</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'mmc_arm_capacitance_uf'</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">'uF'</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Equivalent capacitance of one MMC arm.&#39;</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">'Equivalent capacitance of one MMC arm.'</span><span class="p">,</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;mmc_consider_arm_reactor_dc&#39;</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'mmc_consider_arm_reactor_dc'</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">''</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">bool</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Whether the MMC arm reactor is represented on the DC side.&#39;</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">'Whether the MMC arm reactor is represented on the DC side.'</span><span class="p">,</span>
         <span class="p">),</span>
 
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;phN&#39;</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'phN'</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">''</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">bool</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Is the neutral connected?&#39;</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">'Is the neutral connected?'</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">SC</span><span class="p">,</span> <span class="n">PrpCat</span><span class="o">.</span><span class="n">PF3</span><span class="p">,</span> <span class="n">PrpCat</span><span class="o">.</span><span class="n">EMT</span><span class="p">],</span>
         <span class="p">),</span>
 
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;phA&#39;</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'phA'</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">''</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">bool</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Is phase A connected?&#39;</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">'Is phase A connected?'</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">SC</span><span class="p">,</span> <span class="n">PrpCat</span><span class="o">.</span><span class="n">PF3</span><span class="p">,</span> <span class="n">PrpCat</span><span class="o">.</span><span class="n">EMT</span><span class="p">],</span>
         <span class="p">),</span>
 
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;phB&#39;</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'phB'</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">''</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">bool</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Is phase B connected?&#39;</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">'Is phase B connected?'</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">SC</span><span class="p">,</span> <span class="n">PrpCat</span><span class="o">.</span><span class="n">PF3</span><span class="p">,</span> <span class="n">PrpCat</span><span class="o">.</span><span class="n">EMT</span><span class="p">],</span>
         <span class="p">),</span>
 
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;phC&#39;</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'phC'</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">''</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">bool</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Is phase C connected?&#39;</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">'Is phase C connected?'</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">SC</span><span class="p">,</span> <span class="n">PrpCat</span><span class="o">.</span><span class="n">PF3</span><span class="p">,</span> <span class="n">PrpCat</span><span class="o">.</span><span class="n">EMT</span><span class="p">],</span>
         <span class="p">),</span>
 
 
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;control1&#39;</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'control1'</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">''</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="n">ConverterControlType</span><span class="p">,</span>
-            <span class="n">profile_name</span><span class="o">=</span><span class="s2">&quot;control1_prof&quot;</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Control mode 1.&#39;</span><span class="p">,</span>
+            <span class="n">profile_name</span><span class="o">=</span><span class="s2">"control1_prof"</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">'Control mode 1.'</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">PF</span><span class="p">,</span> <span class="n">PrpCat</span><span class="o">.</span><span class="n">OPF</span><span class="p">],</span>
             <span class="n">dyn_ref</span><span class="o">=</span><span class="n">ParamPowerFlowReferenceType</span><span class="o">.</span><span class="n">converter_control_mode_1</span><span class="p">,</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;control1_dev&#39;</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'control1_dev'</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s2">""</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="n">DeviceType</span><span class="o">.</span><span class="n">BusOrBranch</span><span class="p">,</span>
-            <span class="n">profile_name</span><span class="o">=</span><span class="s2">&quot;control1_dev_prof&quot;</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Controlled device, None to apply to this converter&#39;</span><span class="p">,</span>
+            <span class="n">profile_name</span><span class="o">=</span><span class="s2">"control1_dev_prof"</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">'Controlled device, None to apply to this converter'</span><span class="p">,</span>
             <span class="n">editable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">PF</span><span class="p">],</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;control1_val&#39;</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'control1_val'</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">''</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
-            <span class="n">profile_name</span><span class="o">=</span><span class="s2">&quot;control1_val_prof&quot;</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Control value 1.&#39;</span>
-                          <span class="s1">&#39;p.u. for voltage</span><span class="se">\n</span><span class="s1">&#39;</span>
-                          <span class="s1">&#39;rad for angles</span><span class="se">\n</span><span class="s1">&#39;</span>
-                          <span class="s1">&#39;MW for P</span><span class="se">\n</span><span class="s1">&#39;</span>
-                          <span class="s1">&#39;MVAr for Q&#39;</span><span class="p">,</span>
+            <span class="n">profile_name</span><span class="o">=</span><span class="s2">"control1_val_prof"</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">'Control value 1.'</span>
+                          <span class="s1">'p.u. for voltage</span><span class="se">\n</span><span class="s1">'</span>
+                          <span class="s1">'rad for angles</span><span class="se">\n</span><span class="s1">'</span>
+                          <span class="s1">'MW for P</span><span class="se">\n</span><span class="s1">'</span>
+                          <span class="s1">'MVAr for Q'</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">PF</span><span class="p">],</span>
             <span class="n">dyn_ref</span><span class="o">=</span><span class="n">ParamPowerFlowReferenceType</span><span class="o">.</span><span class="n">converter_control_target_1</span><span class="p">,</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;control1_val_min&#39;</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'control1_val_min'</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">''</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">PF</span><span class="p">,</span> <span class="n">PrpCat</span><span class="o">.</span><span class="n">OPF</span><span class="p">],</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;control1_val_max&#39;</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'control1_val_max'</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">''</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">PF</span><span class="p">,</span> <span class="n">PrpCat</span><span class="o">.</span><span class="n">OPF</span><span class="p">],</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;control1_val_droop&#39;</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'control1_val_droop'</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">''</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
-            <span class="n">profile_name</span><span class="o">=</span><span class="s2">&quot;control1_val_droop_prof&quot;</span><span class="p">,</span>
-            <span class="n">old_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;control1_droop&#39;</span><span class="p">],</span>
+            <span class="n">profile_name</span><span class="o">=</span><span class="s2">"control1_val_droop_prof"</span><span class="p">,</span>
+            <span class="n">old_names</span><span class="o">=</span><span class="p">[</span><span class="s1">'control1_droop'</span><span class="p">],</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">PF</span><span class="p">,</span> <span class="n">PrpCat</span><span class="o">.</span><span class="n">OPF</span><span class="p">],</span>
             <span class="n">dyn_ref</span><span class="o">=</span><span class="n">ParamPowerFlowReferenceType</span><span class="o">.</span><span class="n">vsc_kdp_pu</span><span class="p">,</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;control1_droop_val&#39;</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'control1_droop_val'</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">''</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
-            <span class="n">profile_name</span><span class="o">=</span><span class="s2">&quot;control1_droop_val_prof&quot;</span><span class="p">,</span>
+            <span class="n">profile_name</span><span class="o">=</span><span class="s2">"control1_droop_val_prof"</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">PF</span><span class="p">,</span> <span class="n">PrpCat</span><span class="o">.</span><span class="n">OPF</span><span class="p">],</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;control1_droop_val_min&#39;</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'control1_droop_val_min'</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">''</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">PF</span><span class="p">,</span> <span class="n">PrpCat</span><span class="o">.</span><span class="n">OPF</span><span class="p">],</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;control1_droop_val_max&#39;</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'control1_droop_val_max'</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">''</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">PF</span><span class="p">,</span> <span class="n">PrpCat</span><span class="o">.</span><span class="n">OPF</span><span class="p">],</span>
         <span class="p">),</span>
 
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;control2&#39;</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'control2'</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">''</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="n">ConverterControlType</span><span class="p">,</span>
-            <span class="n">profile_name</span><span class="o">=</span><span class="s2">&quot;control2_prof&quot;</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Control mode 2.&#39;</span><span class="p">,</span>
+            <span class="n">profile_name</span><span class="o">=</span><span class="s2">"control2_prof"</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">'Control mode 2.'</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">PF</span><span class="p">,</span> <span class="n">PrpCat</span><span class="o">.</span><span class="n">OPF</span><span class="p">],</span>
             <span class="n">dyn_ref</span><span class="o">=</span><span class="n">ParamPowerFlowReferenceType</span><span class="o">.</span><span class="n">converter_control_mode_2</span><span class="p">,</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;control2_dev&#39;</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'control2_dev'</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s2">""</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="n">DeviceType</span><span class="o">.</span><span class="n">BusOrBranch</span><span class="p">,</span>
-            <span class="n">profile_name</span><span class="o">=</span><span class="s2">&quot;control2_dev_prof&quot;</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Controlled device, None to apply to this converter&#39;</span><span class="p">,</span>
+            <span class="n">profile_name</span><span class="o">=</span><span class="s2">"control2_dev_prof"</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">'Controlled device, None to apply to this converter'</span><span class="p">,</span>
             <span class="n">editable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">PF</span><span class="p">,</span> <span class="n">PrpCat</span><span class="o">.</span><span class="n">OPF</span><span class="p">],</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;control2_val&#39;</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'control2_val'</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">''</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
-            <span class="n">profile_name</span><span class="o">=</span><span class="s2">&quot;control2_val_prof&quot;</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Control value 2.&#39;</span>
-                                 <span class="s1">&#39;p.u. for voltage</span><span class="se">\n</span><span class="s1">&#39;</span>
-                                 <span class="s1">&#39;rad for angles</span><span class="se">\n</span><span class="s1">&#39;</span>
-                                 <span class="s1">&#39;MW for P</span><span class="se">\n</span><span class="s1">&#39;</span>
-                                 <span class="s1">&#39;MVAr for Q&#39;</span><span class="p">,</span>
+            <span class="n">profile_name</span><span class="o">=</span><span class="s2">"control2_val_prof"</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">'Control value 2.'</span>
+                                 <span class="s1">'p.u. for voltage</span><span class="se">\n</span><span class="s1">'</span>
+                                 <span class="s1">'rad for angles</span><span class="se">\n</span><span class="s1">'</span>
+                                 <span class="s1">'MW for P</span><span class="se">\n</span><span class="s1">'</span>
+                                 <span class="s1">'MVAr for Q'</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">PF</span><span class="p">,</span> <span class="n">PrpCat</span><span class="o">.</span><span class="n">OPF</span><span class="p">],</span>
             <span class="n">dyn_ref</span><span class="o">=</span><span class="n">ParamPowerFlowReferenceType</span><span class="o">.</span><span class="n">converter_control_target_2</span><span class="p">,</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;control2_val_min&#39;</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'control2_val_min'</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">''</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">PF</span><span class="p">,</span> <span class="n">PrpCat</span><span class="o">.</span><span class="n">OPF</span><span class="p">],</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;control2_val_max&#39;</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'control2_val_max'</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">''</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">PF</span><span class="p">,</span> <span class="n">PrpCat</span><span class="o">.</span><span class="n">OPF</span><span class="p">],</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;control2_val_droop&#39;</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'control2_val_droop'</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">''</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
-            <span class="n">profile_name</span><span class="o">=</span><span class="s2">&quot;control2_val_droop_prof&quot;</span><span class="p">,</span>
+            <span class="n">profile_name</span><span class="o">=</span><span class="s2">"control2_val_droop_prof"</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">PF</span><span class="p">,</span> <span class="n">PrpCat</span><span class="o">.</span><span class="n">OPF</span><span class="p">],</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;control2_droop_val&#39;</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'control2_droop_val'</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">''</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
-            <span class="n">profile_name</span><span class="o">=</span><span class="s2">&quot;control2_droop_val_prof&quot;</span><span class="p">,</span>
+            <span class="n">profile_name</span><span class="o">=</span><span class="s2">"control2_droop_val_prof"</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">PF</span><span class="p">,</span> <span class="n">PrpCat</span><span class="o">.</span><span class="n">OPF</span><span class="p">],</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;control2_droop_val_min&#39;</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'control2_droop_val_min'</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">''</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">PF</span><span class="p">,</span> <span class="n">PrpCat</span><span class="o">.</span><span class="n">OPF</span><span class="p">],</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;control2_droop_val_max&#39;</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'control2_droop_val_max'</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">''</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">PF</span><span class="p">,</span> <span class="n">PrpCat</span><span class="o">.</span><span class="n">OPF</span><span class="p">],</span>
         <span class="p">),</span>
 
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;fault_control&#39;</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'fault_control'</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">''</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="n">ConverterFaultControlType</span><span class="p">,</span>
-            <span class="n">profile_name</span><span class="o">=</span><span class="s2">&quot;fault_control_prof&quot;</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;VSC control system during a short-circuit event.&#39;</span><span class="p">,</span>
+            <span class="n">profile_name</span><span class="o">=</span><span class="s2">"fault_control_prof"</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">'VSC control system during a short-circuit event.'</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">PF</span><span class="p">],</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;min_ac_voltage&#39;</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;p.u.&#39;</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'min_ac_voltage'</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">'p.u.'</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Minimum AC voltage threshold. &#39;</span>
-                                 <span class="s1">&#39;If the AC bus voltage drops below this value, the VSC is disconnected.&#39;</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">'Minimum AC voltage threshold. '</span>
+                                 <span class="s1">'If the AC bus voltage drops below this value, the VSC is disconnected.'</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">PF</span><span class="p">],</span>
             <span class="n">dyn_ref</span><span class="o">=</span><span class="n">ParamPowerFlowReferenceType</span><span class="o">.</span><span class="n">vsc_min_ac_voltage_pu</span><span class="p">,</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;ysvs&#39;</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;p.u.&#39;</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'ysvs'</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">'p.u.'</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Admittance of non-controlled Static Var Systems.&#39;</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">'Admittance of non-controlled Static Var Systems.'</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">PF</span><span class="p">],</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;x&#39;</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;px&#39;</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'x'</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">'px'</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;x position&#39;</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">'x position'</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">TP</span><span class="p">],</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;y&#39;</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;px&#39;</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'y'</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">'px'</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;y position&#39;</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">'y position'</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">TP</span><span class="p">],</span>
         <span class="p">),</span>
     <span class="p">)</span>
@@ -475,9 +476,9 @@
                  <span class="n">bus_from</span><span class="p">:</span> <span class="n">Bus</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">bus_to</span><span class="p">:</span> <span class="n">Bus</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">bus_dc_n</span><span class="p">:</span> <span class="n">Bus</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                 <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;VSC&#39;</span><span class="p">,</span>
+                 <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">'VSC'</span><span class="p">,</span>
                  <span class="n">idtag</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                 <span class="n">code</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                 <span class="n">code</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">''</span><span class="p">,</span>
                  <span class="n">active</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
                  <span class="n">design_rate</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">9999.0</span><span class="p">,</span>
                  <span class="n">rate</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">9999.0</span><span class="p">,</span>
@@ -529,7 +530,7 @@
                  <span class="n">ysvs</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
                  <span class="n">x</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
                  <span class="n">y</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Voltage source converter (VSC) with 3 terminals</span>
 <span class="sd">        :param bus_from: bus_dc_p</span>
 <span class="sd">        :param bus_to: bus_ac</span>
@@ -568,7 +569,7 @@
 <span class="sd">        :param ysvs: Admittance of Static Var Systems</span>
 <span class="sd">        :param x: graphical x position (px)</span>
 <span class="sd">        :param y: graphical y position (px)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="n">BranchParent</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                               <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
@@ -611,8 +612,8 @@
         <span class="c1">#         self._bus_to = bus_to</span>
         <span class="c1">#</span>
         <span class="c1">#     else:</span>
-        <span class="c1">#         raise Exception(&#39;Impossible connecting a VSC device here. &#39;</span>
-        <span class="c1">#                         &#39;VSC devices must be connected between 1 AC and 2 DC buses&#39;)</span>
+        <span class="c1">#         raise Exception('Impossible connecting a VSC device here. '</span>
+        <span class="c1">#                         'VSC devices must be connected between 1 AC and 2 DC buses')</span>
         <span class="c1"># else:</span>
         <span class="c1">#     # self._bus_dc_p = None</span>
         <span class="c1">#     # self._bus_dc_n = None</span>
@@ -633,17 +634,17 @@
         <span class="c1"># assert(bus_from.is_dc != bus_to.is_dc)</span>
         <span class="k">if</span> <span class="n">bus_to</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">bus_from</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="c1"># connectivity:</span>
-            <span class="c1"># for the later primitives to make sense, the &quot;bus from&quot; must be AC and the &quot;bus to&quot; must be DC</span>
+            <span class="c1"># for the later primitives to make sense, the "bus from" must be AC and the "bus to" must be DC</span>
             <span class="k">if</span> <span class="n">bus_from</span><span class="o">.</span><span class="n">is_dc</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">bus_to</span><span class="o">.</span><span class="n">is_dc</span><span class="p">:</span>  <span class="c1"># this is the correct sense</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">bus_from</span> <span class="o">=</span> <span class="n">bus_from</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">bus_to</span> <span class="o">=</span> <span class="n">bus_to</span>
             <span class="k">elif</span> <span class="ow">not</span> <span class="n">bus_from</span><span class="o">.</span><span class="n">is_dc</span> <span class="ow">and</span> <span class="n">bus_to</span><span class="o">.</span><span class="n">is_dc</span><span class="p">:</span>  <span class="c1"># opposite sense, revert</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">bus_from</span> <span class="o">=</span> <span class="n">bus_to</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">bus_to</span> <span class="o">=</span> <span class="n">bus_from</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Corrected the connection direction of the VSC device:&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">'Corrected the connection direction of the VSC device:'</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Impossible connecting a VSC device here. &#39;</span>
-                                <span class="s1">&#39;VSC devices must be connected between AC and DC buses&#39;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">'Impossible connecting a VSC device here. '</span>
+                                <span class="s1">'VSC devices must be connected between AC and DC buses'</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">bus_from</span> <span class="o">=</span> <span class="kc">None</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">bus_to</span> <span class="o">=</span> <span class="kc">None</span>
@@ -720,9 +721,9 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">bus_from</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Bus</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the DC positive bus</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bus_from</span>
 
     <span class="nd">@bus_from</span><span class="o">.</span><span class="n">setter</span>
@@ -734,15 +735,15 @@
                 <span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">is_dc</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_bus_from</span> <span class="o">=</span> <span class="n">value</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;This should be a DC bus&#39;</span><span class="p">)</span>
+                    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">'This should be a DC bus'</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">))</span> <span class="o">+</span> <span class="s1">&#39;not supported to be set into a _bus_from&#39;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">))</span> <span class="o">+</span> <span class="s1">'not supported to be set into a _bus_from'</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">bus_dc_n</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Bus</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the DC negative bus</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bus_dc_n</span>
 
     <span class="nd">@bus_dc_n</span><span class="o">.</span><span class="n">setter</span>
@@ -754,15 +755,15 @@
                 <span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">is_dc</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_bus_dc_n</span> <span class="o">=</span> <span class="n">value</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;This should be a DC bus&#39;</span><span class="p">)</span>
+                    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">'This should be a DC bus'</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">))</span> <span class="o">+</span> <span class="s1">&#39;not supported to be set into a _bus_dc_n&#39;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">))</span> <span class="o">+</span> <span class="s1">'not supported to be set into a _bus_dc_n'</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">bus_to</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Bus</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the AC bus</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bus_to</span>
 
     <span class="nd">@bus_to</span><span class="o">.</span><span class="n">setter</span>
@@ -774,15 +775,15 @@
                 <span class="k">if</span> <span class="ow">not</span> <span class="n">value</span><span class="o">.</span><span class="n">is_dc</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_bus_to</span> <span class="o">=</span> <span class="n">value</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;This should be an AC bus&#39;</span><span class="p">)</span>
+                    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">'This should be an AC bus'</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">))</span> <span class="o">+</span> <span class="s1">&#39;not supported to be set into a _bus_to&#39;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">))</span> <span class="o">+</span> <span class="s1">'not supported to be set into a _bus_to'</span><span class="p">)</span>
 
     <span class="c1"># @property</span>
     <span class="c1"># def cn_dc_p(self) -&gt; ConnectivityNode:</span>
-    <span class="c1">#     &quot;&quot;&quot;</span>
+    <span class="c1">#     """</span>
     <span class="c1">#     Get the DC positive connectivity node</span>
-    <span class="c1">#     &quot;&quot;&quot;</span>
+    <span class="c1">#     """</span>
     <span class="c1">#     return self._cn_dc_p</span>
 
     <span class="c1"># @cn_dc_p.setter</span>
@@ -796,13 +797,13 @@
     <span class="c1">#             if self.bus_dc_p is None:</span>
     <span class="c1">#                 self.bus_dc_p = self._cn_dc_p.bus</span>
     <span class="c1">#         else:</span>
-    <span class="c1">#             raise Exception(str(type(val)) + &#39;not supported to be set into a connectivity node from&#39;)</span>
+    <span class="c1">#             raise Exception(str(type(val)) + 'not supported to be set into a connectivity node from')</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">phN</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_phN</span>
 
     <span class="nd">@phN</span><span class="o">.</span><span class="n">setter</span>
@@ -810,13 +811,13 @@
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="nb">bool</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_phN</span> <span class="o">=</span> <span class="n">val</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">val</span><span class="si">}</span><span class="s1"> is not an bool.&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="n">val</span><span class="si">}</span><span class="s1"> is not an bool.'</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">phA</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_phA</span>
 
     <span class="nd">@phA</span><span class="o">.</span><span class="n">setter</span>
@@ -824,13 +825,13 @@
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="nb">bool</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_phA</span> <span class="o">=</span> <span class="n">val</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">val</span><span class="si">}</span><span class="s1"> is not an bool.&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="n">val</span><span class="si">}</span><span class="s1"> is not an bool.'</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">phB</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_phB</span>
 
     <span class="nd">@phB</span><span class="o">.</span><span class="n">setter</span>
@@ -838,13 +839,13 @@
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="nb">bool</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_phB</span> <span class="o">=</span> <span class="n">val</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">val</span><span class="si">}</span><span class="s1"> is not an bool.&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="n">val</span><span class="si">}</span><span class="s1"> is not an bool.'</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">phC</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_phC</span>
 
     <span class="nd">@phC</span><span class="o">.</span><span class="n">setter</span>
@@ -852,15 +853,15 @@
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="nb">bool</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_phC</span> <span class="o">=</span> <span class="n">val</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">val</span><span class="si">}</span><span class="s1"> is not an bool.&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="n">val</span><span class="si">}</span><span class="s1"> is not an bool.'</span><span class="p">)</span>
 
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">control1</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_control1</span>
 
     <span class="nd">@control1</span><span class="o">.</span><span class="n">setter</span>
@@ -875,17 +876,17 @@
                     <span class="bp">self</span><span class="o">.</span><span class="n">control1_val</span> <span class="o">=</span> <span class="mf">1.0</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="c1"># a silent refusal here leaves the converter in its old mode</span>
-                <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;VSC </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">: control1 = </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2"> refused because control2 &quot;</span>
-                              <span class="sa">f</span><span class="s2">&quot;already holds that control. Change control2 first.&quot;</span><span class="p">)</span>
+                <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">"VSC </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">: control1 = </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2"> refused because control2 "</span>
+                              <span class="sa">f</span><span class="s2">"already holds that control. Change control2 first."</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_control1</span> <span class="o">=</span> <span class="n">value</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">control1_prof</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ProfileEnum</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Cost profile</span>
 <span class="sd">        :return: Profile</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_control1_prof</span>
 
     <span class="nd">@control1_prof</span><span class="o">.</span><span class="n">setter</span>
@@ -895,24 +896,24 @@
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_control1_prof</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">arr</span><span class="o">=</span><span class="n">val</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">val</span><span class="p">))</span> <span class="o">+</span> <span class="s1">&#39;not supported to be set into a profile&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">val</span><span class="p">))</span> <span class="o">+</span> <span class="s1">'not supported to be set into a profile'</span><span class="p">)</span>
 
 <div class="viewcode-block" id="VSC.get_control1_at">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Branches.html#VeraGridEngine.Devices.Branches.vsc.VSC.get_control1_at">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_control1_at</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ConverterControlType</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        :param t:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">get_at</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">control1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">control1_prof</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span></div>
 
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">control2</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_control2</span>
 
     <span class="nd">@control2</span><span class="o">.</span><span class="n">setter</span>
@@ -927,17 +928,17 @@
                     <span class="bp">self</span><span class="o">.</span><span class="n">control2_val</span> <span class="o">=</span> <span class="mf">1.0</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="c1"># loud refusal, see the control1 setter for the reasoning</span>
-                <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;VSC </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">: control2 = </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2"> refused because control1 &quot;</span>
-                              <span class="sa">f</span><span class="s2">&quot;already holds that control. Change control1 first.&quot;</span><span class="p">)</span>
+                <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">"VSC </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">: control2 = </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2"> refused because control1 "</span>
+                              <span class="sa">f</span><span class="s2">"already holds that control. Change control1 first."</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_control2</span> <span class="o">=</span> <span class="n">value</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">control2_prof</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ProfileEnum</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Cost profile</span>
 <span class="sd">        :return: Profile</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_control2_prof</span>
 
     <span class="nd">@control2_prof</span><span class="o">.</span><span class="n">setter</span>
@@ -947,24 +948,24 @@
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_control2_prof</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">arr</span><span class="o">=</span><span class="n">val</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">val</span><span class="p">))</span> <span class="o">+</span> <span class="s1">&#39;not supported to be set into a profile&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">val</span><span class="p">))</span> <span class="o">+</span> <span class="s1">'not supported to be set into a profile'</span><span class="p">)</span>
 
 <div class="viewcode-block" id="VSC.get_control2_at">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Branches.html#VeraGridEngine.Devices.Branches.vsc.VSC.get_control2_at">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_control2_at</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ConverterControlType</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        :param t:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">get_at</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">control2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">control2_prof</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span></div>
 
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">fault_control</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fault_control</span>
 
     <span class="nd">@fault_control</span><span class="o">.</span><span class="n">setter</span>
@@ -974,10 +975,10 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">fault_control_prof</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ProfileEnum</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Cost profile</span>
 <span class="sd">        :return: Profile</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fault_control_prof</span>
 
     <span class="nd">@fault_control_prof</span><span class="o">.</span><span class="n">setter</span>
@@ -987,24 +988,24 @@
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_fault_control_prof</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">arr</span><span class="o">=</span><span class="n">val</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">val</span><span class="p">))</span> <span class="o">+</span> <span class="s1">&#39;not supported to be set into a profile&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">val</span><span class="p">))</span> <span class="o">+</span> <span class="s1">'not supported to be set into a profile'</span><span class="p">)</span>
 
 <div class="viewcode-block" id="VSC.get_fault_control_at">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Branches.html#VeraGridEngine.Devices.Branches.vsc.VSC.get_fault_control_at">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_fault_control_at</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ConverterControlType</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        :param t:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">get_at</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fault_control</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">fault_control_prof</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span></div>
 
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">control1_val</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_control1_val</span>
 
     <span class="nd">@control1_val</span><span class="o">.</span><span class="n">setter</span>
@@ -1014,10 +1015,10 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">control1_val_prof</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ProfileFloat</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Cost profile</span>
 <span class="sd">        :return: Profile</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_control1_val_prof</span>
 
     <span class="nd">@control1_val_prof</span><span class="o">.</span><span class="n">setter</span>
@@ -1027,24 +1028,24 @@
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_control1_val_prof</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">arr</span><span class="o">=</span><span class="n">val</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">val</span><span class="p">))</span> <span class="o">+</span> <span class="s1">&#39;not supported to be set into a profile&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">val</span><span class="p">))</span> <span class="o">+</span> <span class="s1">'not supported to be set into a profile'</span><span class="p">)</span>
 
 <div class="viewcode-block" id="VSC.get_control1_val_at">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Branches.html#VeraGridEngine.Devices.Branches.vsc.VSC.get_control1_val_at">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_control1_val_at</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        :param t:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">get_at</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">control1_val</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">control1_val_prof</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span></div>
 
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">control2_val</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_control2_val</span>
 
     <span class="nd">@control2_val</span><span class="o">.</span><span class="n">setter</span>
@@ -1054,10 +1055,10 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">control2_val_prof</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ProfileFloat</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Cost profile</span>
 <span class="sd">        :return: Profile</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_control2_val_prof</span>
 
     <span class="nd">@control2_val_prof</span><span class="o">.</span><span class="n">setter</span>
@@ -1067,81 +1068,81 @@
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_control2_val_prof</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">arr</span><span class="o">=</span><span class="n">val</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">val</span><span class="p">))</span> <span class="o">+</span> <span class="s1">&#39;not supported to be set into a profile&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">val</span><span class="p">))</span> <span class="o">+</span> <span class="s1">'not supported to be set into a profile'</span><span class="p">)</span>
 
 <div class="viewcode-block" id="VSC.get_control2_val_at">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Branches.html#VeraGridEngine.Devices.Branches.vsc.VSC.get_control2_val_at">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_control2_val_at</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        :param t:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">get_at</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">control2_val</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">control2_val_prof</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span></div>
 
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">control1_val_min</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get ``control1_val_min``.</span>
 
 <span class="sd">        :return: float</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_control1_val_min</span>
 
     <span class="nd">@control1_val_min</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">control1_val_min</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Set ``control1_val_min``.</span>
 
 <span class="sd">        :param val: Value to assign.</span>
 <span class="sd">        :return: None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_control1_val_min</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">control1_val_max</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get ``control1_val_max``.</span>
 
 <span class="sd">        :return: float</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_control1_val_max</span>
 
     <span class="nd">@control1_val_max</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">control1_val_max</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Set ``control1_val_max``.</span>
 
 <span class="sd">        :param val: Value to assign.</span>
 <span class="sd">        :return: None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_control1_val_max</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">control1_val_droop</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get ``control1_val_droop``.</span>
 
 <span class="sd">        :return: float</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_control1_val_droop</span>
 
     <span class="nd">@control1_val_droop</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">control1_val_droop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Set ``control1_val_droop``.</span>
 
 <span class="sd">        :param val: Value to assign.</span>
 <span class="sd">        :return: None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_control1_val_droop</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">control1_val_droop_prof</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ProfileFloat</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Cost profile</span>
 <span class="sd">        :return: Profile</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_control1_val_droop_prof</span>
 
     <span class="nd">@control1_val_droop_prof</span><span class="o">.</span><span class="n">setter</span>
@@ -1151,43 +1152,43 @@
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_control1_val_droop_prof</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">arr</span><span class="o">=</span><span class="n">val</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">val</span><span class="p">))</span> <span class="o">+</span> <span class="s1">&#39;not supported to be set into a profile&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">val</span><span class="p">))</span> <span class="o">+</span> <span class="s1">'not supported to be set into a profile'</span><span class="p">)</span>
 
 <div class="viewcode-block" id="VSC.get_control1_val_droop_at">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Branches.html#VeraGridEngine.Devices.Branches.vsc.VSC.get_control1_val_droop_at">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_control1_val_droop_at</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        :param t:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">get_at</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">control1_val_droop</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">control1_val_droop_prof</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span></div>
 
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">control1_droop_val</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get ``control1_droop_val``.</span>
 
 <span class="sd">        :return: float</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_control1_droop_val</span>
 
     <span class="nd">@control1_droop_val</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">control1_droop_val</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Set ``control1_droop_val``.</span>
 
 <span class="sd">        :param val: Value to assign.</span>
 <span class="sd">        :return: None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_control1_droop_val</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">control1_droop_val_prof</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ProfileFloat</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Cost profile</span>
 <span class="sd">        :return: Profile</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_control1_droop_val_prof</span>
 
     <span class="nd">@control1_droop_val_prof</span><span class="o">.</span><span class="n">setter</span>
@@ -1197,119 +1198,119 @@
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_control1_droop_val_prof</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">arr</span><span class="o">=</span><span class="n">val</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">val</span><span class="p">))</span> <span class="o">+</span> <span class="s1">&#39;not supported to be set into a profile&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">val</span><span class="p">))</span> <span class="o">+</span> <span class="s1">'not supported to be set into a profile'</span><span class="p">)</span>
 
 <div class="viewcode-block" id="VSC.get_control1_droop_val_at">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Branches.html#VeraGridEngine.Devices.Branches.vsc.VSC.get_control1_droop_val_at">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_control1_droop_val_at</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        :param t:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">get_at</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">control1_droop_val</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">control1_droop_val_prof</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span></div>
 
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">control1_droop_val_min</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get ``control1_droop_val_min``.</span>
 
 <span class="sd">        :return: float</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_control1_droop_val_min</span>
 
     <span class="nd">@control1_droop_val_min</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">control1_droop_val_min</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Set ``control1_droop_val_min``.</span>
 
 <span class="sd">        :param val: Value to assign.</span>
 <span class="sd">        :return: None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_control1_droop_val_min</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">control1_droop_val_max</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get ``control1_droop_val_max``.</span>
 
 <span class="sd">        :return: float</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_control1_droop_val_max</span>
 
     <span class="nd">@control1_droop_val_max</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">control1_droop_val_max</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Set ``control1_droop_val_max``.</span>
 
 <span class="sd">        :param val: Value to assign.</span>
 <span class="sd">        :return: None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_control1_droop_val_max</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">control2_val_min</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get ``control2_val_min``.</span>
 
 <span class="sd">        :return: float</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_control2_val_min</span>
 
     <span class="nd">@control2_val_min</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">control2_val_min</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Set ``control2_val_min``.</span>
 
 <span class="sd">        :param val: Value to assign.</span>
 <span class="sd">        :return: None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_control2_val_min</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">control2_val_max</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get ``control2_val_max``.</span>
 
 <span class="sd">        :return: float</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_control2_val_max</span>
 
     <span class="nd">@control2_val_max</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">control2_val_max</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Set ``control2_val_max``.</span>
 
 <span class="sd">        :param val: Value to assign.</span>
 <span class="sd">        :return: None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_control2_val_max</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">control2_val_droop</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get ``control2_val_droop``.</span>
 
 <span class="sd">        :return: float</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_control2_val_droop</span>
 
     <span class="nd">@control2_val_droop</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">control2_val_droop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Set ``control2_val_droop``.</span>
 
 <span class="sd">        :param val: Value to assign.</span>
 <span class="sd">        :return: None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_control2_val_droop</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">control2_val_droop_prof</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ProfileFloat</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Cost profile</span>
 <span class="sd">        :return: Profile</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_control2_val_droop_prof</span>
 
     <span class="nd">@control2_val_droop_prof</span><span class="o">.</span><span class="n">setter</span>
@@ -1319,43 +1320,43 @@
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_control2_val_droop_prof</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">arr</span><span class="o">=</span><span class="n">val</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">val</span><span class="p">))</span> <span class="o">+</span> <span class="s1">&#39;not supported to be set into a profile&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">val</span><span class="p">))</span> <span class="o">+</span> <span class="s1">'not supported to be set into a profile'</span><span class="p">)</span>
 
 <div class="viewcode-block" id="VSC.get_control2_val_droop_at">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Branches.html#VeraGridEngine.Devices.Branches.vsc.VSC.get_control2_val_droop_at">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_control2_val_droop_at</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        :param t:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">get_at</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">control2_val_droop</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">control2_val_droop_prof</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span></div>
 
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">control2_droop_val</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get ``control2_droop_val``.</span>
 
 <span class="sd">        :return: float</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_control2_droop_val</span>
 
     <span class="nd">@control2_droop_val</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">control2_droop_val</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Set ``control2_droop_val``.</span>
 
 <span class="sd">        :param val: Value to assign.</span>
 <span class="sd">        :return: None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_control2_droop_val</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">control2_droop_val_prof</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ProfileFloat</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Cost profile</span>
 <span class="sd">        :return: Profile</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_control2_droop_val_prof</span>
 
     <span class="nd">@control2_droop_val_prof</span><span class="o">.</span><span class="n">setter</span>
@@ -1365,62 +1366,62 @@
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_control2_droop_val_prof</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">arr</span><span class="o">=</span><span class="n">val</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">val</span><span class="p">))</span> <span class="o">+</span> <span class="s1">&#39;not supported to be set into a profile&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">val</span><span class="p">))</span> <span class="o">+</span> <span class="s1">'not supported to be set into a profile'</span><span class="p">)</span>
 
 <div class="viewcode-block" id="VSC.get_control2_droop_val_at">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Branches.html#VeraGridEngine.Devices.Branches.vsc.VSC.get_control2_droop_val_at">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_control2_droop_val_at</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        :param t:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">get_at</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">control2_droop_val</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">control2_droop_val_prof</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span></div>
 
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">control2_droop_val_min</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get ``control2_droop_val_min``.</span>
 
 <span class="sd">        :return: float</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_control2_droop_val_min</span>
 
     <span class="nd">@control2_droop_val_min</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">control2_droop_val_min</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Set ``control2_droop_val_min``.</span>
 
 <span class="sd">        :param val: Value to assign.</span>
 <span class="sd">        :return: None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_control2_droop_val_min</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">control2_droop_val_max</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get ``control2_droop_val_max``.</span>
 
 <span class="sd">        :return: float</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_control2_droop_val_max</span>
 
     <span class="nd">@control2_droop_val_max</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">control2_droop_val_max</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Set ``control2_droop_val_max``.</span>
 
 <span class="sd">        :param val: Value to assign.</span>
 <span class="sd">        :return: None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_control2_droop_val_max</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">control1_dev</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_control1_dev</span>
 
     <span class="nd">@control1_dev</span><span class="o">.</span><span class="n">setter</span>
@@ -1429,10 +1430,10 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">control1_dev_prof</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ProfileDevice</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Cost profile</span>
 <span class="sd">        :return: Profile</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_control1_dev_prof</span>
 
     <span class="nd">@control1_dev_prof</span><span class="o">.</span><span class="n">setter</span>
@@ -1442,24 +1443,24 @@
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_control1_dev_prof</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">arr</span><span class="o">=</span><span class="n">val</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">val</span><span class="p">))</span> <span class="o">+</span> <span class="s1">&#39;not supported to be set into a profile&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">val</span><span class="p">))</span> <span class="o">+</span> <span class="s1">'not supported to be set into a profile'</span><span class="p">)</span>
 
 <div class="viewcode-block" id="VSC.get_control1_dev_at">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Branches.html#VeraGridEngine.Devices.Branches.vsc.VSC.get_control1_dev_at">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_control1_dev_at</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Bus</span> <span class="o">|</span> <span class="n">BranchParent</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        :param t:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">get_at</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">control1_dev</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">control1_dev_prof</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span></div>
 
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">control2_dev</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_control2_dev</span>
 
     <span class="nd">@control2_dev</span><span class="o">.</span><span class="n">setter</span>
@@ -1468,10 +1469,10 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">control2_dev_prof</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ProfileDevice</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Cost profile</span>
 <span class="sd">        :return: Profile</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_control2_dev_prof</span>
 
     <span class="nd">@control2_dev_prof</span><span class="o">.</span><span class="n">setter</span>
@@ -1481,24 +1482,24 @@
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_control2_dev_prof</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">arr</span><span class="o">=</span><span class="n">val</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">val</span><span class="p">))</span> <span class="o">+</span> <span class="s1">&#39;not supported to be set into a profile&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">val</span><span class="p">))</span> <span class="o">+</span> <span class="s1">'not supported to be set into a profile'</span><span class="p">)</span>
 
 <div class="viewcode-block" id="VSC.get_control2_dev_at">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Branches.html#VeraGridEngine.Devices.Branches.vsc.VSC.get_control2_dev_at">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_control2_dev_at</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Bus</span> <span class="o">|</span> <span class="n">BranchParent</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        :param t:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">get_at</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">control2_dev</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">control2_dev_prof</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="VSC.get_coordinates">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Branches.html#VeraGridEngine.Devices.Branches.vsc.VSC.get_coordinates">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_coordinates</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the line defining coordinates</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">bus_from</span><span class="o">.</span><span class="n">get_coordinates</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">bus_to</span><span class="o">.</span><span class="n">get_coordinates</span><span class="p">()]</span></div>
 
 
@@ -1507,9 +1508,9 @@
 <div class="viewcode-block" id="VSC.is_3term">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Branches.html#VeraGridEngine.Devices.Branches.vsc.VSC.is_3term">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">is_3term</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Is this a 3-terminal VSC?</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">bus_from</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">bus_to</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bus_dc_n</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span></div>
 
 
@@ -1517,239 +1518,239 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">alpha1</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get ``alpha1``.</span>
 
 <span class="sd">        :return: float</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_alpha1</span>
 
     <span class="nd">@alpha1</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">alpha1</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Set ``alpha1``.</span>
 
 <span class="sd">        :param val: Value to assign.</span>
 <span class="sd">        :return: None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_alpha1</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">alpha2</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get ``alpha2``.</span>
 
 <span class="sd">        :return: float</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_alpha2</span>
 
     <span class="nd">@alpha2</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">alpha2</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Set ``alpha2``.</span>
 
 <span class="sd">        :param val: Value to assign.</span>
 <span class="sd">        :return: None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_alpha2</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">alpha3</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get ``alpha3``.</span>
 
 <span class="sd">        :return: float</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_alpha3</span>
 
     <span class="nd">@alpha3</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">alpha3</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Set ``alpha3``.</span>
 
 <span class="sd">        :param val: Value to assign.</span>
 <span class="sd">        :return: None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_alpha3</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
 
     <span class="c1"># Provide typed RMS-adapter access to the five final values without</span>
     <span class="c1"># retaining the source DGS row.</span>
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">r_series</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the converter series-reactor resistance.</span>
+<span class="w">        </span><span class="sd">"""Get the converter series-reactor resistance.</span>
 
 <span class="sd">        :return: Series resistance in per unit.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_r_series</span>
 
     <span class="nd">@r_series</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">r_series</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the converter series-reactor resistance.</span>
+<span class="w">        </span><span class="sd">"""Set the converter series-reactor resistance.</span>
 
 <span class="sd">        :param val: Series resistance in per unit.</span>
 <span class="sd">        :return: None.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_r_series</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">x_series</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the converter series-reactor reactance.</span>
+<span class="w">        </span><span class="sd">"""Get the converter series-reactor reactance.</span>
 
 <span class="sd">        :return: Series reactance in per unit.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_x_series</span>
 
     <span class="nd">@x_series</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">x_series</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the converter series-reactor reactance.</span>
+<span class="w">        </span><span class="sd">"""Set the converter series-reactor reactance.</span>
 
 <span class="sd">        :param val: Series reactance in per unit.</span>
 <span class="sd">        :return: None.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_x_series</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">dc_voltage_base</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the native converter DC voltage base.</span>
+<span class="w">        </span><span class="sd">"""Get the native converter DC voltage base.</span>
 
 <span class="sd">        :return: DC voltage base in kV.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dc_voltage_base</span>
 
     <span class="nd">@dc_voltage_base</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">dc_voltage_base</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the native converter DC voltage base.</span>
+<span class="w">        </span><span class="sd">"""Set the native converter DC voltage base.</span>
 
 <span class="sd">        :param val: DC voltage base in kV.</span>
 <span class="sd">        :return: None.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_dc_voltage_base</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">dc_link_capacitance_uf</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the capacitance represented directly across the DC terminals.</span>
+<span class="w">        </span><span class="sd">"""Get the capacitance represented directly across the DC terminals.</span>
 
 <span class="sd">        :return: DC-terminal capacitance in microfarads.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dc_link_capacitance_uf</span>
 
     <span class="nd">@dc_link_capacitance_uf</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">dc_link_capacitance_uf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the capacitance represented directly across the DC terminals.</span>
+<span class="w">        </span><span class="sd">"""Set the capacitance represented directly across the DC terminals.</span>
 
 <span class="sd">        :param val: DC-terminal capacitance in microfarads.</span>
 <span class="sd">        :return: None.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_dc_link_capacitance_uf</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">mmc_arm_capacitance_uf</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the equivalent capacitance of one MMC arm.</span>
+<span class="w">        </span><span class="sd">"""Get the equivalent capacitance of one MMC arm.</span>
 
 <span class="sd">        :return: Arm capacitance in microfarads.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mmc_arm_capacitance_uf</span>
 
     <span class="nd">@mmc_arm_capacitance_uf</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">mmc_arm_capacitance_uf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the equivalent capacitance of one MMC arm.</span>
+<span class="w">        </span><span class="sd">"""Set the equivalent capacitance of one MMC arm.</span>
 
 <span class="sd">        :param val: Arm capacitance in microfarads.</span>
 <span class="sd">        :return: None.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_mmc_arm_capacitance_uf</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">mmc_consider_arm_reactor_dc</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get whether the MMC arm reactor is represented on the DC side.</span>
+<span class="w">        </span><span class="sd">"""Get whether the MMC arm reactor is represented on the DC side.</span>
 
 <span class="sd">        :return: True when the arm reactor belongs to the DC-side representation.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mmc_consider_arm_reactor_dc</span>
 
     <span class="nd">@mmc_consider_arm_reactor_dc</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">mmc_consider_arm_reactor_dc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set whether the MMC arm reactor is represented on the DC side.</span>
+<span class="w">        </span><span class="sd">"""Set whether the MMC arm reactor is represented on the DC side.</span>
 
 <span class="sd">        :param val: DC-side arm-reactor representation flag.</span>
 <span class="sd">        :return: None.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_mmc_consider_arm_reactor_dc</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">min_ac_voltage</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get ``min_ac_voltage``.</span>
 
 <span class="sd">        :return: float</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_min_ac_voltage</span>
 
     <span class="nd">@min_ac_voltage</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">min_ac_voltage</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Set ``min_ac_voltage``.</span>
 
 <span class="sd">        :param val: Value to assign.</span>
 <span class="sd">        :return: None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_min_ac_voltage</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">ysvs</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get ``ysvs``.</span>
 
 <span class="sd">        :return: float</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ysvs</span>
 
     <span class="nd">@ysvs</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">ysvs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Set ``ysvs``.</span>
 
 <span class="sd">        :param val: Value to assign.</span>
 <span class="sd">        :return: None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_ysvs</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">x</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get ``x``.</span>
 
 <span class="sd">        :return: float</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_x</span>
 
     <span class="nd">@x</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">x</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Set ``x``.</span>
 
 <span class="sd">        :param val: Value to assign.</span>
 <span class="sd">        :return: None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_x</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">y</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get ``y``.</span>
 
 <span class="sd">        :return: float</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_y</span>
 
     <span class="nd">@y</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">y</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Set ``y``.</span>
 
 <span class="sd">        :param val: Value to assign.</span>
 <span class="sd">        :return: None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_y</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="p">)</span></div>
 
 </pre></div>

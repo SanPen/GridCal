@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Simulations.SmallSignalStabilityEmt.small_signal_stability_emt_driver &mdash; VeraGrid 6.7.13 documentation</title>
+  <title>VeraGridEngine.Simulations.SmallSignalStabilityEmt.small_signal_stability_emt_driver &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=16fbabd8"></script>
+      <script src="../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -135,7 +135,7 @@
 <div class="viewcode-block" id="build_restart_seed">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SmallSignalStabilityEmt.html#VeraGridEngine.Simulations.SmallSignalStabilityEmt.small_signal_stability_emt_driver.build_restart_seed">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">build_restart_seed</span><span class="p">(</span><span class="n">U_sel</span><span class="p">:</span> <span class="n">CxMat</span><span class="p">,</span> <span class="n">p_target</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">seed</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">42</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Mat</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Builds a real orthonormal restart block from complex Ritz/refined vectors.</span>
 <span class="sd">    Extracts real and imaginary parts to form a strictly real subspace seed.</span>
 
@@ -143,7 +143,7 @@
 <span class="sd">    :param p_target: Desired number of columns (block size) for the restart seed.</span>
 <span class="sd">    :param seed: Random seed for generating orthogonal padding if needed.</span>
 <span class="sd">    :return: A real orthonormal block matrix of shape (n_states, p_target).</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">n</span> <span class="o">=</span> <span class="n">U_sel</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">cols</span> <span class="o">=</span> <span class="p">[]</span>
@@ -172,27 +172,27 @@
 <div class="viewcode-block" id="RobustBlockArnoldiEngine">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SmallSignalStabilityEmt.html#VeraGridEngine.Simulations.SmallSignalStabilityEmt.small_signal_stability_emt_driver.RobustBlockArnoldiEngine">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">RobustBlockArnoldiEngine</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Implements:</span>
 <span class="sd">    1. Block Modified Gram-Schmidt (BMGS).</span>
-<span class="sd">    2. DGKS/Kahan Re-orthogonalization (&quot;Twice is Enough&quot;).</span>
+<span class="sd">    2. DGKS/Kahan Re-orthogonalization ("Twice is Enough").</span>
 <span class="sd">    3. Rank-Revealing SVD for Block Deflation.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;monodromy_op&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;n&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;p_init&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;max_iters&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;tol_deflation&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;V&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;H&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;p_active&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;block_indices&quot;</span><span class="p">,</span>
+        <span class="s2">"monodromy_op"</span><span class="p">,</span>
+        <span class="s2">"n"</span><span class="p">,</span>
+        <span class="s2">"p_init"</span><span class="p">,</span>
+        <span class="s2">"max_iters"</span><span class="p">,</span>
+        <span class="s2">"tol_deflation"</span><span class="p">,</span>
+        <span class="s2">"V"</span><span class="p">,</span>
+        <span class="s2">"H"</span><span class="p">,</span>
+        <span class="s2">"p_active"</span><span class="p">,</span>
+        <span class="s2">"block_indices"</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">monodromy_op</span><span class="p">:</span> <span class="n">BlockEmtFloquetOperator</span><span class="p">,</span> <span class="n">n_states</span><span class="p">:</span><span class="nb">int</span><span class="p">,</span>
                  <span class="n">p_init</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">max_iters</span><span class="p">:</span><span class="nb">int</span><span class="p">,</span> <span class="n">tol_deflation</span><span class="p">:</span><span class="nb">float</span><span class="o">=</span><span class="mf">1e-12</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Initializes the Block Arnoldi Engine.</span>
 
 <span class="sd">        :param monodromy_op: The block-enabled monodromy operator.</span>
@@ -200,7 +200,7 @@
 <span class="sd">        :param p_init: Initial block size (number of simultaneous vectors).</span>
 <span class="sd">        :param max_iters: Maximum number of Block Arnoldi iterations.</span>
 <span class="sd">        :param tol_deflation: Tolerance for dropping linearly dependent vectors (SVD rank reveal).</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">monodromy_op</span> <span class="o">=</span> <span class="n">monodromy_op</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">=</span> <span class="n">n_states</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">p_init</span> <span class="o">=</span> <span class="n">p_init</span>
@@ -220,14 +220,14 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">block_indices</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_orthogonalize_block</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">W</span><span class="p">:</span><span class="n">Mat</span><span class="p">,</span> <span class="n">current_iter</span><span class="p">:</span><span class="nb">int</span><span class="p">)</span><span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Mat</span><span class="p">,</span> <span class="n">Mat</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Orthogonalizes W against all previously computed blocks V_0 ... V_j.</span>
 <span class="sd">        Uses a Numba BMGS kernel when available; otherwise falls back to NumPy BLAS.</span>
 
 <span class="sd">        :param W: The un-orthogonalized block matrix generated by the operator.</span>
 <span class="sd">        :param current_iter: The current Arnoldi iteration index (j).</span>
 <span class="sd">        :return: A tuple (W_ortho, H_col) containing the orthogonalized block and the Hessenberg column.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">j</span> <span class="o">=</span> <span class="n">current_iter</span>
         <span class="n">start_j</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">block_indices</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
         <span class="n">end_j</span> <span class="o">=</span> <span class="n">start_j</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">p_active</span>
@@ -246,7 +246,7 @@
 
         <span class="c1"># NumPy BMGS + Kahan second pass</span>
         <span class="n">H_col</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">end_j</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">p_active</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
-        <span class="n">norm_W_initial</span> <span class="o">=</span> <span class="n">la</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">W</span><span class="p">,</span> <span class="nb">ord</span><span class="o">=</span><span class="s1">&#39;fro&#39;</span><span class="p">)</span>
+        <span class="n">norm_W_initial</span> <span class="o">=</span> <span class="n">la</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">W</span><span class="p">,</span> <span class="nb">ord</span><span class="o">=</span><span class="s1">'fro'</span><span class="p">)</span>
 
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">j</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
             <span class="n">start_i</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">block_indices</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
@@ -256,7 +256,7 @@
             <span class="n">H_col</span><span class="p">[</span><span class="n">start_i</span><span class="p">:</span><span class="n">end_i</span><span class="p">,</span> <span class="p">:]</span> <span class="o">+=</span> <span class="n">H_ij</span>
             <span class="n">W</span> <span class="o">=</span> <span class="n">W</span> <span class="o">-</span> <span class="n">V_i</span> <span class="o">@</span> <span class="n">H_ij</span>
 
-        <span class="n">norm_W_after</span> <span class="o">=</span> <span class="n">la</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">W</span><span class="p">,</span> <span class="nb">ord</span><span class="o">=</span><span class="s1">&#39;fro&#39;</span><span class="p">)</span>
+        <span class="n">norm_W_after</span> <span class="o">=</span> <span class="n">la</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">W</span><span class="p">,</span> <span class="nb">ord</span><span class="o">=</span><span class="s1">'fro'</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">norm_W_after</span> <span class="o">&lt;</span> <span class="mf">0.717</span> <span class="o">*</span> <span class="n">norm_W_initial</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">j</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
                 <span class="n">start_i</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">block_indices</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
@@ -269,13 +269,13 @@
         <span class="k">return</span> <span class="n">W</span><span class="p">,</span> <span class="n">H_col</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_rank_revealing_svd</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">W</span><span class="p">:</span> <span class="n">Mat</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Mat</span><span class="p">,</span> <span class="n">Mat</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Extracts the orthonormal basis of W and the sub-diagonal Hessenberg block.</span>
 <span class="sd">        Deflates (removes) linearly dependent vectors using SVD.</span>
 
 <span class="sd">        :param W: The orthogonalized matrix block.</span>
 <span class="sd">        :return: A tuple (V_next, H_next, rank) with the new basis, sub-diagonal block, and active rank.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># SVD: W = U * Sigma * V^T</span>
         <span class="n">U</span><span class="p">,</span> <span class="n">S</span><span class="p">,</span> <span class="n">Vh</span> <span class="o">=</span> <span class="n">la</span><span class="o">.</span><span class="n">svd</span><span class="p">(</span><span class="n">W</span><span class="p">,</span> <span class="n">full_matrices</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
@@ -283,7 +283,7 @@
         <span class="n">rank</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">S</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">tol_deflation</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">rank</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">p_active</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;   [BIRAM] Deflation triggered! Block size shrunk from </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">p_active</span><span class="si">}</span><span class="s2"> to </span><span class="si">{</span><span class="n">rank</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"   [BIRAM] Deflation triggered! Block size shrunk from </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">p_active</span><span class="si">}</span><span class="s2"> to </span><span class="si">{</span><span class="n">rank</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
 
         <span class="c1"># The new orthonormal basis block (V_{j+1})</span>
         <span class="n">V_next</span> <span class="o">=</span> <span class="n">U</span><span class="p">[:,</span> <span class="p">:</span><span class="n">rank</span><span class="p">]</span>
@@ -297,12 +297,12 @@
 <div class="viewcode-block" id="RobustBlockArnoldiEngine.build_krylov_space">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SmallSignalStabilityEmt.html#VeraGridEngine.Simulations.SmallSignalStabilityEmt.small_signal_stability_emt_driver.RobustBlockArnoldiEngine.build_krylov_space">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">build_krylov_space</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">V_init</span><span class="p">:</span> <span class="n">Mat</span><span class="p">)</span><span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Mat</span><span class="p">,</span> <span class="n">Mat</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Executes the robust Block Arnoldi process to build the Krylov subspace.</span>
 
 <span class="sd">        :param V_init: The initial orthonormal block seed (n_states x p_init).</span>
 <span class="sd">        :return: A tuple (V_final, H_final) representing the Krylov basis and Hessenberg matrix.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># Set initial block</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">V</span><span class="p">[:,</span> <span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">p_active</span><span class="p">]</span> <span class="o">=</span> <span class="n">V_init</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">block_indices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">p_active</span><span class="p">)</span>
@@ -326,7 +326,7 @@
             <span class="n">V_next</span><span class="p">,</span> <span class="n">H_next</span><span class="p">,</span> <span class="n">new_rank</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rank_revealing_svd</span><span class="p">(</span><span class="n">W</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="n">new_rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;   [BIRAM] Invariant Subspace found! Exact convergence reached early.&quot;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">"   [BIRAM] Invariant Subspace found! Exact convergence reached early."</span><span class="p">)</span>
                 <span class="k">break</span>
 
             <span class="c1"># 5. Store Sub-diagonal block and new basis</span>
@@ -350,12 +350,12 @@
 <div class="viewcode-block" id="BestPack">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SmallSignalStabilityEmt.html#VeraGridEngine.Simulations.SmallSignalStabilityEmt.small_signal_stability_emt_driver.BestPack">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">BestPack</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Data structure to hold the best Ritz pairs found during restarts.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Data structure to hold the best Ritz pairs found during restarts."""</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;mu_sel&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;U_sel&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;rel&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;max_rr&quot;</span><span class="p">,</span>
+        <span class="s2">"mu_sel"</span><span class="p">,</span>
+        <span class="s2">"U_sel"</span><span class="p">,</span>
+        <span class="s2">"rel"</span><span class="p">,</span>
+        <span class="s2">"max_rr"</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -369,15 +369,15 @@
 <div class="viewcode-block" id="SmallSignalStabilityEmtDriver">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SmallSignalStabilityEmt.html#VeraGridEngine.Simulations.SmallSignalStabilityEmt.small_signal_stability_emt_driver.SmallSignalStabilityEmtDriver">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">SmallSignalStabilityEmtDriver</span><span class="p">(</span><span class="n">DriverTemplate</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Base class for EMT Floquet stability analysis.</span>
 <span class="sd">    Orchestrates the entire limit cycle capture and Krylov subspace generation workflow.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;pf_results&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;problem&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;emt_options&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;sss_options&quot;</span><span class="p">,</span>
+        <span class="s2">"pf_results"</span><span class="p">,</span>
+        <span class="s2">"problem"</span><span class="p">,</span>
+        <span class="s2">"emt_options"</span><span class="p">,</span>
+        <span class="s2">"sss_options"</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
@@ -385,14 +385,14 @@
                  <span class="n">emt_options</span><span class="p">:</span> <span class="n">EmtOptions</span><span class="p">,</span>
                  <span class="n">sss_options</span><span class="p">:</span> <span class="n">SmallSignalStabilityEmtOptions</span><span class="p">,</span>
                  <span class="n">pf_results</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">PowerFlowResults</span><span class="o">|</span><span class="n">PowerFlowResults3Ph</span><span class="p">]):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Initializes the EMT Small Signal Stability Driver.</span>
 
 <span class="sd">        :param grid: The VeraGrid MultiCircuit network representation.</span>
 <span class="sd">        :param emt_options: Integration settings for the limit cycle capture.</span>
 <span class="sd">        :param sss_options: Specific algorithm settings for the Floquet analysis.</span>
 <span class="sd">        :param pf_results: 3Ph or balanced power flow results</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="n">DriverTemplate</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">grid</span><span class="o">=</span><span class="n">grid</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">pf_results</span> <span class="o">=</span> <span class="n">pf_results</span>
@@ -420,19 +420,19 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">_capture_limit_cycle_and_evaluator</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                                            <span class="n">h</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
                                            <span class="n">verbose</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span><span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Mat</span><span class="p">,</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Vec</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Captures the limit cycle by simulating the system up to ss_assessment_time.</span>
 <span class="sd">        Extracts the JIT Jacobian evaluator directly from the StructuralVectorizedSolver.</span>
 
 <span class="sd">        :param h: Integration time step.</span>
 <span class="sd">        :param verbose: Verbosity level flag.</span>
 <span class="sd">        :return: Tuple containing (y_trajectory, t_trajectory, jacobian_evaluator, static_parameters, n_event_params).</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="k">if</span> <span class="n">verbose</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;-&gt; Capturing limit cycle via StructuralVectorizedSolver...&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">"-&gt; Capturing limit cycle via StructuralVectorizedSolver..."</span><span class="p">)</span>
 
-        <span class="c1"># Direct contract access. If &#39;problem&#39; is invalid, it will fail natively here.</span>
+        <span class="c1"># Direct contract access. If 'problem' is invalid, it will fail natively here.</span>
         <span class="n">params_values</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">problem</span><span class="o">.</span><span class="n">get_parameters_values</span><span class="p">()</span>
         <span class="n">n_event_params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">problem</span><span class="o">.</span><span class="n">get_variable_parameter_number</span><span class="p">()</span>
 
@@ -461,10 +461,10 @@
 <div class="viewcode-block" id="SmallSignalStabilityEmtDriver.run_arnoldi">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SmallSignalStabilityEmt.html#VeraGridEngine.Simulations.SmallSignalStabilityEmt.small_signal_stability_emt_driver.SmallSignalStabilityEmtDriver.run_arnoldi">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">run_arnoldi</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Executes the Standard Arnoldi Floquet analysis using SciPy ARPACK.</span>
 <span class="sd">        Suited for small-to-medium systems.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">tic</span><span class="p">()</span>
 
         <span class="n">h</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">emt_options</span><span class="o">.</span><span class="n">time_step</span>
@@ -490,7 +490,7 @@
         <span class="c1"># Arnoldi struggles when all eigenvalues have identical magnitudes.</span>
         <span class="k">if</span> <span class="n">n_states</span> <span class="o">&lt;=</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sss_options</span><span class="o">.</span><span class="n">k</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">20</span><span class="p">):</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sss_options</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;System size (N=</span><span class="si">{</span><span class="n">n_states</span><span class="si">}</span><span class="s2">). Using dense fallback for full spectrum.&quot;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"System size (N=</span><span class="si">{</span><span class="n">n_states</span><span class="si">}</span><span class="s2">). Using dense fallback for full spectrum."</span><span class="p">)</span>
 
             <span class="n">I_dense</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">n_states</span><span class="p">)</span>
             <span class="n">C_M</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_states</span><span class="p">,</span> <span class="n">n_states</span><span class="p">))</span>
@@ -501,7 +501,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="c1"># High-Performance Sparse Arnoldi</span>
             <span class="n">search_k</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sss_options</span><span class="o">.</span><span class="n">k</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span> <span class="n">n_states</span> <span class="o">-</span> <span class="mi">2</span><span class="p">)</span>
-            <span class="n">mu</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="n">spla</span><span class="o">.</span><span class="n">eigs</span><span class="p">(</span><span class="n">monodromy_op</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">search_k</span><span class="p">,</span> <span class="n">which</span><span class="o">=</span><span class="s1">&#39;LM&#39;</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-8</span><span class="p">)</span>
+            <span class="n">mu</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="n">spla</span><span class="o">.</span><span class="n">eigs</span><span class="p">(</span><span class="n">monodromy_op</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">search_k</span><span class="p">,</span> <span class="n">which</span><span class="o">=</span><span class="s1">'LM'</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-8</span><span class="p">)</span>
 
         <span class="c1"># 4. SPECTRAL SHIFT FILTERING (Resonance Hunt)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sss_options</span><span class="o">.</span><span class="n">target_frequency_hz</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -514,11 +514,11 @@
             <span class="n">distances</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">mu</span> <span class="o">-</span> <span class="n">sigma</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">mu</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">conj</span><span class="p">(</span><span class="n">sigma</span><span class="p">)))</span>
 
             <span class="c1"># Sort by distance and truncate to the requested k modes</span>
-            <span class="n">sort_indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">distances</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s2">&quot;stable&quot;</span><span class="p">)[:</span><span class="bp">self</span><span class="o">.</span><span class="n">sss_options</span><span class="o">.</span><span class="n">k</span><span class="p">]</span>
+            <span class="n">sort_indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">distances</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s2">"stable"</span><span class="p">)[:</span><span class="bp">self</span><span class="o">.</span><span class="n">sss_options</span><span class="o">.</span><span class="n">k</span><span class="p">]</span>
             <span class="n">mu</span> <span class="o">=</span> <span class="n">mu</span><span class="p">[</span><span class="n">sort_indices</span><span class="p">]</span>
             <span class="n">v</span> <span class="o">=</span> <span class="n">v</span><span class="p">[:,</span> <span class="n">sort_indices</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">sort_indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">mu</span><span class="p">),</span> <span class="n">kind</span><span class="o">=</span><span class="s2">&quot;stable&quot;</span><span class="p">)[:</span><span class="bp">self</span><span class="o">.</span><span class="n">sss_options</span><span class="o">.</span><span class="n">k</span><span class="p">]</span>
+            <span class="n">sort_indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">mu</span><span class="p">),</span> <span class="n">kind</span><span class="o">=</span><span class="s2">"stable"</span><span class="p">)[:</span><span class="bp">self</span><span class="o">.</span><span class="n">sss_options</span><span class="o">.</span><span class="n">k</span><span class="p">]</span>
             <span class="n">mu</span> <span class="o">=</span> <span class="n">mu</span><span class="p">[</span><span class="n">sort_indices</span><span class="p">]</span>
             <span class="n">v</span> <span class="o">=</span> <span class="n">v</span><span class="p">[:,</span> <span class="n">sort_indices</span><span class="p">]</span>
 
@@ -538,14 +538,14 @@
 
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_make_monodromy_operator</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">h</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">n_states</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Creates the Monodromy Operator. Uses the HPC Ak-Stack if available,</span>
 <span class="sd">        otherwise falls back to the LU-cached Jacobian operator.</span>
 
 <span class="sd">        :param h: Integration time step.</span>
 <span class="sd">        :param n_states: Number of differential states.</span>
 <span class="sd">        :return: An initialized LinearOperator instance (Block or Stack-based).</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="n">y_traj</span><span class="p">,</span> <span class="n">t_traj</span><span class="p">,</span> <span class="n">jac_eval</span><span class="p">,</span> <span class="n">stat_params</span><span class="p">,</span> <span class="n">n_ev_params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_capture_limit_cycle_and_evaluator</span><span class="p">(</span><span class="n">h</span><span class="p">)</span>
 
@@ -559,7 +559,7 @@
 
             <span class="k">if</span> <span class="n">Ak_stack</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sss_options</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
-                    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Using explicit EMT A_k stack operator (Numba path if available).&#39;</span><span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s1">'Using explicit EMT A_k stack operator (Numba path if available).'</span><span class="p">)</span>
                 <span class="k">return</span> <span class="n">AkStackBlockEmtFloquetOperator</span><span class="p">(</span><span class="n">Ak_stack</span><span class="p">,</span> <span class="n">use_numba</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sss_options</span><span class="o">.</span><span class="n">use_numba_kernels</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">BlockEmtFloquetOperator</span><span class="p">(</span>
@@ -576,14 +576,14 @@
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_apply_operator_complex</span><span class="p">(</span><span class="n">monodromy_op</span><span class="p">:</span> <span class="n">BlockEmtFloquetOperator</span><span class="p">,</span> <span class="n">Xc</span><span class="p">:</span> <span class="n">CxMat</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CxMat</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Helper method to apply a real-valued block operator to a complex block matrix.</span>
 <span class="sd">        Separates real and imaginary components.</span>
 
 <span class="sd">        :param monodromy_op: The block linear operator.</span>
 <span class="sd">        :param Xc: Complex block matrix.</span>
 <span class="sd">        :return: Propagated complex block matrix.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">Xr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ascontiguousarray</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="n">Xc</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
         <span class="n">Xi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ascontiguousarray</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">imag</span><span class="p">(</span><span class="n">Xc</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
         <span class="n">Yr</span> <span class="o">=</span> <span class="n">monodromy_op</span><span class="o">.</span><span class="n">matmat</span><span class="p">(</span><span class="n">Xr</span><span class="p">)</span>
@@ -597,7 +597,7 @@
                                 <span class="n">k_target</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
                                 <span class="n">p_seed</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
                                 <span class="n">use_refined</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">CxVec</span><span class="p">,</span> <span class="n">CxMat</span><span class="p">,</span> <span class="n">Vec</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Solves the projected sub-problem and extracts the dominant Ritz pairs.</span>
 
 <span class="sd">        :param monodromy_op: The block linear operator.</span>
@@ -607,9 +607,9 @@
 <span class="sd">        :param p_seed: The block dimension size.</span>
 <span class="sd">        :param use_refined: Flag to use Refined Ritz vector extraction.</span>
 <span class="sd">        :return: Tuple containing (selected_multipliers, selected_vectors, relative_residuals).</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">mu_sub</span><span class="p">,</span> <span class="n">Y_sub</span> <span class="o">=</span> <span class="n">la</span><span class="o">.</span><span class="n">eig</span><span class="p">(</span><span class="n">H_sub</span><span class="p">)</span>
-        <span class="n">sort_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">mu_sub</span><span class="p">),</span> <span class="n">kind</span><span class="o">=</span><span class="s2">&quot;stable&quot;</span><span class="p">)</span>
+        <span class="n">sort_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">mu_sub</span><span class="p">),</span> <span class="n">kind</span><span class="o">=</span><span class="s2">"stable"</span><span class="p">)</span>
         <span class="n">keep</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">sort_idx</span><span class="p">),</span> <span class="nb">max</span><span class="p">(</span><span class="n">k_target</span> <span class="o">+</span> <span class="mi">2</span><span class="p">,</span> <span class="n">p_seed</span><span class="p">))</span>
         <span class="n">sel</span> <span class="o">=</span> <span class="n">sort_idx</span><span class="p">[:</span><span class="n">keep</span><span class="p">]</span>
         <span class="n">mu_sel</span> <span class="o">=</span> <span class="n">mu_sub</span><span class="p">[</span><span class="n">sel</span><span class="p">]</span>
@@ -648,11 +648,11 @@
 <div class="viewcode-block" id="SmallSignalStabilityEmtDriver.run_arnoldi_hybrid">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SmallSignalStabilityEmt.html#VeraGridEngine.Simulations.SmallSignalStabilityEmt.small_signal_stability_emt_driver.SmallSignalStabilityEmtDriver.run_arnoldi_hybrid">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">run_arnoldi_hybrid</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Executes the Hybrid Block-Arnoldi (BIRAM) Floquet analysis.</span>
 <span class="sd">        Suited for extremely large sparse DAE systems utilizing BLAS-3 acceleration</span>
 <span class="sd">        and robust block projection to handle invariant subspace degeneracy.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">tic</span><span class="p">()</span>
 
         <span class="n">h</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">emt_options</span><span class="o">.</span><span class="n">time_step</span>
@@ -687,8 +687,8 @@
             <span class="c1"># self.report_progress()</span>
             <span class="c1"># self.report_progress2()</span>
             <span class="nb">print</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s1">&#39;Executing Hybrid Block-Arnoldi (Block Size: </span><span class="si">{</span><span class="n">p_seed</span><span class="si">}</span><span class="s1">, Iters: </span><span class="si">{</span><span class="n">m_iters</span><span class="si">}</span><span class="s1">, Restarts: </span><span class="si">{</span><span class="n">max_restarts</span><span class="si">}</span><span class="s1">)...&#39;</span><span class="p">)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;   [BIRAM] Numba BMGS kernel: ON&#39;</span><span class="p">)</span>
+                <span class="sa">f</span><span class="s1">'Executing Hybrid Block-Arnoldi (Block Size: </span><span class="si">{</span><span class="n">p_seed</span><span class="si">}</span><span class="s1">, Iters: </span><span class="si">{</span><span class="n">m_iters</span><span class="si">}</span><span class="s1">, Restarts: </span><span class="si">{</span><span class="n">max_restarts</span><span class="si">}</span><span class="s1">)...'</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">'   [BIRAM] Numba BMGS kernel: ON'</span><span class="p">)</span>
 
         <span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
         <span class="n">V_seed</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">qr</span><span class="p">(</span><span class="n">rng</span><span class="o">.</span><span class="n">standard_normal</span><span class="p">((</span><span class="n">n_states</span><span class="p">,</span> <span class="n">p_seed</span><span class="p">)))</span>
@@ -698,7 +698,7 @@
 
         <span class="k">for</span> <span class="n">ir</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">max_restarts</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sss_options</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;   [BIRAM] Restart cycle </span><span class="si">{</span><span class="n">ir</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s1">/</span><span class="si">{</span><span class="n">max_restarts</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'   [BIRAM] Restart cycle </span><span class="si">{</span><span class="n">ir</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s1">/</span><span class="si">{</span><span class="n">max_restarts</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
 
             <span class="n">engine</span> <span class="o">=</span> <span class="n">RobustBlockArnoldiEngine</span><span class="p">(</span>
                 <span class="n">monodromy_op</span><span class="o">=</span><span class="n">monodromy_op</span><span class="p">,</span>
@@ -719,13 +719,13 @@
             <span class="p">)</span>
 
             <span class="c1"># Track best result seen so far</span>
-            <span class="n">sort_now</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">mu_sel</span><span class="p">),</span> <span class="n">kind</span><span class="o">=</span><span class="s2">&quot;stable&quot;</span><span class="p">)</span>
+            <span class="n">sort_now</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">mu_sel</span><span class="p">),</span> <span class="n">kind</span><span class="o">=</span><span class="s2">"stable"</span><span class="p">)</span>
             <span class="n">topk</span> <span class="o">=</span> <span class="n">sort_now</span><span class="p">[:</span><span class="nb">min</span><span class="p">(</span><span class="n">k_target</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">sort_now</span><span class="p">))]</span>
             <span class="n">max_rr</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">rel</span><span class="p">[</span><span class="n">topk</span><span class="p">]))</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">topk</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
             <span class="n">residual_history</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">max_rr</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sss_options</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;   [BIRAM] top-</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">topk</span><span class="p">)</span><span class="si">}</span><span class="s1"> max rel-res = </span><span class="si">{</span><span class="n">max_rr</span><span class="si">:</span><span class="s1">.3e</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'   [BIRAM] top-</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">topk</span><span class="p">)</span><span class="si">}</span><span class="s1"> max rel-res = </span><span class="si">{</span><span class="n">max_rr</span><span class="si">:</span><span class="s1">.3e</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="n">max_rr</span> <span class="o">&lt;</span> <span class="n">best_pack</span><span class="o">.</span><span class="n">max_rr</span><span class="p">:</span>
                 <span class="n">best_pack</span><span class="o">.</span><span class="n">mu_sel</span> <span class="o">=</span> <span class="n">mu_sel</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
@@ -735,7 +735,7 @@
 
             <span class="k">if</span> <span class="n">max_rr</span> <span class="o">&lt;=</span> <span class="n">restart_tol</span><span class="p">:</span>
                 <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sss_options</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
-                    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;   [BIRAM] Converged by residual tolerance.&#39;</span><span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s1">'   [BIRAM] Converged by residual tolerance.'</span><span class="p">)</span>
                 <span class="k">break</span>
 
             <span class="k">if</span> <span class="n">ir</span> <span class="o">&gt;=</span> <span class="n">max_restarts</span><span class="p">:</span>
@@ -757,7 +757,7 @@
                             <span class="n">V_seed</span> <span class="o">=</span> <span class="n">build_restart_seed</span><span class="p">(</span><span class="n">U_sel</span><span class="p">,</span> <span class="n">p_target</span><span class="o">=</span><span class="n">p_seed</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">99</span> <span class="o">+</span> <span class="n">ir</span><span class="p">)</span>
                             <span class="n">changed</span> <span class="o">=</span> <span class="kc">True</span>
                             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sss_options</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
-                                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;   [BIRAM] Residual stagnation detected -&gt; shrink block to p=</span><span class="si">{</span><span class="n">p_seed</span><span class="si">}</span><span class="s1">.&#39;</span><span class="p">)</span>
+                                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'   [BIRAM] Residual stagnation detected -&gt; shrink block to p=</span><span class="si">{</span><span class="n">p_seed</span><span class="si">}</span><span class="s1">.'</span><span class="p">)</span>
                     <span class="k">else</span><span class="p">:</span>
                         <span class="c1"># Increase subspace depth budget if block is already minimal</span>
                         <span class="n">max_dim_new</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">max_dim_cap</span><span class="p">,</span> <span class="n">max_dim_local</span> <span class="o">+</span> <span class="n">p_seed</span><span class="p">)</span>
@@ -766,18 +766,18 @@
                             <span class="n">changed</span> <span class="o">=</span> <span class="kc">True</span>
                             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sss_options</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
                                 <span class="nb">print</span><span class="p">(</span>
-                                    <span class="sa">f</span><span class="s1">&#39;   [BIRAM] Residual stagnation detected -&gt; expand max Krylov dim to </span><span class="si">{</span><span class="n">max_dim_local</span><span class="si">}</span><span class="s1">.&#39;</span><span class="p">)</span>
+                                    <span class="sa">f</span><span class="s1">'   [BIRAM] Residual stagnation detected -&gt; expand max Krylov dim to </span><span class="si">{</span><span class="n">max_dim_local</span><span class="si">}</span><span class="s1">.'</span><span class="p">)</span>
 
                     <span class="k">if</span> <span class="n">changed</span><span class="p">:</span>
                         <span class="n">m_iters</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">max_dim_local</span> <span class="o">//</span> <span class="n">p_seed</span><span class="p">)</span>
 
         <span class="c1"># Final selection (best observed cycle)</span>
         <span class="k">if</span> <span class="n">best_pack</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">&#39;HybridBlockArnoldiDriver failed to produce Ritz pairs.&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">'HybridBlockArnoldiDriver failed to produce Ritz pairs.'</span><span class="p">)</span>
 
         <span class="n">mu_sel</span> <span class="o">=</span> <span class="n">best_pack</span><span class="o">.</span><span class="n">mu_sel</span>
         <span class="n">U_sel</span> <span class="o">=</span> <span class="n">best_pack</span><span class="o">.</span><span class="n">U_sel</span>
-        <span class="n">sort_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">mu_sel</span><span class="p">),</span> <span class="n">kind</span><span class="o">=</span><span class="s2">&quot;stable&quot;</span><span class="p">)[:</span><span class="n">k_target</span><span class="p">]</span>
+        <span class="n">sort_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">mu_sel</span><span class="p">),</span> <span class="n">kind</span><span class="o">=</span><span class="s2">"stable"</span><span class="p">)[:</span><span class="n">k_target</span><span class="p">]</span>
         <span class="n">mu</span><span class="p">:</span> <span class="n">CxVec</span> <span class="o">=</span> <span class="n">mu_sel</span><span class="p">[</span><span class="n">sort_idx</span><span class="p">]</span>
         <span class="n">v</span><span class="p">:</span> <span class="n">CxVec</span> <span class="o">=</span> <span class="n">U_sel</span><span class="p">[:,</span> <span class="n">sort_idx</span><span class="p">]</span>
 
@@ -798,15 +798,15 @@
 <div class="viewcode-block" id="SmallSignalStabilityEmtDriver.run">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SmallSignalStabilityEmt.html#VeraGridEngine.Simulations.SmallSignalStabilityEmt.small_signal_stability_emt_driver.SmallSignalStabilityEmtDriver.run">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Executes the analysis based on the selected builder type in the options.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sss_options</span><span class="o">.</span><span class="n">build_type</span> <span class="o">==</span> <span class="n">SmallSignalEmtBuildTypes</span><span class="o">.</span><span class="n">Arnoldi</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">run_arnoldi</span><span class="p">()</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">sss_options</span><span class="o">.</span><span class="n">build_type</span> <span class="o">==</span> <span class="n">SmallSignalEmtBuildTypes</span><span class="o">.</span><span class="n">HybridArnoldi</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">run_arnoldi_hybrid</span><span class="p">()</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Unknown build type: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">sss_options</span><span class="o">.</span><span class="n">build_type</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span></div>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s1">'Unknown build type: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">sss_options</span><span class="o">.</span><span class="n">build_type</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span></div>
 </div>
 
 </pre></div>

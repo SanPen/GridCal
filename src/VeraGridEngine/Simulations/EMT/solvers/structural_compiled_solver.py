@@ -31,7 +31,11 @@ from VeraGridEngine.Utils.Symbolic.symbolic import BinOp, Const, Expr, Func, UnO
 from VeraGridEngine.Utils.Symbolic.jit_compiler import (
     EagerEquationCompiler, _compile_to_file, _fingerprint_codegen_expr, _StructuralExpressionContext,
 )
-from VeraGridEngine.Utils.NumericalMethods.emt_sparse_superlu_backend import SuperLUSparseBackendProvider
+from VeraGridEngine.Utils.NumericalMethods.emt_sparse_superlu_backend import (
+    SuperLUSparseBackendProvider,
+    _permute_csc_data_by_columns,
+    _scatter_permuted_solution_to_original_order,
+)
 from VeraGridEngine.Utils.NumericalMethods.external_sparse_solver_interface import (
     SparseLinearFactorizationHandle,
     SparseLinearSolverBackend,
@@ -333,30 +337,6 @@ def _sparse_factor_manager_matrix(factor_manager: "StructuralCompiledSparseFacto
     :return: Active sparse Jacobian matrix.
     """
     return factor_manager.get_active_matrix()
-
-
-def _build_permute_csc_signature() -> Any:
-    """
-    Return the eager signature of the CSC permutation helper.
-
-    :return: Eager helper signature.
-    :rtype: Any
-    """
-    float64_vector_tpe: Any = types.Array(types.float64, 1, "C")
-    int32_vector_tpe: Any = types.Array(types.int32, 1, "C")
-    return types.void(float64_vector_tpe, int32_vector_tpe, int32_vector_tpe, int32_vector_tpe, float64_vector_tpe)
-
-
-def _build_scatter_permuted_solution_signature() -> Any:
-    """
-    Return the eager signature of the solution scatter helper.
-
-    :return: Eager helper signature.
-    :rtype: Any
-    """
-    float64_vector_tpe: Any = types.Array(types.float64, 1, "C")
-    int32_vector_tpe: Any = types.Array(types.int32, 1, "C")
-    return types.void(float64_vector_tpe, int32_vector_tpe, float64_vector_tpe)
 
 
 def _get_runtime_uid(var_obj: Var) -> int:
@@ -922,71 +902,6 @@ def _max_abs_diff_vectors(left_values: Float64Vector, right_values: Float64Vecto
     return max_value
 
 
-
-
-@nb.jit(_build_permute_csc_signature(), cache=True, fastmath=True)
-def _permute_csc_data_by_columns(
-        source_data: Float64Vector,
-        source_indptr: Int32Vector,
-        column_perm: Int32Vector,
-        target_indptr: Int32Vector,
-        target_data: Float64Vector,
-) -> None:
-    """
-    Reorder CSC numeric values according to a persistent column permutation.
-
-    :param source_data: Numeric values in the original column order.
-    :type source_data: Float64Vector
-    :param source_indptr: Original CSC column pointer.
-    :type source_indptr: Int32Vector
-    :param column_perm: Persistent destination-to-source column permutation.
-    :type column_perm: Int32Vector
-    :param target_indptr: Target CSC column pointer.
-    :type target_indptr: Int32Vector
-    :param target_data: Destination numeric buffer.
-    :type target_data: Float64Vector
-    :return: None
-    :rtype: None
-    """
-    dst_col: int = 0
-
-    while dst_col < column_perm.shape[0]:
-        src_col: int = int(column_perm[dst_col])
-        src_ptr_0: int = int(source_indptr[src_col])
-        src_ptr_1: int = int(source_indptr[src_col + 1])
-        dst_ptr_0: int = int(target_indptr[dst_col])
-        local_index: int = 0
-
-        while src_ptr_0 + local_index < src_ptr_1:
-            target_data[dst_ptr_0 + local_index] = source_data[src_ptr_0 + local_index]
-            local_index += 1
-
-        dst_col += 1
-
-
-@nb.jit(_build_scatter_permuted_solution_signature(), cache=True, fastmath=True)
-def _scatter_permuted_solution_to_original_order(
-        permuted_solution: Float64Vector,
-        inverse_column_perm: Int32Vector,
-        out_solution: Float64Vector,
-) -> None:
-    """
-    Scatter a solution computed on a column-permuted system back to original order.
-
-    :param permuted_solution: Solution in the permuted variable order.
-    :type permuted_solution: Float64Vector
-    :param inverse_column_perm: Mapping from original index to permuted index.
-    :type inverse_column_perm: Int32Vector
-    :param out_solution: Destination vector in original solver order.
-    :type out_solution: Float64Vector
-    :return: None
-    :rtype: None
-    """
-    var_index: int = 0
-
-    while var_index < out_solution.shape[0]:
-        out_solution[var_index] = permuted_solution[int(inverse_column_perm[var_index])]
-        var_index += 1
 
 
 def _warmup_compiled_numba_helpers() -> None:
@@ -2178,8 +2093,10 @@ class StructuralCompiledSparseFactorizationManager:
         :return: Solution buffer in original solver order.
         :rtype: Vec
         """
-        active_matrix: csc_matrix = self.get_active_matrix()
-        raw_solution: Vec = np.asarray(sparse_lsqr_fallback(active_matrix, rhs), dtype=np.float64)
+        # The active matrix may be column-permuted by the backend; the base shell
+        # shares the factorised Jacobian values in original order, so the
+        # least-squares solution needs no backend-specific un-permutation.
+        raw_solution: Vec = np.asarray(sparse_lsqr_fallback(self._base_matrix, rhs), dtype=np.float64)
         self._stats["fallback_solves"] += 1.0
 
         self._solution_buffer[:] = raw_solution
@@ -2269,6 +2186,7 @@ class StructuralCompiledSolver:
         "_backend_build_stats",
         "_newton_max_iter",
         "_newton_tolerance",
+        "_use_compiled_runtime_parameters",
         "_newton_diag_config",
         "_sparse_factorization_manager",
         "_sparse_solver_backend_provider",
@@ -2294,6 +2212,7 @@ class StructuralCompiledSolver:
             progress_signal: DummySignal | None = None,
             cancel_checker: Callable[[], bool] | None = None,
             newton_tolerance: float = 1.0e-6,
+            use_compiled_runtime_parameters: bool = True,
     ) -> None:
         """
         Create the structural compiled EMT solver.
@@ -2314,10 +2233,14 @@ class StructuralCompiledSolver:
         :type dense_threshold: int
         :param verbose: Whether to print build and simulation timings.
         :type verbose: bool
-        :param newton_max_iter: Maximum Newton iterations per local EMT substep.
+        :param newton_max_iter: Maximum Newton corrections per local EMT substep.
+            The final corrected candidate is checked without another correction.
         :type newton_max_iter: int
         :param newton_tolerance: Absolute infinity-norm tolerance for Newton residual convergence.
         :type newton_tolerance: float
+        :param use_compiled_runtime_parameters: Use the problem's compiled runtime-parameter evaluator, as solver_AD
+            does. Disable only to keep the interpreted evaluator.
+        :type use_compiled_runtime_parameters: bool
         :param auto_build: Whether to build the vectorized backend during construction.
         :type auto_build: bool
         :param warmup_policy: Warmup policy used during backend build.
@@ -2341,6 +2264,7 @@ class StructuralCompiledSolver:
         self._newton_tolerance: float = float(newton_tolerance)
         if not np.isfinite(self._newton_tolerance) or self._newton_tolerance <= 0.0:
             raise ValueError("newton_tolerance must be finite and greater than zero.")
+        self._use_compiled_runtime_parameters: bool = bool(use_compiled_runtime_parameters)
         self._warmup_policy = warmup_policy
         self._sparse_solver_backend_provider = sparse_solver_backend_provider
         self._newton_diag_config = newton_diag_config or NewtonDiagnosticsConfig(
@@ -2792,16 +2716,31 @@ class StructuralCompiledSolver:
         :type params0: Vec | None
         :param boundary_updater: Optional override for the problem boundary updater.
         :type boundary_updater: EmtBoundaryUpdateProtocol | None
-        :return: Time vector, state trajectory and differential trajectory.
-        :rtype: Tuple[Vec, Mat, Mat]
+        :return: Matching completed macro prefixes for time, state and derivative,
+                 followed by initialization and convergence flags.
+        :rtype: Tuple[Vec, Mat, Mat, bool, bool]
         """
         converged: bool = True
         well_initialized: bool = True
 
-        if self._vectorized_ready:
+        # Problem construction, initialization and event-group selection are complete
+        # here. Activate the compiled runtime-parameter evaluator before the boundary
+        # updater reset evaluates the runtime parameters, as solver_AD does.
+        if self._use_compiled_runtime_parameters:
+            self._problem.enable_compiled_runtime_parameter_evaluator()
+        else:
+            pass
+
+        bdf2_startup_pending: bool = self._method == DynamicIntegrationMethod.DaeBDF2
+        prepared_method: DynamicIntegrationMethod = (
+            DynamicIntegrationMethod.DaeBackEuler if bdf2_startup_pending else self._method
+        )
+        method_transition_s: float = 0.0
+        # A fresh BDF2 call must reset the complete backend and its factors.
+        if self._vectorized_ready and not bdf2_startup_pending:
             pass
         else:
-            self._build_vectorized_backend(self._method)
+            self._build_vectorized_backend(prepared_method)
 
         if self._residual_assembler is None or self._jacobian_evaluator is None:
             raise RuntimeError("Structural compiled backend was not built correctly")
@@ -2826,6 +2765,20 @@ class StructuralCompiledSolver:
         active_boundary_updater = resolve_solver_boundary_updater(self._problem, boundary_updater, float(self._t0))
 
         x_prev2: Vec = x_prev.copy()
+        # Compiler history is in runtime-variable order, public dy in diff UID order.
+        base_slopes: Vec = np.zeros(x_prev.size if bdf2_startup_pending else 0, dtype=np.float64)
+        diff_base_indices: np.ndarray = np.full(dx_prev.size if bdf2_startup_pending else 0, -1, dtype=np.int64)
+        if bdf2_startup_pending:
+            differential: Var
+            for differential in self._diff_vars:
+                if differential.base_var is not None:
+                    diff_index: int = self._problem.uid2idx_diff[differential.uid]
+                    diff_base_indices[diff_index] = self._uid2idx_vars.get(differential.base_var.uid, -1)
+                else:
+                    pass
+            kernel_derivatives: Vec = base_slopes
+        else:
+            kernel_derivatives = dx_prev
         x_iter: Vec = x_prev.copy()
         trial_state: Vec = self._trial_state_buffer
         trial_residual: Vec = self._trial_residual_buffer
@@ -2881,6 +2834,8 @@ class StructuralCompiledSolver:
             sparse_stats_start: Dict[str, float] = dict()
         else:
             sparse_stats_start = sparse_factor_manager.get_stats()
+        startup_sparse_stats: Dict[str, float] | None = None
+        main_sparse_stats_start: Dict[str, float] | None = None
 
         jacobian_eval_count: int = 0
         dense_factorization_count: int = 0
@@ -2912,10 +2867,12 @@ class StructuralCompiledSolver:
         if self._backend_warmup_done:
             pass
         else:
-            self._residual_assembler.evaluate(x_prev, full_params, x_prev, dx_prev, self._h, x_prev2, self._residual_buffer)
-            self._jacobian_evaluator.evaluate(x_prev, full_params, x_prev, dx_prev, self._h, x_prev2)
+            self._residual_assembler.evaluate(x_prev, full_params, x_prev, kernel_derivatives, self._h, x_prev2, self._residual_buffer)
+            self._jacobian_evaluator.evaluate(x_prev, full_params, x_prev, kernel_derivatives, self._h, x_prev2)
             self._backend_warmup_done = True
 
+        # Only completed macro rows are published after a local rejection.
+        completed_samples: int = 1
         loop_start: float = time.perf_counter()
 
         if self._verbose:
@@ -2967,6 +2924,29 @@ class StructuralCompiledSolver:
                     pass
 
                 h_eff: float = float(t_curr - t_local_prev)
+
+                effective_method: DynamicIntegrationMethod = (
+                    DynamicIntegrationMethod.DaeBackEuler if bdf2_startup_pending else self._method
+                )
+                if prepared_method != effective_method:
+                    # Rebuild residual, Jacobian, argument layouts and factors
+                    # together before Newton sees the new BDF coefficient.
+                    transition_start: float = time.perf_counter()
+                    if sparse_factor_manager is not None:
+                        startup_sparse_stats = sparse_factor_manager.get_stats()
+                    else:
+                        pass
+                    self._build_vectorized_backend(effective_method)
+                    if use_dense_solver:
+                        sparse_factor_manager = None
+                    else:
+                        sparse_factor_manager = self._sparse_factorization_manager
+                        assert sparse_factor_manager is not None
+                        main_sparse_stats_start = sparse_factor_manager.get_stats()
+                    prepared_method = effective_method
+                    method_transition_s += time.perf_counter() - transition_start
+                else:
+                    pass
 
                 # Runtime parameters are refreshed before every Newton solve because events may move them.
                 if self._n_event_parameters > 0:
@@ -3026,23 +3006,40 @@ class StructuralCompiledSolver:
                 newton_index: int = 0
                 while (
                     state_event_retry_time is None
-                    and newton_index < self._newton_max_iter
+                    and newton_index <= self._newton_max_iter
                 ):
+                    # Check in Python, outside fastmath, before assembling a candidate.
+                    if not np.all(np.isfinite(x_iter)):
+                        break
+                    else:
+                        pass
                     ctx: NewtonSolveContext | None = None
                     # Residual assembly is fully in-place and reuses the grouped work buffers.
                     self._residual_assembler.evaluate(
                         x_iter,
                         full_params,
                         x_prev,
-                        dx_prev,
+                        kernel_derivatives,
                         h_eff,
                         x_prev2,
                         self._residual_buffer,
                     )
                     res_norm: float = _max_abs_value(self._residual_buffer)
 
+                    # The compiled norm may hide NaN entries; inspect the full buffer.
+                    if not np.all(np.isfinite(self._residual_buffer)):
+                        break
+                    else:
+                        pass
+
                     if res_norm < self._newton_tolerance:
                         substep_converged = True
+                        break
+                    else:
+                        pass
+
+                    # Validate the last iterate even when the correction budget is exhausted.
+                    if newton_index >= self._newton_max_iter:
                         break
                     else:
                         pass
@@ -3053,7 +3050,7 @@ class StructuralCompiledSolver:
                             step_idx=int(step_index),
                             newton_iter=int(newton_index),
                             phase="jit_structural_compiled",
-                            method=str(self._method),
+                            method=str(effective_method),
                         )
                         ctx.res_norm_inf = res_norm
                     else:
@@ -3077,7 +3074,7 @@ class StructuralCompiledSolver:
                             x_iter,
                             full_params,
                             x_prev,
-                            dx_prev,
+                            kernel_derivatives,
                             h_eff,
                             x_prev2,
                         )
@@ -3141,7 +3138,7 @@ class StructuralCompiledSolver:
                             self._residual_assembler,
                             full_params,
                             x_prev,
-                            dx_prev,
+                            kernel_derivatives,
                             h_eff,
                             x_prev2,
                         )
@@ -3165,6 +3162,10 @@ class StructuralCompiledSolver:
                     converged = False
                     if step_index == 0 and is_first_local_step:
                         well_initialized = False
+                    else:
+                        pass
+                else:
+                    pass
 
                 if state_event_retry_time is None:
                     state_event_retry_time = resolve_solver_boundary_step(
@@ -3174,6 +3175,12 @@ class StructuralCompiledSolver:
                         committed_time=float(t_curr),
                         committed_state=x_iter,
                     )
+                else:
+                    pass
+
+                # Resolve rejection once, then stop before any accepted history changes.
+                if not substep_converged:
+                    break
                 else:
                     pass
 
@@ -3193,38 +3200,48 @@ class StructuralCompiledSolver:
                     # continuous interval or its post-event re-solve.
                     self._last_macro_newton_iterations = int(newton_index)
 
-                    if self._method == DynamicIntegrationMethod.DaeTrapezoidal:
+                    if self._method == DynamicIntegrationMethod.DaeBDF2:
+                        # Both histories are still immutable accepted states here.
+                        if bdf2_startup_pending:
+                            base_slopes[:] = (x_iter - x_prev) / h_eff
+                        else:
+                            base_slopes[:] = (1.5 * x_iter - 2.0 * x_prev + 0.5 * x_prev2) / h_eff
+                        base_index: int
+                        for diff_index, base_index in enumerate(diff_base_indices):
+                            if base_index >= 0:
+                                dx_prev[diff_index] = base_slopes[base_index]
+                            else:
+                                pass
+                        bdf2_startup_pending = False
+                    elif self._method == DynamicIntegrationMethod.DaeTrapezoidal:
                         dx_prev[:self._n_state] = (
                             (2.0 / h_eff) * (x_iter[:self._n_state] - x_prev[:self._n_state])
                             - dx_prev[:self._n_state]
                         )
-                    elif self._method == DynamicIntegrationMethod.DaeBDF2:
-                        x_prev2[:] = x_prev
-                        dx_prev[:self._n_state] = (
-                            1.5 * x_iter[:self._n_state]
-                            - 2.0 * x_prev[:self._n_state]
-                            + 0.5 * x_prev2[:self._n_state]
-                        ) / h_eff
                     else:
                         dx_prev[:self._n_state] = (
                             x_iter[:self._n_state] - x_prev[:self._n_state]
                         ) / h_eff
 
-                    if self._method == DynamicIntegrationMethod.DaeBDF2:
-                        pass
-                    else:
-                        x_prev2[:] = x_prev
+                    x_prev2[:] = x_prev
 
                     x_prev[:] = x_iter
                     t_local_prev = t_curr
                     is_first_local_step = False
 
 
+            # A partially accepted macro interval is not an output sample.
+            if not converged:
+                break
+            else:
+                pass
+
             y[step_index + 1, :] = x_prev
             dy[step_index + 1, :] = dx_prev
+            completed_samples += 1
             step_index += 1
 
-        self._last_sim_loop_time = time.perf_counter() - loop_start
+        self._last_sim_loop_time = time.perf_counter() - loop_start - method_transition_s
 
         if self._verbose:
             print(f"-> StructuralCompiled simulation finished in {self._last_sim_loop_time:.4f}s")
@@ -3236,7 +3253,17 @@ class StructuralCompiledSolver:
         else:
             sparse_stats_end = sparse_factor_manager.get_stats()
 
+        if startup_sparse_stats is not None and main_sparse_stats_start is not None:
+            # Sum both numerical phases while excluding each backend's setup.
+            stat_name: str
+            for stat_name in sparse_stats_end:
+                sparse_stats_end[stat_name] += (startup_sparse_stats.get(stat_name, 0.0)
+                                                - main_sparse_stats_start.get(stat_name, 0.0))
+        else:
+            pass
+
         self._last_runtime_stats = {
+            "method_transition_s": method_transition_s,
             "jacobian_evaluations": float(jacobian_eval_count),
             "dense_factorizations": float(dense_factorization_count),
             "factorization_reuse_hits": float(factorization_reuse_hits),
@@ -3261,4 +3288,4 @@ class StructuralCompiledSolver:
             ),
         }
 
-        return t, y, dy,well_initialized, converged
+        return t[:completed_samples].copy(), y[:completed_samples, :].copy(), dy[:completed_samples, :].copy(), well_initialized, converged

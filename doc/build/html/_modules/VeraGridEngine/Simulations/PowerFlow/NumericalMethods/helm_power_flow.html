@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Simulations.PowerFlow.NumericalMethods.helm_power_flow &mdash; VeraGrid 6.7.13 documentation</title>
+  <title>VeraGridEngine.Simulations.PowerFlow.NumericalMethods.helm_power_flow &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../../_static/documentation_options.js?v=16fbabd8"></script>
+      <script src="../../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../../_static/js/theme.js"></script>
@@ -129,8 +129,8 @@
 <div class="viewcode-block" id="epsilon">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow.NumericalMethods.html#VeraGridEngine.Simulations.PowerFlow.NumericalMethods.helm_power_flow.epsilon">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">epsilon</span><span class="p">(</span><span class="n">Sn</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">E</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Fast recursive Wynn&#39;s epsilon algorithm from:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Fast recursive Wynn's epsilon algorithm from:</span>
 <span class="sd">        NONLINEAR SEQUENCE TRANSFORMATIONS FOR THE ACCELERATION OF CONVERGENCE</span>
 <span class="sd">        AND THE SUMMATION OF DIVERGENT SERIES</span>
 
@@ -142,7 +142,7 @@
 
 <span class="sd">    Returns:</span>
 
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">Zero</span> <span class="o">=</span> <span class="nb">complex</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
     <span class="n">One</span> <span class="o">=</span> <span class="nb">complex</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
     <span class="n">Tiny</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="nb">complex</span><span class="p">)</span><span class="o">.</span><span class="n">tiny</span>  <span class="c1"># np.finfo(complex).min</span>
@@ -176,12 +176,12 @@
 
 
 
-<span class="c1"># @nb.jit(&quot;(c16[:])(i8, c16[:, :], f8)&quot;)</span>
+<span class="c1"># @nb.jit("(c16[:])(i8, c16[:, :], f8)")</span>
 <div class="viewcode-block" id="pade4all">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow.NumericalMethods.html#VeraGridEngine.Simulations.PowerFlow.NumericalMethods.helm_power_flow.pade4all">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">pade4all</span><span class="p">(</span><span class="n">order</span><span class="p">,</span> <span class="n">coeff_mat</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mf">1.0</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Computes the &quot;order&quot; Padè approximant of the coefficients at the approximation point s</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Computes the "order" Padè approximant of the coefficients at the approximation point s</span>
 
 <span class="sd">    Arguments:</span>
 <span class="sd">        coeff_mat: coefficient matrix (order, buses)</span>
@@ -190,7 +190,7 @@
 
 <span class="sd">    Returns:</span>
 <span class="sd">        Padè approximation at s for all the series</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">nbus</span> <span class="o">=</span> <span class="n">coeff_mat</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
 
     <span class="c1"># complex_type = nb.complex128</span>
@@ -219,7 +219,7 @@
         <span class="n">b</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
         <span class="n">b</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">=</span> <span class="n">x</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
 
-        <span class="c1"># Obtaining of the coefficients &#39;a&#39;</span>
+        <span class="c1"># Obtaining of the coefficients 'a'</span>
         <span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">L</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">complex_type</span><span class="p">)</span>
         <span class="n">a</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">coeff_mat</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">d</span><span class="p">]</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">L</span><span class="p">):</span>
@@ -229,7 +229,7 @@
                 <span class="n">val</span> <span class="o">+=</span> <span class="n">coeff_mat</span><span class="p">[</span><span class="n">k</span> <span class="o">-</span> <span class="n">j</span><span class="p">,</span> <span class="n">d</span><span class="p">]</span> <span class="o">*</span> <span class="n">b</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
             <span class="n">a</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
 
-        <span class="c1"># evaluation of the function for the value &#39;s&#39;</span>
+        <span class="c1"># evaluation of the function for the value 's'</span>
         <span class="n">p</span> <span class="o">=</span> <span class="n">complex_type</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
         <span class="n">q</span> <span class="o">=</span> <span class="n">complex_type</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">L</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
@@ -242,21 +242,21 @@
 
 
 
-<span class="c1"># @nb.jit(&quot;(c16[:])(c16[:, :], c16[:, :], i8, c16[:])&quot;)</span>
+<span class="c1"># @nb.jit("(c16[:])(c16[:, :], c16[:, :], i8, c16[:])")</span>
 <div class="viewcode-block" id="sigma_function">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow.NumericalMethods.html#VeraGridEngine.Simulations.PowerFlow.NumericalMethods.helm_power_flow.sigma_function">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">sigma_function</span><span class="p">(</span><span class="n">coeff_matU</span><span class="p">,</span> <span class="n">coeff_matX</span><span class="p">,</span> <span class="n">order</span><span class="p">,</span> <span class="n">V_slack</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 
 <span class="sd">    :param coeff_matU: array with voltage coefficients</span>
 <span class="sd">    :param coeff_matX: array with inverse conjugated voltage coefficients</span>
 <span class="sd">    :param order: should be prof - 1</span>
 <span class="sd">    :param V_slack: slack bus voltage vector. Must contain only 1 slack bus</span>
 <span class="sd">    :return: sigma complex value</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">V_slack</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Sigma values may not be correct&#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">'Sigma values may not be correct'</span><span class="p">)</span>
     <span class="n">V0</span> <span class="o">=</span> <span class="n">V_slack</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">coeff_matU</span> <span class="o">=</span> <span class="n">coeff_matU</span> <span class="o">/</span> <span class="n">V0</span>
     <span class="n">coeff_matX</span> <span class="o">=</span> <span class="n">coeff_matX</span> <span class="o">/</span> <span class="n">V0</span>
@@ -289,19 +289,19 @@
 
 
 
-<span class="c1"># @nb.jit(&quot;(c16[:])(c16[:, :], c16[:, :], i8, i8[:])&quot;)</span>
+<span class="c1"># @nb.jit("(c16[:])(c16[:, :], c16[:, :], i8, i8[:])")</span>
 <div class="viewcode-block" id="conv1_old">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow.NumericalMethods.html#VeraGridEngine.Simulations.PowerFlow.NumericalMethods.helm_power_flow.conv1_old">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">conv1_old</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">indices</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Performs the convolution of A* and B</span>
 <span class="sd">    :param A: Coefficients matrix 1 (orders, buses)</span>
 <span class="sd">    :param B: Coefficients matrix 2 (orders, buses)</span>
 <span class="sd">    :param c: order of the coefficients</span>
 <span class="sd">    :param indices: bus indices array</span>
-<span class="sd">    :return: Array with the convolution for the buses given by &quot;indices&quot;</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    :return: Array with the convolution for the buses given by "indices"</span>
+<span class="sd">    """</span>
     <span class="n">suma</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">indices</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">nb</span><span class="o">.</span><span class="n">complex128</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">c</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">d</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">indices</span><span class="p">):</span>
@@ -310,18 +310,18 @@
 
 
 
-<span class="c1"># @nb.jit(&quot;(c16[:])(c16[:, :], c16[:, :], i8)&quot;)</span>
+<span class="c1"># @nb.jit("(c16[:])(c16[:, :], c16[:, :], i8)")</span>
 <div class="viewcode-block" id="conv1">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow.NumericalMethods.html#VeraGridEngine.Simulations.PowerFlow.NumericalMethods.helm_power_flow.conv1">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">conv1</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">c</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Performs the convolution of A* and B</span>
 <span class="sd">    :param A: Coefficients matrix 1 (orders, buses)</span>
 <span class="sd">    :param B: Coefficients matrix 2 (orders, buses)</span>
 <span class="sd">    :param c: order of the coefficients</span>
-<span class="sd">    :return: Array with the convolution for the buses given by &quot;indices&quot;</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    :return: Array with the convolution for the buses given by "indices"</span>
+<span class="sd">    """</span>
     <span class="n">suma</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">A</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">nb</span><span class="o">.</span><span class="n">complex128</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">c</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">A</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
@@ -330,19 +330,19 @@
 
 
 
-<span class="c1"># @nb.jit(&quot;(c16[:])(c16[:, :], c16[:, :], i8, i8[:])&quot;)</span>
+<span class="c1"># @nb.jit("(c16[:])(c16[:, :], c16[:, :], i8, i8[:])")</span>
 <div class="viewcode-block" id="conv2">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow.NumericalMethods.html#VeraGridEngine.Simulations.PowerFlow.NumericalMethods.helm_power_flow.conv2">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">conv2</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">indices</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Performs the convolution of A and B</span>
 <span class="sd">    :param A: Coefficients matrix 1 (orders, buses)</span>
 <span class="sd">    :param B: Coefficients matrix 2 (orders, buses)</span>
 <span class="sd">    :param c: order of the coefficients</span>
 <span class="sd">    :param indices: bus indices array</span>
-<span class="sd">    :return: Array with the convolution for the buses given by &quot;indices&quot;</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    :return: Array with the convolution for the buses given by "indices"</span>
+<span class="sd">    """</span>
     <span class="n">suma</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">indices</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">nb</span><span class="o">.</span><span class="n">complex128</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">c</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">d</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">indices</span><span class="p">):</span>
@@ -351,19 +351,19 @@
 
 
 
-<span class="c1"># @nb.jit(&quot;(c16[:])(c16[:, :], c16[:, :], i8, i8[:])&quot;)</span>
+<span class="c1"># @nb.jit("(c16[:])(c16[:, :], c16[:, :], i8, i8[:])")</span>
 <div class="viewcode-block" id="conv3">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow.NumericalMethods.html#VeraGridEngine.Simulations.PowerFlow.NumericalMethods.helm_power_flow.conv3">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">conv3</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">indices</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Performs the convolution of A and B*</span>
 <span class="sd">    :param A: Coefficients matrix 1 (orders, buses)</span>
 <span class="sd">    :param B: Coefficients matrix 2 (orders, buses)</span>
 <span class="sd">    :param c: order of the coefficients</span>
 <span class="sd">    :param indices: bus indices array</span>
-<span class="sd">    :return: Array with the convolution for the buses given by &quot;indices&quot;</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    :return: Array with the convolution for the buses given by "indices"</span>
+<span class="sd">    """</span>
     <span class="n">suma</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">indices</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">nb</span><span class="o">.</span><span class="n">complex128</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">c</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">d</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">indices</span><span class="p">):</span>
@@ -378,7 +378,7 @@
                             <span class="n">pq</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">pv</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">sl</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">no_slack</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span>
                             <span class="n">tolerance</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">,</span> <span class="n">max_coeff</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">stop_if_too_bad</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                             <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Holomorphic Embedding LoadFlow Method as formulated by Josep Fanals Batllori in 2020</span>
 <span class="sd">    This function just returns the coefficients for further usage in other routines</span>
 <span class="sd">    :param Ybus: Admittance matrix</span>
@@ -396,7 +396,7 @@
 <span class="sd">    :param stop_if_too_bad: stop when things go wrong</span>
 <span class="sd">    :param logger: Logger object to store the debug info</span>
 <span class="sd">    :return: U, X, Q, V, iterations</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">n_no_slack</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">no_slack</span><span class="p">)</span>
     <span class="n">npv</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">pv</span><span class="p">)</span>
@@ -413,10 +413,10 @@
         <span class="k">return</span> <span class="n">U</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">Q</span><span class="p">,</span> <span class="n">V0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="kc">False</span>
 
     <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">add_debug</span><span class="p">(</span><span class="s1">&#39;Yseries&#39;</span><span class="p">,</span> <span class="n">Yseries</span><span class="o">.</span><span class="n">toarray</span><span class="p">())</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">add_debug</span><span class="p">(</span><span class="s1">'Yseries'</span><span class="p">,</span> <span class="n">Yseries</span><span class="o">.</span><span class="n">toarray</span><span class="p">())</span>
 
         <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">c_</span><span class="p">[</span><span class="n">Ysh0</span><span class="o">.</span><span class="n">imag</span><span class="p">,</span> <span class="n">S0</span><span class="o">.</span><span class="n">real</span><span class="p">,</span> <span class="n">S0</span><span class="o">.</span><span class="n">imag</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">V0</span><span class="p">)],</span>
-                          <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Ysh&#39;</span><span class="p">,</span> <span class="s1">&#39;P0&#39;</span><span class="p">,</span> <span class="s1">&#39;Q0&#39;</span><span class="p">,</span> <span class="s1">&#39;V0&#39;</span><span class="p">])</span>
+                          <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">'Ysh'</span><span class="p">,</span> <span class="s1">'P0'</span><span class="p">,</span> <span class="s1">'Q0'</span><span class="p">,</span> <span class="s1">'V0'</span><span class="p">])</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">add_debug</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">to_string</span><span class="p">())</span>
 
     <span class="c1"># build the reduced system</span>
@@ -490,11 +490,11 @@
         <span class="p">(</span><span class="n">hs</span><span class="p">((</span><span class="n">G</span><span class="p">,</span> <span class="o">-</span><span class="n">B</span><span class="p">,</span> <span class="n">XIM</span><span class="p">)),</span>
          <span class="n">hs</span><span class="p">((</span><span class="n">B</span><span class="p">,</span> <span class="n">G</span><span class="p">,</span> <span class="n">XRE</span><span class="p">)),</span>
          <span class="n">hs</span><span class="p">((</span><span class="n">VRE</span><span class="p">,</span> <span class="n">VIM</span><span class="p">,</span> <span class="n">EMPTY</span><span class="p">))),</span>
-        <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;csc&#39;</span>
+        <span class="nb">format</span><span class="o">=</span><span class="s1">'csc'</span>
     <span class="p">)</span>
 
     <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">add_debug</span><span class="p">(</span><span class="s2">&quot;MAT&quot;</span><span class="p">,</span> <span class="n">MAT</span><span class="o">.</span><span class="n">toarray</span><span class="p">())</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">add_debug</span><span class="p">(</span><span class="s2">"MAT"</span><span class="p">,</span> <span class="n">MAT</span><span class="o">.</span><span class="n">toarray</span><span class="p">())</span>
 
     <span class="c1"># factorize (only once)</span>
     <span class="c1"># MAT_LU = factorized(MAT.tocsc())</span>
@@ -503,7 +503,7 @@
     <span class="k">try</span><span class="p">:</span>
         <span class="n">mat_factorized</span> <span class="o">=</span> <span class="n">factorized</span><span class="p">(</span><span class="n">MAT</span><span class="p">)</span>
     <span class="k">except</span> <span class="ne">RuntimeError</span><span class="p">:</span>
-        <span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Unable to factorize HELM coefficients matrix :/&quot;</span><span class="p">)</span>
+        <span class="n">warn</span><span class="p">(</span><span class="s2">"Unable to factorize HELM coefficients matrix :/"</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">U</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">Q</span><span class="p">,</span> <span class="n">V0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="kc">False</span>
 
     <span class="n">LHS</span> <span class="o">=</span> <span class="n">mat_factorized</span><span class="p">(</span><span class="n">RHS</span><span class="p">)</span>
@@ -582,34 +582,34 @@
 <div class="viewcode-block" id="HelmPreparation">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow.NumericalMethods.html#VeraGridEngine.Simulations.PowerFlow.NumericalMethods.helm_power_flow.HelmPreparation">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">HelmPreparation</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    HelmPreparation</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s1">&#39;sys_mat_factorization&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;Uini&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;Xini&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;Yslack&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;Vslack&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;vec_P&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;vec_Q&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;Ysh&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;vec_W&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;pq&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;pv&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;sl&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;pqpv&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;npqpv&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;nbus&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;pqpv_original&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;pq_original&#39;</span><span class="p">,</span>
+        <span class="s1">'sys_mat_factorization'</span><span class="p">,</span>
+        <span class="s1">'Uini'</span><span class="p">,</span>
+        <span class="s1">'Xini'</span><span class="p">,</span>
+        <span class="s1">'Yslack'</span><span class="p">,</span>
+        <span class="s1">'Vslack'</span><span class="p">,</span>
+        <span class="s1">'vec_P'</span><span class="p">,</span>
+        <span class="s1">'vec_Q'</span><span class="p">,</span>
+        <span class="s1">'Ysh'</span><span class="p">,</span>
+        <span class="s1">'vec_W'</span><span class="p">,</span>
+        <span class="s1">'pq'</span><span class="p">,</span>
+        <span class="s1">'pv'</span><span class="p">,</span>
+        <span class="s1">'sl'</span><span class="p">,</span>
+        <span class="s1">'pqpv'</span><span class="p">,</span>
+        <span class="s1">'npqpv'</span><span class="p">,</span>
+        <span class="s1">'nbus'</span><span class="p">,</span>
+        <span class="s1">'pqpv_original'</span><span class="p">,</span>
+        <span class="s1">'pq_original'</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sys_mat_factorization</span><span class="p">,</span> <span class="n">Uini</span><span class="p">,</span> <span class="n">Xini</span><span class="p">,</span> <span class="n">Yslack</span><span class="p">,</span> <span class="n">Vslack</span><span class="p">,</span>
                  <span class="n">vec_P</span><span class="p">,</span> <span class="n">vec_Q</span><span class="p">,</span> <span class="n">Ysh</span><span class="p">,</span> <span class="n">vec_W</span><span class="p">,</span> <span class="n">pq</span><span class="p">,</span> <span class="n">pv</span><span class="p">,</span> <span class="n">pqpv</span><span class="p">,</span> <span class="n">sl</span><span class="p">,</span>
                  <span class="n">npqpv</span><span class="p">,</span> <span class="n">nbus</span><span class="p">,</span> <span class="n">pqpv_original</span><span class="p">,</span> <span class="n">pq_original</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :param sys_mat_factorization:</span>
 <span class="sd">        :param Uini:</span>
@@ -627,7 +627,7 @@
 <span class="sd">        :param npqpv:</span>
 <span class="sd">        :param nbus:</span>
 <span class="sd">        :param pqpv_original:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">sys_mat_factorization</span> <span class="o">=</span> <span class="n">sys_mat_factorization</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">Uini</span> <span class="o">=</span> <span class="n">Uini</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">Xini</span> <span class="o">=</span> <span class="n">Xini</span>
@@ -652,7 +652,7 @@
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow.NumericalMethods.html#VeraGridEngine.Simulations.PowerFlow.NumericalMethods.helm_power_flow.helm_preparation_dY">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">helm_preparation_dY</span><span class="p">(</span><span class="n">Yseries</span><span class="p">,</span> <span class="n">V0</span><span class="p">,</span> <span class="n">S0</span><span class="p">,</span> <span class="n">Ysh0</span><span class="p">,</span> <span class="n">pq</span><span class="p">,</span> <span class="n">pv</span><span class="p">,</span> <span class="n">sl</span><span class="p">,</span> <span class="n">pqpv</span><span class="p">,</span> <span class="n">verbose</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
                         <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">HelmPreparation</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    This function returns the constant objects to run many HELM simulations</span>
 
 <span class="sd">    Based on the paper: Novel AC Distribution Factor for Efficient Outage Analysis</span>
@@ -669,7 +669,7 @@
 <span class="sd">    :param verbose: print intermediate information</span>
 <span class="sd">    :param logger: Logger object to store the debug info</span>
 <span class="sd">    :return: U, X, Q, V, iterations</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">npqpv</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">pqpv</span><span class="p">)</span>
     <span class="n">npv</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">pv</span><span class="p">)</span>
@@ -724,10 +724,10 @@
 
     <span class="n">MAT</span> <span class="o">=</span> <span class="n">vs</span><span class="p">((</span><span class="n">hs</span><span class="p">((</span><span class="n">G</span><span class="p">,</span> <span class="o">-</span><span class="n">B</span><span class="p">,</span> <span class="n">XIM</span><span class="p">)),</span>
               <span class="n">hs</span><span class="p">((</span><span class="n">B</span><span class="p">,</span> <span class="n">G</span><span class="p">,</span> <span class="n">XRE</span><span class="p">)),</span>
-              <span class="n">hs</span><span class="p">((</span><span class="n">VRE</span><span class="p">,</span> <span class="n">VIM</span><span class="p">,</span> <span class="n">EMPTY</span><span class="p">))),</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;csc&#39;</span><span class="p">)</span>
+              <span class="n">hs</span><span class="p">((</span><span class="n">VRE</span><span class="p">,</span> <span class="n">VIM</span><span class="p">,</span> <span class="n">EMPTY</span><span class="p">))),</span> <span class="nb">format</span><span class="o">=</span><span class="s1">'csc'</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">add_debug</span><span class="p">(</span><span class="s2">&quot;MAT&quot;</span><span class="p">,</span> <span class="n">MAT</span><span class="o">.</span><span class="n">toarray</span><span class="p">())</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">add_debug</span><span class="p">(</span><span class="s2">"MAT"</span><span class="p">,</span> <span class="n">MAT</span><span class="o">.</span><span class="n">toarray</span><span class="p">())</span>
 
     <span class="c1"># solve</span>
     <span class="n">mat_factorized</span> <span class="o">=</span> <span class="n">factorized</span><span class="p">(</span><span class="n">MAT</span><span class="p">)</span>
@@ -744,7 +744,7 @@
                          <span class="n">vec_W</span><span class="p">,</span> <span class="n">V0</span><span class="p">,</span> <span class="n">Vslack</span><span class="p">,</span> <span class="n">pq</span><span class="p">,</span> <span class="n">pv</span><span class="p">,</span> <span class="n">pqpv</span><span class="p">,</span> <span class="n">npqpv</span><span class="p">,</span> <span class="n">nbus</span><span class="p">,</span> <span class="n">sl</span><span class="p">,</span> 
                          <span class="n">pqpv_original</span><span class="p">,</span> <span class="n">pq_original</span><span class="p">,</span> 
                          <span class="n">tolerance</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">,</span> <span class="n">max_coeff</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Holomorphic Embedding LoadFlow Method as formulated by Josep Fanals Batllori in 2020</span>
 <span class="sd">    This function just returns the coefficients for further usage in other routines</span>
 
@@ -777,7 +777,7 @@
 <span class="sd">    :param tolerance: target error (or tolerance)</span>
 <span class="sd">    :param max_coeff: maximum number of coefficients</span>
 <span class="sd">    :return: U, V, iter_, norm_f</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">AYred</span> <span class="o">=</span> <span class="n">dY</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ix_</span><span class="p">(</span><span class="n">pqpv_original</span><span class="p">,</span> <span class="n">pqpv_original</span><span class="p">)]</span>  <span class="c1"># difference admittance matrix without slack buses</span>
     <span class="n">AYsl</span> <span class="o">=</span> <span class="n">dY</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ix_</span><span class="p">(</span><span class="n">pqpv_original</span><span class="p">,</span> <span class="n">sl</span><span class="p">)]</span>  <span class="c1"># difference admittance matrix involving slack buses</span>
@@ -874,7 +874,7 @@
                <span class="n">pq</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">pv</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">vd</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">no_slack</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span>
                <span class="n">tolerance</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-6</span><span class="p">,</span> <span class="n">max_coefficients</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">30</span><span class="p">,</span> <span class="n">use_pade</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
                <span class="n">verbose</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NumericPowerFlowResults</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Holomorphic Embedding LoadFlow Method as formulated by Josep Fanals Batllori in 2020</span>
 <span class="sd">    :param nc: NumericalCircuit</span>
 <span class="sd">    :param Ybus: Complete admittance matrix</span>
@@ -883,7 +883,7 @@
 <span class="sd">    :param Yseries: Admittance matrix of the series elements</span>
 <span class="sd">    :param V0: vector of specified voltages</span>
 <span class="sd">    :param S0: vector of specified power</span>
-<span class="sd">    :param Ysh0: vector of shunt admittances (including the shunt &quot;legs&quot; of the pi Branches)</span>
+<span class="sd">    :param Ysh0: vector of shunt admittances (including the shunt "legs" of the pi Branches)</span>
 <span class="sd">    :param pq: list of pq nodes</span>
 <span class="sd">    :param pv: list of pv nodes</span>
 <span class="sd">    :param vd: list of slack nodes</span>
@@ -894,7 +894,7 @@
 <span class="sd">    :param verbose: print intermediate information</span>
 <span class="sd">    :param logger: Logger object to store the debug info</span>
 <span class="sd">    :return: V, converged, norm_f, Scalc, iter_, elapsed</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
 
@@ -943,7 +943,7 @@
 
     <span class="c1"># --------------------------- RESULTS COMPOSITION ------------------------------------------------------------------</span>
     <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">add_debug</span><span class="p">(</span><span class="s1">&#39;V coefficients</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">U</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">add_debug</span><span class="p">(</span><span class="s1">'V coefficients</span><span class="se">\n</span><span class="s1">'</span><span class="p">,</span> <span class="n">U</span><span class="p">)</span>
 
     <span class="c1"># compute the final voltage vector</span>
     <span class="k">if</span> <span class="n">use_pade</span><span class="p">:</span>
@@ -951,7 +951,7 @@
         <span class="k">try</span><span class="p">:</span>
             <span class="n">V</span><span class="p">[</span><span class="n">no_slack</span><span class="p">]</span> <span class="o">=</span> <span class="n">pade4all</span><span class="p">(</span><span class="n">max_coefficients</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">U</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">RuntimeError</span><span class="p">:</span>
-            <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Padè failed :(, using coefficients summation&#39;</span><span class="p">)</span>
+            <span class="n">warn</span><span class="p">(</span><span class="s1">'Padè failed :(, using coefficients summation'</span><span class="p">)</span>
             <span class="n">V</span><span class="p">[</span><span class="n">no_slack</span><span class="p">]</span> <span class="o">=</span> <span class="n">U</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 
     <span class="c1"># compute power mismatch</span>

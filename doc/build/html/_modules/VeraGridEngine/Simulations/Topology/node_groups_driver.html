@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Simulations.Topology.node_groups_driver &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Simulations.Topology.node_groups_driver &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/license.html">📜 License</a></li>
@@ -123,17 +124,17 @@
 <div class="viewcode-block" id="NodeGroupsDriver">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.Topology.html#VeraGridEngine.Simulations.Topology.node_groups_driver.NodeGroupsDriver">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">NodeGroupsDriver</span><span class="p">(</span><span class="n">DriverTemplate</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    NodeGroupsDriver</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;sigmas&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;min_group_size&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;use_ptdf&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;ptdf_results&quot;</span><span class="p">,</span>
+        <span class="s2">"sigmas"</span><span class="p">,</span>
+        <span class="s2">"min_group_size"</span><span class="p">,</span>
+        <span class="s2">"use_ptdf"</span><span class="p">,</span>
+        <span class="s2">"ptdf_results"</span><span class="p">,</span>
     <span class="p">)</span>
 
-    <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;Node groups&#39;</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s1">'Node groups'</span>
     <span class="n">tpe</span> <span class="o">=</span> <span class="n">SimulationTypes</span><span class="o">.</span><span class="n">NodeGrouping_run</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
@@ -142,7 +143,7 @@
             <span class="n">sigmas</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
             <span class="n">min_group_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
             <span class="n">ptdf_results</span><span class="p">:</span> <span class="n">LinearAnalysisResults</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Build the node grouping driver.</span>
 
 <span class="sd">        :param grid: MultiCircuit instance to analyse.</span>
@@ -150,7 +151,7 @@
 <span class="sd">        :param min_group_size: Minimum number of elements required in a group.</span>
 <span class="sd">        :param ptdf_results: Linear analysis results used to build the feature</span>
 <span class="sd">            matrix when PTDF-based grouping is enabled.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">DriverTemplate</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">grid</span><span class="o">=</span><span class="n">grid</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">grid</span> <span class="o">=</span> <span class="n">grid</span>
@@ -173,11 +174,11 @@
 <div class="viewcode-block" id="NodeGroupsDriver.build_weighted_graph">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.Topology.html#VeraGridEngine.Simulations.Topology.node_groups_driver.NodeGroupsDriver.build_weighted_graph">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">build_weighted_graph</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Build the topology graph used by the Dijkstra-based distance mode.</span>
 
 <span class="sd">        :return: Weighted graph whose nodes are bus indices.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">graph</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">()</span>
 
         <span class="c1"># The bus to index map is created explicitly because the branch</span>
@@ -200,29 +201,29 @@
 <div class="viewcode-block" id="NodeGroupsDriver.run">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.Topology.html#VeraGridEngine.Simulations.Topology.node_groups_driver.NodeGroupsDriver.run">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Execute the node grouping study.</span>
 
 <span class="sd">        :return: ``None``.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">tic</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s2">&quot;Compiling and configuring...&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s2">"Compiling and configuring..."</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">report_progress</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
 
         <span class="n">n</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">get_bus_number</span><span class="p">()</span>
         <span class="n">results</span><span class="p">:</span> <span class="n">NodeGroupsResults</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_ptdf</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s1">&#39;Analyzing PTDF...&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s1">'Analyzing PTDF...'</span><span class="p">)</span>
 
             <span class="c1"># The PTDF matrix is normalized before clustering so the DBSCAN</span>
             <span class="c1"># distance threshold is applied on a comparable feature scale.</span>
             <span class="n">normalized_training_matrix</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">Normalizer</span><span class="p">()</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ptdf_results</span><span class="o">.</span><span class="n">PTDF</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
             <span class="n">results</span><span class="o">.</span><span class="n">set_training_matrix</span><span class="p">(</span><span class="n">normalized_training_matrix</span><span class="p">)</span>
 
-            <span class="n">metric</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;euclidean&#39;</span>
+            <span class="n">metric</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">'euclidean'</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s1">&#39;Exploring Dijkstra distances...&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s1">'Exploring Dijkstra distances...'</span><span class="p">)</span>
             <span class="c1"># The weighted grid graph is explored to obtain the pairwise bus</span>
             <span class="c1"># distances that will act as a precomputed clustering metric.</span>
             <span class="n">graph</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">build_weighted_graph</span><span class="p">()</span>
@@ -233,7 +234,7 @@
 
                 <span class="bp">self</span><span class="o">.</span><span class="n">report_progress2</span><span class="p">(</span><span class="n">iteration_index</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
                 <span class="n">iteration_index</span> <span class="o">+=</span> <span class="mi">1</span>
-            <span class="n">metric</span> <span class="o">=</span> <span class="s1">&#39;precomputed&#39;</span>
+            <span class="n">metric</span> <span class="o">=</span> <span class="s1">'precomputed'</span>
 
         <span class="c1"># The global distance spread is preserved because callers may use it to</span>
         <span class="c1"># understand how aggressive the grouping threshold was.</span>
@@ -242,7 +243,7 @@
 
         <span class="c1"># The clustering stage transforms the distance representation into</span>
         <span class="c1"># explicit group assignments for each bus.</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s1">&#39;Building groups with DBSCAN...&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s1">'Building groups with DBSCAN...'</span><span class="p">)</span>
 
         <span class="n">model</span><span class="p">:</span> <span class="n">DBSCAN</span> <span class="o">=</span> <span class="n">DBSCAN</span><span class="p">(</span><span class="n">eps</span><span class="o">=</span><span class="n">max_distance</span><span class="p">,</span>
                                <span class="n">min_samples</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">min_group_size</span><span class="p">,</span>

@@ -539,6 +539,7 @@ def test_structural_vectorized_backtracking_improves_inexact_newton_residual() -
         dense_threshold=100,
         verbose=False,
         auto_vectorization=False,
+        newton_max_iter=100,
         newton_diag_config=NewtonDiagnosticsConfig(
             enable_backtracking=True,
             backtracking_beta=0.5,
@@ -553,12 +554,22 @@ def test_structural_vectorized_backtracking_improves_inexact_newton_residual() -
     solver_bt.fused_residual = inexact_vectorized_residual
     solver_bt.vec_jacobian = InexactVectorizedJacobian()
 
-    _, y_plain, _, _, _ = solver_plain.simulate(
+    t_plain: np.ndarray
+    y_plain: np.ndarray
+    dy_plain: np.ndarray
+    well_plain: bool
+    converged_plain: bool
+    t_plain, y_plain, dy_plain, well_plain, converged_plain = solver_plain.simulate(
         x0=np.array([0.1], dtype=np.float64),
         dx0=np.array([0.0], dtype=np.float64),
         params0=np.zeros(0, dtype=np.float64),
     )
-    _, y_bt, _, _, _ = solver_bt.simulate(
+    t_bt: np.ndarray
+    y_bt: np.ndarray
+    dy_bt: np.ndarray
+    well_bt: bool
+    converged_bt: bool
+    t_bt, y_bt, dy_bt, well_bt, converged_bt = solver_bt.simulate(
         x0=np.array([0.1], dtype=np.float64),
         dx0=np.array([0.0], dtype=np.float64),
         params0=np.zeros(0, dtype=np.float64),
@@ -567,8 +578,19 @@ def test_structural_vectorized_backtracking_improves_inexact_newton_residual() -
     res_plain = abs(float(y_plain[-1, 0] ** 2 - 1.0))
     res_bt = abs(float(y_bt[-1, 0] ** 2 - 1.0))
 
+    # A failed iterate is unavailable; the initial sample remains intact.
+    assert not converged_plain
+    assert not well_plain
+    assert t_plain.shape == (1,)
+    assert y_plain.shape == dy_plain.shape == (1, 1)
+    np.testing.assert_array_equal(y_plain, np.array([[0.1]]))
+    np.testing.assert_array_equal(dy_plain, np.zeros((1, 1)))
     assert res_plain > 1e-1
-    assert res_bt < 1e-3
+    assert converged_bt
+    assert well_bt
+    assert t_bt.shape == (2,)
+    assert y_bt.shape == dy_bt.shape == (2, 1)
+    assert res_bt < 1e-6
     assert res_bt < res_plain
 
 
@@ -605,6 +627,7 @@ def test_structural_compiled_backtracking_improves_inexact_newton_residual() -> 
         dense_threshold=100,
         verbose=False,
         auto_build=False,
+        newton_max_iter=100,
         newton_diag_config=NewtonDiagnosticsConfig(
             enable_backtracking=True,
             backtracking_beta=0.5,
@@ -618,12 +641,22 @@ def test_structural_compiled_backtracking_improves_inexact_newton_residual() -> 
     solver_bt._residual_assembler = cast(Any, InexactCompiledResidualAssembler())
     solver_bt._jacobian_evaluator = cast(Any, InexactCompiledJacobian())
 
-    _, y_plain, _, _, _ = solver_plain.simulate(
+    t_plain: np.ndarray
+    y_plain: np.ndarray
+    dy_plain: np.ndarray
+    well_plain: bool
+    converged_plain: bool
+    t_plain, y_plain, dy_plain, well_plain, converged_plain = solver_plain.simulate(
         x0=np.array([0.1], dtype=np.float64),
         dx0=np.array([0.0], dtype=np.float64),
         params0=np.zeros(0, dtype=np.float64),
     )
-    _, y_bt, _, _, _ = solver_bt.simulate(
+    t_bt: np.ndarray
+    y_bt: np.ndarray
+    dy_bt: np.ndarray
+    well_bt: bool
+    converged_bt: bool
+    t_bt, y_bt, dy_bt, well_bt, converged_bt = solver_bt.simulate(
         x0=np.array([0.1], dtype=np.float64),
         dx0=np.array([0.0], dtype=np.float64),
         params0=np.zeros(0, dtype=np.float64),
@@ -632,6 +665,17 @@ def test_structural_compiled_backtracking_improves_inexact_newton_residual() -> 
     res_plain = abs(float(y_plain[-1, 0] ** 2 - 1.0))
     res_bt = abs(float(y_bt[-1, 0] ** 2 - 1.0))
 
+    # A failed iterate is unavailable; the initial sample remains intact.
+    assert not converged_plain
+    assert not well_plain
+    assert t_plain.shape == (1,)
+    assert y_plain.shape == dy_plain.shape == (1, 1)
+    np.testing.assert_array_equal(y_plain, np.array([[0.1]]))
+    np.testing.assert_array_equal(dy_plain, np.zeros((1, 1)))
     assert res_plain > 1e-1
-    assert res_bt < 1e-3
+    assert converged_bt
+    assert well_bt
+    assert t_bt.shape == (2,)
+    assert y_bt.shape == dy_bt.shape == (2, 1)
+    assert res_bt < 1e-6
     assert res_bt < res_plain

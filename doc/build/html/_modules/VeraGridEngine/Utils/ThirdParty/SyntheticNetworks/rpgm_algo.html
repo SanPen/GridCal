@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Utils.ThirdParty.SyntheticNetworks.rpgm_algo &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Utils.ThirdParty.SyntheticNetworks.rpgm_algo &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/license.html">📜 License</a></li>
@@ -102,15 +103,15 @@
            <div itemprop="articleBody">
              
   <h1>Source code for VeraGridEngine.Utils.ThirdParty.SyntheticNetworks.rpgm_algo</h1><div class="highlight"><pre>
-<span></span><span class="n">__author__</span> <span class="o">=</span> <span class="s2">&quot;Paul Schultz&quot;</span>
-<span class="n">__date__</span> <span class="o">=</span> <span class="s2">&quot;Jul 11, 2015&quot;</span>
-<span class="n">__version__</span> <span class="o">=</span> <span class="s2">&quot;v2.1&quot;</span>
+<span></span><span class="n">__author__</span> <span class="o">=</span> <span class="s2">"Paul Schultz"</span>
+<span class="n">__date__</span> <span class="o">=</span> <span class="s2">"Jul 11, 2015"</span>
+<span class="n">__version__</span> <span class="o">=</span> <span class="s2">"v2.1"</span>
 
 <span class="c1"># This file is based on the network creation algorithm published in:</span>
 <span class="c1">#</span>
 <span class="c1"># A Random Growth Model for Power Grids and Other Spatially Embedded Infrastructure Networks</span>
 <span class="c1"># Paul Schultz, Jobst Heitzig, and Juergen Kurths</span>
-<span class="c1"># Eur. Phys. J. Special Topics on &quot;Resilient power grids and extreme events&quot; (2014)</span>
+<span class="c1"># Eur. Phys. J. Special Topics on "Resilient power grids and extreme events" (2014)</span>
 <span class="c1"># DOI: 10.1140/epjst/e2014-02279-6</span>
 <span class="c1">#</span>
 
@@ -123,29 +124,29 @@
 <div class="viewcode-block" id="RpgAlgorithm">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Utils.ThirdParty.SyntheticNetworks.html#VeraGridEngine.Utils.ThirdParty.SyntheticNetworks.rpgm_algo.RpgAlgorithm">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">RpgAlgorithm</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    RpgAlgorithm</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;n&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;n0&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;p&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;q&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;r&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;s&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;lon&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;lat&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;distance&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;added_nodes&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;added_edges&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;distance_measure&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;sampling&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;low_memory&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;debug&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;init_edges&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;adjacency&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;dGmatrix&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;mst_edges&quot;</span><span class="p">,</span>
+        <span class="s2">"n"</span><span class="p">,</span>
+        <span class="s2">"n0"</span><span class="p">,</span>
+        <span class="s2">"p"</span><span class="p">,</span>
+        <span class="s2">"q"</span><span class="p">,</span>
+        <span class="s2">"r"</span><span class="p">,</span>
+        <span class="s2">"s"</span><span class="p">,</span>
+        <span class="s2">"lon"</span><span class="p">,</span>
+        <span class="s2">"lat"</span><span class="p">,</span>
+        <span class="s2">"distance"</span><span class="p">,</span>
+        <span class="s2">"added_nodes"</span><span class="p">,</span>
+        <span class="s2">"added_edges"</span><span class="p">,</span>
+        <span class="s2">"distance_measure"</span><span class="p">,</span>
+        <span class="s2">"sampling"</span><span class="p">,</span>
+        <span class="s2">"low_memory"</span><span class="p">,</span>
+        <span class="s2">"debug"</span><span class="p">,</span>
+        <span class="s2">"init_edges"</span><span class="p">,</span>
+        <span class="s2">"adjacency"</span><span class="p">,</span>
+        <span class="s2">"dGmatrix"</span><span class="p">,</span>
+        <span class="s2">"mst_edges"</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -166,19 +167,19 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">added_edges</span> <span class="o">=</span> <span class="mi">0</span>
 
         <span class="c1"># CHANGE WITH CAUTION!</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">distance_measure</span> <span class="o">=</span> <span class="s2">&quot;euclidean&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">sampling</span> <span class="o">=</span> <span class="s2">&quot;uniform&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">distance_measure</span> <span class="o">=</span> <span class="s2">"euclidean"</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sampling</span> <span class="o">=</span> <span class="s2">"uniform"</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">low_memory</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">debug</span> <span class="o">=</span> <span class="kc">False</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">init_edges</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;----------&quot;</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;identifier&quot;</span><span class="p">,</span> <span class="s2">&quot;added_nodes&quot;</span><span class="p">,</span> <span class="s2">&quot;n&quot;</span><span class="p">,</span> <span class="s2">&quot;n0&quot;</span><span class="p">,</span> <span class="s2">&quot;p&quot;</span><span class="p">,</span> <span class="s2">&quot;q&quot;</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="s2">&quot;s&quot;</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"----------"</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"identifier"</span><span class="p">,</span> <span class="s2">"added_nodes"</span><span class="p">,</span> <span class="s2">"n"</span><span class="p">,</span> <span class="s2">"n0"</span><span class="p">,</span> <span class="s2">"p"</span><span class="p">,</span> <span class="s2">"q"</span><span class="p">,</span> <span class="s2">"r"</span><span class="p">,</span> <span class="s2">"s"</span><span class="p">):</span>
             <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">):</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> : </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">))))</span>
-        <span class="k">return</span> <span class="s2">&quot;----------&quot;</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">"</span><span class="si">{}</span><span class="s2"> : </span><span class="si">{}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">))))</span>
+        <span class="k">return</span> <span class="s2">"----------"</span>
 
     <span class="c1">###############################################################################</span>
     <span class="c1"># ##                       PUBLIC FUNCTIONS                                ## #</span>
@@ -189,14 +190,14 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">set_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;ERROR: There is no parameter called: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">key</span><span class="p">))</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Possible choices: n,n0,p,q,r,s&quot;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">"ERROR: There is no parameter called: </span><span class="si">{}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">key</span><span class="p">))</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">"Possible choices: n,n0,p,q,r,s"</span><span class="p">)</span>
                 <span class="k">continue</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_validation</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">[</span><span class="n">key</span><span class="p">]):</span>
                     <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;ERROR: invalid parameter value for </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">key</span><span class="p">))</span></div>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">"ERROR: invalid parameter value for </span><span class="si">{}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">key</span><span class="p">))</span></div>
 
 
 <div class="viewcode-block" id="RpgAlgorithm.initialise">
@@ -219,7 +220,7 @@
         <span class="n">edge_mask</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">_s</span><span class="p">(</span><span class="n">key</span><span class="p">)</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">adjacency</span><span class="o">.</span><span class="n">keys</span><span class="p">()])</span>
         <span class="c1"># edge_mask = set(edge_mask)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;I2&quot;</span><span class="p">,</span> <span class="n">edge_mask</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">"I2"</span><span class="p">,</span> <span class="n">edge_mask</span><span class="p">)</span>
 
         <span class="c1"># step I3: add redundant links</span>
         <span class="c1">##############################</span>
@@ -249,7 +250,7 @@
                                       <span class="n">dGmatrix</span><span class="p">[:,</span> <span class="p">[</span><span class="n">b</span><span class="p">]]</span> <span class="o">+</span> <span class="n">onesquare</span> <span class="o">+</span> <span class="n">dGmatrix</span><span class="p">[[</span><span class="n">a</span><span class="p">],</span> <span class="p">:])</span>
 
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;I3&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">))</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">"I3"</span><span class="p">,</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">))</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">added_edges</span> <span class="o">+=</span> <span class="n">m</span>
 
@@ -284,7 +285,7 @@
             <span class="k">assert</span> <span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">dGmatrix</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_graph_distances</span><span class="p">())</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span> <span class="c1"># check that update went well</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">r</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="nb">delattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;dGmatrix&quot;</span><span class="p">)</span></div>
+            <span class="nb">delattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"dGmatrix"</span><span class="p">)</span></div>
 
 
     <span class="nd">@property</span>
@@ -296,13 +297,13 @@
     <span class="c1">###############################################################################</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_get_coords</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sampling</span> <span class="o">==</span> <span class="s2">&quot;uniform&quot;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sampling</span> <span class="o">==</span> <span class="s2">"uniform"</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_uniformunitsquare</span><span class="p">()</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_get_distance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">distance_measure</span> <span class="o">==</span> <span class="s2">&quot;euclidean&quot;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">distance_measure</span> <span class="o">==</span> <span class="s2">"euclidean"</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_euclidean</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">u</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">v</span><span class="p">))</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
@@ -315,24 +316,24 @@
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_uniformunitsquare</span><span class="p">():</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        return point drawn uniformly at random</span>
 <span class="sd">        from unit square -&gt; 2D coordinates</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_euclidean</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        return euclidean distance between x and y</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">lat</span><span class="p">[</span><span class="n">u</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">lon</span><span class="p">[</span><span class="n">u</span><span class="p">]])</span>
         <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">lat</span><span class="p">[</span><span class="n">v</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">lon</span><span class="p">[</span><span class="n">v</span><span class="p">]])</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="nb">sum</span><span class="p">((</span><span class="n">x</span><span class="o">-</span><span class="n">y</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_growth_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;---------&quot;</span><span class="p">)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;adding node </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">node</span><span class="p">))</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">"---------"</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">"adding node </span><span class="si">{}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">node</span><span class="p">))</span>
 
 
 
@@ -364,7 +365,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">added_edges</span> <span class="o">+=</span> <span class="mi">1</span>
 
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;G5&quot;</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">a</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">b</span><span class="p">)))</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">"G5"</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">a</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">b</span><span class="p">)))</span>
 
             <span class="c1">#TODO: make shure (a, node) and (b, node) are not selected again?</span>
         <span class="k">else</span><span class="p">:</span>
@@ -387,7 +388,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">added_edges</span> <span class="o">+=</span> <span class="mi">1</span>
 
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;G2&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">target</span><span class="p">))</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">"G2"</span><span class="p">,</span> <span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">target</span><span class="p">))</span>
 
             <span class="c1"># step G3: add optimal redundant link to node</span>
             <span class="c1">#############################################</span>
@@ -429,7 +430,7 @@
                     <span class="bp">self</span><span class="o">.</span><span class="n">added_edges</span> <span class="o">+=</span> <span class="mi">1</span>
 
                     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
-                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;G3&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">))</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s2">"G3"</span><span class="p">,</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">))</span>
 
 
             <span class="c1"># step G4: add another optimal redundant link to random node</span>
@@ -477,7 +478,7 @@
                     <span class="bp">self</span><span class="o">.</span><span class="n">added_edges</span> <span class="o">+=</span> <span class="mi">1</span>
 
                     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
-                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;G4&quot;</span><span class="p">,</span> <span class="n">i2</span><span class="p">,</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">))</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s2">"G4"</span><span class="p">,</span> <span class="n">i2</span><span class="p">,</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">))</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">r</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="c1"># check that update went well</span>
@@ -485,18 +486,18 @@
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_validation</span><span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :param attr:</span>
 <span class="sd">        :param value:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">attr</span> <span class="o">==</span> <span class="s2">&quot;n0&quot;</span> <span class="ow">or</span> <span class="n">attr</span> <span class="o">==</span> <span class="s2">&quot;n&quot;</span><span class="p">:</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="n">attr</span> <span class="o">==</span> <span class="s2">"n0"</span> <span class="ow">or</span> <span class="n">attr</span> <span class="o">==</span> <span class="s2">"n"</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">value</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
                 <span class="k">return</span> <span class="kc">False</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">return</span> <span class="kc">True</span>
-        <span class="k">elif</span> <span class="n">attr</span> <span class="o">==</span> <span class="s2">&quot;r&quot;</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="n">attr</span> <span class="o">==</span> <span class="s2">"r"</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">value</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="k">return</span> <span class="kc">False</span>
             <span class="k">else</span><span class="p">:</span>
@@ -529,7 +530,7 @@
         <span class="n">g</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">complete_graph</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n0</span><span class="p">)</span>
         <span class="n">factor</span> <span class="o">=</span> <span class="mf">1e5</span>
         <span class="k">for</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">g</span><span class="o">.</span><span class="n">edges</span><span class="p">():</span>
-            <span class="n">g</span><span class="p">[</span><span class="n">u</span><span class="p">][</span><span class="n">v</span><span class="p">][</span><span class="s1">&#39;weight&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">factor</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">distance</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_s</span><span class="p">((</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">))]</span>
+            <span class="n">g</span><span class="p">[</span><span class="n">u</span><span class="p">][</span><span class="n">v</span><span class="p">][</span><span class="s1">'weight'</span><span class="p">]</span> <span class="o">=</span> <span class="n">factor</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">distance</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_s</span><span class="p">((</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">))]</span>
         <span class="n">nx</span><span class="o">.</span><span class="n">minimum_spanning_edges</span><span class="p">(</span><span class="n">g</span><span class="p">)</span>
         <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">nx</span><span class="o">.</span><span class="n">minimum_spanning_edges</span><span class="p">(</span><span class="n">g</span><span class="p">))</span>
 
@@ -553,7 +554,7 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">_add_random_locations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_m</span><span class="p">):</span>
         <span class="n">m</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">_m</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">m</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;You have to add a positive integer number of nodes.&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"You have to add a positive integer number of nodes."</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">m</span><span class="p">):</span>
                 <span class="n">pos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_coords</span><span class="p">()</span>
@@ -579,11 +580,11 @@
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_s</span><span class="p">(</span><span class="n">tuple_</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :param tuple_:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="n">tuple_</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">tuple_</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
             <span class="k">return</span> <span class="n">tuple_</span>
         <span class="k">else</span><span class="p">:</span>

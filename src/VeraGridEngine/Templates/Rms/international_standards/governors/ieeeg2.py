@@ -23,11 +23,26 @@ from VeraGridEngine.Utils.Symbolic.symbolic import Const
 
 def build_ieeeg2_template(vf: VarFactory, name: str | None = None) -> RmsModelTemplate:
     """
-    Materialize the international-standard EMT template.
+    Build a speed-governing controller with a linear water-column turbine.
+
+    The speed difference between shaft and reference passes through a lag
+    and lead-lag compensator. Inverse-droop gain K converts that deviation
+    into a correction subtracted from the mechanical-power reference. A hard
+    gate-demand limiter bounds the command before the water-column transfer
+    ``(1-s*T4)/(1+0.5*s*T4)``. This nonminimum-phase turbine initially reduces
+    mechanical power when the gate opens, then approaches the new steady power.
+
+    Inputs are absolute per-unit shaft speed, speed reference and turbine-base
+    mechanical-power reference, in that order. Output is turbine-base mechanical
+    power. Three continuous states represent the speed filter, compensator memory
+    and water column. The power-reference and water-column initial conditions
+    must agree with the host machine's operating point. The final power is not
+    independently clipped: the limiter acts before the turbine, preserving the
+    water-starting transient and allowing the documented inverse response.
 
     :param vf: Variable factory used to allocate the symbolic surface.
     :param name: Optional explicit runtime template name.
-    :returns: Materialized EMT template.
+    :returns: Native three-state hydro governor with three open control inputs.
     """
     template_name: str
     if name is None:
@@ -123,6 +138,8 @@ def build_ieeeg2_template(vf: VarFactory, name: str | None = None) -> RmsModelTe
     state_variables.append(gov_transferFunction_x_scaled_1)
     state_variables.append(gov_firstOrder_y)
     algebraic_equations: list[Expr] = list()
+    # The speed-filter input is a live difference, not its zero equilibrium seed.
+    algebraic_equations.append(gov_add_y-(gov_add_k1*gov_omegaPu+gov_add_k2*gov_omegaRefPu))
     algebraic_equations.append((gov_transferFunction_x_1 - (gov_transferFunction_x_scaled_1 / gov_transferFunction_a_end)))
     algebraic_equations.append((gov_transferFunction1_x_1 - (gov_transferFunction1_x_scaled_1 / gov_transferFunction1_a_end)))
     algebraic_equations.append((gov_transferFunction1_y - (((gov_transferFunction1_bb_2 - (gov_transferFunction1_d * gov_transferFunction1_a_2)) * gov_transferFunction1_x_1) + (gov_transferFunction1_d * gov_firstOrder_y))))

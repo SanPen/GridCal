@@ -7,11 +7,14 @@ import numpy as np
 
 import VeraGridEngine.api as gce
 from VeraGridEngine.basic_structures import Logger
+from VeraGridEngine.Devices.Diagrams.block_diagram import BlockDiagramNode
+from VeraGridEngine.Devices.Dynamic.rms_template import RmsModelTemplate
 from VeraGridEngine.Devices.Events.emt_events_group import EmtEventsGroup
 from VeraGridEngine.Devices.Events.rms_events_group import RmsEventsGroup
 from VeraGridEngine.Devices.Injections.generator import Generator
 from VeraGridEngine.Devices.Dynamic.var_factory import VarFactory
 from VeraGridEngine.Devices.multi_circuit import MultiCircuit
+from VeraGridEngine.IO.file_open import add_legacy_general_structure_warning
 from VeraGridEngine.Simulations.EMT.emt_driver import EmtSimulationDriver
 from VeraGridEngine.Simulations.EMT.emt_options import EmtOptions
 from VeraGridEngine.Simulations.EMT.emt_results import EmtResults
@@ -22,6 +25,7 @@ from VeraGridEngine.Simulations.Rms.rms_driver import RmsSimulationDriver
 from VeraGridEngine.Simulations.Rms.rms_options import RmsOptions
 from VeraGridEngine.Simulations.Rms.rms_results import RmsResults
 from VeraGridEngine.enumerations import (
+    BlockType,
     DynamicIntegrationMethod,
     EmtInitializationMethod,
     EmtSolverTypes,
@@ -288,6 +292,106 @@ def _simulate_legacy_emt_file(file_path: str) -> None:
         f"EMT simulation reported errors for legacy file: {file_path}\n"
         f"{emt_driver.logger}"
     )
+
+
+def _build_root_with_configurable_child(block_type: BlockType,
+                                        has_persisted_configuration: bool) -> tuple[Block, Block]:
+    """Build one diagram-backed configurable child for file-open diagnostics.
+
+    :param block_type: Integrator or derivative type persisted by the diagram.
+    :param has_persisted_configuration: Whether the child represents a current
+        block carrying its ``General structure`` metadata.
+    :return: Root block and its configurable child.
+    """
+    # Explicit ports make preservation observable without interpreting their
+    # names as part of the legacy-configuration detection algorithm.
+    input_variable: Var = Var(name="input_signal")
+    output_variable: Var = Var(name="output_signal")
+    child_block: Block = Block(
+        in_vars=list((input_variable,)),
+        out_vars=list((output_variable,)),
+        name="configurable_child",
+    )
+    if has_persisted_configuration:
+        child_block.modal_template_kind = "persisted_test_configuration"
+        child_block.modal_template_config = dict((
+            ("test_selection", "PERSISTED"),
+        ))
+    else:
+        pass
+
+    root_block: Block = Block(
+        children=list((child_block,)),
+        name="dynamic_root",
+    )
+    root_block.diagram.node_data[child_block.uid] = BlockDiagramNode(
+        name=child_block.name,
+        x=0.0,
+        y=0.0,
+        tpe=block_type.name,
+        device_uid=child_block.uid,
+        api_object_name="",
+        state_ins=0,
+        state_outs=list(),
+        algeb_ins=0,
+        algeb_outs=list(),
+        color="",
+    )
+    return root_block, child_block
+
+
+def test_file_open_warns_about_missing_integrator_general_structure() -> None:
+    """Legacy integrators must emit one warning without changing their ports.
+
+    :return: None.
+    """
+    root_block: Block
+    integrator_block: Block
+    root_block, integrator_block = _build_root_with_configurable_child(
+        block_type=BlockType.INTEGRATOR,
+        has_persisted_configuration=False,
+    )
+    template: RmsModelTemplate = RmsModelTemplate(name="Legacy integrator model")
+    template.block = root_block
+    circuit: MultiCircuit = MultiCircuit()
+    circuit.add_rms_model(template)
+    logger: Logger = Logger()
+
+    # File-open validation reports the absent editor metadata but must keep the
+    # authoritative symbolic interface exactly as it was loaded.
+    add_legacy_general_structure_warning(circuit=circuit, logger=logger)
+
+    assert logger.warning_count() == 1
+    assert "original equations, inputs and outputs" in logger.entries[0].msg
+    assert "General structure" in logger.entries[0].msg
+    assert integrator_block.modal_template_config is None
+    assert len(integrator_block.in_vars) == 1
+    assert len(integrator_block.out_vars) == 1
+
+
+def test_file_open_does_not_warn_for_persisted_derivative_structure() -> None:
+    """Current derivative metadata must not produce a legacy warning.
+
+    :return: None.
+    """
+    root_block: Block
+    derivative_block: Block
+    root_block, derivative_block = _build_root_with_configurable_child(
+        block_type=BlockType.DERIVATIVE,
+        has_persisted_configuration=True,
+    )
+    template: RmsModelTemplate = RmsModelTemplate(name="Current derivative model")
+    template.block = root_block
+    circuit: MultiCircuit = MultiCircuit()
+    circuit.add_rms_model(template)
+    logger: Logger = Logger()
+
+    add_legacy_general_structure_warning(circuit=circuit, logger=logger)
+
+    assert logger.warning_count() == 0
+    assert derivative_block.modal_template_config == dict((
+        ("test_selection", "PERSISTED"),
+    ))
 
 
 def test_legacy_duplicate_device_records_are_canonicalized() -> None:

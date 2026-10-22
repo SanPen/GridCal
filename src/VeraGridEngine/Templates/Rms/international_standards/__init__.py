@@ -19,12 +19,53 @@ from VeraGridEngine.Templates.Rms.international_standards.battery_energy_storage
 from VeraGridEngine.Templates.Rms.international_standards.excitation_systems.dc1a import build_dc1a_template
 from VeraGridEngine.Templates.Rms.international_standards.excitation_systems.dc1c import build_dc1c_template
 from VeraGridEngine.Templates.Rms.international_standards.excitation_systems.exac1 import build_exac1_template
+from VeraGridEngine.Templates.Rms.international_standards.common.brushless_exciter import build_brushless_exciter_base
+from VeraGridEngine.Templates.Rms.international_standards.governors.ivogo import build_ivogo_template
+from VeraGridEngine.Templates.Rms.international_standards.governors.degov import build_degov_template
+from VeraGridEngine.Templates.Rms.international_standards.governors.degov1d import build_degov1d_template
+from VeraGridEngine.Templates.Rms.international_standards.governors.degov1 import build_degov1_template
 from VeraGridEngine.Templates.Rms.international_standards.governors.govhydro4 import build_govhydro4_template
 from VeraGridEngine.Templates.Rms.international_standards.governors.govsteam1 import build_govsteam1_template
 from VeraGridEngine.Templates.Rms.international_standards.governors.govsteameu import build_govsteameu_template
 from VeraGridEngine.Templates.Rms.international_standards.governors.ieeeg1 import build_ieeeg1_template
+from VeraGridEngine.Templates.Rms.international_standards.governors.ieeeg1d import build_ieeeg1d_template
+from VeraGridEngine.Templates.Rms.international_standards.governors.lcfb1 import build_lcfb1_template
 from VeraGridEngine.Templates.Rms.international_standards.governors.ieeeg2 import build_ieeeg2_template
 from VeraGridEngine.Templates.Rms.international_standards.excitation_systems.ieeet1 import build_ieeet1_template
+from VeraGridEngine.Templates.Rms.international_standards.excitation_systems.ieeet2 import build_ieeet2_template
+from VeraGridEngine.Templates.Rms.international_standards.excitation_systems.ieeex1 import build_ieeex1_template
+from VeraGridEngine.Templates.Rms.international_standards.excitation_systems.esdc1a import build_esdc1a_template
+from VeraGridEngine.Templates.Rms.international_standards.excitation_systems.exdc2 import build_exdc2_template
+from VeraGridEngine.Templates.Rms.international_standards.excitation_systems.esac5a import build_esac5a_template
+from VeraGridEngine.Templates.Rms.international_standards.excitation_systems.esac8b import build_esac8b_template
+from VeraGridEngine.Templates.Rms.international_standards.excitation_systems.dc2c import build_dc2c_template
+from VeraGridEngine.Templates.Rms.international_standards.excitation_systems.dc3a import build_dc3a_template
+from VeraGridEngine.Templates.Rms.international_standards.excitation_systems.dc4c import build_dc4c_template
+from VeraGridEngine.Templates.Rms.international_standards.excitation_systems.dc4b import build_dc4b_template
+from VeraGridEngine.Templates.Rms.international_standards.excitation_systems.ac4c import build_ac4c_template
+from VeraGridEngine.Templates.Rms.international_standards.excitation_systems.ac2c import build_ac2c_template
+from VeraGridEngine.Templates.Rms.international_standards.excitation_systems.ac5c import build_ac5c_template
+from VeraGridEngine.Templates.Rms.international_standards.excitation_systems.ieeet3 import build_ieeet3_template
+from VeraGridEngine.Templates.Rms.international_standards.excitation_systems.ieeex3 import build_ieeex3_template
+from VeraGridEngine.Templates.Rms.international_standards.excitation_systems.esst1a import build_esst1a_template
+from VeraGridEngine.Templates.Rms.international_standards.excitation_systems.budczt import build_budczt_template
+from VeraGridEngine.Templates.Rms.international_standards.excitation_systems.exac4 import build_exac4_template
+from VeraGridEngine.Templates.Rms.international_standards.excitation_systems.esac4a import build_esac4a_template
+from VeraGridEngine.Templates.Rms.international_standards.excitation_systems.exac1a import build_exac1a_template
+from VeraGridEngine.Templates.Rms.international_standards.excitation_systems.esac1a import build_esac1a_template
+from VeraGridEngine.Templates.Rms.international_standards.excitation_systems.exac2 import build_exac2_template
+from VeraGridEngine.Templates.Rms.international_standards.excitation_systems.exac3 import build_exac3_template
+from VeraGridEngine.Templates.Rms.international_standards.excitation_systems.exbas import build_exbas_template
+from VeraGridEngine.Templates.Rms.international_standards.excitation_systems.ieet1a import build_ieet1a_template
+from VeraGridEngine.Templates.Rms.international_standards.excitation_systems.ieet1b import build_ieet1b_template
+from VeraGridEngine.Templates.Rms.international_standards.excitation_systems.exni import build_exni_template
+from VeraGridEngine.Templates.Rms.international_standards.excitation_systems.expic1 import build_expic1_template
+from VeraGridEngine.Templates.Rms.international_standards.excitation_systems.ieeet4 import build_ieeet4_template
+from VeraGridEngine.Templates.Rms.international_standards.excitation_systems.ieeet5 import build_ieeet5_template
+from VeraGridEngine.Templates.Rms.international_standards.excitation_systems.ieeex4 import build_ieeex4_template
+from VeraGridEngine.Templates.Rms.international_standards.excitation_systems.ieet5a import build_ieet5a_template
+from VeraGridEngine.Templates.Rms.international_standards.excitation_systems.esac2a import build_esac2a_template
+from VeraGridEngine.Templates.Rms.international_standards.excitation_systems.esac3a import build_esac3a_template
 from VeraGridEngine.Templates.Rms.international_standards.excitation_systems.ieeex2 import build_ieeex2_template
 from VeraGridEngine.Templates.Rms.international_standards.excitation_systems.ieex2a import build_ieex2a_template
 from VeraGridEngine.Templates.Rms.international_standards.excitation_limiters.maxex2 import build_maxex2_template
@@ -32,7 +73,10 @@ from VeraGridEngine.Templates.Rms.international_standards.excitation_limiters.oe
 from VeraGridEngine.Templates.Rms.international_standards.excitation_limiters.oel3c import build_oel3c_template
 from VeraGridEngine.Templates.Rms.international_standards.excitation_limiters.oel4c import build_oel4c_template
 from VeraGridEngine.Templates.Rms.international_standards.excitation_limiters.oel5c import build_oel5c_template
+from VeraGridEngine.Templates.Rms.international_standards.power_system_stabilizers.ivost import build_ivost_template
 from VeraGridEngine.Templates.Rms.international_standards.power_system_stabilizers.pss1aomega import build_pss1aomega_template
+from VeraGridEngine.Templates.Rms.international_standards.power_system_stabilizers.ieeest import build_ieeest_template
+from VeraGridEngine.Templates.Rms.international_standards.power_system_stabilizers.iee2st import build_iee2st_template
 from VeraGridEngine.Templates.Rms.international_standards.power_system_stabilizers.pss1apgen import build_pss1apgen_template
 from VeraGridEngine.Templates.Rms.international_standards.power_system_stabilizers.pss2a import build_pss2a_template
 from VeraGridEngine.Templates.Rms.international_standards.power_system_stabilizers.pss2b import build_pss2b_template
@@ -83,10 +127,41 @@ from VeraGridEngine.Templates.Rms.international_standards.induction_machines.cim
 from VeraGridEngine.Templates.Rms.international_standards.induction_machines.cimw import build_cimw_template
 from VeraGridEngine.Templates.Rms.international_standards.synchronous_machines.gensal import build_gensal_template
 from VeraGridEngine.Templates.Rms.international_standards.synchronous_machines.genrou import build_genrou_template
+from VeraGridEngine.Templates.Rms.international_standards.synchronous_machines.gentra import build_gentra_template
+from VeraGridEngine.Templates.Rms.international_standards.synchronous_machines.genroe import build_genroe_template
+from VeraGridEngine.Templates.Rms.international_standards.synchronous_machines.gensae import build_gensae_template
 from VeraGridEngine.Templates.Rms.international_standards.governors.ggov1 import build_ggov1_template
+from VeraGridEngine.Templates.Rms.international_standards.governors.ggov1d import build_ggov1d_template
 from VeraGridEngine.Templates.Rms.international_standards.governors.hygov import build_hygov_template
 from VeraGridEngine.Templates.Rms.international_standards.excitation_limiters.ieel import build_ieel_template
 from VeraGridEngine.Templates.Rms.international_standards.governors.tgov1 import build_tgov1_template
+from VeraGridEngine.Templates.Rms.international_standards.governors.gastd import build_gastd_template
+from VeraGridEngine.Templates.Rms.international_standards.governors.ieesgod import build_ieesgod_template
+from VeraGridEngine.Templates.Rms.international_standards.governors.hygovd import build_hygovd_template
+from VeraGridEngine.Templates.Rms.international_standards.governors.hygov2 import build_hygov2_template
+from VeraGridEngine.Templates.Rms.international_standards.governors.hygov2d import build_hygov2d_template
+from VeraGridEngine.Templates.Rms.international_standards.governors.pidgov import build_pidgov_template
+from VeraGridEngine.Templates.Rms.international_standards.governors.pidgovd import build_pidgovd_template
+from VeraGridEngine.Templates.Rms.international_standards.governors.tgov1d import build_tgov1d_template
+from VeraGridEngine.Templates.Rms.international_standards.governors.gast import build_gast_template
+from VeraGridEngine.Templates.Rms.international_standards.governors.ieeeg3 import build_ieeeg3_template
+from VeraGridEngine.Templates.Rms.international_standards.governors.ieeeg3d import build_ieeeg3d_template
+from VeraGridEngine.Templates.Rms.international_standards.governors.ieesgo import build_ieesgo_template
+from VeraGridEngine.Templates.Rms.international_standards.power_system_stabilizers.stab1 import build_stab1_template
+from VeraGridEngine.Templates.Rms.international_standards.power_system_stabilizers.stab2a import build_stab2a_template
+from VeraGridEngine.Templates.Rms.international_standards.power_system_stabilizers.stab3 import build_stab3_template
+from VeraGridEngine.Templates.Rms.international_standards.power_system_stabilizers.stab4 import build_stab4_template
+from VeraGridEngine.Templates.Rms.international_standards.power_system_stabilizers.stabni import build_stabni_template
+from VeraGridEngine.Templates.Rms.international_standards.voltage_compensators.comp import build_comp_template
+from VeraGridEngine.Templates.Rms.international_standards.voltage_compensators.compcc import build_compcc_template
+from VeraGridEngine.Templates.Rms.international_standards.voltage_compensators.ccomp4a import build_ccomp4a_template
+from VeraGridEngine.Templates.Rms.international_standards.voltage_compensators.remcmp import build_remcmp_template
+from VeraGridEngine.Templates.Rms.international_standards.excitation_limiters.mnlex1 import build_mnlex1_template
+from VeraGridEngine.Templates.Rms.international_standards.excitation_limiters.mnlex2 import build_mnlex2_template
+from VeraGridEngine.Templates.Rms.international_standards.excitation_limiters.mnlex3 import build_mnlex3_template
+from VeraGridEngine.Templates.Rms.international_standards.excitation_systems.exst2 import build_exst2_template
+from VeraGridEngine.Templates.Rms.international_standards.excitation_systems.exst2a import build_exst2a_template
+from VeraGridEngine.Templates.Rms.international_standards.excitation_systems.esst2a import build_esst2a_template
 
 
 def _build_python_identifier(source_name: str) -> str:
@@ -221,19 +296,39 @@ def build_international_standard_template(
     elif model == InternationalStandardModel.DC1C:
         template = build_dc1c_template(vf=vf, name=name)
     elif model == InternationalStandardModel.EXAC1:
-        template = build_exac1_template(vf=vf, name=name)
+        template = build_brushless_exciter_base(vf, 'EXAC1' if name is None else name)
     elif model == InternationalStandardModel.GOVHYDRO4:
         template = build_govhydro4_template(vf=vf, name=name)
     elif model == InternationalStandardModel.GOVSTEAM1:
         template = build_govsteam1_template(vf=vf, name=name)
     elif model == InternationalStandardModel.GOVSTEAMEU:
         template = build_govsteameu_template(vf=vf, name=name)
+    elif model == InternationalStandardModel.IVOGO:
+        template = build_ivogo_template(vf, name)
+    elif model == InternationalStandardModel.DEGOV:
+        template = build_degov_template(vf, name)
+    elif model == InternationalStandardModel.DEGOV1D:
+        template = build_degov1d_template(vf, name)
+    elif model == InternationalStandardModel.DEGOV1:
+        template = build_degov1_template(vf, name)
     elif model == InternationalStandardModel.IEEEG1:
         template = build_ieeeg1_template(vf=vf, name=name)
+    elif model == InternationalStandardModel.IEEEG1D:
+        template = build_ieeeg1d_template(vf=vf, name=name)
+    elif model == InternationalStandardModel.LCFB1:
+        template = build_lcfb1_template(vf=vf, name=name)
     elif model == InternationalStandardModel.IEEEG2:
         template = build_ieeeg2_template(vf=vf, name=name)
     elif model == InternationalStandardModel.IEEET1:
         template = build_ieeet1_template(vf=vf, name=name)
+    elif model == InternationalStandardModel.IEEET2:
+        template = build_ieeet2_template(vf=vf, name=name)
+    elif model == InternationalStandardModel.IEEEX1:
+        template = build_ieeex1_template(vf=vf, name=name)
+    elif model == InternationalStandardModel.ESDC1A:
+        template = build_esdc1a_template(vf=vf, name=name)
+    elif model == InternationalStandardModel.EXDC2:
+        template = build_exdc2_template(vf=vf, name=name)
     elif model == InternationalStandardModel.IEEEX2:
         template = build_ieeex2_template(vf=vf, name=name)
     elif model == InternationalStandardModel.IEEX2A:
@@ -350,6 +445,28 @@ def build_international_standard_template(
         template = build_gensal_template(vf=vf, name=name)
     elif model == InternationalStandardModel.GENROU:
         template = build_genrou_template(vf=vf, name=name)
+    elif model == InternationalStandardModel.GENTRA:
+        template = build_gentra_template(vf=vf, name=name)
+    elif model == InternationalStandardModel.GENROE:
+        template = build_genroe_template(vf=vf, name=name)
+    elif model == InternationalStandardModel.GGOV1D:
+        template = build_ggov1d_template(vf=vf, name=name)
+    elif model == InternationalStandardModel.GASTD:
+        template = build_gastd_template(vf=vf, name=name)
+    elif model == InternationalStandardModel.IEESGOD:
+        template = build_ieesgod_template(vf=vf, name=name)
+    elif model == InternationalStandardModel.HYGOV2:
+        template = build_hygov2_template(vf=vf, name=name)
+    elif model == InternationalStandardModel.PIDGOV:
+        template = build_pidgov_template(vf=vf, name=name)
+    elif model == InternationalStandardModel.PIDGOVD:
+        template = build_pidgovd_template(vf=vf, name=name)
+    elif model == InternationalStandardModel.HYGOV2D:
+        template = build_hygov2d_template(vf=vf, name=name)
+    elif model == InternationalStandardModel.HYGOVD:
+        template = build_hygovd_template(vf=vf, name=name)
+    elif model == InternationalStandardModel.TGOV1D:
+        template = build_tgov1d_template(vf=vf, name=name)
     elif model == InternationalStandardModel.GGOV1:
         template = build_ggov1_template(vf=vf, name=name)
     elif model == InternationalStandardModel.HYGOV:
@@ -358,6 +475,112 @@ def build_international_standard_template(
         template = build_ieel_template(vf=vf, name=name)
     elif model == InternationalStandardModel.TGOV1:
         template = build_tgov1_template(vf=vf, name=name)
+    elif model == InternationalStandardModel.GAST:
+        template = build_gast_template(vf=vf, name=name)
+    elif model == InternationalStandardModel.IEEEG3:
+        template = build_ieeeg3_template(vf=vf, name=name)
+    elif model == InternationalStandardModel.IEEEG3D:
+        template = build_ieeeg3d_template(vf=vf, name=name)
+    elif model == InternationalStandardModel.IEESGO:
+        template = build_ieesgo_template(vf=vf, name=name)
+    elif model == InternationalStandardModel.STAB1:
+        template = build_stab1_template(vf=vf, name=name)
+    elif model == InternationalStandardModel.STAB2A:
+        template = build_stab2a_template(vf=vf, name=name)
+    elif model == InternationalStandardModel.STAB3:
+        template = build_stab3_template(vf=vf, name=name)
+    elif model == InternationalStandardModel.STAB4:
+        template = build_stab4_template(vf=vf, name=name)
+    elif model == InternationalStandardModel.IVOST:
+        template = build_ivost_template(vf, name)
+    elif model == InternationalStandardModel.STABNI:
+        template = build_stabni_template(vf=vf, name=name)
+    elif model == InternationalStandardModel.IEEEST:
+        template = build_ieeest_template(vf=vf, name=name)
+    elif model == InternationalStandardModel.IEE2ST:
+        template = build_iee2st_template(vf=vf, name=name)
+    elif model == InternationalStandardModel.BUDCZT:
+        template = build_budczt_template(vf=vf, name=name)
+    elif model == InternationalStandardModel.ESST1A:
+        template = build_esst1a_template(vf=vf, name=name)
+    elif model == InternationalStandardModel.IEEET3:
+        template = build_ieeet3_template(vf=vf, name=name)
+    elif model == InternationalStandardModel.IEEEX3:
+        template = build_ieeex3_template(vf=vf, name=name)
+    elif model == InternationalStandardModel.DC4C:
+        template = build_dc4c_template(vf=vf, name=name)
+    elif model == InternationalStandardModel.DC4B:
+        template = build_dc4b_template(vf=vf, name=name)
+    elif model == InternationalStandardModel.DC3A:
+        template = build_dc3a_template(vf=vf, name=name)
+    elif model == InternationalStandardModel.DC2C:
+        template = build_dc2c_template(vf=vf, name=name)
+    elif model == InternationalStandardModel.ESAC8B:
+        template = build_esac8b_template(vf=vf, name=name)
+    elif model == InternationalStandardModel.ESAC5A:
+        template = build_esac5a_template(vf=vf, name=name)
+    elif model == InternationalStandardModel.EXAC4:
+        template = build_exac4_template(vf=vf, name=name)
+    elif model == InternationalStandardModel.AC5C:
+        template = build_ac5c_template(vf=vf, name=name)
+    elif model == InternationalStandardModel.AC2C:
+        template = build_ac2c_template(vf=vf, name=name)
+    elif model == InternationalStandardModel.AC4C:
+        template = build_ac4c_template(vf=vf, name=name)
+    elif model == InternationalStandardModel.ESAC4A:
+        template = build_esac4a_template(vf=vf, name=name)
+    elif model == InternationalStandardModel.GENSAE:
+        template = build_gensae_template(vf=vf, name=name)
+    elif model == InternationalStandardModel.EXAC1A:
+        template = build_exac1a_template(vf=vf, name=name)
+    elif model == InternationalStandardModel.ESAC1A:
+        template = build_esac1a_template(vf=vf, name=name)
+    elif model == InternationalStandardModel.EXAC2:
+        template = build_exac2_template(vf=vf, name=name)
+    elif model == InternationalStandardModel.EXAC3:
+        template = build_exac3_template(vf=vf, name=name)
+    elif model == InternationalStandardModel.EXBAS:
+        template = build_exbas_template(vf=vf, name=name)
+    elif model == InternationalStandardModel.EXPIC1:
+        template = build_expic1_template(vf=vf, name=name)
+    elif model == InternationalStandardModel.EXNI:
+        template = build_exni_template(vf=vf, name=name)
+    elif model == InternationalStandardModel.IEET1B:
+        template = build_ieet1b_template(vf=vf, name=name)
+    elif model == InternationalStandardModel.IEET1A:
+        template = build_ieet1a_template(vf=vf, name=name)
+    elif model == InternationalStandardModel.IEEET4:
+        template = build_ieeet4_template(vf=vf, name=name)
+    elif model == InternationalStandardModel.IEEET5:
+        template = build_ieeet5_template(vf=vf, name=name)
+    elif model == InternationalStandardModel.IEEEX4:
+        template = build_ieeex4_template(vf=vf, name=name)
+    elif model == InternationalStandardModel.IEET5A:
+        template = build_ieet5a_template(vf=vf, name=name)
+    elif model == InternationalStandardModel.ESAC2A:
+        template = build_esac2a_template(vf=vf, name=name)
+    elif model == InternationalStandardModel.ESAC3A:
+        template = build_esac3a_template(vf=vf, name=name)
+    elif model == InternationalStandardModel.COMP:
+        template = build_comp_template(vf=vf, name=name)
+    elif model == InternationalStandardModel.COMPCC:
+        template = build_compcc_template(vf=vf, name=name)
+    elif model == InternationalStandardModel.CCOMP4A:
+        template = build_ccomp4a_template(vf=vf, name=name)
+    elif model == InternationalStandardModel.REMCMP:
+        template = build_remcmp_template(vf=vf, name=name)
+    elif model == InternationalStandardModel.MNLEX1:
+        template = build_mnlex1_template(vf=vf, name=name)
+    elif model == InternationalStandardModel.MNLEX2:
+        template = build_mnlex2_template(vf=vf, name=name)
+    elif model == InternationalStandardModel.MNLEX3:
+        template = build_mnlex3_template(vf=vf, name=name)
+    elif model == InternationalStandardModel.EXST2A:
+        template = build_exst2a_template(vf=vf, name=name)
+    elif model == InternationalStandardModel.ESST2A:
+        template = build_esst2a_template(vf=vf, name=name)
+    elif model == InternationalStandardModel.EXST2:
+        template = build_exst2_template(vf=vf, name=name)
     else:
         # The Enum exhausts the supported domain; this branch protects future additions.
         raise ValueError(f"Unsupported international-standard model: {model!s}")

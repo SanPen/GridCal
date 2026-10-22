@@ -1912,4 +1912,11 @@ def psse_to_veragrid(psse_circuit: PsseCircuit,
     # detect substation from the raw file
     detect_substations(grid=circuit)
 
+    # Resolve auxiliary identities only after canonical RAW-derived devices exist.
+    if psse_circuit.get_auxiliary_documents():
+        from VeraGridEngine.IO.raw.auxiliary_to_veragrid import PsseAuxiliaryConverter
+        PsseAuxiliaryConverter(psse_circuit, circuit, psse_bus_dict, logger).convert()
+    else:
+        pass
+
     return circuit

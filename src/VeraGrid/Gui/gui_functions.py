@@ -20,7 +20,7 @@ from VeraGridEngine.Devices.Branches.line_locations import LineLocations
 from VeraGridEngine.Devices.types import ALL_DEV_TYPES
 from VeraGridEngine.enumerations import SimulationTypes, WindingType, WaveformSequenceType, V_I_CurveSequenceType
 from VeraGrid.Gui.font_config import MENU_FONT_SIZE
-from VeraGrid.Gui.dialog_lifecycle import delete_dialog_safely, exec_dialog_safely
+from VeraGrid.Gui.dialog_lifecycle import delete_dialog_safely, exec_dialog_safely, is_dialog_available
 from VeraGrid.Gui.PlotDialogue.plot_dialogue import PlotDialogue
 
 if TYPE_CHECKING:
@@ -1813,12 +1813,12 @@ class SequenceEditorDialog(QtWidgets.QDialog):
 
         :return: None.
         """
-        if self._plot_dialogue is not None:
+        if is_dialog_available(self._plot_dialogue):
             self._plot_dialogue.reject()
             delete_dialog_safely(dialog=self._plot_dialogue)
-            self._plot_dialogue = None
         else:
             pass
+        self._plot_dialogue = None
 
     def add_point(self):
         row = self.table.rowCount()
@@ -1888,7 +1888,7 @@ class SequenceEditorDialog(QtWidgets.QDialog):
                 except ValueError:
                     pass
 
-        if self._plot_dialogue is not None and len(values_0) > 0:
+        if is_dialog_available(self._plot_dialogue) and len(values_0) > 0:
             x_axis_title: str = "X"
             y_axis_title: str = "Y"
             if self.sequence_type is V_I_CurveSequenceType:
@@ -1916,7 +1916,7 @@ class SequenceEditorDialog(QtWidgets.QDialog):
                 )
             else:
                 self._plot_dialogue.chart.clear()
-        elif self._plot_dialogue is not None:
+        elif is_dialog_available(self._plot_dialogue):
             self._plot_dialogue.chart.clear()
         else:
             pass
@@ -2128,12 +2128,12 @@ class LookupMatrixEditorDialog(QtWidgets.QDialog):
 
         :return: None.
         """
-        if self._plot_dialogue is not None:
+        if is_dialog_available(self._plot_dialogue):
             self._plot_dialogue.reject()
             delete_dialog_safely(dialog=self._plot_dialogue)
-            self._plot_dialogue = None
         else:
             pass
+        self._plot_dialogue = None
 
     # ── X table helpers ─────────────────────────────────────────────────
 
@@ -2319,7 +2319,7 @@ class LookupMatrixEditorDialog(QtWidgets.QDialog):
         x_vals = self._read_x_values()
         y_vals = self._read_y_values()
         z_matrix = self._read_z_matrix()
-        if self._plot_dialogue is not None and len(x_vals) > 0 and len(y_vals) > 0 and len(z_matrix) > 0:
+        if is_dialog_available(self._plot_dialogue) and len(x_vals) > 0 and len(y_vals) > 0 and len(z_matrix) > 0:
             try:
                 z_values: np.ndarray = np.asarray(z_matrix, dtype=float)
                 if z_values.shape == (len(y_vals), len(x_vals)):
@@ -2345,7 +2345,7 @@ class LookupMatrixEditorDialog(QtWidgets.QDialog):
                     self._plot_dialogue.chart.clear()
             except (TypeError, ValueError):
                 self._plot_dialogue.chart.clear()
-        elif self._plot_dialogue is not None:
+        elif is_dialog_available(self._plot_dialogue):
             self._plot_dialogue.chart.clear()
         else:
             pass

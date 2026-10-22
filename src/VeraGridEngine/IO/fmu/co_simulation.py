@@ -33,7 +33,10 @@ from VeraGridEngine.IO.fmu.Elements.bindings import (
     validate_fmu_float64_parameter_values,
     resolve_fmi_three_float64_session_value_selectors,
 )
-from VeraGridEngine.IO.fmu.fmu_device_integration import load_fmu_cs_device_config, restore_fmu_cs_spec_from_record
+from VeraGridEngine.IO.fmu.Elements.device_configuration import (
+    FmuCsDeviceConfigRecord, build_import_config_from_record,
+    load_fmu_cs_device_config, _resolve_parameter_values_from_block,
+)
 from VeraGridEngine.IO.fmu.model_description import (
     FmuInterfaceMode,
     FmuModelDescription,
@@ -1319,3 +1322,48 @@ def build_emt_boundary_updater(problem: Any) -> Any:
         return CompositeEmtBoundaryUpdater(problem, list(problem._fmu_cs_adapters))
     else:
         return problem
+
+
+def restore_fmu_cs_spec_from_record(record: FmuCsDeviceConfigRecord, block: Block, device_tpe: DeviceType) -> FmuCsDeviceSpec:
+    """Rebuild the runtime FMU device specification from the stored record.
+
+    :param record: Serialized FMU device record.
+    :param block: Device block used in the active problem.
+    :param device_tpe: VeraGrid device type.
+    :return: Runtime FMU device specification.
+    """
+
+    parameter_values: tuple[FmuFloat64ParameterValue, ...] = (
+        _resolve_parameter_values_from_block(
+            parameter_bindings=record.parameter_bindings,
+            block=block,
+        )
+    )
+
+    event_params_by_name: dict[str, Any] = dict()
+    event_parameter: Any
+    for event_parameter in block.event_dict.keys():
+        event_params_by_name[event_parameter.name] = event_parameter
+
+    output_param_uids: dict[VarPowerFlowReferenceType, int] = dict()
+    reference: VarPowerFlowReferenceType
+    for reference, parameter_name in record.output_param_names.items():
+        event_parameter = event_params_by_name.get(parameter_name, None)
+        if event_parameter is None:
+            raise KeyError(parameter_name)
+        else:
+            output_param_uids[reference] = event_parameter.uid
+
+    return build_fmu_cs_device_spec(
+        domain=record.domain,
+        config=build_import_config_from_record(record),
+        device_tpe=device_tpe,
+        input_bindings=record.input_bindings,
+        output_bindings=record.output_bindings,
+        output_defaults=dict(record.output_defaults),
+        output_param_uids=output_param_uids,
+        worker_limits=record.worker_limits,
+        configuration_float64_values=record.configuration_float64_values,
+        configuration_uint64_values=record.configuration_uint64_values,
+        parameter_values=parameter_values,
+    )

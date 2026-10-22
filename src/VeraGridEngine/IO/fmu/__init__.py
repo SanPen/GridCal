@@ -26,7 +26,7 @@ from VeraGridEngine.IO.fmu.model_description import (
 )
 from VeraGridEngine.IO.fmu.host import FmuRuntimeHost, open_fmu_runtime_host
 from VeraGridEngine.IO.fmu.worker_host import FmiThreeWorkerHostLimits
-from VeraGridEngine.IO.fmu.fmu_device_integration import (
+from VeraGridEngine.IO.fmu.Elements.device_configuration import (
     FmuCsDeviceConfigRecord,
     FmuMeDeviceConfigRecord,
     dump_fmu_cs_device_config,

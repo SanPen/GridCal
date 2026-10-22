@@ -7,8 +7,13 @@
 from __future__ import annotations
 
 import os
+from multiprocessing import get_context
+from multiprocessing.connection import Connection
+from multiprocessing.context import BaseContext
+from multiprocessing.process import BaseProcess
 from pathlib import Path
 import signal
+import time
 
 import pytest
 
@@ -20,6 +25,11 @@ from VeraGridEngine.IO.fmu.Elements.protocol import (
     FmiThreeWorkerCompletedIntegratorStepResult,
     FmiThreeWorkerDiscreteStatesResult,
     FmiThreeWorkerDoStepResult,
+    FmiThreeWorkerFailureKind,
+    FmiThreeWorkerResponse,
+    FmiThreeWorkerResponseKind,
+    encode_fmi_three_worker_response,
+    send_fmi_three_worker_frame,
 )
 from VeraGridEngine.IO.fmu.profile import (
     FmiThreeWorkerFloat64Profile,
@@ -66,6 +76,40 @@ class _InterruptAfterSpawnInstanceName(str):
         """
 
         raise KeyboardInterrupt
+
+
+def _run_terminal_worker_fixture(
+    connection: Connection,
+    response: FmiThreeWorkerResponse | None,
+    exit_code: int,
+) -> None:
+    """Exit a real child after optionally buffering one terminal response.
+
+    :param connection: Child endpoint whose duplicate stays open in the parent.
+    :param response: Correlated terminal response, or ``None`` for silent exit.
+    :param exit_code: Natural child exit code required by the regression.
+    :return: This function exits the child process.
+    """
+
+    try:
+        if response is not None:
+            # Buffer the complete frame before death so both wait objects can
+            # be ready when the host starts supervising the response.
+            response_frame: bytes = encode_fmi_three_worker_response(
+                response=response,
+                maximum_frame_size=262144,
+                maximum_float64_values_per_request=64,
+            )
+            send_fmi_three_worker_frame(
+                connection=connection,
+                frame=response_frame,
+                maximum_frame_size=262144,
+            )
+        else:
+            pass
+    finally:
+        connection.close()
+    raise SystemExit(exit_code)
 
 
 def _create_worker_host_limits(
@@ -1034,3 +1078,132 @@ def test_fmi_three_worker_host_limits_reject_unbounded_values() -> None:
         _create_worker_host_limits(20.0, 262145)
     with pytest.raises(ValueError, match="response timeout"):
         _create_worker_host_limits(float("inf"), 262144)
+
+
+@pytest.mark.parametrize("exit_code", (0, 37))
+def test_fmi_three_worker_host_detects_exit_without_pipe_eof(
+    compiled_fmi_three_scalar_co_simulation_fmu: Path,
+    exit_code: int,
+) -> None:
+    """Detect child death even when a duplicate peer endpoint prevents EOF.
+
+    :param compiled_fmi_three_scalar_co_simulation_fmu: Generated native fixture.
+    :param exit_code: Exact natural exit code that cleanup must preserve.
+    :return: None.
+    """
+
+    host: FmiThreeWorkerHost = _prepare_compiled_fmi_three_scalar_worker_host(
+        compiled_fmu_path=compiled_fmi_three_scalar_co_simulation_fmu,
+        limits=_create_worker_host_limits(60.0, 262144),
+    )
+    staging_root: Path = host.get_staging_root()
+    context: BaseContext = get_context("spawn")
+    parent_connection: Connection
+    peer_connection: Connection
+    parent_connection, peer_connection = context.Pipe(duplex=True)
+    process: BaseProcess = context.Process(
+        target=_run_terminal_worker_fixture,
+        args=(peer_connection, None, exit_code),
+    )
+    # Transfer the real child and parent transport to the existing supervisor.
+    host._connection = parent_connection
+    host._process = process
+    process.start()
+    host._state = FmiThreeWorkerHostState.READY
+    try:
+        process.join(timeout=60.0)
+        assert not process.is_alive()
+        assert process.exitcode == exit_code
+        assert not parent_connection.poll(0.0)
+        started_at: float = time.monotonic()
+        with pytest.raises(
+            RuntimeError,
+            match=f"worker exited with code {exit_code} before response for request 1",
+        ):
+            host.close()
+        assert time.monotonic() - started_at < 5.0
+        assert host.get_state() == FmiThreeWorkerHostState.FAILED
+        assert host.get_process_id() is None
+        assert host.get_exit_code() == exit_code
+        assert host._connection is None
+        assert not staging_root.exists()
+    finally:
+        # Keep the duplicate open throughout exchange, then release only our
+        # own endpoints and let the host finish its idempotent cleanup.
+        peer_connection.close()
+        host.close()
+        host.close()
+    assert host.is_closed()
+    assert host.get_exit_code() == exit_code
+
+
+@pytest.mark.parametrize(
+    "response_kind",
+    (FmiThreeWorkerResponseKind.CLOSED, FmiThreeWorkerResponseKind.ERROR),
+)
+def test_fmi_three_worker_host_reads_buffered_terminal_response_after_exit(
+    compiled_fmi_three_scalar_co_simulation_fmu: Path,
+    response_kind: FmiThreeWorkerResponseKind,
+) -> None:
+    """Prefer buffered CLOSED or ERROR when the sender has already exited.
+
+    :param compiled_fmi_three_scalar_co_simulation_fmu: Generated native fixture.
+    :param response_kind: Terminal success or typed error to buffer before exit.
+    :return: None.
+    """
+
+    host: FmiThreeWorkerHost = _prepare_compiled_fmi_three_scalar_worker_host(
+        compiled_fmu_path=compiled_fmi_three_scalar_co_simulation_fmu,
+        limits=_create_worker_host_limits(60.0, 262144),
+    )
+    staging_root: Path = host.get_staging_root()
+    if response_kind == FmiThreeWorkerResponseKind.ERROR:
+        failure_kind: FmiThreeWorkerFailureKind | None = (
+            FmiThreeWorkerFailureKind.ARCHIVE
+        )
+        error_message: str | None = "buffered terminal archive failure"
+    else:
+        failure_kind = None
+        error_message = None
+    response: FmiThreeWorkerResponse = FmiThreeWorkerResponse(
+        request_id=1,
+        kind=response_kind,
+        failure_kind=failure_kind,
+        error_message=error_message,
+    )
+    context: BaseContext = get_context("spawn")
+    parent_connection: Connection
+    peer_connection: Connection
+    parent_connection, peer_connection = context.Pipe(duplex=True)
+    process: BaseProcess = context.Process(
+        target=_run_terminal_worker_fixture,
+        args=(peer_connection, response, 0),
+    )
+    host._connection = parent_connection
+    host._process = process
+    process.start()
+    host._state = FmiThreeWorkerHostState.READY
+    try:
+        # Prove both readiness conditions before issuing CLOSE, rather than
+        # relying on scheduling to reproduce simultaneous response and exit.
+        process.join(timeout=60.0)
+        assert not process.is_alive()
+        assert process.exitcode == 0
+        assert parent_connection.poll(0.0)
+        if response_kind == FmiThreeWorkerResponseKind.ERROR:
+            with pytest.raises(ValueError, match="worker ARCHIVE: buffered terminal"):
+                host.close()
+            assert host.get_state() == FmiThreeWorkerHostState.FAILED
+        else:
+            host.close()
+            assert host.is_closed()
+        assert host.get_process_id() is None
+        assert host.get_exit_code() == 0
+        assert host._connection is None
+        assert not staging_root.exists()
+    finally:
+        peer_connection.close()
+        host.close()
+        host.close()
+    assert host.is_closed()
+    assert host.get_exit_code() == 0

@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Devices.Branches.wire &mdash; VeraGrid 6.7.13 documentation</title>
+  <title>VeraGridEngine.Devices.Branches.wire &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=16fbabd8"></script>
+      <script src="../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -109,118 +109,90 @@
 <span class="c1"># SPDX-License-Identifier: MPL-2.0</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Tuple</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Devices.Parents.editable_device</span><span class="w"> </span><span class="kn">import</span> <span class="n">EditableDevice</span><span class="p">,</span> <span class="n">DeviceType</span><span class="p">,</span> <span class="n">GCProp</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.enumerations</span><span class="w"> </span><span class="kn">import</span> <span class="n">PrpCat</span>
-
-
-<div class="viewcode-block" id="calc_GMR">
-<a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Branches.html#VeraGridEngine.Devices.Branches.wire.calc_GMR">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">calc_GMR</span><span class="p">(</span><span class="n">is_tube</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">q</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Geometric mean radius in metres, assuming uniform current density.</span>
-
-<span class="sd">    :param is_tube: Whether the conductor is tubular.</span>
-<span class="sd">    :param r: Outer radius in metres.</span>
-<span class="sd">    :param q: Inner radius in metres (used only for tubes).</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">is_tube</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">r</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">exp</span><span class="p">((</span><span class="mi">3</span> <span class="o">*</span> <span class="n">q</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">r</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">4</span> <span class="o">*</span> <span class="p">(</span><span class="n">r</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">q</span> <span class="o">**</span> <span class="mi">2</span><span class="p">))</span>
-                            <span class="o">-</span> <span class="n">q</span> <span class="o">**</span> <span class="mi">4</span> <span class="o">/</span> <span class="p">(</span><span class="n">r</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">q</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">r</span> <span class="o">/</span> <span class="n">q</span><span class="p">))</span>
-    <span class="k">return</span> <span class="n">r</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">0.25</span><span class="p">)</span></div>
-
 
 
 <div class="viewcode-block" id="Wire">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Branches.html#VeraGridEngine.Devices.Branches.wire.Wire">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">Wire</span><span class="p">(</span><span class="n">EditableDevice</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    This class represents a wire (an actual wire)</span>
 <span class="sd">    to compose towers</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s1">&#39;_stranding&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_material&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_diameter&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_gmr&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_diameter_internal&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_is_tube&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_R&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_max_current&#39;</span><span class="p">,</span>
+        <span class="s1">'_stranding'</span><span class="p">,</span>
+        <span class="s1">'_material'</span><span class="p">,</span>
+        <span class="s1">'_diameter'</span><span class="p">,</span>
+        <span class="s1">'_diameter_internal'</span><span class="p">,</span>
+        <span class="s1">'_is_tube'</span><span class="p">,</span>
+        <span class="s1">'_R'</span><span class="p">,</span>
+        <span class="s1">'_max_current'</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="n">LOCAL_PROPERTY_DECLARATIONS</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">GCProp</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;R&#39;</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;Ohm/km&#39;</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'R'</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">'Ohm/km'</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;resistance of the conductor&#39;</span><span class="p">,</span>
-            <span class="n">old_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;r&#39;</span><span class="p">],</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">'resistance of the conductor'</span><span class="p">,</span>
+            <span class="n">old_names</span><span class="o">=</span><span class="p">[</span><span class="s1">'r'</span><span class="p">],</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">PF</span><span class="p">],</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;diameter&#39;</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;mm&#39;</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'diameter'</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">'mm'</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Diameter of wire&#39;</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">'Diameter of wire'</span><span class="p">,</span>
+            <span class="n">old_names</span><span class="o">=</span><span class="p">[</span><span class="s1">'GMR'</span><span class="p">,</span> <span class="s1">'gmr'</span><span class="p">],</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">TP</span><span class="p">],</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;gmr&#39;</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;mm&#39;</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'diameter_internal'</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">'mm'</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Geometric mean radius in mm for series impedance. &#39;</span>
-                       <span class="s1">&#39;0 = automatic from conductor geometry; positive = specified GMR. &#39;</span>
-                       <span class="s1">&#39;The physical diameter still determines capacitance.&#39;</span><span class="p">,</span>
-            <span class="n">old_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;gmr_mm&#39;</span><span class="p">],</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">'Internal radius of the conductor'</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">TP</span><span class="p">],</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;diameter_internal&#39;</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;mm&#39;</span><span class="p">,</span>
-            <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Internal radius of the conductor&#39;</span><span class="p">,</span>
-            <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">TP</span><span class="p">],</span>
-        <span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;is_tube&#39;</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'is_tube'</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">''</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">bool</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Is it a tubular conductor?&#39;</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">'Is it a tubular conductor?'</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">TP</span><span class="p">],</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;max_current&#39;</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;kA&#39;</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'max_current'</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">'kA'</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Maximum current of the conductor&#39;</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">'Maximum current of the conductor'</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">PF</span><span class="p">],</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;stranding&#39;</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'stranding'</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Stranding of wire&#39;</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">'Stranding of wire'</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">TP</span><span class="p">],</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;material&#39;</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'material'</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Material of wire&#39;</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">'Material of wire'</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">TP</span><span class="p">],</span>
         <span class="p">),</span>
     <span class="p">)</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">''</span><span class="p">,</span>
                  <span class="n">idtag</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">r</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.01</span><span class="p">,</span>
                  <span class="n">max_current</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
-                 <span class="n">stranding</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-                 <span class="n">material</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+                 <span class="n">stranding</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">,</span>
+                 <span class="n">material</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">,</span>
                  <span class="n">diameter</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
                  <span class="n">diameter_internal</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.01</span><span class="p">,</span>
                  <span class="n">is_tube</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-                 <span class="n">code</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-                 <span class="n">gmr</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+                 <span class="n">code</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Wire definition</span>
 <span class="sd">        :param name: Name of the wire type</span>
 <span class="sd">        :param r: Resistance per unit length (Ohm / km)</span>
@@ -231,8 +203,7 @@
 <span class="sd">        :param diameter_internal: Internal diameter (in case of tubular conductor) (mm)</span>
 <span class="sd">        :param is_tube: Whether the wire is a tubular conductor</span>
 <span class="sd">        :param code: Code of the wire type</span>
-<span class="sd">        :param gmr: Specified GMR in mm; zero calculates it from conductor geometry.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="n">EditableDevice</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                                 <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
@@ -244,7 +215,6 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_stranding</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">stranding</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_material</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">material</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_diameter</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">diameter</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">gmr</span> <span class="o">=</span> <span class="n">gmr</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_diameter_internal</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">diameter_internal</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_is_tube</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">is_tube</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_R</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
@@ -252,10 +222,10 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">stranding</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Stranding of wire</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stranding</span>
 
     <span class="nd">@stranding</span><span class="o">.</span><span class="n">setter</span>
@@ -264,10 +234,10 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">material</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Material of wire</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_material</span>
 
     <span class="nd">@material</span><span class="o">.</span><span class="n">setter</span>
@@ -281,27 +251,6 @@
     <span class="nd">@diameter</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">diameter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_diameter</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">gmr</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Specified GMR in mm, or zero for automatic calculation.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gmr</span>
-
-    <span class="nd">@gmr</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">gmr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">value</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">math</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="ow">or</span> <span class="n">value</span> <span class="o">&lt;</span> <span class="mf">0.0</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;GMR must be finite and non-negative (0 = automatic).&#39;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_gmr</span> <span class="o">=</span> <span class="n">value</span>
-
-<div class="viewcode-block" id="Wire.get_gmr">
-<a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Branches.html#VeraGridEngine.Devices.Branches.wire.Wire.get_gmr">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">get_gmr</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the effective GMR in metres, without changing the physical diameter.&quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">gmr</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">gmr</span> <span class="o">/</span> <span class="mf">1000.0</span>
-        <span class="k">return</span> <span class="n">calc_GMR</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">is_tube</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">diameter</span> <span class="o">/</span> <span class="mf">2000.0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">diameter_internal</span> <span class="o">/</span> <span class="mf">2000.0</span><span class="p">)</span></div>
-
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">diameter_internal</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>

@@ -30,6 +30,95 @@ from VeraGridEngine.Simulations.EMT.solvers.structural_compiled_solver import (
     canonicalize_expression as canonicalize_compiled_expression,
 )
 from VeraGridEngine.enumerations import DynamicIntegrationMethod
+from VeraGridEngine.Simulations.EMT.solvers.jit_symbolic_solver import JitSymbolicSolver, evaluate_batched_residual as evaluate_symbolic_residual
+from VeraGridEngine.Simulations.EMT.solvers.solver_AD import JitAdSolver, evaluate_batched_residual as evaluate_ad_residual
+from VeraGridEngine.Simulations.EMT.solvers.StructuralVectorizedSolver import build_residual_evaluator, evaluate_vectorized_residual
+from tests.EMT.test_discretization_verify import make_solver
+
+
+@pytest.mark.parametrize("solver_class", (JitSymbolicSolver, JitAdSolver, StructuralVectorizedSolver, StructuralCompiledSolver))
+def test_bdf2_effective_startup_jacobian(
+        solver_class: type[JitSymbolicSolver] | type[JitAdSolver] | type[StructuralVectorizedSolver] | type[StructuralCompiledSolver]) -> None:
+    """Check BE and BDF2 Jacobians against independent central differences.
+
+    :param solver_class: Existing backend, including both structural implementations.
+    :return: None.
+    """
+    x: Var = Var("bdf_jac_x")
+    dx: Var = Var("bdf_jac_dx", base_var=x)
+    z: Var = Var("bdf_jac_z")
+    block: Block = Block(name="BdfJacobian", state_vars=list((x,)), diff_vars=list((dx,)),
+                         state_eqs=list((z,)), algebraic_vars=list((z,)),
+                         algebraic_eqs=list((z + x,)), parameters=dict())
+    solver: JitSymbolicSolver | JitAdSolver | StructuralVectorizedSolver | StructuralCompiledSolver
+    problem: EmtProblemTemplate
+    solver, problem = make_solver(solver_class, block, 0.3, 0.1, DynamicIntegrationMethod.DaeBDF2, 1e-10, 0)
+    state: np.ndarray = np.array((0.8, -0.8))
+    previous: np.ndarray = np.array((1.0, -1.0))
+    previous2: np.ndarray = np.array((1.2, -1.2))
+    params: np.ndarray = build_full_params(problem)
+    residual: np.ndarray = np.empty(2)
+    numeric: np.ndarray = np.empty((2, 2))
+    method: DynamicIntegrationMethod
+    alpha: float
+    for method, alpha in ((DynamicIntegrationMethod.DaeBackEuler, 10.0), (DynamicIntegrationMethod.DaeBDF2, 15.0)):
+        # Match every backend's existing compiler history convention explicitly.
+        history_slope: np.ndarray = np.zeros(1) if isinstance(solver, StructuralVectorizedSolver) else np.zeros(2)
+        analytic: np.ndarray
+        if isinstance(solver, JitSymbolicSolver):
+            solver.build_jit_kernel(method)
+            solver._build_jit_symbolic_hybrid(method, use_sparse=False)
+            analytic = solver.jit_jacobian_symbolic[f"{method}_False"].evaluate(
+                state, params, previous, history_slope, 0.1, previous2).copy()
+        elif isinstance(solver, JitAdSolver):
+            solver.build_jit_ad(method=method)
+            analytic = solver.jit_jacobian_ad[method](state, params, previous, history_slope, 0.1, previous2).toarray().copy()
+        elif isinstance(solver, StructuralVectorizedSolver):
+            solver.auto_detect_vectorization(method)
+            analytic = solver.vec_jacobian(state, params, previous, history_slope, 0.1, previous2).toarray().copy()
+        else:
+            solver._build_vectorized_backend(method)
+            assert solver._jacobian_evaluator is not None
+            analytic = solver._jacobian_evaluator.evaluate(state, params, previous, history_slope, 0.1, previous2).toarray().copy()
+        column: int
+        for column in range(2):
+            samples: np.ndarray = np.empty((2, 2))
+            sign_index: int
+            sign: float
+            for sign_index, sign in enumerate((-1.0, 1.0)):
+                trial: np.ndarray = state.copy()
+                trial[column] += sign * 1e-6
+                if isinstance(solver, JitSymbolicSolver):
+                    evaluate_symbolic_residual(solver.jit_kernels[method], trial, params, previous,
+                                               history_slope, 0.1, previous2, residual)
+                elif isinstance(solver, JitAdSolver):
+                    evaluate_ad_residual(solver.jit_kernels_ad[method], trial, params, previous,
+                                         history_slope, 0.1, previous2, residual)
+                elif isinstance(solver, StructuralVectorizedSolver):
+                    evaluate_vectorized_residual(build_residual_evaluator(solver.fused_residual, solver.vec_flat_args),
+                                                 trial, params, previous, history_slope, 0.1, previous2, residual)
+                else:
+                    assert solver._residual_assembler is not None
+                    solver._residual_assembler.evaluate(trial, params, previous, history_slope, 0.1, previous2, residual)
+                samples[sign_index, :] = residual
+            numeric[:, column] = (samples[1, :] - samples[0, :]) / 2e-6
+        np.testing.assert_allclose(analytic, np.array(((alpha, -1.0), (1.0, 1.0))), atol=1e-7, rtol=1e-7)
+        np.testing.assert_allclose(analytic, numeric, atol=1e-7, rtol=1e-7)
+
+    # Runtime diagnostics must identify the method actually solved at each phase.
+    collector: NewtonTraceCollector = NewtonTraceCollector()
+    problem.set_newton_trace_collector(collector)
+    result: Tuple[np.ndarray, np.ndarray, np.ndarray, bool, bool] = solver.simulate(
+        x0=np.array((1.0, -1.0)), dx0=np.array((17.0,)))
+    assert result[4] and collector.records
+    assert collector.records[0]["method"] == str(DynamicIntegrationMethod.DaeBackEuler)
+    assert collector.records[-1]["method"] == str(DynamicIntegrationMethod.DaeBDF2)
+    if isinstance(solver, StructuralCompiledSolver):
+        stats: Dict[str, float] = solver.get_last_runtime_stats()
+        assert stats["sparse_numeric_factorizations"] == 2.0
+        assert stats["sparse_solve_calls"] == 3.0
+    else:
+        pass
 
 
 class GenericEmtProblem(EmtProblemTemplate):
@@ -884,8 +973,8 @@ def test_structural_signatures_preserve_binding_semantics(compiled: bool) -> Non
         Const(1.0000000000000002), Const(-0.0), Const(9007199254740993), x - k0, y - x,
         UnOp("-", Func(dx + x, "sin")), dx * x,
     )
-    contexts: Tuple[Tuple[Dict[str, int] | None, Dict[int, int] | None], ...] = (
-        (None, None), (None, dict(((x.uid, 1),))), (dict(((x.name, 0), (y.name, 1))), None),
+    contexts: Tuple[Tuple[Dict[int, int] | None, Dict[int, int] | None], ...] = (
+        (None, None), (None, dict(((x.uid, 1),))), (dict(((x.uid, 0), (y.uid, 1))), None),
     )
     expected_fingerprints: Tuple[Tuple[str, ...], ...] = (
         ("C[1.0000000000000002]", "C[-0.0]", "C[9007199254740993]", "B[-|S0|P0]",
@@ -901,7 +990,7 @@ def test_structural_signatures_preserve_binding_semantics(compiled: bool) -> Non
     var_map: Dict[int, int] = dict(((x.uid, 0), (y.uid, 1)))
     param_map: Dict[int, int] = dict(((k0.uid, 0),))
     context_index: int
-    col_map: Dict[str, int] | None
+    col_map: Dict[int, int] | None
     diff_map: Dict[int, int] | None
     for context_index, (col_map, diff_map) in enumerate(contexts):
         for index, expression in enumerate(default_expressions):
@@ -1504,8 +1593,15 @@ def test_backtracking_improves_convergence_in_difficult_solve() -> None:
     For the same difficult problem, the solver WITH backtracking
     should achieve lower residual than WITHOUT backtracking.
 
-    This is the actual integration test from demo_structural_newton_runtime_guards.py Demo 2.
+    The deliberately inexact Jacobian needs a larger test-only success budget.
+    A rejected solve must expose its initial sample instead of a failed iterate.
+
+    :return: None.
     """
+    solver_name: str
+    solver_class: type[StructuralVectorizedSolver] | type[StructuralCompiledSolver]
+    solver_plain: StructuralVectorizedSolver | StructuralCompiledSolver
+    solver_bt: StructuralVectorizedSolver | StructuralCompiledSolver
     for solver_name, solver_class in (("StructuralVectorized", StructuralVectorizedSolver), ("StructuralCompiled", StructuralCompiledSolver)):
         cfg_bt: NewtonDiagnosticsConfig = NewtonDiagnosticsConfig(
             enable_backtracking=True,
@@ -1551,6 +1647,7 @@ def test_backtracking_improves_convergence_in_difficult_solve() -> None:
                 dense_threshold=100,
                 verbose=False,
                 auto_vectorization=False,
+                newton_max_iter=100,
                 newton_diag_config=cfg_bt,
             )
             solver_bt.vectorized_ready = True
@@ -1591,18 +1688,29 @@ def test_backtracking_improves_convergence_in_difficult_solve() -> None:
                 dense_threshold=100,
                 verbose=False,
                 auto_build=False,
+                newton_max_iter=100,
                 newton_diag_config=cfg_bt,
             )
             solver_bt._vectorized_ready = True
             solver_bt._residual_assembler = cast(Any, InexactCompiledResidualAssembler())
             solver_bt._jacobian_evaluator = cast(Any, InexactCompiledJacobian())
 
-        _, y_plain, _, _, _ = solver_plain.simulate(
+        t_plain: np.ndarray
+        y_plain: np.ndarray
+        dy_plain: np.ndarray
+        well_plain: bool
+        converged_plain: bool
+        t_plain, y_plain, dy_plain, well_plain, converged_plain = solver_plain.simulate(
             x0=np.array([0.1], dtype=np.float64),
             dx0=np.array([0.0], dtype=np.float64),
             params0=np.zeros(0, dtype=np.float64),
         )
-        _, y_bt, _, _, _ = solver_bt.simulate(
+        t_bt: np.ndarray
+        y_bt: np.ndarray
+        dy_bt: np.ndarray
+        well_bt: bool
+        converged_bt: bool
+        t_bt, y_bt, dy_bt, well_bt, converged_bt = solver_bt.simulate(
             x0=np.array([0.1], dtype=np.float64),
             dx0=np.array([0.0], dtype=np.float64),
             params0=np.zeros(0, dtype=np.float64),
@@ -1611,6 +1719,19 @@ def test_backtracking_improves_convergence_in_difficult_solve() -> None:
         res_plain: float = abs(float(y_plain[-1, 0] ** 2 - 1.0))
         res_bt: float = abs(float(y_bt[-1, 0] ** 2 - 1.0))
 
+        # Compare available accepted output only after verifying both solver statuses.
+        assert not converged_plain
+        assert not well_plain
+        assert t_plain.shape == (1,)
+        assert y_plain.shape == dy_plain.shape == (1, 1)
+        np.testing.assert_array_equal(y_plain, np.array([[0.1]]))
+        np.testing.assert_array_equal(dy_plain, np.zeros((1, 1)))
+        assert converged_bt
+        assert well_bt
+        assert t_bt.shape == (2,)
+        assert y_bt.shape == dy_bt.shape == (2, 1)
+        np.testing.assert_allclose(t_bt, (0.0, 0.1), rtol=0, atol=1e-12)
+        assert res_bt < 1e-6
         assert res_bt < res_plain, f"{solver_name}: Backtracking residual {res_bt} should be less than plain residual {res_plain}"
 
 

@@ -42,6 +42,7 @@ def get_bridge_2level_3ph_emt_multilinear_template(vf: VarFactory, name: str = "
     Build one switched 2-level bridge EMT template with explicit trig states.
 
     This is a first-step multilinear bridge variant for the switched-converter path:
+
     - keeps the procedural PWM logic unchanged,
     - keeps the electrical equations/layout unchanged,
     - replaces direct trig usage around ``theta_pll`` with explicit dynamic

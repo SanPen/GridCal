@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Compilers.circuit_to_data &mdash; VeraGrid 6.7.13 documentation</title>
+  <title>VeraGridEngine.Compilers.circuit_to_data &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=16fbabd8"></script>
+      <script src="../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/js/theme.js"></script>
@@ -162,13 +162,13 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">delta2StarAdmittance</span><span class="p">(</span><span class="n">Yab</span><span class="p">:</span> <span class="nb">complex</span><span class="p">,</span>
                          <span class="n">Ybc</span><span class="p">:</span> <span class="nb">complex</span><span class="p">,</span>
                          <span class="n">Yca</span><span class="p">:</span> <span class="nb">complex</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Converts Delta to Star in admittances</span>
 <span class="sd">    :param Yab:</span>
 <span class="sd">    :param Ybc:</span>
 <span class="sd">    :param Yca:</span>
 <span class="sd">    :return: Ya, Yb, Yc</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="mi">1</span> <span class="o">/</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>
         <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
         <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">Yab</span> <span class="o">+</span> <span class="n">Yca</span><span class="p">,</span> <span class="o">-</span><span class="n">Yab</span><span class="p">,</span> <span class="o">-</span><span class="n">Yca</span><span class="p">],</span>
@@ -189,7 +189,7 @@
                             <span class="n">candidate_Vm</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
                             <span class="n">use_stored_guess</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
                             <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Set the bus control voltage</span>
 <span class="sd">    :param i: Bus index</span>
 <span class="sd">    :param j: Remote Bus index</span>
@@ -200,7 +200,7 @@
 <span class="sd">    :param candidate_Vm: Voltage set point that you want to set</span>
 <span class="sd">    :param use_stored_guess: Use the stored seed values?</span>
 <span class="sd">    :param logger: Logger</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">bus_data</span><span class="o">.</span><span class="n">bus_types</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">!=</span> <span class="n">BusMode</span><span class="o">.</span><span class="n">Slack_tpe</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>  <span class="c1"># if it is not Slack</span>
         <span class="k">if</span> <span class="n">remote_control</span> <span class="ow">and</span> <span class="n">j</span> <span class="o">&gt;</span> <span class="o">-</span><span class="mi">1</span> <span class="ow">and</span> <span class="n">j</span> <span class="o">!=</span> <span class="n">i</span><span class="p">:</span>
             <span class="c1"># delete voltage control</span>
@@ -221,7 +221,7 @@
         <span class="n">bus_voltage_used</span><span class="p">[</span><span class="n">controlled_bus_idx</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
 
     <span class="k">elif</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">candidate_Vm</span><span class="p">,</span> <span class="nb">abs</span><span class="p">(</span><span class="n">bus_data</span><span class="o">.</span><span class="n">Vbus</span><span class="p">[</span><span class="n">controlled_bus_idx</span><span class="p">])):</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s1">&#39;Different control voltage set points&#39;</span><span class="p">,</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s1">'Different control voltage set points'</span><span class="p">,</span>
                          <span class="n">device</span><span class="o">=</span><span class="n">bus_name</span><span class="p">,</span>
                          <span class="n">value</span><span class="o">=</span><span class="n">candidate_Vm</span><span class="p">,</span>
                          <span class="n">expected_value</span><span class="o">=</span><span class="nb">abs</span><span class="p">(</span><span class="n">bus_data</span><span class="o">.</span><span class="n">Vbus</span><span class="p">[</span><span class="n">controlled_bus_idx</span><span class="p">]))</span></div>
@@ -237,7 +237,7 @@
                           <span class="n">device_class</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
                           <span class="n">lower_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
                           <span class="n">upper_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Normalize a scalar box constraint so the upper bound is never below the lower bound.</span>
 
 <span class="sd">    :param lower: Lower bound candidate.</span>
@@ -248,7 +248,7 @@
 <span class="sd">    :param lower_name: Human-readable lower-bound field name.</span>
 <span class="sd">    :param upper_name: Human-readable upper-bound field name.</span>
 <span class="sd">    :return: Tuple ``(lower, upper)`` with ``upper &gt;= lower`` enforced.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">lower_value</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">lower</span><span class="p">)</span>
     <span class="n">upper_value</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">upper</span><span class="p">)</span>
 
@@ -257,12 +257,12 @@
     <span class="c1"># becoming invalid and crashing the optimization model.</span>
     <span class="k">if</span> <span class="n">upper_value</span> <span class="o">&lt;</span> <span class="n">lower_value</span><span class="p">:</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span>
-            <span class="n">msg</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Invalid bounds corrected: </span><span class="si">{</span><span class="n">upper_name</span><span class="si">}</span><span class="s2"> &lt; </span><span class="si">{</span><span class="n">lower_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="n">msg</span><span class="o">=</span><span class="sa">f</span><span class="s2">"Invalid bounds corrected: </span><span class="si">{</span><span class="n">upper_name</span><span class="si">}</span><span class="s2"> &lt; </span><span class="si">{</span><span class="n">lower_name</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
             <span class="n">device</span><span class="o">=</span><span class="n">device_name</span><span class="p">,</span>
             <span class="n">value</span><span class="o">=</span><span class="n">upper_value</span><span class="p">,</span>
             <span class="n">expected_value</span><span class="o">=</span><span class="n">lower_value</span><span class="p">,</span>
             <span class="n">device_class</span><span class="o">=</span><span class="n">device_class</span><span class="p">,</span>
-            <span class="n">comment</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Setting </span><span class="si">{</span><span class="n">upper_name</span><span class="si">}</span><span class="s2"> = </span><span class="si">{</span><span class="n">lower_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="n">comment</span><span class="o">=</span><span class="sa">f</span><span class="s2">"Setting </span><span class="si">{</span><span class="n">upper_name</span><span class="si">}</span><span class="s2"> = </span><span class="si">{</span><span class="n">lower_name</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
             <span class="n">device_property</span><span class="o">=</span><span class="n">upper_name</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="n">upper_value</span> <span class="o">=</span> <span class="n">lower_value</span>
@@ -284,7 +284,7 @@
                                 <span class="n">candidate_Vm</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
                                 <span class="n">use_stored_guess</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
                                 <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Set the bus control voltage</span>
 <span class="sd">    :param i: Bus index</span>
 <span class="sd">    :param j: Remote Bus index</span>
@@ -295,7 +295,7 @@
 <span class="sd">    :param candidate_Vm: Voltage set point that you want to set</span>
 <span class="sd">    :param use_stored_guess: Use the stored seed values?</span>
 <span class="sd">    :param logger: Logger</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">bus_data</span><span class="o">.</span><span class="n">bus_types</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">!=</span> <span class="n">BusMode</span><span class="o">.</span><span class="n">Slack_tpe</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>  <span class="c1"># if it is not Slack</span>
         <span class="k">if</span> <span class="n">remote_control</span> <span class="ow">and</span> <span class="n">j</span> <span class="o">&gt;</span> <span class="o">-</span><span class="mi">1</span> <span class="ow">and</span> <span class="n">j</span> <span class="o">!=</span> <span class="n">i</span><span class="p">:</span>
             <span class="c1"># delete voltage control</span>
@@ -329,7 +329,7 @@
                 <span class="n">bus_voltage_used</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
 
         <span class="k">elif</span> <span class="n">candidate_Vm</span> <span class="o">!=</span> <span class="n">bus_data</span><span class="o">.</span><span class="n">Vbus</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s1">&#39;Different control voltage set points&#39;</span><span class="p">,</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s1">'Different control voltage set points'</span><span class="p">,</span>
                              <span class="n">device</span><span class="o">=</span><span class="n">bus_name</span><span class="p">,</span>
                              <span class="n">value</span><span class="o">=</span><span class="n">candidate_Vm</span><span class="p">,</span>
                              <span class="n">expected_value</span><span class="o">=</span><span class="n">bus_data</span><span class="o">.</span><span class="n">Vbus</span><span class="p">[</span><span class="n">i</span><span class="p">])</span></div>
@@ -347,7 +347,7 @@
                               <span class="n">candidate_Va</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
                               <span class="n">use_stored_guess</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
                               <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Set the bus control angle</span>
 <span class="sd">    :param i: Bus index</span>
 <span class="sd">    :param j: Remote Bus index</span>
@@ -358,7 +358,7 @@
 <span class="sd">    :param candidate_Va: Angle set point that you want to set in degrees</span>
 <span class="sd">    :param use_stored_guess: Use the stored seed values?</span>
 <span class="sd">    :param logger: Logger</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">bus_data</span><span class="o">.</span><span class="n">bus_types</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">!=</span> <span class="n">BusMode</span><span class="o">.</span><span class="n">Slack_tpe</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>  <span class="c1"># if it is not Slack</span>
         <span class="k">if</span> <span class="n">remote_control</span> <span class="ow">and</span> <span class="n">j</span> <span class="o">&gt;</span> <span class="o">-</span><span class="mi">1</span> <span class="ow">and</span> <span class="n">j</span> <span class="o">!=</span> <span class="n">i</span><span class="p">:</span>
             <span class="c1"># delete angle control</span>
@@ -395,7 +395,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">existing_angle</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">angle</span><span class="p">(</span><span class="n">bus_data</span><span class="o">.</span><span class="n">Vbus</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">candidate_Va</span><span class="p">,</span> <span class="n">existing_angle</span><span class="p">):</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s1">&#39;Different control angle set points&#39;</span><span class="p">,</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s1">'Different control angle set points'</span><span class="p">,</span>
                                  <span class="n">device</span><span class="o">=</span><span class="n">bus_name</span><span class="p">,</span>
                                  <span class="n">value</span><span class="o">=</span><span class="n">candidate_Va</span><span class="p">,</span>
                                  <span class="n">expected_value</span><span class="o">=</span><span class="n">existing_angle</span><span class="p">)</span></div>
@@ -413,7 +413,7 @@
                                  <span class="n">candidate_Vm</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
                                  <span class="n">use_stored_guess</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
                                  <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Set the bus control voltage</span>
 <span class="sd">    :param i: Bus index</span>
 <span class="sd">    :param j: Remote Bus index</span>
@@ -424,7 +424,7 @@
 <span class="sd">    :param candidate_Vm: Voltage set point that you want to set</span>
 <span class="sd">    :param use_stored_guess: Use the stored seed values?</span>
 <span class="sd">    :param logger: Logger</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">bus_data</span><span class="o">.</span><span class="n">bus_types</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">!=</span> <span class="n">BusMode</span><span class="o">.</span><span class="n">Slack_tpe</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>  <span class="c1"># if it is not Slack</span>
         <span class="c1"># local voltage control</span>
         <span class="n">bus_data</span><span class="o">.</span><span class="n">bus_types</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">BusMode</span><span class="o">.</span><span class="n">PV_tpe</span><span class="o">.</span><span class="n">value</span>  <span class="c1"># set as PV</span>
@@ -445,7 +445,7 @@
                 <span class="n">bus_voltage_used</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
 
         <span class="k">elif</span> <span class="n">candidate_Vm</span> <span class="o">!=</span> <span class="n">bus_data</span><span class="o">.</span><span class="n">Vbus</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s1">&#39;Different control voltage set points&#39;</span><span class="p">,</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s1">'Different control voltage set points'</span><span class="p">,</span>
                              <span class="n">device</span><span class="o">=</span><span class="n">bus_name</span><span class="p">,</span>
                              <span class="n">value</span><span class="o">=</span><span class="n">candidate_Vm</span><span class="p">,</span>
                              <span class="n">expected_value</span><span class="o">=</span><span class="n">bus_data</span><span class="o">.</span><span class="n">Vbus</span><span class="p">[</span><span class="n">i</span><span class="p">])</span></div>
@@ -461,7 +461,7 @@
                  <span class="n">use_stored_guess</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                  <span class="n">consider_grounded_buses</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
                  <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span> <span class="o">=</span> <span class="n">Logger</span><span class="p">())</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 
 <span class="sd">    :param bus_data: BusData</span>
 <span class="sd">    :param circuit:</span>
@@ -471,7 +471,7 @@
 <span class="sd">    :param consider_grounded_buses:</span>
 <span class="sd">    :param logger:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">substation_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">sub</span><span class="p">:</span> <span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">sub</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">circuit</span><span class="o">.</span><span class="n">substations</span><span class="p">)}</span>
 
@@ -499,8 +499,8 @@
             <span class="n">logger</span><span class="o">=</span><span class="n">logger</span><span class="p">,</span>
             <span class="n">device_name</span><span class="o">=</span><span class="n">bus</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
             <span class="n">device_class</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">bus</span><span class="o">.</span><span class="n">device_type</span><span class="o">.</span><span class="n">value</span><span class="p">),</span>
-            <span class="n">lower_name</span><span class="o">=</span><span class="s2">&quot;angle_min&quot;</span><span class="p">,</span>
-            <span class="n">upper_name</span><span class="o">=</span><span class="s2">&quot;angle_max&quot;</span><span class="p">,</span>
+            <span class="n">lower_name</span><span class="o">=</span><span class="s2">"angle_min"</span><span class="p">,</span>
+            <span class="n">upper_name</span><span class="o">=</span><span class="s2">"angle_max"</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="n">bus_data</span><span class="o">.</span><span class="n">angle_min</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">angle_min</span>
         <span class="n">bus_data</span><span class="o">.</span><span class="n">angle_max</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">angle_max</span>
@@ -538,7 +538,7 @@
                   <span class="n">use_stored_guess</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
                   <span class="n">opf_results</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">OptimalPowerFlowResults</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                   <span class="n">fill_three_phase</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">LoadData</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 
 <span class="sd">    :param data:</span>
 <span class="sd">    :param circuit:</span>
@@ -551,7 +551,7 @@
 <span class="sd">    :param use_stored_guess:</span>
 <span class="sd">    :param fill_three_phase: Fill the tree phase info?</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">ii</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="k">for</span> <span class="n">elm</span> <span class="ow">in</span> <span class="n">circuit</span><span class="o">.</span><span class="n">get_loads</span><span class="p">():</span>
 
@@ -737,7 +737,7 @@
                     <span class="p">)</span>
 
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unhandled connection type </span><span class="si">{</span><span class="n">elm</span><span class="o">.</span><span class="n">conn</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unhandled connection type </span><span class="si">{</span><span class="n">elm</span><span class="o">.</span><span class="n">conn</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
             <span class="n">data</span><span class="o">.</span><span class="n">I</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">=</span> <span class="n">elm</span><span class="o">.</span><span class="n">get_I_at</span><span class="p">(</span><span class="n">t_idx</span><span class="p">)</span>
             <span class="n">data</span><span class="o">.</span><span class="n">Y</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">=</span> <span class="n">elm</span><span class="o">.</span><span class="n">get_Y_at</span><span class="p">(</span><span class="n">t_idx</span><span class="p">)</span>
@@ -784,10 +784,10 @@
                 <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">((</span><span class="n">elm</span><span class="o">.</span><span class="n">Snom</span><span class="p">,</span> <span class="n">elm</span><span class="o">.</span><span class="n">droop</span><span class="p">,</span> <span class="n">elm</span><span class="o">.</span><span class="n">Vset</span><span class="p">,</span> <span class="n">elm</span><span class="o">.</span><span class="n">Vset_min</span><span class="p">,</span> <span class="n">elm</span><span class="o">.</span><span class="n">Vset_max</span><span class="p">)))</span>
                         <span class="ow">or</span> <span class="n">elm</span><span class="o">.</span><span class="n">Snom</span> <span class="o">&lt;=</span> <span class="mf">0.0</span> <span class="ow">or</span> <span class="n">elm</span><span class="o">.</span><span class="n">droop</span> <span class="o">&lt;=</span> <span class="mf">0.0</span>
                         <span class="ow">or</span> <span class="n">elm</span><span class="o">.</span><span class="n">Vset_min</span> <span class="o">&lt;=</span> <span class="mf">0.0</span> <span class="ow">or</span> <span class="n">elm</span><span class="o">.</span><span class="n">Vset_min</span> <span class="o">&gt;=</span> <span class="n">elm</span><span class="o">.</span><span class="n">Vset_max</span><span class="p">):</span>
-                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Static generator Q-V droop requires positive Snom/droop and valid voltage clamps: &#39;</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">'Static generator Q-V droop requires positive Snom/droop and valid voltage clamps: '</span>
                                      <span class="o">+</span> <span class="n">elm</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
                 <span class="k">elif</span> <span class="n">elm</span><span class="o">.</span><span class="n">bus</span><span class="o">.</span><span class="n">is_dc</span> <span class="ow">or</span> <span class="ow">not</span> <span class="p">(</span><span class="n">elm</span><span class="o">.</span><span class="n">phA</span> <span class="ow">and</span> <span class="n">elm</span><span class="o">.</span><span class="n">phB</span> <span class="ow">and</span> <span class="n">elm</span><span class="o">.</span><span class="n">phC</span><span class="p">):</span>
-                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Static generator Q-V droop requires an AC bus and all ABC phases: &#39;</span> <span class="o">+</span> <span class="n">elm</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">'Static generator Q-V droop requires an AC bus and all ABC phases: '</span> <span class="o">+</span> <span class="n">elm</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">data</span><span class="o">.</span><span class="n">q_droop</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">=</span> <span class="n">elm</span><span class="o">.</span><span class="n">droop</span>
                     <span class="n">data</span><span class="o">.</span><span class="n">q_droop_snom</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">=</span> <span class="n">elm</span><span class="o">.</span><span class="n">Snom</span> <span class="o">/</span> <span class="mf">1000.0</span> <span class="k">if</span> <span class="n">elm</span><span class="o">.</span><span class="n">use_kw</span> <span class="k">else</span> <span class="n">elm</span><span class="o">.</span><span class="n">Snom</span>
@@ -807,25 +807,25 @@
                                         <span class="ow">or</span> <span class="nb">any</span><span class="p">((</span><span class="n">elm</span><span class="o">.</span><span class="n">R0</span><span class="p">,</span> <span class="n">elm</span><span class="o">.</span><span class="n">X0</span><span class="p">,</span> <span class="n">elm</span><span class="o">.</span><span class="n">R2</span><span class="p">,</span> <span class="n">elm</span><span class="o">.</span><span class="n">X2</span><span class="p">)))</span>
                 <span class="k">if</span> <span class="n">sequence_model</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">phase_power</span><span class="p">):</span>
                     <span class="k">if</span> <span class="n">elm</span><span class="o">.</span><span class="n">bus</span><span class="o">.</span><span class="n">is_dc</span> <span class="ow">or</span> <span class="ow">not</span> <span class="p">(</span><span class="n">elm</span><span class="o">.</span><span class="n">phA</span> <span class="ow">and</span> <span class="n">elm</span><span class="o">.</span><span class="n">phB</span> <span class="ow">and</span> <span class="n">elm</span><span class="o">.</span><span class="n">phC</span><span class="p">):</span>
-                        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Static generator sequence model requires all AC phases: &#39;</span> <span class="o">+</span> <span class="n">elm</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+                        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">'Static generator sequence model requires all AC phases: '</span> <span class="o">+</span> <span class="n">elm</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
                     <span class="k">else</span><span class="p">:</span>
                         <span class="k">pass</span>
                     <span class="n">z0</span><span class="p">:</span> <span class="nb">complex</span> <span class="o">=</span> <span class="nb">complex</span><span class="p">(</span><span class="n">elm</span><span class="o">.</span><span class="n">R0</span><span class="p">,</span> <span class="n">elm</span><span class="o">.</span><span class="n">X0</span><span class="p">)</span>
                     <span class="n">z2</span><span class="p">:</span> <span class="nb">complex</span> <span class="o">=</span> <span class="nb">complex</span><span class="p">(</span><span class="n">elm</span><span class="o">.</span><span class="n">R2</span><span class="p">,</span> <span class="n">elm</span><span class="o">.</span><span class="n">X2</span><span class="p">)</span>
                     <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">z0</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">z2</span><span class="p">):</span>
-                        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Static generator Z0/Z2 must be finite: &#39;</span> <span class="o">+</span> <span class="n">elm</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+                        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">'Static generator Z0/Z2 must be finite: '</span> <span class="o">+</span> <span class="n">elm</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
                     <span class="k">else</span><span class="p">:</span>
                         <span class="k">pass</span>
                     <span class="n">y0</span><span class="p">:</span> <span class="nb">complex</span> <span class="o">=</span> <span class="mi">0</span><span class="n">j</span>
                     <span class="k">if</span> <span class="n">elm</span><span class="o">.</span><span class="n">conn</span> <span class="o">==</span> <span class="n">ShuntConnectionType</span><span class="o">.</span><span class="n">GroundedStar</span><span class="p">:</span>
                         <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">z0</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-12</span><span class="p">:</span>
-                            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Grounded static generator needs nonzero Z0 (R0/X0): &#39;</span> <span class="o">+</span> <span class="n">elm</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+                            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">'Grounded static generator needs nonzero Z0 (R0/X0): '</span> <span class="o">+</span> <span class="n">elm</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
                         <span class="k">else</span><span class="p">:</span>
                             <span class="n">y0</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="n">z0</span>
                     <span class="k">elif</span> <span class="n">elm</span><span class="o">.</span><span class="n">conn</span> <span class="ow">in</span> <span class="p">(</span><span class="n">ShuntConnectionType</span><span class="o">.</span><span class="n">Delta</span><span class="p">,</span> <span class="n">ShuntConnectionType</span><span class="o">.</span><span class="n">FloatingStar</span><span class="p">):</span>
                         <span class="k">pass</span>
                     <span class="k">else</span><span class="p">:</span>
-                        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Static generator sequence model does not support an explicit neutral: &#39;</span>
+                        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">'Static generator sequence model does not support an explicit neutral: '</span>
                                          <span class="o">+</span> <span class="n">elm</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
                     <span class="n">y2</span><span class="p">:</span> <span class="nb">complex</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="n">z2</span> <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">z2</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mf">1e-12</span> <span class="k">else</span> <span class="mi">0</span><span class="n">j</span>
                     <span class="c1"># Keep the passive response in the existing ABC admittance storage.</span>
@@ -855,7 +855,7 @@
                     <span class="k">elif</span> <span class="n">elm</span><span class="o">.</span><span class="n">conn</span> <span class="o">==</span> <span class="n">ShuntConnectionType</span><span class="o">.</span><span class="n">FloatingStar</span><span class="p">:</span>
                         <span class="n">data</span><span class="o">.</span><span class="n">S3_floatingstar</span><span class="p">[</span><span class="mi">4</span> <span class="o">*</span> <span class="n">ii</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:</span><span class="mi">4</span> <span class="o">*</span> <span class="n">ii</span> <span class="o">+</span> <span class="mi">4</span><span class="p">]</span> <span class="o">-=</span> <span class="n">phase_power</span>
                     <span class="k">else</span><span class="p">:</span>
-                        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Unhandled static generator connection </span><span class="si">{</span><span class="n">elm</span><span class="o">.</span><span class="n">conn</span><span class="si">}</span><span class="s1">: </span><span class="si">{</span><span class="n">elm</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+                        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">'Unhandled static generator connection </span><span class="si">{</span><span class="n">elm</span><span class="o">.</span><span class="n">conn</span><span class="si">}</span><span class="s1">: </span><span class="si">{</span><span class="n">elm</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="k">pass</span>
 
@@ -933,7 +933,7 @@
                     <span class="n">data</span><span class="o">.</span><span class="n">S3_delta</span><span class="p">[</span><span class="mi">3</span> <span class="o">*</span> <span class="n">ii</span> <span class="o">+</span> <span class="mi">3</span><span class="p">]</span> <span class="o">+=</span> <span class="n">elm</span><span class="o">.</span><span class="n">get_Sc_at</span><span class="p">(</span><span class="n">t_idx</span><span class="p">)</span>
 
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unhandled connection type </span><span class="si">{</span><span class="n">elm</span><span class="o">.</span><span class="n">conn</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unhandled connection type </span><span class="si">{</span><span class="n">elm</span><span class="o">.</span><span class="n">conn</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
             <span class="n">data</span><span class="o">.</span><span class="n">active</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">=</span> <span class="n">elm</span><span class="o">.</span><span class="n">get_active_at</span><span class="p">(</span><span class="n">t_idx</span><span class="p">)</span>
             <span class="n">data</span><span class="o">.</span><span class="n">shift_key</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">=</span> <span class="n">elm</span><span class="o">.</span><span class="n">get_shift_key_at</span><span class="p">(</span><span class="n">t_idx</span><span class="p">)</span>
@@ -983,7 +983,7 @@
                     <span class="n">data</span><span class="o">.</span><span class="n">I3_delta</span><span class="p">[</span><span class="mi">3</span> <span class="o">*</span> <span class="n">ii</span> <span class="o">+</span> <span class="mi">3</span><span class="p">]</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">conj</span><span class="p">(</span><span class="n">elm</span><span class="o">.</span><span class="n">get_I3_at</span><span class="p">(</span><span class="n">t_idx</span><span class="p">))</span>
 
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unhandled connection type </span><span class="si">{</span><span class="n">elm</span><span class="o">.</span><span class="n">conn</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unhandled connection type </span><span class="si">{</span><span class="n">elm</span><span class="o">.</span><span class="n">conn</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
             <span class="n">data</span><span class="o">.</span><span class="n">active</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">=</span> <span class="n">elm</span><span class="o">.</span><span class="n">get_active_at</span><span class="p">(</span><span class="n">t_idx</span><span class="p">)</span>
             <span class="n">data</span><span class="o">.</span><span class="n">cost</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">=</span> <span class="n">elm</span><span class="o">.</span><span class="n">get_Cost_at</span><span class="p">(</span><span class="n">t_idx</span><span class="p">)</span>
@@ -1021,7 +1021,7 @@
         <span class="n">control_remote_voltage</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">fill_three_phase</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 
 <span class="sd">    :param data:</span>
 <span class="sd">    :param circuit:</span>
@@ -1034,7 +1034,7 @@
 <span class="sd">    :param control_remote_voltage:</span>
 <span class="sd">    :param fill_three_phase:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">ii</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">elm</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">circuit</span><span class="o">.</span><span class="n">shunts</span><span class="p">):</span>
@@ -1137,7 +1137,7 @@
                     <span class="p">)</span>
 
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unhandled connection type </span><span class="si">{</span><span class="n">elm</span><span class="o">.</span><span class="n">conn</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unhandled connection type </span><span class="si">{</span><span class="n">elm</span><span class="o">.</span><span class="n">conn</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="n">elm</span><span class="o">.</span><span class="n">use_kw</span><span class="p">:</span>
                 <span class="c1"># pass kW to MW</span>
@@ -1208,11 +1208,11 @@
                     <span class="k">elif</span> <span class="n">elm</span><span class="o">.</span><span class="n">conn</span> <span class="ow">in</span> <span class="p">(</span><span class="n">ShuntConnectionType</span><span class="o">.</span><span class="n">Delta</span><span class="p">,</span> <span class="n">ShuntConnectionType</span><span class="o">.</span><span class="n">FloatingStar</span><span class="p">):</span>
                         <span class="n">pattern</span> <span class="o">=</span> <span class="n">fortescue_012_to_abc</span><span class="p">(</span><span class="mi">0</span><span class="n">j</span><span class="p">,</span> <span class="mi">1</span><span class="o">+</span><span class="mi">0</span><span class="n">j</span><span class="p">,</span> <span class="mi">1</span><span class="o">+</span><span class="mi">0</span><span class="n">j</span><span class="p">)</span>
                     <span class="k">else</span><span class="p">:</span>
-                        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Continuous shunt U1 control does not support an explicit neutral: &#39;</span>
+                        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">'Continuous shunt U1 control does not support an explicit neutral: '</span>
                                          <span class="o">+</span> <span class="n">elm</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
                     <span class="n">admittance</span><span class="p">:</span> <span class="nb">complex</span> <span class="o">=</span> <span class="nb">complex</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">Y</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span><span class="o">.</span><span class="n">real</span><span class="p">)</span>
                     <span class="k">if</span> <span class="n">bus_data</span><span class="o">.</span><span class="n">bus_types</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="n">BusMode</span><span class="o">.</span><span class="n">Slack_tpe</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
-                        <span class="c1"># The ideal slack supplies voltage control; retain this shunt&#39;s fixed step.</span>
+                        <span class="c1"># The ideal slack supplies voltage control; retain this shunt's fixed step.</span>
                         <span class="n">admittance</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">Y</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span>
                     <span class="k">else</span><span class="p">:</span>
                         <span class="k">pass</span>
@@ -1239,7 +1239,7 @@
                     <span class="p">)</span>
 
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unhandled connection type </span><span class="si">{</span><span class="n">elm</span><span class="o">.</span><span class="n">conn</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unhandled connection type </span><span class="si">{</span><span class="n">elm</span><span class="o">.</span><span class="n">conn</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="n">elm</span><span class="o">.</span><span class="n">control_mode</span> <span class="o">==</span> <span class="n">ShuntControlMode</span><span class="o">.</span><span class="n">Continuous</span> <span class="ow">and</span> <span class="n">data</span><span class="o">.</span><span class="n">active</span><span class="p">[</span><span class="n">ii</span><span class="p">]:</span>
                 <span class="k">if</span> <span class="n">elm</span><span class="o">.</span><span class="n">control_bus</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -1293,7 +1293,7 @@
         <span class="n">control_remote_voltage</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">fill_three_phase</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Fill the common ancestor of generation and batteries</span>
 <span class="sd">    :param k:</span>
 <span class="sd">    :param data:</span>
@@ -1307,7 +1307,7 @@
 <span class="sd">    :param control_remote_voltage:</span>
 <span class="sd">    :param fill_three_phase:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">elm</span><span class="o">.</span><span class="n">bus</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">data</span><span class="o">.</span><span class="n">bus_idx</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
         <span class="n">data</span><span class="o">.</span><span class="n">active</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
@@ -1362,7 +1362,7 @@
 
     <span class="n">data</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">elm</span><span class="o">.</span><span class="n">get_P_at</span><span class="p">(</span><span class="n">t_idx</span><span class="p">)</span>
     <span class="n">data</span><span class="o">.</span><span class="n">active</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">elm</span><span class="o">.</span><span class="n">get_active_at</span><span class="p">(</span><span class="n">t_idx</span><span class="p">)</span>
-    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s1">&#39;is_static_generator&#39;</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s1">'is_static_generator'</span><span class="p">):</span>
         <span class="n">data</span><span class="o">.</span><span class="n">is_static_generator</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">elm</span><span class="o">.</span><span class="n">is_static_generator</span>
 
     <span class="n">data</span><span class="o">.</span><span class="n">v</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">elm</span><span class="o">.</span><span class="n">get_Vset_at</span><span class="p">(</span><span class="n">t_idx</span><span class="p">)</span>
@@ -1374,8 +1374,8 @@
         <span class="n">logger</span><span class="o">=</span><span class="n">logger</span><span class="p">,</span>
         <span class="n">device_name</span><span class="o">=</span><span class="n">elm</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
         <span class="n">device_class</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">elm</span><span class="o">.</span><span class="n">device_type</span><span class="o">.</span><span class="n">value</span><span class="p">),</span>
-        <span class="n">lower_name</span><span class="o">=</span><span class="s2">&quot;Pmin&quot;</span><span class="p">,</span>
-        <span class="n">upper_name</span><span class="o">=</span><span class="s2">&quot;Pmax&quot;</span><span class="p">,</span>
+        <span class="n">lower_name</span><span class="o">=</span><span class="s2">"Pmin"</span><span class="p">,</span>
+        <span class="n">upper_name</span><span class="o">=</span><span class="s2">"Pmax"</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">data</span><span class="o">.</span><span class="n">pmax</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">pmax</span>
     <span class="n">data</span><span class="o">.</span><span class="n">pmin</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">pmin</span>
@@ -1476,7 +1476,7 @@
         <span class="n">control_remote_voltage</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">fill_three_phase</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 
 <span class="sd">    :param data:</span>
 <span class="sd">    :param circuit:</span>
@@ -1491,7 +1491,7 @@
 <span class="sd">    :param control_remote_voltage:</span>
 <span class="sd">    :param fill_three_phase:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">gen_index_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
     <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">elm</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">circuit</span><span class="o">.</span><span class="n">get_generators</span><span class="p">()):</span>
@@ -1536,7 +1536,7 @@
         <span class="n">control_remote_voltage</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">fill_three_phase</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 
 <span class="sd">    :param data:</span>
 <span class="sd">    :param circuit:</span>
@@ -1550,7 +1550,7 @@
 <span class="sd">    :param control_remote_voltage:</span>
 <span class="sd">    :param fill_three_phase:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">elm</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">circuit</span><span class="o">.</span><span class="n">get_batteries</span><span class="p">()):</span>
 
@@ -1572,8 +1572,8 @@
             <span class="n">logger</span><span class="o">=</span><span class="n">logger</span><span class="p">,</span>
             <span class="n">device_name</span><span class="o">=</span><span class="n">elm</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
             <span class="n">device_class</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">elm</span><span class="o">.</span><span class="n">device_type</span><span class="o">.</span><span class="n">value</span><span class="p">),</span>
-            <span class="n">lower_name</span><span class="o">=</span><span class="s2">&quot;min_soc&quot;</span><span class="p">,</span>
-            <span class="n">upper_name</span><span class="o">=</span><span class="s2">&quot;max_soc&quot;</span><span class="p">,</span>
+            <span class="n">lower_name</span><span class="o">=</span><span class="s2">"min_soc"</span><span class="p">,</span>
+            <span class="n">upper_name</span><span class="o">=</span><span class="s2">"max_soc"</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="n">data</span><span class="o">.</span><span class="n">min_soc</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">min_soc</span>
         <span class="n">data</span><span class="o">.</span><span class="n">max_soc</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">max_soc</span>
@@ -1584,8 +1584,8 @@
             <span class="n">logger</span><span class="o">=</span><span class="n">logger</span><span class="p">,</span>
             <span class="n">device_name</span><span class="o">=</span><span class="n">elm</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
             <span class="n">device_class</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">elm</span><span class="o">.</span><span class="n">device_type</span><span class="o">.</span><span class="n">value</span><span class="p">),</span>
-            <span class="n">lower_name</span><span class="o">=</span><span class="s2">&quot;Emin&quot;</span><span class="p">,</span>
-            <span class="n">upper_name</span><span class="o">=</span><span class="s2">&quot;Emax&quot;</span><span class="p">,</span>
+            <span class="n">lower_name</span><span class="o">=</span><span class="s2">"Emin"</span><span class="p">,</span>
+            <span class="n">upper_name</span><span class="o">=</span><span class="s2">"Emax"</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="n">data</span><span class="o">.</span><span class="n">e_min</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">e_min</span>
         <span class="n">data</span><span class="o">.</span><span class="n">e_max</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">e_max</span>
@@ -1611,7 +1611,7 @@
                        <span class="n">bus_voltage_used</span><span class="p">:</span> <span class="n">BoolVec</span><span class="p">,</span>
                        <span class="n">use_stored_guess</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                        <span class="n">t_idx</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 
 <span class="sd">    :param i:</span>
 <span class="sd">    :param elm:</span>
@@ -1622,7 +1622,7 @@
 <span class="sd">    :param use_stored_guess:</span>
 <span class="sd">    :param t_idx:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">data</span><span class="o">.</span><span class="n">names</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">elm</span><span class="o">.</span><span class="n">name</span>
     <span class="n">data</span><span class="o">.</span><span class="n">idtag</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">elm</span><span class="o">.</span><span class="n">idtag</span>
 
@@ -1680,7 +1680,7 @@
         <span class="n">control_taps_modules</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
         <span class="n">control_taps_phase</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
         <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 
 <span class="sd">    :param ii:</span>
 <span class="sd">    :param elm:</span>
@@ -1697,7 +1697,7 @@
 <span class="sd">    :param control_taps_phase:</span>
 <span class="sd">    :param logger:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">fill_parent_branch</span><span class="p">(</span><span class="n">i</span><span class="o">=</span><span class="n">ii</span><span class="p">,</span>
                        <span class="n">elm</span><span class="o">=</span><span class="n">elm</span><span class="p">,</span>
                        <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span>
@@ -1716,7 +1716,7 @@
         <span class="k">if</span> <span class="n">elm</span><span class="o">.</span><span class="n">regulation_bus</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">reg_bus</span> <span class="o">=</span> <span class="n">elm</span><span class="o">.</span><span class="n">bus_from</span>
             <span class="k">if</span> <span class="n">ctrl_data</span><span class="o">.</span><span class="n">tap_module_control_mode</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">==</span> <span class="n">TapModuleControl</span><span class="o">.</span><span class="n">Vm</span><span class="o">.</span><span class="n">idx</span><span class="p">():</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s2">&quot;Unspecified regulation bus&quot;</span><span class="p">,</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s2">"Unspecified regulation bus"</span><span class="p">,</span>
                                    <span class="n">device_class</span><span class="o">=</span><span class="n">elm</span><span class="o">.</span><span class="n">device_type</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
                                    <span class="n">device</span><span class="o">=</span><span class="n">elm</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
@@ -1751,8 +1751,8 @@
         <span class="n">logger</span><span class="o">=</span><span class="n">logger</span><span class="p">,</span>
         <span class="n">device_name</span><span class="o">=</span><span class="n">elm</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
         <span class="n">device_class</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">elm</span><span class="o">.</span><span class="n">device_type</span><span class="o">.</span><span class="n">value</span><span class="p">),</span>
-        <span class="n">lower_name</span><span class="o">=</span><span class="s2">&quot;tap_module_min&quot;</span><span class="p">,</span>
-        <span class="n">upper_name</span><span class="o">=</span><span class="s2">&quot;tap_module_max&quot;</span><span class="p">,</span>
+        <span class="n">lower_name</span><span class="o">=</span><span class="s2">"tap_module_min"</span><span class="p">,</span>
+        <span class="n">upper_name</span><span class="o">=</span><span class="s2">"tap_module_max"</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">ctrl_data</span><span class="o">.</span><span class="n">tap_module_min</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">=</span> <span class="n">tap_module_min</span>
     <span class="n">ctrl_data</span><span class="o">.</span><span class="n">tap_module_max</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">=</span> <span class="n">tap_module_max</span>
@@ -1763,8 +1763,8 @@
         <span class="n">logger</span><span class="o">=</span><span class="n">logger</span><span class="p">,</span>
         <span class="n">device_name</span><span class="o">=</span><span class="n">elm</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
         <span class="n">device_class</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">elm</span><span class="o">.</span><span class="n">device_type</span><span class="o">.</span><span class="n">value</span><span class="p">),</span>
-        <span class="n">lower_name</span><span class="o">=</span><span class="s2">&quot;tap_angle_min&quot;</span><span class="p">,</span>
-        <span class="n">upper_name</span><span class="o">=</span><span class="s2">&quot;tap_angle_max&quot;</span><span class="p">,</span>
+        <span class="n">lower_name</span><span class="o">=</span><span class="s2">"tap_angle_min"</span><span class="p">,</span>
+        <span class="n">upper_name</span><span class="o">=</span><span class="s2">"tap_angle_max"</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">ctrl_data</span><span class="o">.</span><span class="n">tap_angle_min</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">=</span> <span class="n">tap_angle_min</span>
     <span class="n">ctrl_data</span><span class="o">.</span><span class="n">tap_angle_max</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">=</span> <span class="n">tap_angle_max</span>
@@ -1784,12 +1784,12 @@
                 <span class="k">if</span> <span class="n">elm</span><span class="o">.</span><span class="n">vset</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">:</span>
                     <span class="n">bus_data</span><span class="o">.</span><span class="n">Vbus</span><span class="p">[</span><span class="n">bus_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">elm</span><span class="o">.</span><span class="n">vset</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s2">&quot;Branch control voltage out of bounds&quot;</span><span class="p">,</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s2">"Branch control voltage out of bounds"</span><span class="p">,</span>
                                        <span class="n">device_class</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">elm</span><span class="o">.</span><span class="n">device_type</span><span class="o">.</span><span class="n">value</span><span class="p">),</span>
                                        <span class="n">device</span><span class="o">=</span><span class="n">elm</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
                                        <span class="n">value</span><span class="o">=</span><span class="n">elm</span><span class="o">.</span><span class="n">vset</span><span class="p">)</span>
             <span class="k">elif</span> <span class="n">elm</span><span class="o">.</span><span class="n">vset</span> <span class="o">!=</span> <span class="n">bus_data</span><span class="o">.</span><span class="n">Vbus</span><span class="p">[</span><span class="n">bus_idx</span><span class="p">]:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s1">&#39;Different control voltage set points&#39;</span><span class="p">,</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s1">'Different control voltage set points'</span><span class="p">,</span>
                                  <span class="n">device</span><span class="o">=</span><span class="n">bus_data</span><span class="o">.</span><span class="n">names</span><span class="p">[</span><span class="n">bus_idx</span><span class="p">],</span>
                                  <span class="n">value</span><span class="o">=</span><span class="n">elm</span><span class="o">.</span><span class="n">vset</span><span class="p">,</span>
                                  <span class="n">expected_value</span><span class="o">=</span><span class="n">bus_data</span><span class="o">.</span><span class="n">Vbus</span><span class="p">[</span><span class="n">bus_idx</span><span class="p">])</span>
@@ -1823,7 +1823,7 @@
         <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span> <span class="o">=</span> <span class="n">Logger</span><span class="p">(),</span>
         <span class="n">fill_three_phase</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="n">BRANCH_TYPES</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compile BranchData for a time step or the snapshot</span>
 <span class="sd">    :param data: BranchData</span>
 <span class="sd">    :param ctrl_data: ControllableBranchData</span>
@@ -1841,7 +1841,7 @@
 <span class="sd">    :param logger: Logger</span>
 <span class="sd">    :param fill_three_phase: Fill the tree phase info?</span>
 <span class="sd">    :return: BranchData</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">branch_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">BRANCH_TYPES</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
     <span class="n">idx4</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">))</span>
@@ -1882,12 +1882,12 @@
         <span class="n">data</span><span class="o">.</span><span class="n">B2</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">=</span> <span class="n">elm</span><span class="o">.</span><span class="n">B2</span>
 
         <span class="k">if</span> <span class="n">fill_three_phase</span><span class="p">:</span>
-<span class="w">            </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">            </span><span class="sd">"""</span>
 <span class="sd">            yff = ys_abc + ysh_abc / 2</span>
 <span class="sd">            yft = - ys_abc</span>
 <span class="sd">            ytf = - ys_abc</span>
 <span class="sd">            ytt = ys_abc + ysh_abc / 2</span>
-<span class="sd">            &quot;&quot;&quot;</span>
+<span class="sd">            """</span>
             <span class="n">k4</span> <span class="o">=</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">ii</span> <span class="o">+</span> <span class="n">idx4</span>
             <span class="n">y1</span> <span class="o">=</span> <span class="n">elm</span><span class="o">.</span><span class="n">ys</span><span class="o">.</span><span class="n">values</span> <span class="o">+</span> <span class="n">elm</span><span class="o">.</span><span class="n">ysh</span><span class="o">.</span><span class="n">values</span> <span class="o">/</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="mf">1e-6</span>
             <span class="n">y2</span> <span class="o">=</span> <span class="o">-</span> <span class="n">elm</span><span class="o">.</span><span class="n">ys</span><span class="o">.</span><span class="n">values</span>
@@ -1896,7 +1896,7 @@
             <span class="n">data</span><span class="o">.</span><span class="n">Ytf3</span><span class="p">[</span><span class="n">k4</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">y2</span>
             <span class="n">data</span><span class="o">.</span><span class="n">Ytt3</span><span class="p">[</span><span class="n">k4</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">y1</span>
 
-<span class="w">            </span><span class="sd">&quot;&quot;&quot; Save the phases of each line &quot;&quot;&quot;</span>
+<span class="w">            </span><span class="sd">""" Save the phases of each line """</span>
             <span class="n">data</span><span class="o">.</span><span class="n">phN</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">=</span> <span class="n">elm</span><span class="o">.</span><span class="n">ys</span><span class="o">.</span><span class="n">phN</span>
             <span class="n">data</span><span class="o">.</span><span class="n">phA</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">=</span> <span class="n">elm</span><span class="o">.</span><span class="n">ys</span><span class="o">.</span><span class="n">phA</span>
             <span class="n">data</span><span class="o">.</span><span class="n">phB</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">=</span> <span class="n">elm</span><span class="o">.</span><span class="n">ys</span><span class="o">.</span><span class="n">phB</span>
@@ -1942,7 +1942,7 @@
 
         <span class="n">data</span><span class="o">.</span><span class="n">dc</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
 
-        <span class="c1"># handle &quot;&quot;&quot;superconductor branches&quot;&quot;&quot;</span>
+        <span class="c1"># handle """superconductor branches"""</span>
         <span class="n">data</span><span class="o">.</span><span class="n">detect_superconductor_at</span><span class="p">(</span><span class="n">ii</span><span class="p">)</span>
 
         <span class="n">ii</span> <span class="o">+=</span> <span class="mi">1</span>
@@ -2007,7 +2007,7 @@
         <span class="c1"># store for later</span>
         <span class="n">branch_dict</span><span class="p">[</span><span class="n">elm</span><span class="p">]</span> <span class="o">=</span> <span class="n">ii</span>
 
-        <span class="c1"># handle &quot;&quot;&quot;superconductor branches&quot;&quot;&quot;</span>
+        <span class="c1"># handle """superconductor branches"""</span>
         <span class="n">data</span><span class="o">.</span><span class="n">detect_superconductor_at</span><span class="p">(</span><span class="n">ii</span><span class="p">)</span>
 
         <span class="n">ii</span> <span class="o">+=</span> <span class="mi">1</span>
@@ -2074,13 +2074,13 @@
             <span class="c1"># store for later</span>
             <span class="n">branch_dict</span><span class="p">[</span><span class="n">elm</span><span class="p">]</span> <span class="o">=</span> <span class="n">ii</span>
 
-            <span class="c1"># handle &quot;&quot;&quot;superconductor branches&quot;&quot;&quot;</span>
+            <span class="c1"># handle """superconductor branches"""</span>
             <span class="n">data</span><span class="o">.</span><span class="n">detect_superconductor_at</span><span class="p">(</span><span class="n">ii</span><span class="p">)</span>
 
             <span class="n">ii</span> <span class="o">+=</span> <span class="mi">1</span>
 
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="s2">&quot;Ill connected winding&quot;</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">elm</span><span class="o">.</span><span class="n">idtag</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="s2">"Ill connected winding"</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">elm</span><span class="o">.</span><span class="n">idtag</span><span class="p">)</span>
 
     <span class="c1"># UPFC</span>
     <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">elm</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">circuit</span><span class="o">.</span><span class="n">upfc_devices</span><span class="p">):</span>
@@ -2120,7 +2120,7 @@
         <span class="c1"># store for later</span>
         <span class="n">branch_dict</span><span class="p">[</span><span class="n">elm</span><span class="p">]</span> <span class="o">=</span> <span class="n">ii</span>
 
-        <span class="c1"># handle &quot;&quot;&quot;superconductor branches&quot;&quot;&quot;</span>
+        <span class="c1"># handle """superconductor branches"""</span>
         <span class="n">data</span><span class="o">.</span><span class="n">detect_superconductor_at</span><span class="p">(</span><span class="n">ii</span><span class="p">)</span>
 
         <span class="n">ii</span> <span class="o">+=</span> <span class="mi">1</span>
@@ -2178,7 +2178,7 @@
         <span class="c1"># store for later</span>
         <span class="n">branch_dict</span><span class="p">[</span><span class="n">elm</span><span class="p">]</span> <span class="o">=</span> <span class="n">ii</span>
 
-        <span class="c1"># handle &quot;&quot;&quot;superconductor branches&quot;&quot;&quot;</span>
+        <span class="c1"># handle """superconductor branches"""</span>
         <span class="n">data</span><span class="o">.</span><span class="n">detect_superconductor_at</span><span class="p">(</span><span class="n">ii</span><span class="p">)</span>
 
         <span class="n">ii</span> <span class="o">+=</span> <span class="mi">1</span>
@@ -2207,7 +2207,7 @@
         <span class="c1"># store for later</span>
         <span class="n">branch_dict</span><span class="p">[</span><span class="n">elm</span><span class="p">]</span> <span class="o">=</span> <span class="n">ii</span>
 
-        <span class="c1"># handle &quot;&quot;&quot;superconductor branches&quot;&quot;&quot;</span>
+        <span class="c1"># handle """superconductor branches"""</span>
         <span class="n">data</span><span class="o">.</span><span class="n">detect_superconductor_at</span><span class="p">(</span><span class="n">ii</span><span class="p">)</span>
 
         <span class="n">ii</span> <span class="o">+=</span> <span class="mi">1</span>
@@ -2223,12 +2223,12 @@
 <div class="viewcode-block" id="compile_line_couplings">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Compilers.html#VeraGridEngine.Compilers.circuit_to_data.compile_line_couplings">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">compile_line_couplings</span><span class="p">(</span><span class="n">circuit</span><span class="p">:</span> <span class="n">MultiCircuit</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">PassiveBranchData</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Stamp complete physical tower sections, including mutual circuit admittances.</span>
+<span class="w">    </span><span class="sd">"""Stamp complete physical tower sections, including mutual circuit admittances.</span>
 
 <span class="sd">    :param circuit: Device model; only explicitly associated lines are coupled.</span>
 <span class="sd">    :param data: Compiled branches, with lines occupying the first rows.</span>
 <span class="sd">    :return: None.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">groups</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
     <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">line</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">circuit</span><span class="o">.</span><span class="n">lines</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">coupling_group</span> <span class="ow">and</span> <span class="n">data</span><span class="o">.</span><span class="n">active</span><span class="p">[</span><span class="n">k</span><span class="p">]:</span>
@@ -2240,7 +2240,7 @@
         <span class="n">first</span><span class="p">:</span> <span class="n">dev</span><span class="o">.</span><span class="n">Line</span> <span class="o">=</span> <span class="n">circuit</span><span class="o">.</span><span class="n">lines</span><span class="p">[</span><span class="n">indices</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
         <span class="n">tower</span><span class="p">:</span> <span class="n">dev</span><span class="o">.</span><span class="n">OverheadLineType</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">first</span><span class="o">.</span><span class="n">template</span><span class="p">,</span> <span class="n">dev</span><span class="o">.</span><span class="n">OverheadLineType</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Line coupling </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">: an overhead tower template is required&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Line coupling </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">: an overhead tower template is required"</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">tower</span> <span class="o">=</span> <span class="n">first</span><span class="o">.</span><span class="n">template</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">tower</span><span class="o">.</span><span class="n">is_computed</span><span class="p">():</span>
@@ -2252,23 +2252,23 @@
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">indices</span><span class="p">):</span>
             <span class="n">line</span><span class="p">:</span> <span class="n">dev</span><span class="o">.</span><span class="n">Line</span> <span class="o">=</span> <span class="n">circuit</span><span class="o">.</span><span class="n">lines</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
             <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">template</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">tower</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Line coupling </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">: circuits must share a template&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Line coupling </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">: circuits must share a template"</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">pass</span>
             <span class="n">lengths</span><span class="p">[</span><span class="mi">3</span> <span class="o">*</span> <span class="n">i</span><span class="p">:</span><span class="mi">3</span> <span class="o">*</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">length</span>
             <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
                 <span class="n">positions</span><span class="p">:</span> <span class="n">IntVec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flatnonzero</span><span class="p">(</span><span class="n">tower</span><span class="o">.</span><span class="n">z_phases_abc</span> <span class="o">==</span> <span class="mi">3</span> <span class="o">*</span> <span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">circuit_idx</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="n">p</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
                 <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">positions</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Line coupling </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">: each circuit must contain A, B and C&quot;</span><span class="p">)</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Line coupling </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">: each circuit must contain A, B and C"</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">phases</span><span class="p">[</span><span class="mi">3</span> <span class="o">*</span> <span class="n">i</span> <span class="o">+</span> <span class="n">p</span><span class="p">]</span> <span class="o">=</span> <span class="n">positions</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">phases</span><span class="p">))</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">phases</span><span class="p">)</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">lengths</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">lengths</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">)):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Line coupling </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">: repeated circuit index or invalid section length&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Line coupling </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">: repeated circuit index or invalid section length"</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">pass</span>
         <span class="c1"># Use the existing earth-wire reduction. A guard wire is not a load neutral.</span>
         <span class="c1"># Select active circuits before inversion: absent circuits carry no series current.</span>
-        <span class="c1"># Self blocks retain each circuit&#39;s length; mutual blocks span the shorter circuit.</span>
+        <span class="c1"># Self blocks retain each circuit's length; mutual blocks span the shorter circuit.</span>
         <span class="n">section_lengths</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="o">.</span><span class="n">outer</span><span class="p">(</span><span class="n">lengths</span><span class="p">,</span> <span class="n">lengths</span><span class="p">)</span>
         <span class="n">ys</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">tower</span><span class="o">.</span><span class="n">z_abc</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ix_</span><span class="p">(</span><span class="n">phases</span><span class="p">,</span> <span class="n">phases</span><span class="p">)]</span> <span class="o">*</span> <span class="n">section_lengths</span><span class="p">)</span>
         <span class="n">yh</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">tower</span><span class="o">.</span><span class="n">y_abc</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ix_</span><span class="p">(</span><span class="n">phases</span><span class="p">,</span> <span class="n">phases</span><span class="p">)]</span> <span class="o">*</span> <span class="n">section_lengths</span>
@@ -2327,7 +2327,7 @@
                     <span class="n">bus_angle_used</span><span class="p">:</span> <span class="n">BoolVec</span><span class="p">,</span>
                     <span class="n">use_stored_guess</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
                     <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 
 <span class="sd">    :param k: device index</span>
 <span class="sd">    :param f:</span>
@@ -2343,7 +2343,7 @@
 <span class="sd">    :param bus_angle_used: used bus angle</span>
 <span class="sd">    :param use_stored_guess:</span>
 <span class="sd">    :param logger:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">control_dev</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">control_dev</span><span class="o">.</span><span class="n">device_type</span> <span class="o">==</span> <span class="n">DeviceType</span><span class="o">.</span><span class="n">BusDevice</span><span class="p">:</span>
 
@@ -2452,7 +2452,7 @@
         <span class="n">control_remote_voltage</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span> <span class="o">=</span> <span class="n">Logger</span><span class="p">()</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compile VscData for a time step or the snapshot</span>
 <span class="sd">    :param data: VscData</span>
 <span class="sd">    :param circuit: MultiCircuit</span>
@@ -2466,7 +2466,7 @@
 <span class="sd">    :param control_remote_voltage: Control RemoteVoltage</span>
 <span class="sd">    :param logger: Logger</span>
 <span class="sd">    :return: VscData</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">bus_angle_used</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">bus_data</span><span class="o">.</span><span class="n">bus_types</span> <span class="o">==</span> <span class="n">BusMode</span><span class="o">.</span><span class="n">Slack_tpe</span><span class="o">.</span><span class="n">value</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">bool</span><span class="p">)</span>
     <span class="n">ii</span> <span class="o">=</span> <span class="mi">0</span>
 
@@ -2566,7 +2566,7 @@
                   <span class="n">opf_results</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">OptimalPowerFlowResults</span><span class="p">,</span> <span class="n">OptimalNetTransferCapacityResults</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                   <span class="n">use_stored_guess</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
                   <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span> <span class="o">=</span> <span class="n">Logger</span><span class="p">()):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 
 <span class="sd">    :param data:</span>
 <span class="sd">    :param circuit:</span>
@@ -2578,7 +2578,7 @@
 <span class="sd">    :param use_stored_guess:</span>
 <span class="sd">    :param logger:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="c1"># HVDC</span>
     <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">elm</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">circuit</span><span class="o">.</span><span class="n">hvdc_lines</span><span class="p">):</span>
@@ -2648,14 +2648,14 @@
                         <span class="n">circuit</span><span class="p">:</span> <span class="n">MultiCircuit</span><span class="p">,</span>
                         <span class="n">t_idx</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                         <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span> <span class="o">=</span> <span class="n">Logger</span><span class="p">())</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 
 <span class="sd">    :param data:</span>
 <span class="sd">    :param circuit:</span>
 <span class="sd">    :param t_idx:</span>
 <span class="sd">    :param logger:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">plant_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
 
     <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">elm</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">circuit</span><span class="o">.</span><span class="n">get_fluid_nodes</span><span class="p">()):</span>
@@ -2671,8 +2671,8 @@
             <span class="n">logger</span><span class="o">=</span><span class="n">logger</span><span class="p">,</span>
             <span class="n">device_name</span><span class="o">=</span><span class="n">elm</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
             <span class="n">device_class</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">elm</span><span class="o">.</span><span class="n">device_type</span><span class="o">.</span><span class="n">value</span><span class="p">),</span>
-            <span class="n">lower_name</span><span class="o">=</span><span class="s2">&quot;min_level&quot;</span><span class="p">,</span>
-            <span class="n">upper_name</span><span class="o">=</span><span class="s2">&quot;max_level&quot;</span><span class="p">,</span>
+            <span class="n">lower_name</span><span class="o">=</span><span class="s2">"min_level"</span><span class="p">,</span>
+            <span class="n">upper_name</span><span class="o">=</span><span class="s2">"max_level"</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="n">data</span><span class="o">.</span><span class="n">min_level</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">min_level</span>
         <span class="n">data</span><span class="o">.</span><span class="n">max_level</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">max_level</span>
@@ -2686,8 +2686,8 @@
             <span class="n">logger</span><span class="o">=</span><span class="n">logger</span><span class="p">,</span>
             <span class="n">device_name</span><span class="o">=</span><span class="n">elm</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
             <span class="n">device_class</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">elm</span><span class="o">.</span><span class="n">device_type</span><span class="o">.</span><span class="n">value</span><span class="p">),</span>
-            <span class="n">lower_name</span><span class="o">=</span><span class="s2">&quot;min_soc&quot;</span><span class="p">,</span>
-            <span class="n">upper_name</span><span class="o">=</span><span class="s2">&quot;max_soc&quot;</span><span class="p">,</span>
+            <span class="n">lower_name</span><span class="o">=</span><span class="s2">"min_soc"</span><span class="p">,</span>
+            <span class="n">upper_name</span><span class="o">=</span><span class="s2">"max_soc"</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="n">data</span><span class="o">.</span><span class="n">max_soc</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">max_soc</span>
         <span class="n">data</span><span class="o">.</span><span class="n">min_soc</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">min_soc</span>
@@ -2699,13 +2699,13 @@
 <div class="viewcode-block" id="resize_fluid_injection_data">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Compilers.html#VeraGridEngine.Compilers.circuit_to_data.resize_fluid_injection_data">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">resize_fluid_injection_data</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">FluidTurbineData</span><span class="p">,</span> <span class="n">nelm</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Resize fluid injection data arrays to the valid compiled entries.</span>
 
 <span class="sd">    :param data: Fluid injection data structure.</span>
 <span class="sd">    :param nelm: Number of valid compiled entries.</span>
 <span class="sd">    :return: None.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">nelm</span> <span class="o">==</span> <span class="n">nelm</span><span class="p">:</span>
         <span class="k">pass</span>
     <span class="k">else</span><span class="p">:</span>
@@ -2725,7 +2725,7 @@
                                       <span class="n">plant_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
                                       <span class="n">gen_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
                                       <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Resolve the plant and generator indices for one fluid injection.</span>
 
 <span class="sd">    :param elm: Fluid injection device.</span>
@@ -2733,38 +2733,38 @@
 <span class="sd">    :param gen_dict: Generator index by idtag.</span>
 <span class="sd">    :param logger: Logger receiving invalid-link errors.</span>
 <span class="sd">    :return: Plant and generator indices, or ``None`` for invalid links.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">plant_idx</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">gen_idx</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="k">if</span> <span class="n">elm</span><span class="o">.</span><span class="n">plant</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">&quot;Fluid injection has no plant&quot;</span><span class="p">,</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">"Fluid injection has no plant"</span><span class="p">,</span>
                          <span class="n">device</span><span class="o">=</span><span class="n">elm</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
                          <span class="n">device_class</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">elm</span><span class="o">.</span><span class="n">device_type</span><span class="o">.</span><span class="n">value</span><span class="p">),</span>
-                         <span class="n">device_property</span><span class="o">=</span><span class="s2">&quot;plant&quot;</span><span class="p">)</span>
+                         <span class="n">device_property</span><span class="o">=</span><span class="s2">"plant"</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">plant_idx</span> <span class="o">=</span> <span class="n">plant_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">elm</span><span class="o">.</span><span class="n">plant</span><span class="o">.</span><span class="n">idtag</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">plant_idx</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">&quot;Fluid injection plant is not in the compiled fluid nodes&quot;</span><span class="p">,</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">"Fluid injection plant is not in the compiled fluid nodes"</span><span class="p">,</span>
                              <span class="n">device</span><span class="o">=</span><span class="n">elm</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
                              <span class="n">device_class</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">elm</span><span class="o">.</span><span class="n">device_type</span><span class="o">.</span><span class="n">value</span><span class="p">),</span>
-                             <span class="n">device_property</span><span class="o">=</span><span class="s2">&quot;plant&quot;</span><span class="p">,</span>
+                             <span class="n">device_property</span><span class="o">=</span><span class="s2">"plant"</span><span class="p">,</span>
                              <span class="n">object_value</span><span class="o">=</span><span class="n">elm</span><span class="o">.</span><span class="n">plant</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">pass</span>
 
     <span class="k">if</span> <span class="n">elm</span><span class="o">.</span><span class="n">generator</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">&quot;Fluid injection has no generator&quot;</span><span class="p">,</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">"Fluid injection has no generator"</span><span class="p">,</span>
                          <span class="n">device</span><span class="o">=</span><span class="n">elm</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
                          <span class="n">device_class</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">elm</span><span class="o">.</span><span class="n">device_type</span><span class="o">.</span><span class="n">value</span><span class="p">),</span>
-                         <span class="n">device_property</span><span class="o">=</span><span class="s2">&quot;generator&quot;</span><span class="p">)</span>
+                         <span class="n">device_property</span><span class="o">=</span><span class="s2">"generator"</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">gen_idx</span> <span class="o">=</span> <span class="n">gen_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">elm</span><span class="o">.</span><span class="n">generator</span><span class="o">.</span><span class="n">idtag</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">gen_idx</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">&quot;Fluid injection generator is not in the compiled generators&quot;</span><span class="p">,</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">"Fluid injection generator is not in the compiled generators"</span><span class="p">,</span>
                              <span class="n">device</span><span class="o">=</span><span class="n">elm</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
                              <span class="n">device_class</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">elm</span><span class="o">.</span><span class="n">device_type</span><span class="o">.</span><span class="n">value</span><span class="p">),</span>
-                             <span class="n">device_property</span><span class="o">=</span><span class="s2">&quot;generator&quot;</span><span class="p">,</span>
+                             <span class="n">device_property</span><span class="o">=</span><span class="s2">"generator"</span><span class="p">,</span>
                              <span class="n">object_value</span><span class="o">=</span><span class="n">elm</span><span class="o">.</span><span class="n">generator</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">pass</span>
@@ -2780,7 +2780,7 @@
                            <span class="n">plant_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
                            <span class="n">gen_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
                            <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span> <span class="o">=</span> <span class="n">Logger</span><span class="p">())</span> <span class="o">-&gt;</span> <span class="n">FluidTurbineData</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 
 <span class="sd">    :param data:</span>
 <span class="sd">    :param circuit:</span>
@@ -2788,7 +2788,7 @@
 <span class="sd">    :param gen_dict:</span>
 <span class="sd">    :param logger:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">k</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
 
     <span class="k">for</span> <span class="n">elm</span> <span class="ow">in</span> <span class="n">circuit</span><span class="o">.</span><span class="n">get_fluid_turbines</span><span class="p">():</span>
@@ -2824,7 +2824,7 @@
                         <span class="n">plant_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
                         <span class="n">gen_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
                         <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span> <span class="o">=</span> <span class="n">Logger</span><span class="p">())</span> <span class="o">-&gt;</span> <span class="n">FluidPumpData</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 
 <span class="sd">    :param data:</span>
 <span class="sd">    :param circuit:</span>
@@ -2832,7 +2832,7 @@
 <span class="sd">    :param gen_dict:</span>
 <span class="sd">    :param logger:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">k</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
 
@@ -2869,7 +2869,7 @@
                        <span class="n">plant_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
                        <span class="n">gen_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
                        <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span> <span class="o">=</span> <span class="n">Logger</span><span class="p">())</span> <span class="o">-&gt;</span> <span class="n">FluidP2XData</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 
 <span class="sd">    :param data:</span>
 <span class="sd">    :param circuit:</span>
@@ -2877,7 +2877,7 @@
 <span class="sd">    :param gen_dict:</span>
 <span class="sd">    :param logger:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">k</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
 
@@ -2913,14 +2913,14 @@
                         <span class="n">circuit</span><span class="p">:</span> <span class="n">MultiCircuit</span><span class="p">,</span>
                         <span class="n">plant_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
                         <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span> <span class="o">=</span> <span class="n">Logger</span><span class="p">())</span> <span class="o">-&gt;</span> <span class="n">FluidPathData</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 
 <span class="sd">    :param data: FluidPathData</span>
 <span class="sd">    :param circuit:</span>
 <span class="sd">    :param plant_dict:</span>
 <span class="sd">    :param logger:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">elm</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">circuit</span><span class="o">.</span><span class="n">get_fluid_paths</span><span class="p">()):</span>
         <span class="n">data</span><span class="o">.</span><span class="n">names</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">elm</span><span class="o">.</span><span class="n">name</span>
@@ -2936,8 +2936,8 @@
             <span class="n">logger</span><span class="o">=</span><span class="n">logger</span><span class="p">,</span>
             <span class="n">device_name</span><span class="o">=</span><span class="n">elm</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
             <span class="n">device_class</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">elm</span><span class="o">.</span><span class="n">device_type</span><span class="o">.</span><span class="n">value</span><span class="p">),</span>
-            <span class="n">lower_name</span><span class="o">=</span><span class="s2">&quot;min_flow&quot;</span><span class="p">,</span>
-            <span class="n">upper_name</span><span class="o">=</span><span class="s2">&quot;max_flow&quot;</span><span class="p">,</span>
+            <span class="n">lower_name</span><span class="o">=</span><span class="s2">"min_flow"</span><span class="p">,</span>
+            <span class="n">upper_name</span><span class="o">=</span><span class="s2">"max_flow"</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="n">data</span><span class="o">.</span><span class="n">min_flow</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">min_flow</span>
         <span class="n">data</span><span class="o">.</span><span class="n">max_flow</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">max_flow</span>
@@ -2963,7 +2963,7 @@
                                  <span class="n">fill_three_phase</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
                                  <span class="n">consider_grounded_buses</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
                                  <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span> <span class="o">=</span> <span class="n">Logger</span><span class="p">())</span> <span class="o">-&gt;</span> <span class="n">NumericalCircuit</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compile a NumericalCircuit from a MultiCircuit</span>
 <span class="sd">    :param circuit: MultiCircuit instance</span>
 <span class="sd">    :param t_idx: time step from the time series to gather data from, if None the snapshot is used</span>
@@ -2981,7 +2981,7 @@
 <span class="sd">    :param consider_grounded_buses: Consider the is_grounded bus state</span>
 <span class="sd">    :param logger: Logger instance</span>
 <span class="sd">    :return: NumericalCircuit instance</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="c1"># if any valid time index is specified, then the data is compiled from the time series</span>
     <span class="n">time_series</span> <span class="o">=</span> <span class="n">t_idx</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
@@ -3196,7 +3196,7 @@
                     <span class="n">nc</span><span class="o">.</span><span class="n">battery_data</span><span class="o">.</span><span class="n">is_candidate</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
                     <span class="n">nc</span><span class="o">.</span><span class="n">battery_data</span><span class="o">.</span><span class="n">discount_rate</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">investment</span><span class="o">.</span><span class="n">group</span><span class="o">.</span><span class="n">discount_rate</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="s2">&quot;Could not find investment device&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">investment</span><span class="o">.</span><span class="n">device_idtag</span><span class="p">)</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="s2">"Could not find investment device"</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">investment</span><span class="o">.</span><span class="n">device_idtag</span><span class="p">)</span>
 
     <span class="n">nc</span><span class="o">.</span><span class="n">bus_dict</span> <span class="o">=</span> <span class="n">bus_dict</span>
     <span class="n">nc</span><span class="o">.</span><span class="n">consolidate_information</span><span class="p">()</span>

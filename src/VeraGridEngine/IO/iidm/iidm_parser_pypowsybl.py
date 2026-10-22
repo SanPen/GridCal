@@ -13,14 +13,22 @@ import VeraGridEngine.Devices as dev
 from VeraGridEngine.enumerations import ShuntControlMode, GeneratorControlMode
 from VeraGridEngine.basic_structures import Logger
 
+from VeraGridEngine.Utils.optional_dependencies import optional_dependency_failure
+
+# Its native runtime or API can be incompatible even when pypowsybl is installed.
+# Validate the reader exports before making this optional importer available.
 try:
     import pypowsybl as pp
+    from pypowsybl import PyPowsyblError
+    from pypowsybl.network import load
 
     PYPOWSYBL_AVAILABLE = True
+    PYPOWSYBL_UNAVAILABLE_REASON: str = ""
 
-except ImportError:
+except (ImportError, AttributeError, OSError, RuntimeError, ValueError, TypeError) as error:
     pp = None
     PYPOWSYBL_AVAILABLE = False
+    PYPOWSYBL_UNAVAILABLE_REASON = optional_dependency_failure("pypowsybl", error)
 
 
 class IidmParser:
@@ -41,10 +49,10 @@ class IidmParser:
 
         if os.path.exists(fname):
             if PYPOWSYBL_AVAILABLE:
-                self.ps_grid = pp.network.load(fname)
+                self.ps_grid = load(fname)
             else:
                 self.ps_grid = None
-                self.logger.add_error("pypowsybl not installed")
+                self.logger.add_error(f"pypowsybl unavailable: {PYPOWSYBL_UNAVAILABLE_REASON}")
         else:
             self.ps_grid = None
 

@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Simulations.Clustering.clustering &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Simulations.Clustering.clustering &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/license.html">📜 License</a></li>
@@ -119,15 +120,15 @@
 <div class="viewcode-block" id="kmeans_sampling">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.Clustering.html#VeraGridEngine.Simulations.Clustering.clustering.kmeans_sampling">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">kmeans_sampling</span><span class="p">(</span><span class="n">x_input</span><span class="p">:</span> <span class="n">Mat</span><span class="p">,</span> <span class="n">n_points</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">IntVec</span><span class="p">,</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">IntVec</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    K-Means clustering, fit to the closest points</span>
 <span class="sd">    :param x_input: matrix to evaluate (time, params)</span>
 <span class="sd">    :param n_points: number of clusters</span>
 <span class="sd">    :return: indices of the closest to the cluster centers,</span>
 <span class="sd">             deviation of the closest representatives,</span>
 <span class="sd">             array signifying to which cluster does each simulation belong</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;OPENBLAS_NUM_THREADS&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;12&#39;</span>
+<span class="sd">    """</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">'OPENBLAS_NUM_THREADS'</span><span class="p">]</span> <span class="o">=</span> <span class="s1">'12'</span>
 
     <span class="c1"># # declare the model</span>
     <span class="n">model</span> <span class="o">=</span> <span class="n">KMeans</span><span class="p">(</span><span class="n">n_clusters</span><span class="o">=</span><span class="n">n_points</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_init</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
@@ -153,7 +154,7 @@
         <span class="n">cluster_representative_indices</span><span class="p">[</span><span class="n">c</span><span class="p">]</span> <span class="o">=</span> <span class="n">rep_idx</span>
 
     <span class="c1"># 1. Sort the representatives …</span>
-    <span class="n">sorting_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">cluster_representative_indices</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s2">&quot;stable&quot;</span><span class="p">)</span>
+    <span class="n">sorting_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">cluster_representative_indices</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s2">"stable"</span><span class="p">)</span>
 
     <span class="n">cluster_representative_indices</span> <span class="o">=</span> <span class="n">cluster_representative_indices</span><span class="p">[</span><span class="n">sorting_idx</span><span class="p">]</span>
     <span class="n">cluster_probability</span> <span class="o">=</span> <span class="n">cluster_probability</span><span class="p">[</span><span class="n">sorting_idx</span><span class="p">]</span>
@@ -173,12 +174,12 @@
 <div class="viewcode-block" id="kmeans_approximate_sampling">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.Clustering.html#VeraGridEngine.Simulations.Clustering.clustering.kmeans_approximate_sampling">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">kmeans_approximate_sampling</span><span class="p">(</span><span class="n">x_input</span><span class="p">:</span> <span class="n">Mat</span><span class="p">,</span> <span class="n">n_points</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">IntVec</span><span class="p">,</span> <span class="n">Vec</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    K-Means clustering, corrected to the closest points</span>
 <span class="sd">    :param x_input: Injections matrix (time, bus)</span>
 <span class="sd">    :param n_points: number of clusters</span>
 <span class="sd">    :return: indices of the closest to the cluster centers, deviation of the closest representatives</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="c1"># declare the model</span>
     <span class="n">model</span> <span class="o">=</span> <span class="n">KMeans</span><span class="p">(</span><span class="n">n_clusters</span><span class="o">=</span><span class="n">n_points</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_init</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
@@ -219,12 +220,12 @@
 <div class="viewcode-block" id="spectral_approximate_sampling">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.Clustering.html#VeraGridEngine.Simulations.Clustering.clustering.spectral_approximate_sampling">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">spectral_approximate_sampling</span><span class="p">(</span><span class="n">x_input</span><span class="p">:</span> <span class="n">Mat</span><span class="p">,</span> <span class="n">n_points</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">IntVec</span><span class="p">,</span> <span class="n">Vec</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    K-Means clustering, corrected to the closest points</span>
 <span class="sd">    :param x_input: Injections matrix (time, bus)</span>
 <span class="sd">    :param n_points: number of clusters</span>
 <span class="sd">    :return: indices of the closest to the cluster centers, deviation of the closest representatives</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="c1"># declare the model</span>
     <span class="n">model</span> <span class="o">=</span> <span class="n">SpectralClustering</span><span class="p">(</span><span class="n">n_clusters</span><span class="o">=</span><span class="n">n_points</span><span class="p">)</span>

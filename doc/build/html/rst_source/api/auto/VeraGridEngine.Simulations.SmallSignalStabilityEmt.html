@@ -213,15 +213,10 @@ without explicitly constructing it.</p>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">LinearOperator</span></code></p>
 <p>Monodromy operator from an explicit stack of state-transition matrices A_k.</p>
 <p>This is the preferred path for EMT/Floquet benchmarking when the EMT engine can
-expose the per-step linearized state map:</p>
-<blockquote>
-<div><p>x_{k+1} = A_k x_k</p>
-</div></blockquote>
-<dl class="simple">
-<dt>for one limit-cycle period. The operator applies:</dt><dd><p>Phi = A_{M-1} * … * A_1 * A_0</p>
-</dd>
-</dl>
-<p>on vectors or blocks. When Numba is available and use_numba=True, the block
+expose the per-step linearized state map <code class="docutils literal notranslate"><span class="pre">x_{k+1}</span> <span class="pre">=</span> <span class="pre">A_k</span> <span class="pre">x_k</span></code> for one
+limit-cycle period. The operator applies
+<code class="docutils literal notranslate"><span class="pre">Phi</span> <span class="pre">=</span> <span class="pre">A_{M-1}</span> <span class="pre">*</span> <span class="pre">...</span> <span class="pre">*</span> <span class="pre">A_1</span> <span class="pre">*</span> <span class="pre">A_0</span></code> on vectors or blocks. When Numba is
+available and <code class="docutils literal notranslate"><span class="pre">use_numba=True</span></code>, the block
 path is JIT-compiled to reduce Python overhead in repeated Arnoldi calls.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="VeraGridEngine.Simulations.SmallSignalStabilityEmt.emt_floquet_operator.AkStackBlockEmtFloquetOperator.Ak_stack">

@@ -14,13 +14,16 @@ from VeraGridEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOpt
 from VeraGridEngine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
 from VeraGridEngine.Simulations.PowerFlow.power_flow_ts_results import PowerFlowTimeSeriesResults
 from VeraGridEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
+from VeraGridEngine.Utils.optional_dependencies import optional_dependency_failure
 
 PGM_RECOMMENDED_VERSION = "0.0.1"
 PGM_VERSION = ''
 PGM_AVAILABLE = False
+# An installed PGM may lack the API used below; enable it only after every required import succeeds.
 try:
     import power_grid_model as pgm
-    from power_grid_model import CalculationMethod, CalculationType
+    from power_grid_model import (CalculationMethod, CalculationType, PowerGridModel,
+                                  initialize_array, LoadGenType, WindingType, BranchSide)
     from power_grid_model.validation import (validate_input_data,
                                              assert_valid_input_data,
                                              assert_valid_batch_data,
@@ -30,9 +33,11 @@ try:
     from power_grid_model.errors import PowerGridError
 
     PGM_AVAILABLE = True
-except ImportError:
+    PGM_UNAVAILABLE_REASON: str = ""
+except (ImportError, AttributeError, OSError, RuntimeError, ValueError, TypeError) as error:
     pgm = None
     PGM_AVAILABLE = False
+    PGM_UNAVAILABLE_REASON = optional_dependency_failure("power-grid-model", error)
 
 """
 hierarchy
@@ -489,7 +494,21 @@ def get_pgm_hvdc_data(circuit: MultiCircuit, bus_dict, idx0):
     return hvdc, idx
 
 
-def get_pgm_input_data(circuit: MultiCircuit, logger: Logger = Logger(), time_series=False):
+def get_pgm_input_data(circuit: MultiCircuit, logger: Logger = Logger(),
+                       time_series: bool = False) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+    """Build PGM arrays only when the required third-party API is available.
+
+    :param circuit: Circuit to convert.
+    :param logger: Conversion diagnostics.
+    :param time_series: Whether to include profile updates.
+    :return: Input arrays and profile updates.
+    """
+    # Direct conversion and export calls can bypass the simulation driver availability checks.
+    if PGM_AVAILABLE:
+        pass
+    else:
+        raise ImportError(f"Power Grid Model unavailable: {PGM_UNAVAILABLE_REASON}")
+
     if time_series:
         n_time = circuit.get_time_number()
     else:

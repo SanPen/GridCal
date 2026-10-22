@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Simulations.InvestmentsEvaluation.Methods.NSGA_3 &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Simulations.InvestmentsEvaluation.Methods.NSGA_3 &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/license.html">📜 License</a></li>
@@ -135,7 +136,7 @@
                              <span class="n">seed_objectives</span><span class="p">:</span> <span class="n">Mat</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
                              <span class="n">lb</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">|</span> <span class="n">IntVec</span><span class="p">,</span>
                              <span class="n">ub</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">|</span> <span class="n">IntVec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">IntMat</span><span class="p">,</span> <span class="n">Mat</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Clip, round and deduplicate a user-provided seed population.</span>
 
 <span class="sd">    :param seed_population: Candidate initial population.</span>
@@ -148,7 +149,7 @@
 <span class="sd">    :type ub: Vec | IntVec</span>
 <span class="sd">    :return: Clean seed population and aligned objective matrix.</span>
 <span class="sd">    :rtype: tuple[IntMat, Mat | None]</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">lb_arr</span><span class="p">:</span> <span class="n">IntVec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">lb</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
     <span class="n">ub_arr</span><span class="p">:</span> <span class="n">IntVec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">ub</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
     <span class="n">clipped_population</span><span class="p">:</span> <span class="n">IntMat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">rint</span><span class="p">(</span><span class="n">seed_population</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
@@ -158,7 +159,7 @@
     <span class="k">if</span> <span class="n">clipped_population</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">lb_arr</span><span class="p">):</span>
         <span class="k">pass</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The seed population does not match the problem dimension&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"The seed population does not match the problem dimension"</span><span class="p">)</span>
 
     <span class="n">objective_matrix</span><span class="p">:</span> <span class="n">Mat</span> <span class="o">|</span> <span class="kc">None</span>
     <span class="k">if</span> <span class="n">seed_objectives</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -170,7 +171,7 @@
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">objective_matrix</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">clipped_population</span><span class="p">):</span>
             <span class="k">pass</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The seed population and objective arrays must have the same row count&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"The seed population and objective arrays must have the same row count"</span><span class="p">)</span>
 
     <span class="c1"># Preserve the first occurrence of each point so the caller controls the seed priority order.</span>
     <span class="n">unique_rows</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">IntVec</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
@@ -220,7 +221,7 @@
                                  <span class="n">pop_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
                                  <span class="n">initial_population</span><span class="p">:</span> <span class="n">IntMat</span><span class="p">,</span>
                                  <span class="n">initial_objectives</span><span class="p">:</span> <span class="n">Mat</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Population</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Build an optional pymoo initial population from plain NumPy arrays.</span>
 
 <span class="sd">    :param problem: pymoo problem instance.</span>
@@ -233,7 +234,7 @@
 <span class="sd">    :type initial_objectives: Mat | None</span>
 <span class="sd">    :return: pymoo population object with optional pre-evaluated individuals.</span>
 <span class="sd">    :rtype: Population</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">fallback_sampling</span><span class="p">:</span> <span class="n">Sampling</span> <span class="o">=</span> <span class="n">SkewedIntegerSamplingRange</span><span class="p">()</span>
     <span class="n">n_seed</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">initial_population</span><span class="p">),</span> <span class="n">pop_size</span><span class="p">)</span>
     <span class="n">samples</span><span class="p">:</span> <span class="n">IntMat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">pop_size</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">problem</span><span class="o">.</span><span class="n">n_var</span><span class="p">)),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
@@ -259,10 +260,10 @@
     <span class="k">if</span> <span class="n">initial_objectives</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">pass</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">population</span><span class="p">[:</span><span class="n">n_seed</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;F&quot;</span><span class="p">,</span> <span class="n">initial_objectives</span><span class="p">[:</span><span class="n">n_seed</span><span class="p">,</span> <span class="p">:])</span>
+        <span class="n">population</span><span class="p">[:</span><span class="n">n_seed</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">"F"</span><span class="p">,</span> <span class="n">initial_objectives</span><span class="p">[:</span><span class="n">n_seed</span><span class="p">,</span> <span class="p">:])</span>
 
         <span class="k">for</span> <span class="n">row_idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_seed</span><span class="p">):</span>
-            <span class="n">population</span><span class="p">[</span><span class="n">row_idx</span><span class="p">]</span><span class="o">.</span><span class="n">evaluated</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;F&quot;</span><span class="p">,</span> <span class="s2">&quot;G&quot;</span><span class="p">,</span> <span class="s2">&quot;H&quot;</span><span class="p">})</span>
+            <span class="n">population</span><span class="p">[</span><span class="n">row_idx</span><span class="p">]</span><span class="o">.</span><span class="n">evaluated</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">"F"</span><span class="p">,</span> <span class="s2">"G"</span><span class="p">,</span> <span class="s2">"H"</span><span class="p">})</span>
 
     <span class="k">return</span> <span class="n">population</span></div>
 
@@ -271,9 +272,9 @@
 <div class="viewcode-block" id="IntegerRandomSamplingVeraGrid">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.InvestmentsEvaluation.Methods.html#VeraGridEngine.Simulations.InvestmentsEvaluation.Methods.NSGA_3.IntegerRandomSamplingVeraGrid">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">IntegerRandomSamplingVeraGrid</span><span class="p">(</span><span class="n">Sampling</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Random integer sampling for VeraGrid bounds.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">()</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_do</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">problem</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
@@ -295,9 +296,9 @@
 <div class="viewcode-block" id="UniformBinarySampling">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.InvestmentsEvaluation.Methods.html#VeraGridEngine.Simulations.InvestmentsEvaluation.Methods.NSGA_3.UniformBinarySampling">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">UniformBinarySampling</span><span class="p">(</span><span class="n">Sampling</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    UniformBinarySampling</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">()</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_do</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">problem</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
@@ -316,9 +317,9 @@
 <div class="viewcode-block" id="SkewedBinarySampling">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.InvestmentsEvaluation.Methods.html#VeraGridEngine.Simulations.InvestmentsEvaluation.Methods.NSGA_3.SkewedBinarySampling">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">SkewedBinarySampling</span><span class="p">(</span><span class="n">Sampling</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    SkewedBinarySampling</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">()</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_do</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">problem</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
@@ -332,7 +333,7 @@
             <span class="n">ones_into_array</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:</span><span class="n">num</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
             <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">shuffle</span><span class="p">(</span><span class="n">ones_into_array</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
 
-        <span class="c1"># # Add rows with only one &#39;1&#39;</span>
+        <span class="c1"># # Add rows with only one '1'</span>
         <span class="c1"># additional_rows = 100</span>
         <span class="c1"># for _ in range(additional_rows):</span>
         <span class="c1">#     row = np.zeros(problem.n_var, dtype=int)</span>
@@ -346,10 +347,10 @@
 <div class="viewcode-block" id="SkewedIntegerSamplingRange">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.InvestmentsEvaluation.Methods.html#VeraGridEngine.Simulations.InvestmentsEvaluation.Methods.NSGA_3.SkewedIntegerSamplingRange">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">SkewedIntegerSamplingRange</span><span class="p">(</span><span class="n">Sampling</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    SkewedIntegerSampling generates samples skewed toward the lower bounds</span>
 <span class="sd">    but spread across the full lb–ub range. Works for integer variables.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">()</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_do</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">problem</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
@@ -379,9 +380,9 @@
 <div class="viewcode-block" id="QuadBinarySampling">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.InvestmentsEvaluation.Methods.html#VeraGridEngine.Simulations.InvestmentsEvaluation.Methods.NSGA_3.QuadBinarySampling">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">QuadBinarySampling</span><span class="p">(</span><span class="n">Sampling</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    QuadBinarySampling</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">()</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_do</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">problem</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
@@ -405,9 +406,9 @@
 <div class="viewcode-block" id="BitflipMutation">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.InvestmentsEvaluation.Methods.html#VeraGridEngine.Simulations.InvestmentsEvaluation.Methods.NSGA_3.BitflipMutation">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">BitflipMutation</span><span class="p">(</span><span class="n">Mutation</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    BitflipMutation</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">()</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_do</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">problem</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
@@ -420,17 +421,17 @@
 <div class="viewcode-block" id="GridNsga">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.InvestmentsEvaluation.Methods.html#VeraGridEngine.Simulations.InvestmentsEvaluation.Methods.NSGA_3.GridNsga">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">GridNsga</span><span class="p">(</span><span class="n">ElementwiseProblem</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Problem formulation packaging to use the pymoo library</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;obj_func&quot;</span><span class="p">,)</span>
+<span class="sd">    """</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"obj_func"</span><span class="p">,)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj_func</span><span class="p">,</span> <span class="n">n_var</span><span class="p">,</span> <span class="n">n_obj</span><span class="p">,</span> <span class="n">lb</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">|</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">ub</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">|</span> <span class="n">IntVec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        :param obj_func:</span>
 <span class="sd">        :param n_var:</span>
 <span class="sd">        :param n_obj:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">n_var</span><span class="o">=</span><span class="n">n_var</span><span class="p">,</span>
                          <span class="n">n_obj</span><span class="o">=</span><span class="n">n_obj</span><span class="p">,</span>
                          <span class="n">n_ieq_constr</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
@@ -440,15 +441,15 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">obj_func</span> <span class="o">=</span> <span class="n">obj_func</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">out</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :param x:</span>
 <span class="sd">        :param out:</span>
 <span class="sd">        :param args:</span>
 <span class="sd">        :param kwargs:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">out</span><span class="p">[</span><span class="s2">&quot;F&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">obj_func</span><span class="p">(</span><span class="n">x</span><span class="p">)</span></div>
+<span class="sd">        """</span>
+        <span class="n">out</span><span class="p">[</span><span class="s2">"F"</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">obj_func</span><span class="p">(</span><span class="n">x</span><span class="p">)</span></div>
 
 
 
@@ -466,7 +467,7 @@
            <span class="n">initial_population</span><span class="p">:</span> <span class="n">IntMat</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
            <span class="n">initial_objectives</span><span class="p">:</span> <span class="n">Mat</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
            <span class="n">cancel_checker</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="nb">bool</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    NSGA3 designed for pareto investments</span>
 <span class="sd">    :param obj_func: Objective function pointer [f(x)]</span>
 <span class="sd">    :param n_partitions: Number of partitions</span>
@@ -486,7 +487,7 @@
 <span class="sd">    :param cancel_checker: Optional VeraGrid cancellation check.</span>
 <span class="sd">    :type cancel_checker: Callable[[], bool] | None</span>
 <span class="sd">    :return: X, f</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">problem</span> <span class="o">=</span> <span class="n">GridNsga</span><span class="p">(</span><span class="n">obj_func</span><span class="p">,</span> <span class="n">n_var</span><span class="p">,</span> <span class="n">n_obj</span><span class="p">,</span> <span class="n">lb</span><span class="o">=</span><span class="n">lb</span><span class="p">,</span> <span class="n">ub</span><span class="o">=</span><span class="n">ub</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">cancel_checker</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">cancel_checker</span><span class="p">():</span>
@@ -494,7 +495,7 @@
     <span class="k">else</span><span class="p">:</span>
         <span class="k">pass</span>
 
-    <span class="n">ref_dirs</span> <span class="o">=</span> <span class="n">get_reference_directions</span><span class="p">(</span><span class="s2">&quot;das-dennis&quot;</span><span class="p">,</span> <span class="n">n_obj</span><span class="p">,</span> <span class="n">n_partitions</span><span class="o">=</span><span class="n">n_partitions</span><span class="p">)</span> <span class="c1"># ref_dirs = get_reference_directions(&quot;reduction&quot;, n_obj, n_partitions, seed=1)</span>
+    <span class="n">ref_dirs</span> <span class="o">=</span> <span class="n">get_reference_directions</span><span class="p">(</span><span class="s2">"das-dennis"</span><span class="p">,</span> <span class="n">n_obj</span><span class="p">,</span> <span class="n">n_partitions</span><span class="o">=</span><span class="n">n_partitions</span><span class="p">)</span> <span class="c1"># ref_dirs = get_reference_directions("reduction", n_obj, n_partitions, seed=1)</span>
     <span class="n">sampling</span><span class="p">:</span> <span class="n">Sampling</span> <span class="o">|</span> <span class="n">Population</span>
 
     <span class="c1"># Keep warm-starting entirely optional. When nothing is passed, NSGA3 behaves exactly as before.</span>

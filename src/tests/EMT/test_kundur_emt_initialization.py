@@ -265,6 +265,16 @@ def test_kundur_emt_initialization_and_short_trajectory_match_reference() -> Non
         assert np.isfinite(runtime)
         np.testing.assert_allclose(runtime, float(initialized), rtol=0.0, atol=1e-12)
 
+    # A runtime refresh must preserve the PF voltage used to derive the load
+    # impedances. Restoring the template's Vm=1 would disturb the first cycle.
+    refreshed_params = problem.def_event_params_fn(problem.event_params_values.copy(), 0.0)
+    for load in problem.grid.loads:
+        vm_var = next(var for var in load.emt_model.event_dict if var.name.startswith("Vm_pf_"))
+        vm_index = problem.uid2idx_event_params[vm_var.uid]
+        bus_index = problem.grid.buses.index(load.bus)
+        expected_vm = abs(problem.power_flow_results.voltage[bus_index])
+        np.testing.assert_allclose(refreshed_params[vm_index], expected_vm, rtol=0.0, atol=1e-12)
+
     exciter_derivatives = [
         var for var in problem.get_diff_vars()
         if var.name in {"d_y_exciter2", "d_y_exciter3", "d_Vf"}
@@ -318,6 +328,7 @@ def test_kundur_emt_initialization_and_short_trajectory_match_reference() -> Non
 
     assert actual.shape == expected.shape
     np.testing.assert_allclose(actual, expected, rtol=1e-7, atol=3e-7)
+
 
 
 @pytest.mark.parametrize("clear_init_eqs,null_references", [(False, False), (True, False), (True, True)])
@@ -399,3 +410,25 @@ def test_kundur_emt_device_pseudotransient_corrects_local_line_state() -> None:
     assert report.pseudo_transient_steps > 0
     assert report.final_residual_inf < problem.options.tolerance
     np.testing.assert_allclose(problem.init_guess[line_state.uid], original, atol=1e-8)
+
+
+def test_kundur_emt_auto_uses_device_ptc_when_explicit_equations_are_missing() -> None:
+    """Auto must use periodic device PTC and verify the assembled EMT orbit."""
+    problem, _, _, _ = _build_kundur_problem(
+        EmtInitializationMethod.Auto,
+        clear_init_eqs=True,
+        null_references=False,
+    )
+
+    report = problem.initialization_report
+    assert report is not None
+    assert report.status == EmtInitializationStatus.RESOLVED
+    assert report.method_requested == EmtInitializationMethod.Auto
+    assert report.method_used == EmtInitializationMethod.PseudoTransient
+    assert report.pseudo_transient_steps > 0
+    assert report.newton_iterations == 0
+    assert report.final_residual_inf <= max(
+        float(problem.options.init_newton_tol),
+        float(problem.options.tolerance),
+    )
+    assert "verified the assembled periodic DAE" in report.message

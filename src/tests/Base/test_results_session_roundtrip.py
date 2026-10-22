@@ -5,6 +5,7 @@ from pathlib import Path
 import numpy as np
 
 import VeraGridEngine.api as vg
+from VeraGridEngine.enumerations import ResultTypes
 from VeraGrid.Session.session import SimulationSession
 from VeraGridEngine.IO.veragrid.zip_interface import get_session_tree
 from VeraGridEngine.IO.veragrid.zip_interface import load_session_driver_objects
@@ -78,6 +79,9 @@ def test_investments_results_session_save_load_roundtrip(tmp_path: Path) -> None
     loaded_driver, loaded_results = session.investments_evaluation
     assert loaded_driver is not None
     assert loaded_results is not None
+    assert isinstance(loaded_results.max_eval, int)
+    assert isinstance(loaded_results.plot_x_idx, int)
+    assert isinstance(loaded_results.plot_y_idx, int)
     assert loaded_results.max_eval == 3
     assert loaded_results.plot_x_idx == 0
     assert loaded_results.plot_y_idx == 1
@@ -87,3 +91,7 @@ def test_investments_results_session_save_load_roundtrip(tmp_path: Path) -> None
     assert np.array_equal(loaded_results.f, driver.results.f)
     assert np.array_equal(loaded_results.f_best, driver.results.f_best)
     assert np.array_equal(loaded_results.sorting_indices, driver.results.sorting_indices)
+
+    # Imported scalar metadata must also work when constructing plot tables.
+    iterations = loaded_results.mdl(ResultTypes.InvestmentsIterationsPlot)
+    assert np.array_equal(iterations.data_c[:, 0], np.arange(3))

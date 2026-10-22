@@ -12,10 +12,10 @@ Subpackages
 Submodules
 ----------
 
-VeraGridEngine.Templates.BasicBlockCatalog.catalog module
----------------------------------------------------------
+VeraGridEngine.Templates.BasicBlockCatalog.basic\_block\_catalog module
+------------------------------------------------------------------------
 
-.. automodule:: VeraGridEngine.Templates.BasicBlockCatalog.catalog
+.. automodule:: VeraGridEngine.Templates.BasicBlockCatalog.basic_block_catalog
    :members:
    :show-inheritance:
    :undoc-members:

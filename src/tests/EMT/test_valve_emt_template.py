@@ -6,6 +6,7 @@
 from typing import Dict, List, Tuple
 
 import numpy as np
+import pytest
 
 import VeraGridEngine.api as gce
 import VeraGridEngine.Templates as tem
@@ -20,6 +21,7 @@ from VeraGridEngine.Utils.Symbolic.bus_emt_template import get_bus_emt_template
 from VeraGridEngine.Templates.Emt.dc_line_emt_template import get_dc_line_emt_template
 from VeraGridEngine.Templates.Emt.dc_load_emt_template import get_dc_load_emt_template
 from VeraGridEngine.Templates.Emt.converter_emt_template import get_emt_ideal_converter
+from VeraGridEngine.Templates.Emt.converter_emt_multilinear_template import get_emt_ideal_converter_multilinear
 from VeraGridEngine.Templates.Emt.thevenin_equivalent_emt_generator_template import get_generator_thevenin_rl_emt_template_with_ref
 from VeraGridEngine.Templates.Emt.valve_emt_template import get_valve_emt_template
 from VeraGridEngine.Utils.Symbolic.templates_common_functions import set_emt_model
@@ -513,7 +515,7 @@ def _run_balanced_power_flow(grid: gce.MultiCircuit) -> PowerFlowResults:
         verbose=False,
         retry_with_other_methods=True,
         max_iter=100,
-        tolerance=1e-6,
+        tolerance=1e-10,
         control_q=True,
         control_taps_modules=False,
         control_taps_phase=False,
@@ -591,6 +593,10 @@ def _build_demo_branch_circuit(
         bus_from=bus_dc_from,
         bus_to=bus_ac,
         rate=100.0,
+        # Match the lossless ideal EMT converter used by these runtime cases.
+        alpha1=0.0,
+        alpha2=0.0,
+        alpha3=0.0,
         control1=ConverterControlType.Qac,
         control2=ConverterControlType.Vm_dc,
         control1_val=0.0,
@@ -614,7 +620,8 @@ def _build_demo_branch_circuit(
 
 
 def _assign_dc_line_runtime_models(grid: gce.MultiCircuit, generator: gce.Generator, vsc: gce.VSC,
-                                   dc_branch: gce.DcLine, dc_load: gce.Load) -> None:
+                                   dc_branch: gce.DcLine, dc_load: gce.Load,
+                                   multilinear: bool = False) -> None:
     """
     Attach EMT models to the runtime DC-line test case.
 
@@ -623,10 +630,14 @@ def _assign_dc_line_runtime_models(grid: gce.MultiCircuit, generator: gce.Genera
     :param vsc: AC/DC converter.
     :param dc_branch: DC line branch.
     :param dc_load: DC load.
+    :param multilinear: Use the multilinear ideal converter variant.
     :return: None.
     """
     generator_model = get_generator_thevenin_rl_emt_template_with_ref(vf=grid.var_factory).block
-    vsc_model = get_emt_ideal_converter(vf=grid.var_factory, name=vsc.name).block
+    if multilinear:
+        vsc_model = get_emt_ideal_converter_multilinear(vf=grid.var_factory, name=vsc.name).block
+    else:
+        vsc_model = get_emt_ideal_converter(vf=grid.var_factory, name=vsc.name).block
     dc_line_model = get_dc_line_emt_template(vf=grid.var_factory, name=dc_branch.name).block
     dc_load_model = get_dc_load_emt_template(vf=grid.var_factory, name="dc_load_runtime_case").block
 
@@ -1194,10 +1205,12 @@ def test_valve_template_initializes_mode_from_dc_power_flow_seed() -> None:
     assert problem.boundary_update is not None
 
 
-def test_dc_line_runtime_case_responds_to_load_step() -> None:
+@pytest.mark.parametrize("multilinear", [False, True])
+def test_dc_line_runtime_case_responds_to_load_step(multilinear: bool) -> None:
     """
     Verify that the EMT DC-line runtime case reacts to one scheduled DC load step.
 
+    :param multilinear: Exercise the multilinear ideal converter variant.
     :return: None.
     """
     grid, _, bus_dc_from, bus_dc_to, generator, vsc, dc_branch, dc_load = _build_demo_branch_circuit(
@@ -1208,7 +1221,7 @@ def test_dc_line_runtime_case_responds_to_load_step() -> None:
     for bus in grid.buses:
         get_bus_emt_template(grid, bus)
 
-    _assign_dc_line_runtime_models(grid, generator, vsc, dc_branch, dc_load)
+    _assign_dc_line_runtime_models(grid, generator, vsc, dc_branch, dc_load, multilinear=multilinear)
     pf_results = _run_balanced_power_flow(grid)
 
     problem = EmtProblemDae(
@@ -1254,10 +1267,12 @@ def test_dc_line_runtime_case_responds_to_load_step() -> None:
     )
 
 
-def test_dc_line_runtime_case_matches_pf_initialization() -> None:
+@pytest.mark.parametrize("multilinear", [False, True])
+def test_dc_line_runtime_case_matches_pf_initialization(multilinear: bool) -> None:
     """
     Verify that the EMT DC-line initial condition matches the balanced PF operating point.
 
+    :param multilinear: Exercise the multilinear ideal converter variant.
     :return: None.
     """
     grid, _, bus_dc_from, bus_dc_to, generator, vsc, dc_branch, dc_load = _build_demo_branch_circuit(
@@ -1268,7 +1283,7 @@ def test_dc_line_runtime_case_matches_pf_initialization() -> None:
     for bus in grid.buses:
         get_bus_emt_template(grid, bus)
 
-    _assign_dc_line_runtime_models(grid, generator, vsc, dc_branch, dc_load)
+    _assign_dc_line_runtime_models(grid, generator, vsc, dc_branch, dc_load, multilinear=multilinear)
     pf_results = _run_balanced_power_flow(grid)
 
     problem = EmtProblemDae(

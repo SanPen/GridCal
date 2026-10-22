@@ -69,9 +69,9 @@ device_type_icons = {
     DeviceType.InvestmentDevice.value: ":/Icons/icons/investment_dev.png",
 
     "Dynamic": ":/Icons/icons/dyn_gray.png",
-    DeviceType.RmsEventsGroupDevice.value: ":/Icons/icons/dyn_gray.png",
+    DeviceType.RmsEventsGroupDevice.value: ":/Icons/icons/event_group.png",
     DeviceType.RmsEventDevice.value: ":/Icons/icons/dyn_gray.png",
-    DeviceType.EmtEventsGroupDevice.value: ":/Icons/icons/dyn_gray.png",
+    DeviceType.EmtEventsGroupDevice.value: ":/Icons/icons/event_group.png",
     DeviceType.EmtEventDevice.value: ":/Icons/icons/dyn_gray.png",
 
     "Templates": ":/Icons/icons/dyn_gray.png",

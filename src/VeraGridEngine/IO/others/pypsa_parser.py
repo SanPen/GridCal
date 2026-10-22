@@ -22,12 +22,18 @@ from VeraGridEngine.Devices.Substation.bus import Bus
 from VeraGridEngine.Devices.Aggregation.country import Country
 from VeraGridEngine.Devices.multi_circuit import MultiCircuit
 
+from VeraGridEngine.Utils.optional_dependencies import optional_dependency_failure
+
+# PyPSA is optional and can remain stale after a VeraGrid upgrade; validate its entry point here.
 try:
     import pypsa
+    from pypsa import Network
 
     PYPSA_AVAILABLE = True
-except ImportError:
+    PYPSA_UNAVAILABLE_REASON: str = ""
+except (ImportError, AttributeError, OSError, RuntimeError, ValueError, TypeError) as error:
     PYPSA_AVAILABLE = False
+    PYPSA_UNAVAILABLE_REASON = optional_dependency_failure("pypsa", error)
 
 
 class PyPSAParser:
@@ -515,12 +521,18 @@ def parse_pypsa_netcdf(file_path: str, logger: Logger) -> MultiCircuit:
     :return: the VeraGrid circuit object
     """
     if not PYPSA_AVAILABLE:
-        logger.add_error(f'PyPSA not installed, try pip install pypsa')
+        logger.add_error(f"PyPSA unavailable: {PYPSA_UNAVAILABLE_REASON}")
         return MultiCircuit('')
     else:
-        network = pypsa.Network()
-        network.import_from_netcdf(file_path)
-        return pypsa2veragrid(network, logger)
+        network = Network()
+        # Reader methods and their optional dependencies vary independently of the Network export.
+        try:
+            network.import_from_netcdf(file_path)
+        except (ImportError, AttributeError) as error:
+            logger.add_error(optional_dependency_failure("pypsa", error))
+            return MultiCircuit('')
+        else:
+            return pypsa2veragrid(network, logger)
 
 
 def parse_pypsa_hdf5(file_path: str, logger: Logger) -> MultiCircuit:
@@ -531,9 +543,15 @@ def parse_pypsa_hdf5(file_path: str, logger: Logger) -> MultiCircuit:
     :return: the VeraGrid circuit object
     """
     if not PYPSA_AVAILABLE:
-        logger.add_error(f'PyPSA not installed, try pip install pypsa')
+        logger.add_error(f"PyPSA unavailable: {PYPSA_UNAVAILABLE_REASON}")
         return MultiCircuit('')
     else:
-        network = pypsa.Network()
-        network.import_from_hdf5(file_path)
-        return pypsa2veragrid(network, logger)
+        network = Network()
+        # Reader methods and their optional dependencies vary independently of the Network export.
+        try:
+            network.import_from_hdf5(file_path)
+        except (ImportError, AttributeError) as error:
+            logger.add_error(optional_dependency_failure("pypsa", error))
+            return MultiCircuit('')
+        else:
+            return pypsa2veragrid(network, logger)

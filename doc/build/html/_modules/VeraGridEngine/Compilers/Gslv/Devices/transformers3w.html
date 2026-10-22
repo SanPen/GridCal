@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Compilers.Gslv.Devices.transformers3w &mdash; VeraGrid 6.5.26 documentation</title>
+  <title>VeraGridEngine.Compilers.Gslv.Devices.transformers3w &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../../_static/documentation_options.js?v=c62e3d9e"></script>
+      <script src="../../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/license.html">📜 License</a></li>
@@ -130,12 +131,12 @@
 <div class="viewcode-block" id="convert_transformer3w">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Compilers.Gslv.Devices.html#VeraGridEngine.Compilers.Gslv.Devices.transformers3w.convert_transformer3w">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">convert_transformer3w</span><span class="p">(</span><span class="n">elm</span><span class="p">:</span> <span class="n">Transformer3W</span><span class="p">,</span>
-                          <span class="n">bus_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="s2">&quot;pg.Bus&quot;</span><span class="p">],</span>
+                          <span class="n">bus_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="s2">"pg.Bus"</span><span class="p">],</span>
                           <span class="n">n_time</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
                           <span class="n">use_time_series</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
                           <span class="n">time_indices</span><span class="p">:</span> <span class="n">IntVec</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
-                          <span class="n">override_controls</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;pg.Transformer3W&quot;</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+                          <span class="n">override_controls</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"pg.Transformer3W"</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
 
 <span class="sd">    :param elm:</span>
 <span class="sd">    :param bus_dict:</span>
@@ -144,7 +145,7 @@
 <span class="sd">    :param time_indices:</span>
 <span class="sd">    :param override_controls:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">tr3</span> <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">Transformer3W</span><span class="p">(</span><span class="n">idtag</span><span class="o">=</span><span class="n">elm</span><span class="o">.</span><span class="n">idtag</span><span class="p">,</span>
                            <span class="n">code</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">elm</span><span class="o">.</span><span class="n">code</span><span class="p">),</span>
@@ -171,13 +172,13 @@
 <div class="viewcode-block" id="add_transformers3w">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Compilers.Gslv.Devices.html#VeraGridEngine.Compilers.Gslv.Devices.transformers3w.add_transformers3w">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">add_transformers3w</span><span class="p">(</span><span class="n">circuit</span><span class="p">:</span> <span class="n">MultiCircuit</span><span class="p">,</span>
-                       <span class="n">gslv_grid</span><span class="p">:</span> <span class="s2">&quot;pg.MultiCircuit&quot;</span><span class="p">,</span>
-                       <span class="n">bus_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="s2">&quot;pg.Bus&quot;</span><span class="p">],</span>
+                       <span class="n">gslv_grid</span><span class="p">:</span> <span class="s2">"pg.MultiCircuit"</span><span class="p">,</span>
+                       <span class="n">bus_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="s2">"pg.Bus"</span><span class="p">],</span>
                        <span class="n">time_series</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
                        <span class="n">n_time</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
                        <span class="n">time_indices</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">IntVec</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                        <span class="n">override_controls</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 
 <span class="sd">    :param circuit: VeraGrid circuit</span>
 <span class="sd">    :param gslv_grid: GSLV circuit</span>
@@ -186,7 +187,7 @@
 <span class="sd">    :param n_time: number of time steps</span>
 <span class="sd">    :param time_indices: Array of time indices</span>
 <span class="sd">    :param override_controls: If true the controls are set to Fix</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">elm</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">circuit</span><span class="o">.</span><span class="n">transformers3w</span><span class="p">):</span>
         <span class="n">tr3</span> <span class="o">=</span> <span class="n">convert_transformer3w</span><span class="p">(</span><span class="n">elm</span><span class="o">=</span><span class="n">elm</span><span class="p">,</span> <span class="n">bus_dict</span><span class="o">=</span><span class="n">bus_dict</span><span class="p">,</span> <span class="n">n_time</span><span class="o">=</span><span class="n">n_time</span><span class="p">,</span>
                                     <span class="n">use_time_series</span><span class="o">=</span><span class="n">time_series</span><span class="p">,</span> <span class="n">time_indices</span><span class="o">=</span><span class="n">time_indices</span><span class="p">,</span>

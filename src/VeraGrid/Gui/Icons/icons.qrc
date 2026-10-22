@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="Icons">
+    <file>icons/x_y.png</file>
     <file>icons/fmi.png</file>
     <file>icons/pf3.png</file>
     <file>icons/message.png</file>
@@ -38,6 +39,7 @@
     <file>icons/area.png</file>
     <file>icons/groups.png</file>
     <file>icons/event_group.png</file>
+    <file>icons/add_event_group.png</file>
     <file>icons/country.png</file>
     <file>icons/flag_system.png</file>
     <file>icons/flag_en.png</file>
@@ -274,6 +276,8 @@
     <file>icons/ss_icon.png</file>
     <file>icons/pf.png</file>
     <file>icons/dyn_gray.png</file>
+    <file>icons/integrator.svg</file>
+    <file>icons/derivative.svg</file>
     <file>icons/short_circuit.png</file>
     <file>icons/stochastic_power_flow.png</file>
     <file>icons/pf_ts.png</file>

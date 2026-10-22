@@ -19,6 +19,9 @@ from VeraGridEngine.Simulations.Rms.problems.rms_problem_dae_vectorized import R
 from VeraGridEngine.Simulations.Rms.numerical.back_euler_fx import BackEulerImplicitIntegration
 from VeraGridEngine.Simulations.Rms.numerical.back_euler_fx_vectorized import BackEulerImplicitIntegrationVec
 from VeraGridEngine.Simulations.Rms.numerical.back_euler_fx_full_vectorized import BackEulerImplicitIntegrationFullVec
+from VeraGridEngine.Simulations.Rms.problems.rms_problem_template import RmsProblemTemplate
+from VeraGridEngine.Utils.NumericalMethods.external_sparse_solver_interface import SparseLinearSolverBackendProvider
+from VeraGridEngine.Utils.NumericalMethods.sparse_lu_selection import resolve_sparse_lu_provider
 from VeraGridEngine.Simulations.dynamic_parameter_results import collect_declared_dynamic_parameter_values
 from VeraGridEngine.enumerations import EngineType, SimulationTypes, DynamicIntegrationMethod
 from VeraGridEngine.Simulations.PowerFlow.power_flow_driver import PowerFlowResults
@@ -114,6 +117,56 @@ class RmsSimulationDriver(DriverTemplate):
         # Run the dynamic simulation
         self.run_time_simulation()
 
+    def _build_back_euler_solver(self,
+                                 problem: RmsProblemTemplate,
+                                 provider: SparseLinearSolverBackendProvider) -> (
+            BackEulerImplicitIntegration | BackEulerImplicitIntegrationVec | BackEulerImplicitIntegrationFullVec):
+        """
+        Build the Backward Euler solver matching the configured RMS problem type.
+
+        :param problem: RMS problem built for the configured problem type.
+        :param provider: Sparse LU provider used by the Newton corrections.
+        :return: Backward Euler solver for the problem.
+        :raises ValueError: When the problem type has no Backward Euler solver.
+        """
+        solver: BackEulerImplicitIntegration | BackEulerImplicitIntegrationVec | BackEulerImplicitIntegrationFullVec
+        if self.options.problem_type == RmsProblemTypes.PowerBalance:
+            solver = BackEulerImplicitIntegration(
+                problem=problem,
+                t0=0,
+                t_end=self.options.simulation_time,
+                h=self.options.time_step,
+                max_iter=self.options.max_iter,
+                tolerance=self.options.tolerance,
+                cancel_checker=self.is_cancel,
+                sparse_solver_backend_provider=provider,
+            )
+        elif self.options.problem_type == RmsProblemTypes.PowerBalanceVectorized:
+            solver = BackEulerImplicitIntegrationVec(
+                problem=problem,
+                t0=0,
+                t_end=self.options.simulation_time,
+                h=self.options.time_step,
+                max_iter=self.options.max_iter,
+                tolerance=self.options.tolerance,
+                cancel_checker=self.is_cancel,
+                sparse_solver_backend_provider=provider,
+            )
+        elif self.options.problem_type == RmsProblemTypes.PowerBalanceFullVectorized:
+            solver = BackEulerImplicitIntegrationFullVec(
+                problem=problem,
+                t0=0,
+                t_end=self.options.simulation_time,
+                h=self.options.time_step,
+                max_iter=self.options.max_iter,
+                tolerance=self.options.tolerance,
+                cancel_checker=self.is_cancel,
+                sparse_solver_backend_provider=provider,
+            )
+        else:
+            raise ValueError("The RMS problem type " + self.options.problem_type.value + " has no Backward Euler solver")
+        return solver
+
     def run_time_simulation(self):
         """
         Performs the numerical integration using the chosen method.
@@ -170,6 +223,12 @@ class RmsSimulationDriver(DriverTemplate):
             has_event_group_results=has_event_group_results,
         )
 
+        # The sparse LU is resolved once per run so an unavailable selection is reported once.
+        sparse_solver_backend_provider: SparseLinearSolverBackendProvider = resolve_sparse_lu_provider(
+            self.options.sparse_solver,
+            self.logger,
+        )
+
         for group_idx, rms_events_group in enumerate(rms_events_groups):
 
             if self.is_cancel():
@@ -200,38 +259,8 @@ class RmsSimulationDriver(DriverTemplate):
                         f"{self.options.integration_method.value}"
                     )
 
-                    if self.options.problem_type == RmsProblemTypes.PowerBalance:
-                        solver = BackEulerImplicitIntegration(
-                            problem=problem,
-                            t0=0,
-                            t_end=self.options.simulation_time,
-                            h=self.options.time_step,
-                            max_iter=self.options.max_iter,
-                            tolerance=self.options.tolerance,
-                            cancel_checker=self.is_cancel,
-                        )
-
-                    elif self.options.problem_type == RmsProblemTypes.PowerBalanceVectorized:
-                        solver = BackEulerImplicitIntegrationVec(
-                            problem=problem,
-                            t0=0,
-                            t_end=self.options.simulation_time,
-                            h=self.options.time_step,
-                            max_iter=self.options.max_iter,
-                            tolerance=self.options.tolerance,
-                            cancel_checker=self.is_cancel,
-                        )
-
-                    elif self.options.problem_type == RmsProblemTypes.PowerBalanceFullVectorized:
-                        solver = BackEulerImplicitIntegrationFullVec(
-                            problem=problem,
-                            t0=0,
-                            t_end=self.options.simulation_time,
-                            h=self.options.time_step,
-                            max_iter=self.options.max_iter,
-                            tolerance=self.options.tolerance,
-                            cancel_checker=self.is_cancel,
-                        )
+                    solver: BackEulerImplicitIntegration | BackEulerImplicitIntegrationVec | BackEulerImplicitIntegrationFullVec = (
+                        self._build_back_euler_solver(problem=problem, provider=sparse_solver_backend_provider))
 
                 else:
                     self.logger.add_info("Falling back to DAE-BackEuler method")
@@ -240,39 +269,8 @@ class RmsSimulationDriver(DriverTemplate):
                         f"Simulating RMS event group  {rms_events_group.name} with back euler as fallback"
                     )
 
-                    if self.options.problem_type == RmsProblemTypes.PowerBalance:
-                        solver = BackEulerImplicitIntegration(
-                            problem=problem,
-                            t0=0,
-                            t_end=self.options.simulation_time,
-                            h=self.options.time_step,
-                            max_iter=self.options.max_iter,
-                            tolerance=self.options.tolerance,
-                            cancel_checker=self.is_cancel,
-                        )
+                    solver = self._build_back_euler_solver(problem=problem, provider=sparse_solver_backend_provider)
 
-                    elif self.options.problem_type == RmsProblemTypes.PowerBalanceVectorized:
-                        solver = BackEulerImplicitIntegrationVec(
-                            problem=problem,
-                            t0=0,
-                            t_end=self.options.simulation_time,
-                            h=self.options.time_step,
-                            max_iter=self.options.max_iter,
-                            tolerance=self.options.tolerance,
-                            cancel_checker=self.is_cancel,
-                        )
-
-                    elif self.options.problem_type == RmsProblemTypes.PowerBalanceFullVectorized:
-                        solver = BackEulerImplicitIntegrationFullVec(
-                            problem=problem,
-                            t0=0,
-                            t_end=self.options.simulation_time,
-                            h=self.options.time_step,
-                            max_iter=self.options.max_iter,
-                            tolerance=self.options.tolerance,
-                            cancel_checker=self.is_cancel,
-                        )
-                
                 native_session: ManufacturerNativeRuntimeSession | None = None
                 if len(self.grid.manufacturer_native_models) > 0:
                     native_session = ManufacturerNativeRuntimeSession(

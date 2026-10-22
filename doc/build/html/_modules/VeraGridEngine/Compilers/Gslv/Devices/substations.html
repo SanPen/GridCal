@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Compilers.Gslv.Devices.substations &mdash; VeraGrid 6.5.26 documentation</title>
+  <title>VeraGridEngine.Compilers.Gslv.Devices.substations &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../../_static/documentation_options.js?v=c62e3d9e"></script>
+      <script src="../../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/license.html">📜 License</a></li>
@@ -115,13 +116,13 @@
 
 <div class="viewcode-block" id="convert_substation">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Compilers.Gslv.Devices.html#VeraGridEngine.Compilers.Gslv.Devices.substations.convert_substation">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">convert_substation</span><span class="p">(</span><span class="n">se</span><span class="p">:</span> <span class="n">Substation</span><span class="p">,</span> <span class="n">n_time</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;pg.Substation&quot;</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">convert_substation</span><span class="p">(</span><span class="n">se</span><span class="p">:</span> <span class="n">Substation</span><span class="p">,</span> <span class="n">n_time</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"pg.Substation"</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
 
 <span class="sd">    :param se:</span>
 <span class="sd">    :param n_time:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="n">pg</span><span class="o">.</span><span class="n">Substation</span><span class="p">(</span>
         <span class="n">nt</span><span class="o">=</span><span class="n">n_time</span><span class="p">,</span>
         <span class="n">idtag</span><span class="o">=</span><span class="n">se</span><span class="o">.</span><span class="n">idtag</span><span class="p">,</span>
@@ -134,15 +135,15 @@
 <div class="viewcode-block" id="add_substations">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Compilers.Gslv.Devices.html#VeraGridEngine.Compilers.Gslv.Devices.substations.add_substations">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">add_substations</span><span class="p">(</span><span class="n">circuit</span><span class="p">:</span> <span class="n">MultiCircuit</span><span class="p">,</span>
-                    <span class="n">gslv_grid</span><span class="p">:</span> <span class="s2">&quot;pg.MultiCircuit&quot;</span><span class="p">,</span>
-                    <span class="n">n_time</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Substation</span><span class="p">,</span> <span class="s2">&quot;pg.Substation&quot;</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+                    <span class="n">gslv_grid</span><span class="p">:</span> <span class="s2">"pg.MultiCircuit"</span><span class="p">,</span>
+                    <span class="n">n_time</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Substation</span><span class="p">,</span> <span class="s2">"pg.Substation"</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Add GSLV substations</span>
 <span class="sd">    :param circuit: VeraGrid circuit</span>
 <span class="sd">    :param gslv_grid: GSLV Circuit</span>
 <span class="sd">    :param n_time: number of time steps</span>
 <span class="sd">    :return: Dictionary [VeraGrid Zone] -&gt; GSLV Zone</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">d</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
 
     <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">se</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">circuit</span><span class="o">.</span><span class="n">substations</span><span class="p">):</span>

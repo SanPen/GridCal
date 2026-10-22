@@ -8,6 +8,7 @@ import numpy as np
 from typing import Any, Dict, List, Optional, Protocol, Tuple
 
 from VeraGridEngine.Utils.Symbolic.block import Block
+from VeraGridEngine.Utils.Symbolic.jit_compiler import ProceduralExpressionCompiler, RuntimeParameterCompiler
 from VeraGridEngine.Utils.Symbolic.symbolic import Const, Expr, Var, hard_sat, heaviside, piecewise, get_expression_vars
 from VeraGridEngine.basic_structures import Vec
 from VeraGridEngine.Simulations.driver_template import DummySignal
@@ -442,6 +443,11 @@ class EmtProblemTemplate(ABC):
         "_runtime_mode_eqs",
         "_runtime_continuous_slice",
         "_runtime_mode_slice",
+        "_runtime_parameter_kernel",
+        "_runtime_parameter_kernel_enabled",
+        "_runtime_fixed_uid2idx",
+        "_runtime_fixed_values",
+        "_procedural_expression_compiler",
         "_vars_glob_name2uid",
         "init_guess",
         "event_params_init_dict",
@@ -600,6 +606,10 @@ class EmtProblemTemplate(ABC):
 
         self._runtime_continuous_slice: slice = slice(0, 0)
         self._runtime_mode_slice: slice = slice(0, 0)
+        self._runtime_parameter_kernel: Callable[[Vec, Vec, float], None] | None = None
+        self._runtime_parameter_kernel_enabled: bool = False
+        self._runtime_fixed_uid2idx: Dict[int, int] = dict()
+        self._runtime_fixed_values: Vec = np.zeros(0, dtype=np.float64)
 
         if vars_glob_name2uid is None:
             self._vars_glob_name2uid: Dict[str, int] = dict()
@@ -620,6 +630,13 @@ class EmtProblemTemplate(ABC):
         # self._vars_info: Dict[Any, List[Var]] = dict()
 
         self._finalize_order_and_maps()
+        self._procedural_expression_compiler: ProceduralExpressionCompiler = ProceduralExpressionCompiler(
+            state_map=self._uid2idx_vars,
+            runtime_map=self._uid2idx_event_params,
+            constant_map=self._uid2idx_params,
+            constant_values=self._parameters_values,
+            global_time_uid=self._glob_time.uid,
+        )
         self._event_params_values: Vec = np.zeros(0, dtype=np.float64)
         self._constant_params_values: Vec = np.zeros(0, dtype=np.float64)
         self._build_runtime_param_vectors()
@@ -635,6 +652,26 @@ class EmtProblemTemplate(ABC):
         :return: Global time symbolic variable.
         """
         return self._glob_time
+
+    def get_procedural_expression_compiler(self) -> ProceduralExpressionCompiler:
+        """Return the problem-local eager procedural expression compiler.
+
+        :return: Compiler shared by all bound procedural logic entries.
+        """
+        return self._procedural_expression_compiler
+
+    def _rebuild_procedural_expression_compiler(self) -> None:
+        """Rebuild the compiler after canonical parameter indexes change.
+
+        :return: None.
+        """
+        self._procedural_expression_compiler = ProceduralExpressionCompiler(
+            state_map=self._uid2idx_vars,
+            runtime_map=self._uid2idx_event_params,
+            constant_map=self._uid2idx_params,
+            constant_values=self._parameters_values,
+            global_time_uid=self._glob_time.uid,
+        )
 
     @property
     def boundary_update(self) -> EmtBoundaryUpdateProtocol | None:
@@ -788,6 +825,10 @@ class EmtProblemTemplate(ABC):
             [parameter.value for parameter in self._parameters_values],
             dtype=np.float64
         )
+
+        # Runtime equations are structurally final for this rebuild. Compile
+        # them now so the first simulation step performs numerical work only.
+        self._build_runtime_parameter_kernel()
 
     def rebuild_runtime_param_vectors(self) -> None:
         """
@@ -973,6 +1014,134 @@ class EmtProblemTemplate(ABC):
         self._runtime_continuous_slice = slice(0, n_continuous)
         self._runtime_mode_slice = slice(n_continuous, n_continuous + n_mode)
 
+        # A changed partition or expression list changes generated source, so
+        # the old kernel must never survive this structural rebuild.
+        self._runtime_parameter_kernel = None
+        self._runtime_parameter_kernel_enabled = False
+
+    def _build_runtime_parameter_kernel(self) -> None:
+        """Eagerly compile the ordered continuous runtime equations.
+
+        Constant parameters and initialized state, algebraic, and differential
+        values are stored in one compact frozen array. Runtime parameters remain
+        in their own mutable array so generated assignments preserve the exact
+        sequential semantics of the interpreted implementation.
+
+        :return: None.
+        """
+        fixed_uid2idx: Dict[int, int] = dict()
+        fixed_value_count: int = 0
+        uid: int
+        time_uids: set[int] = set([self._glob_time.uid])
+        expression: Any
+        expression_var: Var
+        compiler: RuntimeParameterCompiler
+
+        # Constants take precedence over initialization guesses, matching the
+        # interpreted evaluator's UID lookup order.
+        for uid in self._uid2idx_params.keys():
+            fixed_uid2idx[uid] = fixed_value_count
+            fixed_value_count += 1
+
+        for uid in self._uid2idx_vars.keys():
+            if uid in fixed_uid2idx:
+                pass
+            else:
+                fixed_uid2idx[uid] = fixed_value_count
+                fixed_value_count += 1
+
+        for uid in self._uid2idx_diff.keys():
+            if uid in fixed_uid2idx:
+                pass
+            else:
+                fixed_uid2idx[uid] = fixed_value_count
+                fixed_value_count += 1
+
+        # Saved symbolic trees may carry cloned time variables with different
+        # UIDs. Their semantic name identifies the same scalar simulation time.
+        for expression in self._runtime_continuous_eqs:
+            if isinstance(expression, Expr):
+                for expression_var in expression.get_vars():
+                    if expression_var.name in {"time", self.TIME_NAME}:
+                        time_uids.add(expression_var.uid)
+                    else:
+                        pass
+            else:
+                pass
+
+        self._runtime_fixed_uid2idx = fixed_uid2idx
+        self._runtime_fixed_values = np.zeros(fixed_value_count, dtype=np.float64)
+        self._refresh_runtime_fixed_values()
+
+        compiler = RuntimeParameterCompiler(
+            runtime_map=self._uid2idx_event_params,
+            fixed_map=self._runtime_fixed_uid2idx,
+            time_uids=time_uids,
+        )
+        self._runtime_parameter_kernel = compiler.compile(
+            equations=self._runtime_continuous_eqs,
+            output_offset=self._runtime_continuous_slice.start,
+        )
+
+    def _refresh_runtime_fixed_values(self) -> None:
+        """Refresh frozen bindings consumed by the compiled runtime kernel.
+
+        :return: None.
+        """
+        uid: int
+        source_idx: int
+        target_idx: int | None
+        init_value: float | int | complex | None
+
+        self._runtime_fixed_values.fill(0.0)
+
+        for uid, source_idx in self._uid2idx_params.items():
+            target_idx = self._runtime_fixed_uid2idx.get(uid, None)
+            if target_idx is None:
+                pass
+            else:
+                self._runtime_fixed_values[target_idx] = float(self._parameters_values[source_idx].value)
+
+        for uid in self._uid2idx_vars.keys():
+            target_idx = self._runtime_fixed_uid2idx.get(uid, None)
+            init_value = self.init_guess.get(uid, None)
+            if uid in self._uid2idx_params or target_idx is None or init_value is None:
+                pass
+            else:
+                self._runtime_fixed_values[target_idx] = float(init_value)
+
+        for uid in self._uid2idx_diff.keys():
+            target_idx = self._runtime_fixed_uid2idx.get(uid, None)
+            init_value = self.diff_init_guess.get(uid, None)
+            if (
+                uid in self._uid2idx_params
+                or uid in self._uid2idx_vars
+                or target_idx is None
+                or init_value is None
+            ):
+                pass
+            else:
+                self._runtime_fixed_values[target_idx] = float(init_value)
+
+    def enable_compiled_runtime_parameter_evaluator(self) -> None:
+        """Enable compiled runtime updates after problem initialization.
+
+        Explicit and native initialization modify the initial-value dictionaries
+        directly while resolving their dependency graphs. Keeping runtime
+        evaluation interpreted during that phase guarantees every expression
+        observes the latest initialization values. The simulation calls this
+        method once initialization is complete, refreshing the compact frozen
+        bindings before activating the compiled hot path.
+
+        :return: None.
+        """
+        if self._runtime_parameter_kernel is None:
+            self._build_runtime_parameter_kernel()
+        else:
+            self._refresh_runtime_fixed_values()
+
+        self._runtime_parameter_kernel_enabled = True
+
     def refresh_runtime_equations_from_hierarchy(self) -> None:
         """
         Refresh canonical runtime equations from the current block hierarchy.
@@ -1032,6 +1201,7 @@ class EmtProblemTemplate(ABC):
         self._runtime_mode_uids = selected_mode_uids
         self._rebuild_runtime_parameter_partition()
         self._finalize_order_and_maps()
+        self._rebuild_procedural_expression_compiler()
         self._build_runtime_param_vectors()
 
     def _initialize_runtime_parameter_values(self, tm: float, seed_values: Optional[Vec] = None) -> Vec:
@@ -1138,10 +1308,7 @@ class EmtProblemTemplate(ABC):
                         if idx_var is not None:
                             init_value: float | int | complex | None = self.init_guess.get(expression.uid, None)
                             if init_value is None:
-                                raise ValueError(
-                                    f"EMT runtime variable '{expression.name}' "
-                                    + f"(uid={expression.uid}) has no initialized state value."
-                                )
+                                return 0.0
                             else:
                                 return float(init_value)
                         else:
@@ -1149,17 +1316,11 @@ class EmtProblemTemplate(ABC):
                             if idx_diff is not None:
                                 diff_init_value: float | int | complex | None = self.diff_init_guess.get(expression.uid, None)
                                 if diff_init_value is None:
-                                    raise ValueError(
-                                        f"EMT runtime variable '{expression.name}' "
-                                        + f"(uid={expression.uid}) has no initialized differential value."
-                                    )
+                                    return 0.0
                                 else:
                                     return float(diff_init_value)
                             else:
-                                raise KeyError(
-                                    f"EMT runtime expression variable '{expression.name}' "
-                                    + f"(uid={expression.uid}) is not registered."
-                                )
+                                return 0.0
 
         elif isinstance(expression, Expr):
             uid_bindings: Dict[int, float] = dict()
@@ -1382,6 +1543,8 @@ class EmtProblemTemplate(ABC):
             else:
                 pass
 
+        self._refresh_runtime_fixed_values()
+
     def set_dx0(self, dx0: Vec) -> None:
         """
         Set the initial differential vector guess from an array.
@@ -1395,6 +1558,8 @@ class EmtProblemTemplate(ABC):
                 self.diff_init_guess[uid] = float(dx0[idx])
             else:
                 pass
+
+        self._refresh_runtime_fixed_values()
 
     def def_event_params_fn(
             self,
@@ -1422,20 +1587,34 @@ class EmtProblemTemplate(ABC):
         else:
             out: Vec = ev_param.copy()
 
-            i: int = 0
-            while i < n_continuous:
-                global_idx: int = self._runtime_continuous_slice.start + i
-                expression: Any = self._runtime_continuous_eqs[i]
+            if defer_unavailable_dependencies or not self._runtime_parameter_kernel_enabled:
+                # Construction-time evaluation must retain its dependency
+                # availability checks because explicit initialization has not
+                # necessarily populated every frozen binding yet.
+                i: int = 0
+                while i < n_continuous:
+                    global_idx: int = self._runtime_continuous_slice.start + i
+                    expression: Any = self._runtime_continuous_eqs[i]
 
-                if (
-                    defer_unavailable_dependencies
-                    and isinstance(expression, Expr)
-                    and not self._runtime_expression_dependencies_available(expression)
-                ):
+                    if defer_unavailable_dependencies and isinstance(expression, Expr):
+                        if self._runtime_expression_dependencies_available(expression):
+                            out[global_idx] = self._evaluate_runtime_expression(expression, out, tm)
+                        else:
+                            pass
+                    else:
+                        out[global_idx] = self._evaluate_runtime_expression(expression, out, tm)
+                    i += 1
+            else:
+                if self._runtime_parameter_kernel is None:
+                    self._build_runtime_parameter_kernel()
+                else:
+                    pass
+
+                runtime_parameter_kernel: Callable[[Vec, Vec, float], None] | None = self._runtime_parameter_kernel
+                if runtime_parameter_kernel is None:
                     pass
                 else:
-                    out[global_idx] = self._evaluate_runtime_expression(expression, out, tm)
-                i += 1
+                    runtime_parameter_kernel(out, self._runtime_fixed_values, float(tm))
 
             return out
 

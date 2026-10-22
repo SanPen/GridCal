@@ -28,8 +28,10 @@ def save_chart_image(chart: GraphsWidget, file_name: str) -> bool:
             image: QtGui.QImage = QtGui.QImage(image_size, QtGui.QImage.Format.Format_ARGB32_Premultiplied)
             image.fill(QtCore.Qt.GlobalColor.transparent)
             painter: QtGui.QPainter = QtGui.QPainter(image)
-            chart.paint_to_painter(painter=painter)
-            painter.end()
+            try:
+                chart.paint_to_painter(painter=painter)
+            finally:
+                painter.end()
             saved: bool = image.save(str(output_path), 'PNG')
         elif suffix == '.svg':
             generator: QSvgGenerator = QSvgGenerator()
@@ -39,8 +41,10 @@ def save_chart_image(chart: GraphsWidget, file_name: str) -> bool:
             generator.setTitle(chart.windowTitle())
             generator.setDescription('A chart exported by VeraGrid')
             painter = QtGui.QPainter(generator)
-            chart.paint_to_painter(painter=painter)
-            painter.end()
+            try:
+                chart.paint_to_painter(painter=painter)
+            finally:
+                painter.end()
             saved = output_path.is_file() and output_path.stat().st_size > 0
         else:
             saved = False

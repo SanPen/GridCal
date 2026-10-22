@@ -5,7 +5,7 @@
 
 from __future__ import annotations
 import copy
-from typing import Dict, List, Optional, TYPE_CHECKING, Tuple, TypeAlias
+from typing import cast, Dict, List, Optional, TYPE_CHECKING, Tuple, TypeAlias
 from PySide6 import QtWidgets, QtGui, QtCore
 from PySide6.QtWidgets import (QGraphicsItem, QDialog, QVBoxLayout, QDialogButtonBox, QLineEdit)
 from PySide6.QtGui import (QDropEvent, QDragEnterEvent, QDragMoveEvent)
@@ -17,7 +17,7 @@ from VeraGridEngine.Devices.Substation.bus import Bus
 from VeraGridEngine.Utils.Symbolic.bus_rms_template import initialize_bus_rms
 
 from VeraGridEngine.Devices.Parents.injection_parent import InjectionParent
-from VeraGridEngine.Utils.Symbolic.rms_measurements_functions import (measurement_vars_dict,
+from VeraGridEngine.Utils.Symbolic.rms_measurements_functions import (measurement_vars_dict_rms,
                                                                       find_measurements_for_inputs_group,
                                                                       build_rms_voltage_meter_outputs_from_polar,
                                                                       build_rms_pll_measurements,
@@ -31,6 +31,12 @@ from VeraGridEngine.enumerations import (
     DynamicPlotEntryRole,
     DynamicSimulationMode,
     DynEditorGraphicsModes,
+    DerivativePortRole,
+    IntegratorBoundSource,
+    IntegratorHoldMode,
+    IntegratorPortRole,
+    IntegratorResetMode,
+    IntegratorSaturationMode,
     ParamPowerFlowReferenceType,
     PlotSimulationType,
     VarPowerFlowReferenceType,
@@ -74,10 +80,14 @@ from VeraGrid.Gui.DynamicModelEditor.Editor.block_editor import Ui_BlockEditorWi
 import VeraGrid.Gui.DynamicModelEditor.Editor.dynamic_editor_graphics as graph
 from VeraGrid.Gui.DynamicModelEditor.Workspace.dynamic_editor_entries import DynamicEditorEntry
 from VeraGrid.Gui.DynamicModelEditor.Editor.DynamicLibrary.dynamic_editor_library import (
+    DerivativePresetDescriptor,
     DynamicEditorLibrary,
+    IntegratorPresetDescriptor,
     LibraryDeviceTemplateSpec,
     LibraryTreeFilterProxyModel,
     build_dynamic_library_device_template,
+    get_catalogue_template_block_type,
+    is_supported_library_payload,
 )
 from VeraGrid.Gui.DynamicModelEditor.Editor.ElementDialogues.MeasurementsDialog import (
     is_measurement_reference_input,
@@ -128,6 +138,7 @@ from VeraGridEngine.Utils.procedural_logic import (
 from VeraGridEngine.Utils.Symbolic.bus_rms_template import get_bus_rms_algebraic_vars
 from VeraGridEngine.Utils.Symbolic.templates_common_functions import (
     attach_emt_model_to_buses,
+    connect_models_by_reference,
     register_saved_emt_model_vars_for_device,
     synchronize_saved_rms_root_mappings_from_children,
     unregister_saved_emt_model_var_connections_for_device,
@@ -228,6 +239,8 @@ class SignalPairOutputClipboardEntry:
 CanvasClipboardEntry: TypeAlias = BlockClipboardEntry | SignalPairOutputClipboardEntry
 DynamicLibraryPayload: TypeAlias = (
     BlockType
+    | DerivativePresetDescriptor
+    | IntegratorPresetDescriptor
     | ExactMathematicalBlockDescriptor
     | BasicBlockTemplateDescriptor
     | ProceduralBlockTemplateDescriptor
@@ -278,19 +291,140 @@ def get_structural_port_key(variable: Var) -> tuple[str, str]:
     else:
         return "name", variable.name
 
+def build_integrator_port_keys(block: Block, is_input: bool) -> List[tuple[str, str]]:
+    """Build stable keys for the ports of one configurable integrator.
 
-def build_port_index_by_key(variables: List[Var]) -> Dict[tuple[str, str], int]:
-    """Index one ordered port list by semantic key.
+    Integrator input variables adopt the upstream signal name when connected.
+    Their persisted structural configuration therefore supplies the semantic
+    role used during an editor-side regeneration instead of the mutable name.
 
-    :param variables: Ordered input or output variables.
-    :return: Semantic-key to port-index lookup.
+    :param block: Configurable integrator block being inspected.
+    :param is_input: ``True`` for input ports and ``False`` for output ports.
+    :return: Ordered semantic keys matching the builder's port order.
     """
-    result: Dict[tuple[str, str], int] = dict()
-    port_index: int
-    variable: Var
-    for port_index, variable in enumerate(variables):
-        result[get_structural_port_key(variable)] = port_index
-    return result
+    keys: List[tuple[str, str]] = list()
+    if not is_input:
+        keys.append(("integrator_role", IntegratorPortRole.OUTPUT.name))
+        return keys
+    else:
+        keys.append(("integrator_role", IntegratorPortRole.INPUT.name))
+
+    hold_mode: IntegratorHoldMode = IntegratorHoldMode.NONE
+    reset_mode: IntegratorResetMode = IntegratorResetMode.NONE
+    saturation_mode: IntegratorSaturationMode = IntegratorSaturationMode.NONE
+    bound_source: IntegratorBoundSource = IntegratorBoundSource.PARAMETER
+    configuration: Dict[str, object] | None = block.modal_template_config
+    if configuration is None:
+        pass
+    else:
+        hold_name: object = configuration.get("hold_input", None)
+        reset_name: object = configuration.get("reset", None)
+        saturation_name: object = configuration.get("output_saturation", None)
+        bound_source_name: object = configuration.get("bound_source", None)
+        if isinstance(hold_name, str) and hold_name in IntegratorHoldMode.__members__:
+            hold_mode = IntegratorHoldMode[hold_name]
+        else:
+            pass
+        if isinstance(reset_name, str) and reset_name in IntegratorResetMode.__members__:
+            reset_mode = IntegratorResetMode[reset_name]
+        else:
+            pass
+        if (
+                isinstance(saturation_name, str)
+                and saturation_name in IntegratorSaturationMode.__members__
+        ):
+            saturation_mode = IntegratorSaturationMode[saturation_name]
+        else:
+            pass
+        if (
+                isinstance(bound_source_name, str)
+                and bound_source_name in IntegratorBoundSource.__members__
+        ):
+            bound_source = IntegratorBoundSource[bound_source_name]
+        else:
+            pass
+
+    # This order is the exact append order in the integrator template. Stable
+    # roles allow ports after an inserted option to retain their connection.
+    if hold_mode == IntegratorHoldMode.SIGNAL:
+        keys.append(("integrator_role", IntegratorPortRole.HOLD.name))
+    else:
+        pass
+    if reset_mode == IntegratorResetMode.INITIAL_STATE:
+        keys.append(("integrator_role", IntegratorPortRole.RESET.name))
+    elif reset_mode == IntegratorResetMode.SIGNAL:
+        keys.append(("integrator_role", IntegratorPortRole.RESET_VALUE.name))
+        keys.append(("integrator_role", IntegratorPortRole.RESET.name))
+    else:
+        pass
+    if bound_source == IntegratorBoundSource.SIGNAL:
+        if saturation_mode == IntegratorSaturationMode.LOWER:
+            keys.append(("integrator_role", IntegratorPortRole.LOWER_BOUND.name))
+        elif saturation_mode == IntegratorSaturationMode.UPPER:
+            keys.append(("integrator_role", IntegratorPortRole.UPPER_BOUND.name))
+        elif saturation_mode == IntegratorSaturationMode.BOTH:
+            keys.append(("integrator_role", IntegratorPortRole.LOWER_BOUND.name))
+            keys.append(("integrator_role", IntegratorPortRole.UPPER_BOUND.name))
+        elif saturation_mode == IntegratorSaturationMode.SYMMETRIC:
+            keys.append(("integrator_role", IntegratorPortRole.SYMMETRIC_BOUND.name))
+        else:
+            pass
+    else:
+        pass
+    return keys
+
+
+def build_derivative_port_keys(is_input: bool) -> List[tuple[str, str]]:
+    """Build stable semantic keys for configurable-derivative ports.
+
+    Every derivative structure owns exactly one input and one output. Semantic
+    keys preserve their connections when General Structure regenerates the
+    symbolic variables with their canonical internal names.
+
+    :param is_input: ``True`` for the input port and ``False`` for the output.
+    :return: One semantic key for the selected port direction.
+    """
+    if is_input:
+        keys: List[tuple[str, str]] = list((("derivative_role", DerivativePortRole.INPUT.name),))
+    else:
+        keys = list((("derivative_role", DerivativePortRole.OUTPUT.name),))
+    return keys
+
+
+def build_rebuild_port_keys(
+        block: Block,
+        block_type: BlockType,
+        is_input: bool,
+) -> List[tuple[str, str]]:
+    """Build port keys for one General Structure regeneration.
+
+    Blocks without a dedicated structural interface retain the established
+    generic key algorithm. Configurable integrators and derivatives use stable
+    semantic port roles instead.
+
+    :param block: Existing or newly generated block.
+    :param block_type: Builder type used for the regeneration.
+    :param is_input: ``True`` for inputs and ``False`` for outputs.
+    :return: Ordered keys for the selected port direction.
+    """
+    keys: List[tuple[str, str]] = list()
+    variables: List[Var]
+    if is_input:
+        variables = block.in_vars
+    else:
+        variables = block.out_vars
+
+    if block_type in (BlockType.INTEGRATOR, BlockType.STARTUP_FREEZE_INTEGRATOR):
+        keys = build_integrator_port_keys(block=block, is_input=is_input)
+    elif block_type == BlockType.DERIVATIVE:
+        keys = build_derivative_port_keys(is_input=is_input)
+    else:
+        variable: Var
+        for variable in variables:
+            keys.append(get_structural_port_key(variable))
+        else:
+            pass
+    return keys
 
 
 def append_sugiyama_edges_from_reference_maps(
@@ -1166,19 +1300,6 @@ def get_root_interface_container_port_reference(
         return None
 
 
-def _get_port_direction(is_output: bool) -> str:
-    """
-    Return the serialized port-direction label.
-
-    :param is_output: Whether the port is one output.
-    :return: ``output`` or ``input``.
-    """
-    if is_output:
-        return "output"
-    else:
-        return "input"
-
-
 def resolve_unique_root_interface_var(
         root_vars: List[Var],
         wrapper_var: Var | None,
@@ -1615,55 +1736,6 @@ def build_expected_root_interface_ref_order(block_type: BlockType,
     else:
         return list()
 
-
-def register_legacy_interface_uid_alias(
-        aliases: Dict[int, int | None],
-        old_uid: int | None,
-        repaired_uid: int,
-) -> None:
-    """
-    Register one unambiguous legacy interface UID replacement.
-
-    :param aliases: Legacy-to-current UID lookup table.
-    :param old_uid: Legacy UID observed in persisted data.
-    :param repaired_uid: Current diagram-node UID.
-    :return: None.
-    """
-    if old_uid is None or old_uid == repaired_uid:
-        pass
-    elif old_uid not in aliases:
-        aliases[old_uid] = repaired_uid
-    elif aliases[old_uid] != repaired_uid:
-        aliases[old_uid] = None
-    else:
-        pass
-
-
-def synchronize_matching_mapping_var_name(
-        block_model: Block | None,
-        reference_var: Var,
-        new_name: str,
-) -> None:
-    """
-    Rename matching mapped variables in one bus-side symbolic block.
-
-    :param block_model: RMS or EMT bus model, or ``None``.
-    :param reference_var: Renamed editor-side interface variable.
-    :param new_name: New symbolic name.
-    :return: None.
-    """
-    if block_model is not None:
-        mapped_var: Var | None
-        for mapped_var in block_model.external_mapping.values():
-            if (mapped_var is not None
-                    and mapped_var.non_mutable_uid == reference_var.non_mutable_uid):
-                mapped_var.set_name(new_name)
-            else:
-                pass
-    else:
-        pass
-
-
 class DynamicBlockEditorGUI(QtWidgets.QMainWindow):
     """
     DynamicModelEditorGUI
@@ -1675,7 +1747,7 @@ class DynamicBlockEditorGUI(QtWidgets.QMainWindow):
     dynamicPlotDefinitionsChanged = Signal(object, object)
 
     UNARY_MATH_BLOCK_TYPES: set[BlockType] = set(
-        (BlockType.CONST, BlockType.GAIN, BlockType.ABS, BlockType.INTEGRATOR, BlockType.POWER, BlockType.SIN,
+        (BlockType.CONST, BlockType.GAIN, BlockType.ABS, BlockType.POWER, BlockType.SIN,
          BlockType.COS, BlockType.TAN, BlockType.EXP, BlockType.LOG, BlockType.LOG10, BlockType.SQRT, BlockType.ASIN,
          BlockType.ACOS, BlockType.ATAN, BlockType.SINH, BlockType.COSH, BlockType.TANH, BlockType.REAL, BlockType.IMAG,
          BlockType.CONJ, BlockType.ANGLE,))
@@ -1920,38 +1992,16 @@ class DynamicBlockEditorGUI(QtWidgets.QMainWindow):
         # make sure that all blocks have a name and create automatic one if missing
         dialog_models.ensure_block_tree_names(self.main_block, prefix="block")
 
-        # The root device editor is the only place where the dynamic model is
-        # coupled to the network buses. Ensure the corresponding bus helper
-        # models exist before any scene bootstrap path runs, so fresh opens,
-        # reopens with saved diagrams, and child-containing models all observe
-        # the same already-initialized bus-side contract.
         if self.is_root_editor:
             if self.mode == DynamicSimulationMode.RMS:
                 if isinstance(self.api_object, InjectionParent):
-                    dialog_models._initialize_editor_assigned_rms_bus_model(bus=self.api_object.bus,
-                                                                            var_factory=self.var_factory)
+                    dialog_models.initialize_editor_assigned_rms_bus_model(bus=self.api_object.bus,
+                                                                           var_factory=self.var_factory)
                 elif isinstance(self.api_object, BranchParent):
-                    dialog_models._initialize_editor_assigned_rms_bus_model(bus=self.api_object.bus_from,
-                                                                            var_factory=self.var_factory)
-                    dialog_models._initialize_editor_assigned_rms_bus_model(bus=self.api_object.bus_to,
-                                                                            var_factory=self.var_factory)
-                else:
-                    pass
-            elif self.mode == DynamicSimulationMode.EMT:
-                if isinstance(self.api_object, InjectionParent):
-                    dialog_models._initialize_editor_assigned_emt_bus_model(bus=self.api_object.bus,
-                                                                            api_object=self.api_object,
-                                                                            circuit=self.circuit,
-                                                                            var_factory=self.var_factory)
-                elif isinstance(self.api_object, BranchParent):
-                    dialog_models._initialize_editor_assigned_emt_bus_model(bus=self.api_object.bus_from,
-                                                                            api_object=self.api_object,
-                                                                            circuit=self.circuit,
-                                                                            var_factory=self.var_factory)
-                    dialog_models._initialize_editor_assigned_emt_bus_model(bus=self.api_object.bus_to,
-                                                                            api_object=self.api_object,
-                                                                            circuit=self.circuit,
-                                                                            var_factory=self.var_factory)
+                    dialog_models.initialize_editor_assigned_rms_bus_model(bus=self.api_object.bus_from,
+                                                                           var_factory=self.var_factory)
+                    dialog_models.initialize_editor_assigned_rms_bus_model(bus=self.api_object.bus_to,
+                                                                           var_factory=self.var_factory)
                 else:
                     pass
             else:
@@ -1960,82 +2010,26 @@ class DynamicBlockEditorGUI(QtWidgets.QMainWindow):
             pass
 
 #############################################################################################################################################################
-        if self.mode == DynamicSimulationMode.EMT:
 
-            if self.is_root_editor and self.mode == DynamicSimulationMode.EMT and isinstance(self.api_object,
-                                                                                             BranchParent):
-                self._remove_shared_branch_emt_root_refs()
-            else:
-                pass
+        if self.is_root_editor:
+            # is when we need to build measurementsblock if it is not built yet
+            if self.main_block.empty():
+                # if we don't have bus variables in in_vars, out_vars and external mapping
+                self.add_connection_vars_basic()
+                self.add_measurements_items()
 
-            if self.is_root_editor:
-                # Promote explicitly persisted interface nodes before interface
-                # reconciliation can remove their diagram records. Serialized
-                # blocks do not retain the runtime-only wrapper marker, so both RMS
-                # and EMT roots must recover it from the authoritative node type.
-                self._recover_legacy_root_interface_nodes()
-            else:
-                pass
 
-            if self.is_root_editor and self.mode == DynamicSimulationMode.EMT:
-                expected_topology_inputs: dict[VarPowerFlowReferenceType, Var]
-                expected_topology_outputs: dict[VarPowerFlowReferenceType, Var]
-                current_input_refs: set[VarPowerFlowReferenceType]
-                current_output_refs: set[VarPowerFlowReferenceType]
-                expected_topology_inputs, expected_topology_outputs = build_expected_root_emt_interface_for_device(
-                    self.api_object,
-                )
-                current_input_refs = set(
-                    root_var.ref for root_var in self.main_block.in_vars
-                    if isinstance(root_var.ref, VarPowerFlowReferenceType)
-                )
-                current_output_refs = set(
-                    root_var.ref for root_var in self.main_block.out_vars
-                    if isinstance(root_var.ref, VarPowerFlowReferenceType)
-                )
-                root_topology_refs_added = (
-                        len(set(expected_topology_inputs.keys()) - current_input_refs) > 0
-                        or len(set(expected_topology_outputs.keys()) - current_output_refs) > 0
-                )
-            else:
-                pass
-
-            root_emt_interface_changed: bool = self._reconcile_root_emt_interface_from_current_topology()
-            removed_legacy_root_self_nodes: bool = self._remove_legacy_root_self_nodes()
-
-            if self.is_root_editor and self.mode == DynamicSimulationMode.EMT:
-                self._remove_stale_root_interface_duplicate_children()
-                self._ensure_root_interface_wrapper_blocks_exist(create_missing=True)
-                self._ensure_root_interface_wrapper_nodes_exist()
-                self._record_template_root_interface_connection_intents()
-                self._canonicalize_persisted_root_interface_intents()
-            else:
-                pass
-
-            if root_emt_interface_changed:
-                self.has_unapplied_changes = True
-                self.changes_applied = False
-            elif removed_legacy_root_self_nodes:
-                self.has_unapplied_changes = True
-                self.changes_applied = False
-            else:
-                pass
-
-            requires_connection_bootstrap: bool = dialog_models.block_requires_editor_connection_bootstrap(
-                self.main_block)
-
-            # Automatically build items for models with no graphical info
-            if not self.main_block.empty() and not self.main_block.diagram.node_data and not requires_connection_bootstrap:
+            elif not self.main_block.diagram.node_data:
+            # if it's the first time we open this block in the editor
                 if self.main_block.children:
+                    # when we open a model from a template for the first time
                     input_output_blocks: List[Block] = list()
                     block_positions_dict: Dict[int, Tuple[float, float]] = dict()
 
                     # First of all create all Blocks that will be needed but without adding them to the scene and without creating the node in the diagram and add thme to the correspondant list:
 
-                    if self.is_root_editor and self.mode == DynamicSimulationMode.EMT:
-                        pass
-                    else:
-                        self.add_connection_blocks(input_output_blocks)
+                    self.create_measurements_block_basic(BlockType.INPUT_CONN, input_output_blocks)
+                    self.create_measurements_block_basic(BlockType.OUTPUT_CONN, input_output_blocks)
                     # Blocks in children --> self.main_block.children
 
                     layout_graph = self._build_elk_layout_graph(
@@ -2062,6 +2056,102 @@ class DynamicBlockEditorGUI(QtWidgets.QMainWindow):
 
                     for blk in input_output_blocks:
                         position = block_positions_dict[blk.uid]
+                        item = self.create_only_measurements_block_item_basic(blk, position[0], position[1])
+                        blockitems_list.append(item)
+                        items_by_uid[blk.uid] = item
+
+                    if len(blockitems_list) != 0:
+                        self._connect_items_from_layout(items_by_uid, layout_result.graph)
+                    else:
+                        pass
+
+                else:
+
+                    input_output_blocks: List[Block] = list()
+                    block_positions_dict: Dict[int, Tuple[float, float]] = dict()
+
+                    # First of all create all Blocks that will be needed but without adding them to the scene and without creating the node in the diagram and add thme to the correspondant list:
+
+                    self.create_measurements_block_basic(BlockType.INPUT_CONN, input_output_blocks)
+                    self.create_measurements_block_basic(BlockType.OUTPUT_CONN, input_output_blocks)
+
+                    # Main block --> self.main_block
+
+                    layout_graph = self._build_elk_layout_graph(
+                        [self.main_block],
+                        input_output_blocks,
+                    )
+                    layout_result = SugiyamaLayeredPythonEngine().compute(layout_graph)
+                    block_positions_dict.update(
+                        {
+                            int(node.identifier): (node.x or 0.0, node.y or 0.0)
+                            for node in layout_result.graph.children
+                        }
+                    )
+
+                    # Oce everything is calculated we build the items from the blocks and the calculated positions, add them to an items list and create the DiagramNodes:
+
+                    blockitems_list: List[graph.DynamicBlockGraphicsItem] = list()
+                    items_by_uid: Dict[int, graph.DynamicBlockGraphicsItem] = dict()
+
+                    position = block_positions_dict[self.main_block.uid]
+                    item = self.generate_block_item_for_block(self.main_block, position[0], position[1])
+                    blockitems_list.append(item)
+                    items_by_uid[self.main_block.uid] = item
+
+                    for blk in input_output_blocks:
+                        position = block_positions_dict[blk.uid]
+                        item = self.create_only_measurements_block_item_basic(blk, position[0], position[1])
+                        blockitems_list.append(item)
+                        items_by_uid[blk.uid] = item
+
+                    if len(blockitems_list) != 0:
+                        self._connect_items_from_layout(items_by_uid, layout_result.graph)
+                    else:
+                        pass
+
+            else:
+                # for emt is necessary to check if bus variables might be different
+                pass
+
+
+        else:
+
+            if not self.main_block.empty() and not self.main_block.diagram.node_data:
+                if self.main_block.children:
+                    # when we open a prebuild model for the first time
+                    input_output_blocks: List[Block] = list()
+                    block_positions_dict: Dict[int, Tuple[float, float]] = dict()
+
+                    # First of all create all Blocks that will be needed but without adding them to the scene and without creating the node in the diagram and add thme to the correspondant list:
+
+
+                    self.add_connection_blocks(input_output_blocks)
+                    # Blocks in children --> self.main_block.children
+
+                    layout_graph = self._build_elk_layout_graph(
+                        self.main_block.children,
+                        input_output_blocks,
+                    )
+                    layout_result = SugiyamaLayeredPythonEngine().compute(layout_graph)
+                    block_positions_dict.update(
+                        {
+                            int(node.identifier): (node.x or 0.0, node.y or 0.0)
+                            for node in layout_result.graph.children
+                        }
+                    )
+
+                    # Oce everything is calculated we build the items from the blocks and the calculated positions, add them to an items list and create the DiagramNodes:
+                    blockitems_list: List[graph.DynamicBlockGraphicsItem] = list()
+                    items_by_uid: Dict[int, graph.DynamicBlockGraphicsItem] = dict()
+                    for child in self.main_block.children:
+                        position = block_positions_dict[child.uid]
+                        item = self.generate_block_item_for_block(child, position[0], position[1])
+                        blockitems_list.append(item)
+                        items_by_uid[child.uid] = item
+
+                    for blk in input_output_blocks:
+                        position = block_positions_dict[blk.uid]
                         item = self.generate_ext_conn_block_item_for_block(blk, position[0], position[1])
                         blockitems_list.append(item)
                         items_by_uid[blk.uid] = item
@@ -2071,262 +2161,19 @@ class DynamicBlockEditorGUI(QtWidgets.QMainWindow):
                     else:
                         pass
 
-                    # we need an algorithm to create the connections properly:
-                    # bends/corners not in the same place
-                    # prevent them from overlapping with other blocks
-                    # prevent them from overlapping with other connectors in the same direction
-                    # allow only 90degree angles, no 180.
-                    # once we have all the items created and well positioned we build the connections
-
-
                 elif not self.main_block.children:
-                    if self.is_root_editor:
-                        self.add_connection_items()
+                    if block_has_internal_equation_content(self.main_block):
+                        # when a block has only equations content
+                        self.generate_block_item_for_block(self.main_block, 480.0, 260.0)
                     else:
-                        if block_has_internal_equation_content(self.main_block):
-                            self.generate_block_item_for_block(self.main_block, 480.0, 260.0)
-                        else:
-                            # An empty user-authored Generic has no internal
-                            # operation to draw. Its nested view is intentionally a
-                            # blank canvas bounded only by the input/output wrappers.
-                            pass
+                        # when we open an empty generic block
+                        pass
 
-                        self.add_connection_items()
-                else:
-                    pass
-
-
-            # Build items for models with graphical info
-            elif not self.main_block.diagram.node_data:
-                # here we add the connection variables to the main block
-                if self.is_root_editor:
-                    self.add_connection_vars_basic()
-                else:
-                    pass
-                    # self.add_api_obj_mapping()
-                if self.mode == DynamicSimulationMode.RMS:
-                    self.add_measurements_items()
-                elif self.mode == DynamicSimulationMode.EMT:
                     self.add_connection_items()
                 else:
                     pass
-            else:
-                pass
-            # A legacy or partially bootstrapped atomic DAE can already own its
-            # interface-wrapper nodes while lacking the central operation node.
-            # Materialize that node before rebuilding so the saved diagram cannot
-            # remain as disconnected boundary ports around an empty canvas.
-            if atomic_leaf_has_internal_content and self.main_block.uid not in self.diagram.node_data:
-                self.generate_block_item_for_block(self.main_block, 480.0, 260.0)
-            else:
-                pass
-
-            self.rebuild_scene_from_diagram()
-            if restore_missing_decomposed_connections:
-                self._restore_missing_decomposed_layout_connections()
-            else:
-                pass
-            if self.main_block.children or atomic_leaf_has_internal_content:
-                self._rebuild_missing_non_interface_connections(
-                    rebuild_interface_connections=(
-                            bootstrap_missing_non_interface_graphics
-                            or atomic_leaf_has_internal_content
-                    ),
-                )
-            else:
-                pass
-            if self.is_root_editor and self.mode == DynamicSimulationMode.EMT:
-                if isinstance(self.api_object, BranchParent) and self.api_object.emt_template is not None:
-                    self._repair_saved_branch_template_root_wires()
-                else:
-                    pass
-                self._rematerialize_root_interface_intents()
-            else:
-                pass
-
-            if auto_layout_root_interface or root_topology_refs_added or bootstrap_missing_non_interface_graphics:
-                self._layout_root_interface_items_around_content()
-            else:
-                pass
-
-        ###########################################################################################################################################################################
-        elif self.mode == DynamicSimulationMode.RMS:
-
-            # RMS must perform the same persisted-diagram migration as EMT
-            # before deciding whether the canvas needs its boundary wrappers.
-            # Otherwise a stale self node makes an empty Generic diagram look
-            # initialized and prevents its input/output items from being built.
-            removed_legacy_rms_self_nodes: bool = self._remove_legacy_root_self_nodes()
-            if removed_legacy_rms_self_nodes:
-                self.has_unapplied_changes = True
-                self.changes_applied = False
-            else:
-                pass
-
-            if self.is_root_editor:
-                # is when we need to build measurementsblock if it is not built yet
-                if self.main_block.empty():
-                    # if we don't have bus variables in in_vars, out_vars and external mapping
-                    self.add_connection_vars_basic()
-                    self.add_measurements_items()
-
-
-                elif not self.main_block.diagram.node_data:
-                # if it's the first time we open this block in the editor
-                    if self.main_block.children:
-                        # when we open a model from a template for the first time
-                        input_output_blocks: List[Block] = list()
-                        block_positions_dict: Dict[int, Tuple[float, float]] = dict()
-
-                        # First of all create all Blocks that will be needed but without adding them to the scene and without creating the node in the diagram and add thme to the correspondant list:
-
-                        self.create_measurements_block_basic(BlockType.INPUT_CONN, input_output_blocks)
-                        self.create_measurements_block_basic(BlockType.OUTPUT_CONN, input_output_blocks)
-                        # Blocks in children --> self.main_block.children
-
-                        layout_graph = self._build_elk_layout_graph(
-                            self.main_block.children,
-                            input_output_blocks,
-                        )
-                        layout_result = SugiyamaLayeredPythonEngine().compute(layout_graph)
-                        block_positions_dict.update(
-                            {
-                                int(node.identifier): (node.x or 0.0, node.y or 0.0)
-                                for node in layout_result.graph.children
-                            }
-                        )
-
-                        # Oce everything is calculated we build the items from the blocks and the calculated positions, add them to an items list and create the DiagramNodes:
-
-                        blockitems_list: List[graph.DynamicBlockGraphicsItem] = list()
-                        items_by_uid: Dict[int, graph.DynamicBlockGraphicsItem] = dict()
-                        for child in self.main_block.children:
-                            position = block_positions_dict[child.uid]
-                            item = self.generate_block_item_for_block(child, position[0], position[1])
-                            blockitems_list.append(item)
-                            items_by_uid[child.uid] = item
-
-                        for blk in input_output_blocks:
-                            position = block_positions_dict[blk.uid]
-                            item = self.create_only_measurements_block_item_basic(blk, position[0], position[1])
-                            blockitems_list.append(item)
-                            items_by_uid[blk.uid] = item
-
-                        if len(blockitems_list) != 0:
-                            self._connect_items_from_layout(items_by_uid, layout_result.graph)
-                        else:
-                            pass
-
-                    else:
-
-                        input_output_blocks: List[Block] = list()
-                        block_positions_dict: Dict[int, Tuple[float, float]] = dict()
-
-                        # First of all create all Blocks that will be needed but without adding them to the scene and without creating the node in the diagram and add thme to the correspondant list:
-
-                        self.create_measurements_block_basic(BlockType.INPUT_CONN, input_output_blocks)
-                        self.create_measurements_block_basic(BlockType.OUTPUT_CONN, input_output_blocks)
-
-                        # Main block --> self.main_block
-
-                        layout_graph = self._build_elk_layout_graph(
-                            [self.main_block],
-                            input_output_blocks,
-                        )
-                        layout_result = SugiyamaLayeredPythonEngine().compute(layout_graph)
-                        block_positions_dict.update(
-                            {
-                                int(node.identifier): (node.x or 0.0, node.y or 0.0)
-                                for node in layout_result.graph.children
-                            }
-                        )
-
-                        # Oce everything is calculated we build the items from the blocks and the calculated positions, add them to an items list and create the DiagramNodes:
-
-                        blockitems_list: List[graph.DynamicBlockGraphicsItem] = list()
-                        items_by_uid: Dict[int, graph.DynamicBlockGraphicsItem] = dict()
-
-                        position = block_positions_dict[self.main_block.uid]
-                        item = self.generate_block_item_for_block(self.main_block, position[0], position[1])
-                        blockitems_list.append(item)
-                        items_by_uid[self.main_block.uid] = item
-
-                        for blk in input_output_blocks:
-                            position = block_positions_dict[blk.uid]
-                            item = self.create_only_measurements_block_item_basic(blk, position[0], position[1])
-                            blockitems_list.append(item)
-                            items_by_uid[blk.uid] = item
-
-                        if len(blockitems_list) != 0:
-                            self._connect_items_from_layout(items_by_uid, layout_result.graph)
-                        else:
-                            pass
-
-
-            else:
-                # requires_connection_bootstrap: bool = dialog_models.block_requires_editor_connection_bootstrap(
-                # self.main_block)
-
-                # if not self.main_block.empty() and not self.main_block.diagram.node_data and not requires_connection_bootstrap:
-                if not self.main_block.empty() and not self.main_block.diagram.node_data:
-                    if self.main_block.children:
-                        # when we open a prebuild model for the first time
-                        input_output_blocks: List[Block] = list()
-                        block_positions_dict: Dict[int, Tuple[float, float]] = dict()
-
-                        # First of all create all Blocks that will be needed but without adding them to the scene and without creating the node in the diagram and add thme to the correspondant list:
-
-
-                        self.add_connection_blocks(input_output_blocks)
-                        # Blocks in children --> self.main_block.children
-
-                        layout_graph = self._build_elk_layout_graph(
-                            self.main_block.children,
-                            input_output_blocks,
-                        )
-                        layout_result = SugiyamaLayeredPythonEngine().compute(layout_graph)
-                        block_positions_dict.update(
-                            {
-                                int(node.identifier): (node.x or 0.0, node.y or 0.0)
-                                for node in layout_result.graph.children
-                            }
-                        )
-
-                        # Oce everything is calculated we build the items from the blocks and the calculated positions, add them to an items list and create the DiagramNodes:
-                        blockitems_list: List[graph.DynamicBlockGraphicsItem] = list()
-                        items_by_uid: Dict[int, graph.DynamicBlockGraphicsItem] = dict()
-                        for child in self.main_block.children:
-                            position = block_positions_dict[child.uid]
-                            item = self.generate_block_item_for_block(child, position[0], position[1])
-                            blockitems_list.append(item)
-                            items_by_uid[child.uid] = item
-
-                        for blk in input_output_blocks:
-                            position = block_positions_dict[blk.uid]
-                            item = self.generate_ext_conn_block_item_for_block(blk, position[0], position[1])
-                            blockitems_list.append(item)
-                            items_by_uid[blk.uid] = item
-
-                        if len(blockitems_list) != 0:
-                            self._connect_items_from_layout(items_by_uid, layout_result.graph)
-                        else:
-                            pass
-
-                    elif not self.main_block.children:
-                        if block_has_internal_equation_content(self.main_block):
-                            # when a block has only equations content
-                            self.generate_block_item_for_block(self.main_block, 480.0, 260.0)
-                        else:
-                            # when we open an empty generic block
-                            pass
-
-                        self.add_connection_items()
-                    else:
-                        pass
-            self.rebuild_scene_from_diagram()
-        else:
-            pass
-
+        self.rebuild_scene_from_diagram()
+        self._repair_stale_emt_measurements()
 
         self._initial_scene_fit_pending = True
 
@@ -2337,6 +2184,121 @@ class DynamicBlockEditorGUI(QtWidgets.QMainWindow):
         self.ui.action_delete_all.triggered.connect(self.delete_all_blocks_with_confirmation)
         self.ui.actionValidate.triggered.connect(self.show_model_consistency_validation)
 
+
+    def _emt_measurements_match_root_interface(self, items: List[graph.MeasurementsItem]) -> bool:
+        """Check existing root measurements against the synchronized working interface.
+
+        :param items: Existing root interface measurements.
+        :return: Whether both directions contain exactly the current root variables.
+        """
+        measured_inputs: List[Var] = list()
+        measured_outputs: List[Var] = list()
+        item: graph.MeasurementsItem
+        for item in items:
+            if len(item.subsys.out_vars) == 0 and len(item.subsys.in_vars) > 0:
+                measured_outputs.extend(item.subsys.in_vars)
+            else:
+                measured_inputs.extend(item.subsys.out_vars)
+        expected: List[Var]
+        actual: List[Var]
+        variable: Var
+        candidate: Var
+        for expected, actual in ((self.main_block.in_vars, measured_inputs),
+                                 (self.main_block.out_vars, measured_outputs)):
+            if len(expected) != len(actual):
+                return False
+            else:
+                pass
+            for variable in expected:
+                matches: int = 0
+                for candidate in actual:
+                    if (candidate.ref == variable.ref
+                            and candidate.non_mutable_uid == variable.non_mutable_uid
+                            and candidate.uid == variable.uid):
+                        matches += 1
+                    else:
+                        pass
+                if matches != 1:
+                    return False
+                else:
+                    pass
+        return True
+
+    def _repair_stale_emt_measurements(self) -> None:
+        """Rebuild existing stale root measurements after persistent bus synchronization.
+
+        :return: None.
+        """
+        if not self.is_root_editor or self.mode != DynamicSimulationMode.EMT:
+            return
+        else:
+            pass
+        items: List[graph.MeasurementsItem] = list()
+        scene_item: QtWidgets.QGraphicsItem
+        for scene_item in self.scene.items():
+            if isinstance(scene_item, graph.MeasurementsItem):
+                if scene_item.subsys in self.main_block.children:
+                    items.append(scene_item)
+                else:
+                    pass
+            else:
+                pass
+        # Fresh models follow the normal bootstrap path; never create measurements here.
+        if len(items) == 0:
+            return
+        elif self._emt_measurements_match_root_interface(items=items):
+            return
+        else:
+            pass
+
+        # Deletion of an interface item normally removes its root variables too.
+        # Preserve the already synchronized interface while using the standard wire cleanup.
+        inputs: List[Var] = list(self.main_block.in_vars)
+        outputs: List[Var] = list(self.main_block.out_vars)
+        mapping: Dict[VarPowerFlowReferenceType, Var | None] = self.main_block.external_mapping.copy()
+        item: graph.MeasurementsItem
+        left: float = min(item.pos().x() for item in items)
+        top: float = min(item.pos().y() for item in items)
+        for item in items:
+            self.remove_block_item(item)
+        self.main_block.in_vars = inputs
+        self.main_block.out_vars = outputs
+        self.main_block.external_mapping = mapping
+
+        # User blocks and their positions remain intact; only interface items are recreated.
+        other_items: List[graph.DynamicBlockGraphicsItem] = list()
+        for scene_item in self.scene.items():
+            if isinstance(scene_item, (graph.BlockItem, graph.GenericBlockItem,
+                                       graph.RoundBaseArithmeticOpItem, graph.RectBaseArithmeticOpItem,
+                                       graph.PairedItem)):
+                if scene_item.subsys is not self.main_block:
+                    other_items.append(scene_item)
+                else:
+                    pass
+            else:
+                pass
+        measurement_blocks: List[Block] = list()
+        self.create_measurements_block_basic(BlockType.INPUT_CONN, measurement_blocks)
+        self.create_measurements_block_basic(BlockType.OUTPUT_CONN, measurement_blocks)
+        block: Block
+        new_item: graph.MeasurementsItem
+        other_item: graph.DynamicBlockGraphicsItem
+        source_item: graph.DynamicBlockGraphicsItem
+        target_item: graph.DynamicBlockGraphicsItem
+        pairs: List[tuple[Var, Var]]
+        index: int
+        for index, block in enumerate(measurement_blocks):
+            new_item = self.create_only_measurements_block_item_basic(block, left, top + index * 180.0)
+            for other_item in other_items:
+                connect_models_by_reference(mdl1=block, mdl2=other_item.subsys, var_factory=self.var_factory)
+                # Draw only new interface wires, leaving user-to-user wires untouched.
+                for source_item, target_item in ((new_item, other_item), (other_item, new_item)):
+                    pairs = list((source, target)
+                                 for source in source_item.subsys.out_vars
+                                 for target in target_item.subsys.in_vars
+                                 if source.ref is not None and source.ref == target.ref)
+                    self.create_conn_items(item_source=source_item, item_dest=target_item, pairs=pairs)
+        self.mark_unapplied_changes()
 
     def showEvent(self, event: QtGui.QShowEvent) -> None:
         """
@@ -2743,7 +2705,7 @@ class DynamicBlockEditorGUI(QtWidgets.QMainWindow):
         # The circuit owns the authoritative bus objects that the generated
         # measurement block must reference after the modal selection is accepted.
         buses_list: List[Bus] = list(self.circuit.buses)
-        vars_dict: Dict[str, Dict[BlockType, List[VarPowerFlowReferenceType]]] = measurement_vars_dict
+        vars_dict: Dict[str, Dict[BlockType, List[VarPowerFlowReferenceType]]] = measurement_vars_dict_rms
         initial_bus: Bus | None = self.get_measurements_dialog_initial_bus(
             source_item=source_item,
             buses_list=buses_list,
@@ -3552,13 +3514,6 @@ class DynamicBlockEditorGUI(QtWidgets.QMainWindow):
             Qt.Orientation.Horizontal,
         )
 
-    def get_library_dock_widget(self) -> QtWidgets.QDockWidget | None:
-        """Return the fixed Library dock owned by this editor.
-
-        :return: Library dock, or ``None`` after editor teardown.
-        """
-        return self._library_dock
-
     def center_block_properties_dialogue(
             self,
             properties_dialogue: DynamicBlockPropertiesDialog,
@@ -3735,25 +3690,12 @@ class DynamicBlockEditorGUI(QtWidgets.QMainWindow):
                 source_index,
                 self.library.block_role,
             )
-            if isinstance(
-                    payload_data,
-                    (
-                        BlockType,
-                        ExactMathematicalBlockDescriptor,
-                        BasicBlockTemplateDescriptor,
-                        ProceduralBlockTemplateDescriptor,
-                        InternationalStandardTemplateDescriptor,
-                        LibraryDeviceTemplateSpec,
-                        RmsModelTemplate,
-                        EmtModelTemplate,
-                        FmuTemplate,
-                    ),
-            ):
+            if is_supported_library_payload(payload_data):
                 viewport_center: QtCore.QPoint = self.view.viewport().rect().center()
                 scene_position: QtCore.QPointF = self.view.mapToScene(viewport_center)
                 block_item: graph.DynamicBlockGraphicsItem | graph.MeasurementsItem | None = \
                     self.create_library_payload_item(
-                    payload=payload_data,
+                        payload=cast(DynamicLibraryPayload, payload_data),
                     x_pos=scene_position.x(),
                     y_pos=scene_position.y(),
                 )
@@ -3781,21 +3723,8 @@ class DynamicBlockEditorGUI(QtWidgets.QMainWindow):
             drag_token = bytes(mime_data.data(self.mime_type)).decode("utf-8")
             payload = self.library.library_model.get_drag_payload(drag_token)
 
-            if isinstance(
-                    payload,
-                    (
-                        BlockType,
-                        ExactMathematicalBlockDescriptor,
-                        BasicBlockTemplateDescriptor,
-                        ProceduralBlockTemplateDescriptor,
-                        InternationalStandardTemplateDescriptor,
-                        LibraryDeviceTemplateSpec,
-                        RmsModelTemplate,
-                        EmtModelTemplate,
-                        FmuTemplate,
-                    ),
-            ):
-                return payload
+            if is_supported_library_payload(payload):
+                return cast(DynamicLibraryPayload, payload)
             else:
                 return None
         else:
@@ -3996,7 +3925,8 @@ class DynamicBlockEditorGUI(QtWidgets.QMainWindow):
     def create_item_using_blocktype_wizard(self,
                                            blocktype: BlockType,
                                            x_pos: float,
-                                           y_pos: float) -> graph.GenericBlockItem | graph.RoundBaseArithmeticOpItem | graph.RectBaseArithmeticOpItem | None:
+                                           y_pos: float) -> graph.GenericBlockItem | graph.IntegratorItem | \
+                                                           graph.DerivativeItem | None:
         """
         Materialize one builder-backed payload with its verified defaults.
 
@@ -4021,34 +3951,172 @@ class DynamicBlockEditorGUI(QtWidgets.QMainWindow):
         if template_builder is None:
             return None
         else:
-            template: Block | EmtModelTemplate | RmsModelTemplate = template_builder.eval()
-            if isinstance(template, Block):
-                block_model: Block = template
+            return self.create_item_using_template_builder(
+                blocktype=blocktype,
+                template_builder=template_builder,
+                item_name=item_name,
+                count=count,
+                x_pos=x_pos,
+                y_pos=y_pos,
+            )
+
+    def create_item_using_integrator_preset(
+            self,
+            preset: IntegratorPresetDescriptor,
+            x_pos: float,
+            y_pos: float,
+    ) -> graph.IntegratorItem | None:
+        """Materialize one Library preset through the canonical builder.
+
+        :param preset: Structural defaults selected in the Library.
+        :param x_pos: Scene x coordinate.
+        :param y_pos: Scene y coordinate.
+        :return: Configured integrator graphics item, or ``None`` on failure.
+        """
+        blocktype: BlockType = preset.get_block_type()
+        count: int = self.block_counters.get(blocktype, 0) + 1
+        item_name: str = f"{blocktype.name}_{count}"
+        template_builder: TemplateDefinition | None = create_default_template_builder(
+            var_factory=self.var_factory,
+            block_type=blocktype,
+            item_name=item_name,
+            api_object=self.api_object,
+        )
+        if template_builder is None:
+            return None
+        else:
+            # A preset changes only initial property values. The resulting
+            # block remains fully editable through the normal General Structure
+            # workflow and persists as the canonical integrator BlockType.
+            preset.apply_to_template_builder(builder=template_builder)
+            created_item: graph.GenericBlockItem | graph.IntegratorItem | graph.DerivativeItem = \
+                self.create_item_using_template_builder(
+                    blocktype=blocktype,
+                    template_builder=template_builder,
+                    item_name=item_name,
+                    count=count,
+                    x_pos=x_pos,
+                    y_pos=y_pos,
+                )
+            if isinstance(created_item, graph.IntegratorItem):
+                return created_item
+            else:
+                return None
+
+    def create_item_using_derivative_preset(
+            self,
+            preset: DerivativePresetDescriptor,
+            x_pos: float,
+            y_pos: float,
+    ) -> graph.DerivativeItem | None:
+        """Materialize one derivative preset through the canonical builder.
+
+        :param preset: Structural defaults selected in the Library.
+        :param x_pos: Scene x coordinate.
+        :param y_pos: Scene y coordinate.
+        :return: Configured derivative graphics item, or ``None`` on failure.
+        """
+        blocktype: BlockType = preset.get_block_type()
+        count: int = self.block_counters.get(blocktype, 0) + 1
+        item_name: str = f"{blocktype.name}_{count}"
+        template_builder: TemplateDefinition | None = create_default_template_builder(
+            var_factory=self.var_factory,
+            block_type=blocktype,
+            item_name=item_name,
+            api_object=self.api_object,
+        )
+        if template_builder is None:
+            return None
+        else:
+            preset.apply_to_template_builder(builder=template_builder)
+            created_item: graph.GenericBlockItem | graph.IntegratorItem | graph.DerivativeItem = \
+                self.create_item_using_template_builder(
+                    blocktype=blocktype,
+                    template_builder=template_builder,
+                    item_name=item_name,
+                    count=count,
+                    x_pos=x_pos,
+                    y_pos=y_pos,
+                )
+            if isinstance(created_item, graph.DerivativeItem):
+                return created_item
+            else:
+                return None
+
+    def create_item_using_template_builder(
+            self,
+            blocktype: BlockType,
+            template_builder: TemplateDefinition,
+            item_name: str,
+            count: int,
+            x_pos: float,
+            y_pos: float,
+    ) -> graph.GenericBlockItem | graph.IntegratorItem | graph.DerivativeItem:
+        """Evaluate, register, and draw one configured builder result.
+
+        :param blocktype: Persistent block type associated with the builder.
+        :param template_builder: Builder whose values are ready for evaluation.
+        :param item_name: Unique diagram name assigned to the new block.
+        :param count: Updated per-type block counter.
+        :param x_pos: Scene x coordinate.
+        :param y_pos: Scene y coordinate.
+        :return: Registered graphics item representing the generated block.
+        """
+        template: Block | EmtModelTemplate | RmsModelTemplate = template_builder.eval()
+        if isinstance(template, Block):
+            block_model: Block = template
+            block_model.name = item_name
+        else:
+            block_model = template.block
+            if blocktype in (
+                BlockType.MIN,
+                BlockType.MAX,
+                BlockType.INTEGRATOR,
+                BlockType.STARTUP_FREEZE_INTEGRATOR,
+                BlockType.DERIVATIVE,
+            ):
+                # Canonical Basic builders use structural names internally;
+                # each dropped instance still receives its unique diagram name.
                 block_model.name = item_name
             else:
-                block_model = template.block
-                if blocktype == BlockType.MIN or blocktype == BlockType.MAX:
-                    # MIN/MAX historically returned their Block directly. Keep
-                    # their generated instance names stable after aligning the
-                    # builder return type with the template contract.
-                    block_model.name = item_name
-                else:
-                    pass
+                pass
 
-        block_item: graph.GenericBlockItem = graph.GenericBlockItem(
-            editor=self,
-            var_factory=self.var_factory,
-            subsys=block_model,
-            api_object=self.api_object,
-            mode=self.mode,
-            name=item_name,
-            position_changed_callback=self.build_position_changed_callback(block_model.uid)
-        )
+        if blocktype in (BlockType.INTEGRATOR, BlockType.STARTUP_FREEZE_INTEGRATOR):
+            block_item: graph.GenericBlockItem | graph.IntegratorItem | graph.DerivativeItem = graph.IntegratorItem(
+                editor=self,
+                var_factory=self.var_factory,
+                subsys=block_model,
+                api_object=self.api_object,
+                mode=self.mode,
+                block_type=blocktype,
+                name=item_name,
+                position_changed_callback=self.build_position_changed_callback(block_model.uid),
+            )
+        elif blocktype == BlockType.DERIVATIVE:
+            block_item = graph.DerivativeItem(
+                editor=self,
+                var_factory=self.var_factory,
+                subsys=block_model,
+                api_object=self.api_object,
+                mode=self.mode,
+                name=item_name,
+                position_changed_callback=self.build_position_changed_callback(block_model.uid),
+            )
+        else:
+            block_item = graph.GenericBlockItem(
+                editor=self,
+                var_factory=self.var_factory,
+                subsys=block_model,
+                api_object=self.api_object,
+                mode=self.mode,
+                name=item_name,
+                position_changed_callback=self.build_position_changed_callback(block_model.uid),
+            )
 
         self.block_counters[blocktype] = count
-        block_item.set_subsystem(block_model)
-        block_item.position_changed_callback = self.build_position_changed_callback(block_model.uid)
-        block_item.build_item()
+        # The generated graphics classes build their Qt children atomically in
+        # their constructors. Rebuilding them here would leave duplicate ports
+        # and resize handles owned by the same graphics item.
         self.main_block.add(block_model)
         self.scene.add_block_item(block_uid=block_model.uid, item=block_item)
         block_item.setPos(QtCore.QPointF(x_pos, y_pos))
@@ -4193,7 +4261,8 @@ class DynamicBlockEditorGUI(QtWidgets.QMainWindow):
             return None
 
     def create_block_item_from_blocktype(self, block_type: BlockType, x_pos: float,
-                                         y_pos: float) -> graph.GenericBlockItem | None:
+                                         y_pos: float) -> graph.GenericBlockItem | graph.IntegratorItem | \
+                                                         graph.DerivativeItem | None:
         """
         Create and place a block item in the canvas scene.
 
@@ -4218,7 +4287,29 @@ class DynamicBlockEditorGUI(QtWidgets.QMainWindow):
         # no we have the name and the block
         if block_model is not None:
             self.main_block.add(block_model)
-            if block_type in self.UNARY_MATH_BLOCK_TYPES:
+            if block_type in (BlockType.INTEGRATOR, BlockType.STARTUP_FREEZE_INTEGRATOR):
+                item: graph.GenericBlockItem | graph.IntegratorItem | graph.DerivativeItem | \
+                      graph.UnOpItem = graph.IntegratorItem(
+                    editor=self,
+                    var_factory=self.var_factory,
+                    subsys=block_model,
+                    api_object=self.api_object,
+                    mode=self.mode,
+                    block_type=block_type,
+                    name=block_model.name,
+                    position_changed_callback=self.build_position_changed_callback(block_model.uid),
+                )
+            elif block_type == BlockType.DERIVATIVE:
+                item = graph.DerivativeItem(
+                    editor=self,
+                    var_factory=self.var_factory,
+                    subsys=block_model,
+                    api_object=self.api_object,
+                    mode=self.mode,
+                    name=block_model.name,
+                    position_changed_callback=self.build_position_changed_callback(block_model.uid),
+                )
+            elif block_type in self.UNARY_MATH_BLOCK_TYPES:
                 item = graph.UnOpItem(
                     editor=self,
                     var_factory=self.var_factory,
@@ -4416,7 +4507,9 @@ class DynamicBlockEditorGUI(QtWidgets.QMainWindow):
 
     def generate_block_item_for_block(self, block_model: Block,
                                       x_pos: float,
-                                      y_pos: float) -> graph.GenericBlockItem | graph.RoundBaseArithmeticOpItem | graph.RectBaseArithmeticOpItem | graph.UnOpItem:
+                                      y_pos: float) -> graph.GenericBlockItem | graph.RoundBaseArithmeticOpItem | \
+                                                       graph.RectBaseArithmeticOpItem | graph.UnOpItem | \
+                                                       graph.IntegratorItem | graph.DerivativeItem:
         """
         Create and place a block item in the canvas scene.
 
@@ -4438,7 +4531,8 @@ class DynamicBlockEditorGUI(QtWidgets.QMainWindow):
 
             count: int = self.block_counters.get(block_type, 0) + 1
 
-            item: graph.RoundBaseArithmeticOpItem | graph.RectBaseArithmeticOpItem | graph.UnOpItem | graph.GenericBlockItem
+            item: graph.RoundBaseArithmeticOpItem | graph.RectBaseArithmeticOpItem | graph.UnOpItem | \
+                  graph.IntegratorItem | graph.DerivativeItem | graph.GenericBlockItem
 
             if len(block_model.in_vars) <= 3:
                 item = graph.RoundBaseArithmeticOpItem(
@@ -4467,6 +4561,41 @@ class DynamicBlockEditorGUI(QtWidgets.QMainWindow):
                 device_uid=block_model.uid,
             )
 
+        elif block_type in (BlockType.INTEGRATOR, BlockType.STARTUP_FREEZE_INTEGRATOR):
+            item = graph.IntegratorItem(
+                editor=self,
+                var_factory=self.var_factory,
+                subsys=block_model,
+                api_object=self.api_object,
+                mode=self.mode,
+                block_type=block_type,
+                name=item_name,
+                position_changed_callback=self.build_position_changed_callback(block_model.uid),
+            )
+            self.diagram.add_node(
+                name=item_name,
+                x=x_pos,
+                y=y_pos,
+                tpe=block_type.name,
+                device_uid=block_model.uid,
+            )
+        elif block_type == BlockType.DERIVATIVE:
+            item = graph.DerivativeItem(
+                editor=self,
+                var_factory=self.var_factory,
+                subsys=block_model,
+                api_object=self.api_object,
+                mode=self.mode,
+                name=item_name,
+                position_changed_callback=self.build_position_changed_callback(block_model.uid),
+            )
+            self.diagram.add_node(
+                name=item_name,
+                x=x_pos,
+                y=y_pos,
+                tpe=block_type.name,
+                device_uid=block_model.uid,
+            )
         elif block_type in self.UNARY_MATH_BLOCK_TYPES:
             assert block_type is not None
             unary_block_type: BlockType = block_type
@@ -4791,45 +4920,6 @@ class DynamicBlockEditorGUI(QtWidgets.QMainWindow):
 
         self._refresh_all_variable_displays()
 
-    def _restore_missing_decomposed_layout_connections(self) -> None:
-        """
-        Restore arrows omitted by legacy decomposed equation diagrams.
-
-        A previous editor path persisted every ELK-generated node but created
-        its edges only as temporary scene items. The subsequent scene rebuild
-        erased those arrows, leaving a recognizable diagram with generated
-        block types and no persisted branches. Recompute only the edges while
-        retaining every saved node position.
-
-        :return: None.
-        """
-        items_by_uid: Dict[int, graph.DynamicBlockGraphicsItem] = dict()
-        child_block: Block
-        scene_item: QGraphicsItem | None
-
-        for child_block in self.main_block.children:
-            scene_item = self.get_scene_item_by_block_uid(child_block.uid)
-            if isinstance(scene_item, (
-                    graph.BlockItem,
-                    graph.MeasurementsItem,
-                    graph.GenericBlockItem,
-                    graph.RoundBaseArithmeticOpItem,
-                    graph.RectBaseArithmeticOpItem,
-                    graph.PairedItem,
-            )):
-                items_by_uid[child_block.uid] = scene_item
-            else:
-                pass
-
-        layout_graph: SugiyamaGraph = self._build_elk_layout_graph(
-            child_blocks=self.main_block.children,
-            input_output_blocks=list(),
-        )
-        self._connect_items_from_layout(
-            items_by_uid=items_by_uid,
-            layout_graph=layout_graph,
-        )
-
     def create_measurements_block_basic(self, block_type: BlockType, input_output_blocks: List[Block]) -> None:
         """
         create a block containing the input variables in in_vars and the output variables in out_vars. With this block we will create MeasurementsItem
@@ -4841,6 +4931,26 @@ class DynamicBlockEditorGUI(QtWidgets.QMainWindow):
         """
         item_name: str = f"{block_type.name}"
         block_model: Block = Block(name=item_name)
+
+        # we have to collect input/output vars for EMT
+        if self.mode == DynamicSimulationMode.EMT:
+            if block_type == BlockType.INPUT_CONN:
+                block_model.out_vars = list(self.main_block.in_vars)
+                if len(block_model.out_vars) > 0:
+                    input_output_blocks.append(block_model)
+                else:
+                    pass
+            elif block_type == BlockType.OUTPUT_CONN:
+                block_model.in_vars = list(self.main_block.out_vars)
+                if len(block_model.in_vars) > 0:
+                    input_output_blocks.append(block_model)
+                else:
+                    pass
+            else:
+                pass
+            return
+        else:
+            pass
 
         var: Var
         if block_type == BlockType.INPUT_CONN:
@@ -5373,34 +5483,28 @@ class DynamicBlockEditorGUI(QtWidgets.QMainWindow):
         else:
             pass
 
-    def create_template_block_item(self,
-                                   template: RmsModelTemplate | EmtModelTemplate | FmuTemplate,
-                                   x_pos: float,
-                                   y_pos: float,
-                                   block_type: BlockType | None = None,
-                                   ) -> graph.BlockItem | graph.GenericBlockItem | None:
+    def create_owned_block_item(self,
+                                block_model: Block,
+                                item_name: str,
+                                x_pos: float,
+                                y_pos: float,
+                                block_type: BlockType | None = None,
+                                ) -> graph.BlockItem | graph.GenericBlockItem | None:
         """
-        Create and place a copied template block in the canvas scene.
+        Add a block already owned by the editor factory to the canvas scene.
 
-        :param template:
-        :param x_pos:
-        :param y_pos:
+        Fresh library builders allocate their complete symbolic graph directly
+        in the working factory.  Reusing that block avoids creating an unused
+        second occurrence and keeps its connection records in their original
+        owning factory.
+
+        :param block_model: Block already allocated in ``self.var_factory``.
+        :param item_name: User-facing name shown by the graphics item.
+        :param x_pos: Horizontal scene position for the new graphics item.
+        :param y_pos: Vertical scene position for the new graphics item.
         :param block_type: Optional persistent native type for specialized templates.
-        :return:
+        :return: Created graphics item, or ``None`` when no item can be created.
         """
-        item_name: str = template.name
-        block_model: Block
-        if self._document is not None:
-            block_model = duplicate_block_across_factories(
-                block=template.block,
-                source_var_factory=self._document.source_var_factory,
-                target_var_factory=self.var_factory,
-            )
-        else:
-            block_model = duplicate_block(
-                block=template.block,
-                var_factory=self.var_factory,
-            )
         if block_type is not None:
             self._block2blocktype[block_model.uid] = block_type
         else:
@@ -5438,6 +5542,49 @@ class DynamicBlockEditorGUI(QtWidgets.QMainWindow):
         self.mark_unapplied_changes()
 
         return item
+
+    def create_materialized_template_block_item(
+            self,
+            template: RmsModelTemplate | EmtModelTemplate | FmuTemplate,
+            source_var_factory: VarFactory,
+            x_pos: float,
+            y_pos: float,
+    ) -> graph.BlockItem | graph.GenericBlockItem | None:
+        """Create an independent editor occurrence from an existing template.
+
+        A materialized template remains owned by its source catalogue.  The
+        complete symbolic graph must therefore be duplicated before the new
+        occurrence is attached to the editable document.
+
+        :param template: Existing dynamic template to duplicate.
+        :param source_var_factory: Factory owning the template and its connections.
+        :param x_pos: Horizontal scene position for the new graphics item.
+        :param y_pos: Vertical scene position for the new graphics item.
+        :return: Created graphics item, or ``None`` when no item can be created.
+        """
+        duplicated_block: Block
+
+        # Standalone editors use one shared factory, whereas workspace editors
+        # copy persistent templates into their private working factory.
+        if source_var_factory is self.var_factory:
+            duplicated_block = duplicate_block(
+                block=template.block,
+                var_factory=self.var_factory,
+            )
+        else:
+            duplicated_block = duplicate_block_across_factories(
+                block=template.block,
+                source_var_factory=source_var_factory,
+                target_var_factory=self.var_factory,
+            )
+
+        return self.create_owned_block_item(
+            block_model=duplicated_block,
+            item_name=template.name,
+            x_pos=x_pos,
+            y_pos=y_pos,
+            block_type=get_catalogue_template_block_type(template=template, mode=self.mode),
+        )
 
     @QtCore.Slot()
     def copy_selected_blocks(self) -> None:
@@ -5678,7 +5825,19 @@ class DynamicBlockEditorGUI(QtWidgets.QMainWindow):
         :param y_pos: Target scene y coordinate.
         :return: Diagram item created from the library payload, or ``None`` when unsupported.
         """
-        if isinstance(payload, BlockType) and payload in self.blocktype2templatebuilder:
+        if isinstance(payload, IntegratorPresetDescriptor):
+            return self.create_item_using_integrator_preset(
+                preset=payload,
+                x_pos=x_pos,
+                y_pos=y_pos,
+            )
+        elif isinstance(payload, DerivativePresetDescriptor):
+            return self.create_item_using_derivative_preset(
+                preset=payload,
+                x_pos=x_pos,
+                y_pos=y_pos,
+            )
+        elif isinstance(payload, BlockType) and payload in self.blocktype2templatebuilder:
             return self.create_item_using_blocktype_wizard(payload, x_pos, y_pos)
 
         # this ones cannot be included above because they are represented by a different item in the scene
@@ -5697,13 +5856,16 @@ class DynamicBlockEditorGUI(QtWidgets.QMainWindow):
                     y_pos=y_pos,
                 )
             else:
+                # A descriptor materializes a fresh occurrence, so its symbolic
+                # graph can be allocated directly in the editor-owned factory.
                 device_template: RmsModelTemplate | EmtModelTemplate | None = build_dynamic_library_device_template(
                     spec=payload,
                     var_factory=self.var_factory,
                 )
                 if device_template is not None:
-                    return self.create_template_block_item(
-                        template=device_template,
+                    return self.create_owned_block_item(
+                        block_model=device_template.block,
+                        item_name=device_template.name,
                         x_pos=x_pos,
                         y_pos=y_pos,
                     )
@@ -5730,19 +5892,33 @@ class DynamicBlockEditorGUI(QtWidgets.QMainWindow):
                 descriptor=payload,
                 var_factory=self.var_factory,
             )
-            return self.create_template_block_item(template=exact_template, x_pos=x_pos, y_pos=y_pos)
+            return self.create_owned_block_item(
+                block_model=exact_template.block,
+                item_name=exact_template.name,
+                x_pos=x_pos,
+                y_pos=y_pos,
+            )
 
         elif isinstance(payload, BasicBlockTemplateDescriptor):
-            template: EmtModelTemplate = load_basic_block_catalog_template(payload, self.var_factory)
-            return self.create_template_block_item(template=template, x_pos=x_pos, y_pos=y_pos)
+            template: EmtModelTemplate = load_basic_block_catalog_template(
+                payload,
+                self.var_factory,
+            )
+            return self.create_owned_block_item(
+                block_model=template.block,
+                item_name=template.name,
+                x_pos=x_pos,
+                y_pos=y_pos,
+            )
 
         elif isinstance(payload, ProceduralBlockTemplateDescriptor):
             procedural_template: EmtModelTemplate = build_procedural_block_catalog_template(
                 descriptor=payload,
                 var_factory=self.var_factory,
             )
-            return self.create_template_block_item(
-                template=procedural_template,
+            return self.create_owned_block_item(
+                block_model=procedural_template.block,
+                item_name=procedural_template.name,
                 x_pos=x_pos,
                 y_pos=y_pos,
                 block_type=BlockType.PROCEDURAL_LOGIC,
@@ -5753,14 +5929,30 @@ class DynamicBlockEditorGUI(QtWidgets.QMainWindow):
                 descriptor=payload,
                 var_factory=self.var_factory,
             )
-            return self.create_template_block_item(
-                template=international_standard_template,
+            return self.create_owned_block_item(
+                block_model=international_standard_template.block,
+                item_name=international_standard_template.name,
                 x_pos=x_pos,
                 y_pos=y_pos,
             )
 
         elif isinstance(payload, (RmsModelTemplate, EmtModelTemplate, FmuTemplate)):
-            return self.create_template_block_item(template=payload, x_pos=x_pos, y_pos=y_pos)
+            persistent_source_var_factory: VarFactory
+            if self._document is not None:
+                # Materialized templates exposed by a workspace library belong
+                # to the persistent circuit catalogue, not to the private editor
+                # document that receives their duplicated occurrence.
+                persistent_source_var_factory = self._document.source_var_factory
+            else:
+                # Legacy standalone editors receive templates and variables from
+                # their single shared factory.
+                persistent_source_var_factory = self.var_factory
+            return self.create_materialized_template_block_item(
+                template=payload,
+                x_pos=x_pos,
+                y_pos=y_pos,
+                source_var_factory=persistent_source_var_factory,
+            )
         else:
             return None
 
@@ -6604,387 +6796,6 @@ class DynamicBlockEditorGUI(QtWidgets.QMainWindow):
         )
         upsert_dynamic_connection_intent(block=self.main_block, intent=entry)
 
-    def _record_template_root_interface_connection_intents(self) -> None:
-        """
-        Record template-derived root-interface intents for currently active template links.
-
-        :return: None.
-        """
-        if self.mode != DynamicSimulationMode.EMT or not self.is_root_editor:
-            return
-        else:
-            pass
-
-        if self.api_object.emt_template is None:
-            return
-        else:
-            pass
-
-        child_block: Block
-        input_var: Var
-        output_var: Var
-        existing_entry: DynamicConnectionIntent | None
-        new_entry: DynamicConnectionIntent
-
-        for child_block in self.main_block.children:
-            if get_root_interface_container_type(
-                    block_model=child_block,
-                    diagram=self.diagram,
-            ) is not None:
-                pass
-            else:
-                for input_var in child_block.in_vars:
-                    if input_var.ref is None:
-                        pass
-                    else:
-                        existing_entry = find_matching_dynamic_connection_intent(
-                            block=self.main_block,
-                            origin=DynamicConnectionIntentOrigin.TEMPLATE_DERIVED,
-                            root_reference=input_var.ref,
-                            direction=DynamicConnectionIntentDirection.INPUT,
-                            internal_block_uid=child_block.uid,
-                            internal_variable_uid=input_var.non_mutable_uid,
-                        )
-                        if existing_entry is None:
-                            new_entry = DynamicConnectionIntent(
-                                origin=DynamicConnectionIntentOrigin.TEMPLATE_DERIVED,
-                                root_reference=input_var.ref,
-                                direction=DynamicConnectionIntentDirection.INPUT,
-                                internal_block_uid=child_block.uid,
-                                internal_variable_uid=input_var.non_mutable_uid,
-                                suppressed=False,
-                            )
-                            upsert_dynamic_connection_intent(block=self.main_block, intent=new_entry)
-                        else:
-                            pass
-
-                for output_var in child_block.out_vars:
-                    if output_var.ref is None:
-                        pass
-                    else:
-                        existing_entry = find_matching_dynamic_connection_intent(
-                            block=self.main_block,
-                            origin=DynamicConnectionIntentOrigin.TEMPLATE_DERIVED,
-                            root_reference=output_var.ref,
-                            direction=DynamicConnectionIntentDirection.OUTPUT,
-                            internal_block_uid=child_block.uid,
-                            internal_variable_uid=output_var.non_mutable_uid,
-                        )
-                        if existing_entry is None:
-                            new_entry = DynamicConnectionIntent(
-                                origin=DynamicConnectionIntentOrigin.TEMPLATE_DERIVED,
-                                root_reference=output_var.ref,
-                                direction=DynamicConnectionIntentDirection.OUTPUT,
-                                internal_block_uid=child_block.uid,
-                                internal_variable_uid=output_var.non_mutable_uid,
-                                suppressed=False,
-                            )
-                            upsert_dynamic_connection_intent(block=self.main_block, intent=new_entry)
-                        else:
-                            pass
-
-        normalize_dynamic_connection_intents(self.main_block)
-
-    def _rematerialize_root_interface_intents(self) -> bool:
-        """
-        Rebuild active root-interface wires from persisted intent records.
-
-        :return: ``True`` when any connection item was created.
-        """
-        if self.mode != DynamicSimulationMode.EMT or not self.is_root_editor:
-            return False
-        else:
-            pass
-
-        changed: bool = False
-        entry: DynamicConnectionIntent
-        direction: DynamicConnectionIntentDirection
-        child_block: Block | None
-        wrapper_block: Block | None
-        wrapper_item: graph.BlockItem | graph.MeasurementsItem | graph.GenericBlockItem | None
-        internal_item: graph.BlockItem | graph.GenericBlockItem | None
-        source_port: graph.PortItem | None
-        target_port: graph.PortItem | None
-        interface_reference: VarPowerFlowReferenceType | None
-        candidate_block_type: BlockType
-        internal_port_index: int | None
-        wrapper_port_index: int | None
-        matching_endpoint_count: int
-        child_candidate: Block
-        candidate_vars: List[Var]
-        candidate_port_index: int
-        candidate_var: Var
-        candidate_semantic_reference: VarPowerFlowReferenceType | None
-
-        for entry in self.main_block.connection_intents:
-            if entry.is_suppressed():
-                pass
-            else:
-                direction = entry.get_direction()
-                interface_reference = entry.get_root_reference()
-                child_block = self.get_block_from_main_block(entry.get_internal_block_uid())
-                source_port = None
-                target_port = None
-                wrapper_block = None
-                wrapper_port_index = None
-
-                if child_block is None:
-                    pass
-                else:
-                    internal_port_index = self._find_intent_internal_port_index(
-                        child_block=child_block,
-                        direction=direction,
-                        internal_variable_uid=entry.get_internal_variable_uid(),
-                        fallback_reference=interface_reference,
-                    )
-                    if internal_port_index is None:
-                        pass
-                    else:
-                        if direction == DynamicConnectionIntentDirection.INPUT:
-                            current_internal_var: Var = child_block.in_vars[internal_port_index]
-                        else:
-                            current_internal_var = child_block.out_vars[internal_port_index]
-                        if current_internal_var.non_mutable_uid != entry.get_internal_variable_uid():
-                            entry.set_internal_variable_uid(current_internal_var.non_mutable_uid)
-                        else:
-                            pass
-                        interface_reference = self._resolve_persisted_intent_interface_reference(
-                            persisted_reference=interface_reference,
-                            child_block=child_block,
-                            direction=direction,
-                            internal_variable_uid=entry.get_internal_variable_uid(),
-                        )
-                        if interface_reference is not None:
-                            entry.set_root_reference(root_reference=interface_reference)
-                        else:
-                            pass
-
-                        if direction == DynamicConnectionIntentDirection.INPUT:
-                            candidate_block_type = BlockType.INPUT_CONN
-                        else:
-                            candidate_block_type = BlockType.OUTPUT_CONN
-
-                        matching_endpoint_count = 0
-                        for child_candidate in self.main_block.children:
-                            if get_root_interface_container_type(
-                                    block_model=child_candidate,
-                                    diagram=self.diagram,
-                            ) == candidate_block_type:
-                                if candidate_block_type == BlockType.INPUT_CONN:
-                                    candidate_vars = child_candidate.out_vars
-                                else:
-                                    candidate_vars = child_candidate.in_vars
-
-                                candidate_semantic_reference = self._get_semantic_root_interface_reference(
-                                    wrapper_block=child_candidate,
-                                    block_type=candidate_block_type,
-                                )
-
-                                for candidate_port_index, candidate_var in enumerate(candidate_vars):
-                                    if (
-                                            candidate_var.ref == interface_reference
-                                            or (
-                                                len(candidate_vars) == 1
-                                                and candidate_semantic_reference == interface_reference
-                                            )
-                                    ):
-                                        wrapper_block = child_candidate
-                                        wrapper_port_index = candidate_port_index
-                                        matching_endpoint_count += 1
-                                    else:
-                                        pass
-                            else:
-                                pass
-
-                        # A duplicated semantic endpoint is unsafe to replay because
-                        # the persisted intent cannot choose between its candidates.
-                        if matching_endpoint_count != 1:
-                            wrapper_block = None
-                            wrapper_port_index = None
-                        else:
-                            pass
-
-                        if wrapper_block is None or wrapper_port_index is None:
-                            pass
-                        else:
-                            wrapper_item = self.get_scene_item_by_block_uid(wrapper_block.uid)
-                            internal_item = self.get_scene_item_by_block_uid(child_block.uid)
-                            if wrapper_item is None or internal_item is None:
-                                pass
-                            else:
-                                if direction == DynamicConnectionIntentDirection.INPUT:
-                                    if wrapper_port_index < len(wrapper_item.outputs) and internal_port_index < len(
-                                            internal_item.inputs):
-                                        source_port = wrapper_item.outputs[wrapper_port_index]
-                                        target_port = internal_item.inputs[internal_port_index]
-                                    else:
-                                        pass
-                                else:
-                                    if wrapper_port_index < len(wrapper_item.inputs) and internal_port_index < len(
-                                            internal_item.outputs):
-                                        source_port = internal_item.outputs[internal_port_index]
-                                        target_port = wrapper_item.inputs[wrapper_port_index]
-                                    else:
-                                        pass
-
-                                if source_port is None or target_port is None:
-                                    pass
-                                elif self._connection_exists_between_ports(source_port, target_port):
-                                    pass
-                                else:
-                                    self.attach_new_connection_item(
-                                        item=graph.ConnectionItem(source_port=source_port,
-                                                                  target_port=target_port,
-                                                                  diagram=self.diagram,
-                                                                  editor=self),
-                                        refresh_variable_displays=False,
-                                    )
-                                    changed = True
-
-        normalize_dynamic_connection_intents(self.main_block)
-        if changed:
-            self._refresh_all_variable_displays()
-        else:
-            pass
-        return changed
-
-    def _find_intent_internal_port_index(self,
-                                         child_block: Block,
-                                         direction: DynamicConnectionIntentDirection,
-                                         internal_variable_uid: int,
-                                         fallback_reference: VarPowerFlowReferenceType | None = None) -> int | None:
-        """
-        Find the current graphical port position from a stable variable UID.
-
-        :param child_block: Internal block targeted by the intent.
-        :param direction: Connection direction.
-        :param internal_variable_uid: Non-mutable UID of the target variable.
-        :param fallback_reference: Semantic reference used after a generated port is recreated.
-        :return: Current port index or ``None`` when the variable is unavailable.
-        """
-        variables: List[Var]
-        port_index: int
-        candidate_var: Var
-
-        if direction == DynamicConnectionIntentDirection.INPUT:
-            variables = child_block.in_vars
-        else:
-            variables = child_block.out_vars
-
-        for port_index, candidate_var in enumerate(variables):
-            if candidate_var.non_mutable_uid == internal_variable_uid:
-                return port_index
-            else:
-                pass
-
-        matching_reference_index: int | None = None
-        matching_reference_count: int = 0
-        if fallback_reference is not None:
-            for port_index, candidate_var in enumerate(variables):
-                if candidate_var.ref == fallback_reference:
-                    matching_reference_index = port_index
-                    matching_reference_count += 1
-                else:
-                    pass
-        else:
-            pass
-
-        if matching_reference_count == 1:
-            return matching_reference_index
-        else:
-            return None
-
-    def _resolve_persisted_intent_interface_reference(
-            self,
-            persisted_reference: VarPowerFlowReferenceType,
-            child_block: Block,
-            direction: DynamicConnectionIntentDirection,
-            internal_variable_uid: int,
-    ) -> VarPowerFlowReferenceType | None:
-        """
-        Resolve one persisted intent to the current side-specific root reference.
-
-        Older branch-editor user intents may store a shared bus reference such
-        as ``v_A``. The connected internal Pi/template port still carries the
-        unambiguous side-specific reference, so it can upgrade the intent to
-        ``vf_A`` or ``vt_A`` during reopen.
-
-        :param persisted_reference: Reference stored in the intent record.
-        :param child_block: Internal block targeted by the intent.
-        :param direction: Internal port direction.
-        :param internal_variable_uid: Internal variable non-mutable UID.
-        :return: Current root-interface reference, or ``None`` when unavailable.
-        """
-        expected_inputs_by_ref: dict[VarPowerFlowReferenceType, Var]
-        expected_outputs_by_ref: dict[VarPowerFlowReferenceType, Var]
-        available_refs: set[VarPowerFlowReferenceType]
-        internal_var: Var | None = None
-        internal_port_index: int | None
-
-        expected_inputs_by_ref, expected_outputs_by_ref = self._build_expected_root_interface_for_current_mode()
-        available_refs = set(expected_inputs_by_ref.keys()) | set(expected_outputs_by_ref.keys())
-
-        if persisted_reference in available_refs:
-            return persisted_reference
-        else:
-            pass
-
-        if not isinstance(self.api_object, BranchParent):
-            return None
-        else:
-            internal_port_index = self._find_intent_internal_port_index(
-                child_block=child_block,
-                direction=direction,
-                internal_variable_uid=internal_variable_uid,
-                fallback_reference=persisted_reference,
-            )
-
-        if internal_port_index is None:
-            pass
-        elif direction == DynamicConnectionIntentDirection.INPUT:
-            internal_var = child_block.in_vars[internal_port_index]
-        else:
-            internal_var = child_block.out_vars[internal_port_index]
-
-        if internal_var is not None and internal_var.ref in available_refs:
-            return internal_var.ref
-        else:
-            return None
-
-    def _canonicalize_persisted_root_interface_intents(self) -> None:
-        """
-        Upgrade legacy root-interface intents before graphical connection replay.
-
-        Earlier editor builds recorded the graphical port direction instead of
-        the root contract direction and persisted shared branch voltage refs.
-        Canonicalizing before ``rebuild_scene_from_diagram`` prevents restored
-        wires from appending a second, corrected record beside each legacy one.
-
-        :return: None.
-        """
-        entry: DynamicConnectionIntent
-        child_block: Block | None
-        canonical_reference: VarPowerFlowReferenceType | None
-
-        normalize_dynamic_connection_intents(self.main_block)
-
-        for entry in self.main_block.connection_intents:
-            child_block = self.get_block_from_main_block(entry.get_internal_block_uid())
-            if child_block is None:
-                pass
-            else:
-                canonical_reference = self._resolve_persisted_intent_interface_reference(
-                    persisted_reference=entry.get_root_reference(),
-                    child_block=child_block,
-                    direction=entry.get_direction(),
-                    internal_variable_uid=entry.get_internal_variable_uid(),
-                )
-                if canonical_reference is not None:
-                    entry.set_root_reference(root_reference=canonical_reference)
-                else:
-                    pass
-
-        normalize_dynamic_connection_intents(self.main_block)
 
     def supports_routing_graph_connection(self, item: graph.ConnectionItem) -> bool:
         """
@@ -7081,7 +6892,7 @@ class DynamicBlockEditorGUI(QtWidgets.QMainWindow):
             refresh_variable_displays: bool = True,
     ) -> None:
         """
-        Restore one persisted connection graphically and symbolically.
+        Restore the graphics and routing of an existing symbolic connection.
 
         :param item: Connection item to restore.
         :param hydrate_graph_payload: Whether stored routing data must be imported.
@@ -7093,9 +6904,8 @@ class DynamicBlockEditorGUI(QtWidgets.QMainWindow):
         source_port: graph.PortItem | graph.BranchingItem = item.source_port
         target_port: graph.PortItem | graph.BranchingItem = item.target_port
 
-        # A visible restored wire must rebuild the same VarFactory edge as a live wire.
+        # The working factory already owns the symbolic edge; drawing it must not replay it.
         if isinstance(source_port, graph.PortItem) and isinstance(target_port, graph.PortItem):
-            self._register_symbolic_connection_between_ports(source_port, target_port)
             if refresh_variable_displays:
                 self._refresh_all_variable_displays()
             else:
@@ -7649,7 +7459,7 @@ class DynamicBlockEditorGUI(QtWidgets.QMainWindow):
                 if Vf_dc is not None:
                     # Vf_dc is the variable from the original model, we have to make a coppy to add it to the working model
                     Vf_dc_working_block = self.var_factory.add_var(
-                        name=Vf_dc.name,
+                        name="Vf_dc",
                         reference=Vf_dc.ref,
                         network_conn=Vf_dc.network_conn,
                         # non_mutable_uid=Vf_dc.non_mutable_uid,
@@ -7670,7 +7480,7 @@ class DynamicBlockEditorGUI(QtWidgets.QMainWindow):
                 # Vmf and Vaf are the variables from the original model, we have to make a coppy to add it to the working model
                 if Vmf is not None:
                     Vmf_working_block = self.var_factory.add_var(
-                        name=Vmf.name,
+                        name="Vmf",
                         reference=Vmf.ref,
                         network_conn=Vmf.network_conn,
                         # non_mutable_uid=Vmf.non_mutable_uid,
@@ -7678,7 +7488,7 @@ class DynamicBlockEditorGUI(QtWidgets.QMainWindow):
                     )
                 if Vaf is not None:
                     Vaf_working_block = self.var_factory.add_var(
-                        name=Vaf.name,
+                        name="Vaf",
                         reference=Vaf.ref,
                         network_conn=Vaf.network_conn,
                         # non_mutable_uid=Vaf.non_mutable_uid,
@@ -7709,7 +7519,7 @@ class DynamicBlockEditorGUI(QtWidgets.QMainWindow):
                 if Vt_dc is not None:
                     # Vt_dc is the variable from the original model, we have to make a coppy to add it to the working model
                     Vt_dc_working_block = self.var_factory.add_var(
-                        name=Vt_dc.name,
+                        name="Vt_dc",
                         reference=Vt_dc.ref,
                         network_conn=Vt_dc.network_conn,
                         # non_mutable_uid=Vt_dc.non_mutable_uid,
@@ -7731,7 +7541,7 @@ class DynamicBlockEditorGUI(QtWidgets.QMainWindow):
                 # Vmt and Vat are the variables from the original model, we have to make a coppy to add it to the working model
                 if Vmt is not None:
                     Vmt_working_block = self.var_factory.add_var(
-                        name=Vmt.name,
+                        name="Vmt",
                         reference=Vmt.ref,
                         network_conn=Vmt.network_conn,
                         # non_mutable_uid=Vmt.non_mutable_uid,
@@ -7739,7 +7549,7 @@ class DynamicBlockEditorGUI(QtWidgets.QMainWindow):
                     )
                 if Vat is not None:
                     Vat_working_block = self.var_factory.add_var(
-                        name=Vat.name,
+                        name="Vat",
                         reference=Vat.ref,
                         network_conn=Vat.network_conn,
                         # non_mutable_uid=Vat.non_mutable_uid,
@@ -7882,16 +7692,23 @@ class DynamicBlockEditorGUI(QtWidgets.QMainWindow):
 
         if isinstance(self.api_object, BranchParent):
 
-            # connect bus variables
+            # Preserve branch-side references while copying the live bus identities.
 
             # get bus variables for bus from
             if self.api_object.bus_from.is_dc:
                 Vf_dc, _, _, _ = get_bus_emt_algebraic_vars(self.api_object.bus_from.emt_model)
 
                 if Vf_dc is not None:
-                    self.main_block.in_vars.append(Vf_dc)
+                    # Keep the bus identity while giving the working block its own variable.
+                    Vf_dc_working_block: Var = self.var_factory.add_var(
+                        name="Vf_dc",
+                        reference=VarPowerFlowReferenceType.Vf_dc,
+                        network_conn=Vf_dc.network_conn,
+                        uid=Vf_dc.uid,
+                    )
+                    self.main_block.in_vars.append(Vf_dc_working_block)
                     self.main_block.external_mapping.update(
-                        dict(((VarPowerFlowReferenceType.Vdc, Vf_dc),)))
+                        dict(((VarPowerFlowReferenceType.Vf_dc, Vf_dc_working_block),)))
                     # add connection variables (currents)
                     If_dc = self.var_factory.add_var('net_conn_If_dc', VarPowerFlowReferenceType.If_dc, True)
                     self.main_block.out_vars.append(If_dc)
@@ -7902,9 +7719,16 @@ class DynamicBlockEditorGUI(QtWidgets.QMainWindow):
                 vf_N, vf_A, vf_B, vf_C = get_bus_emt_algebraic_vars(self.api_object.bus_from.emt_model)
 
                 if vf_N is not None:
-                    self.main_block.in_vars.append(vf_N)
+                    # Keep the bus identity while giving the working block its own variable.
+                    vf_N_working_block: Var = self.var_factory.add_var(
+                        name="vf_N",
+                        reference=VarPowerFlowReferenceType.vf_N,
+                        network_conn=vf_N.network_conn,
+                        uid=vf_N.uid,
+                    )
+                    self.main_block.in_vars.append(vf_N_working_block)
                     self.main_block.external_mapping.update(
-                        dict(((VarPowerFlowReferenceType.vf_N, vf_N),)))
+                        dict(((VarPowerFlowReferenceType.vf_N, vf_N_working_block),)))
                     # add connection variables (currents)
                     if_N = self.var_factory.add_var('net_conn_if_N', VarPowerFlowReferenceType.if_N, True)
                     self.main_block.out_vars.append(if_N)
@@ -7912,9 +7736,16 @@ class DynamicBlockEditorGUI(QtWidgets.QMainWindow):
                 else:
                     pass
                 if vf_A is not None:
-                    self.main_block.in_vars.append(vf_A)
+                    # Keep the bus identity while giving the working block its own variable.
+                    vf_A_working_block: Var = self.var_factory.add_var(
+                        name="vf_A",
+                        reference=VarPowerFlowReferenceType.vf_A,
+                        network_conn=vf_A.network_conn,
+                        uid=vf_A.uid,
+                    )
+                    self.main_block.in_vars.append(vf_A_working_block)
                     self.main_block.external_mapping.update(
-                        dict(((VarPowerFlowReferenceType.vf_A, vf_A),)))
+                        dict(((VarPowerFlowReferenceType.vf_A, vf_A_working_block),)))
                     # add connection variables (currents)
                     if_A = self.var_factory.add_var('net_conn_if_A', VarPowerFlowReferenceType.if_A, True)
                     self.main_block.out_vars.append(if_A)
@@ -7922,9 +7753,16 @@ class DynamicBlockEditorGUI(QtWidgets.QMainWindow):
                 else:
                     pass
                 if vf_B is not None:
-                    self.main_block.in_vars.append(vf_B)
+                    # Keep the bus identity while giving the working block its own variable.
+                    vf_B_working_block: Var = self.var_factory.add_var(
+                        name="vf_B",
+                        reference=VarPowerFlowReferenceType.vf_B,
+                        network_conn=vf_B.network_conn,
+                        uid=vf_B.uid,
+                    )
+                    self.main_block.in_vars.append(vf_B_working_block)
                     self.main_block.external_mapping.update(
-                        dict(((VarPowerFlowReferenceType.vf_B, vf_B),)))
+                        dict(((VarPowerFlowReferenceType.vf_B, vf_B_working_block),)))
                     # add connection variables (currents)
                     if_B = self.var_factory.add_var('net_conn_if_B', VarPowerFlowReferenceType.if_B, True)
                     self.main_block.out_vars.append(if_B)
@@ -7932,9 +7770,16 @@ class DynamicBlockEditorGUI(QtWidgets.QMainWindow):
                 else:
                     pass
                 if vf_C is not None:
-                    self.main_block.in_vars.append(vf_C)
+                    # Keep the bus identity while giving the working block its own variable.
+                    vf_C_working_block: Var = self.var_factory.add_var(
+                        name="vf_C",
+                        reference=VarPowerFlowReferenceType.vf_C,
+                        network_conn=vf_C.network_conn,
+                        uid=vf_C.uid,
+                    )
+                    self.main_block.in_vars.append(vf_C_working_block)
                     self.main_block.external_mapping.update(
-                        dict(((VarPowerFlowReferenceType.vf_C, vf_C),)))
+                        dict(((VarPowerFlowReferenceType.vf_C, vf_C_working_block),)))
                     # add connection variables (currents)
                     if_C = self.var_factory.add_var('net_conn_if_C', VarPowerFlowReferenceType.if_C, True)
                     self.main_block.out_vars.append(if_C)
@@ -7947,9 +7792,16 @@ class DynamicBlockEditorGUI(QtWidgets.QMainWindow):
                 Vt_dc, _, _, _ = get_bus_emt_algebraic_vars(self.api_object.bus_to.emt_model)
 
                 if Vt_dc is not None:
-                    self.main_block.in_vars.append(Vt_dc)
+                    # Keep the bus identity while giving the working block its own variable.
+                    Vt_dc_working_block: Var = self.var_factory.add_var(
+                        name="Vt_dc",
+                        reference=VarPowerFlowReferenceType.Vt_dc,
+                        network_conn=Vt_dc.network_conn,
+                        uid=Vt_dc.uid,
+                    )
+                    self.main_block.in_vars.append(Vt_dc_working_block)
                     self.main_block.external_mapping.update(
-                        dict(((VarPowerFlowReferenceType.Vt_dc, Vt_dc),)))
+                        dict(((VarPowerFlowReferenceType.Vt_dc, Vt_dc_working_block),)))
                     # add connection variables (currents)
                     It_dc = self.var_factory.add_var('net_conn_It_dc', VarPowerFlowReferenceType.It_dc, True)
                     self.main_block.out_vars.append(It_dc)
@@ -7961,9 +7813,16 @@ class DynamicBlockEditorGUI(QtWidgets.QMainWindow):
                 vt_N, vt_A, vt_B, vt_C = get_bus_emt_algebraic_vars(self.api_object.bus_to.emt_model)
 
                 if vt_N is not None:
-                    self.main_block.in_vars.append(vt_N)
+                    # Keep the bus identity while giving the working block its own variable.
+                    vt_N_working_block: Var = self.var_factory.add_var(
+                        name="vt_N",
+                        reference=VarPowerFlowReferenceType.vt_N,
+                        network_conn=vt_N.network_conn,
+                        uid=vt_N.uid,
+                    )
+                    self.main_block.in_vars.append(vt_N_working_block)
                     self.main_block.external_mapping.update(
-                        dict(((VarPowerFlowReferenceType.vt_N, vt_N),)))
+                        dict(((VarPowerFlowReferenceType.vt_N, vt_N_working_block),)))
                     # add connection variables (currents)
                     it_N = self.var_factory.add_var('net_conn_it_N', VarPowerFlowReferenceType.it_N, True)
                     self.main_block.out_vars.append(it_N)
@@ -7971,9 +7830,16 @@ class DynamicBlockEditorGUI(QtWidgets.QMainWindow):
                 else:
                     pass
                 if vt_A is not None:
-                    self.main_block.in_vars.append(vt_A)
+                    # Keep the bus identity while giving the working block its own variable.
+                    vt_A_working_block: Var = self.var_factory.add_var(
+                        name="vt_A",
+                        reference=VarPowerFlowReferenceType.vt_A,
+                        network_conn=vt_A.network_conn,
+                        uid=vt_A.uid,
+                    )
+                    self.main_block.in_vars.append(vt_A_working_block)
                     self.main_block.external_mapping.update(
-                        dict(((VarPowerFlowReferenceType.vt_A, vt_A),)))
+                        dict(((VarPowerFlowReferenceType.vt_A, vt_A_working_block),)))
                     # add connection variables (currents)
                     it_A = self.var_factory.add_var('net_conn_it_A', VarPowerFlowReferenceType.it_A, True)
                     self.main_block.out_vars.append(it_A)
@@ -7981,9 +7847,16 @@ class DynamicBlockEditorGUI(QtWidgets.QMainWindow):
                 else:
                     pass
                 if vt_B is not None:
-                    self.main_block.in_vars.append(vt_B)
+                    # Keep the bus identity while giving the working block its own variable.
+                    vt_B_working_block: Var = self.var_factory.add_var(
+                        name="vt_B",
+                        reference=VarPowerFlowReferenceType.vt_B,
+                        network_conn=vt_B.network_conn,
+                        uid=vt_B.uid,
+                    )
+                    self.main_block.in_vars.append(vt_B_working_block)
                     self.main_block.external_mapping.update(
-                        dict(((VarPowerFlowReferenceType.vt_B, vt_B),)))
+                        dict(((VarPowerFlowReferenceType.vt_B, vt_B_working_block),)))
                     # add connection variables (currents)
                     it_B = self.var_factory.add_var('net_conn_it_B', VarPowerFlowReferenceType.it_B, True)
                     self.main_block.out_vars.append(it_B)
@@ -7991,15 +7864,23 @@ class DynamicBlockEditorGUI(QtWidgets.QMainWindow):
                 else:
                     pass
                 if vt_C is not None:
-                    self.main_block.in_vars.append(vt_C)
+                    # Keep the bus identity while giving the working block its own variable.
+                    vt_C_working_block: Var = self.var_factory.add_var(
+                        name="vt_C",
+                        reference=VarPowerFlowReferenceType.vt_C,
+                        network_conn=vt_C.network_conn,
+                        uid=vt_C.uid,
+                    )
+                    self.main_block.in_vars.append(vt_C_working_block)
                     self.main_block.external_mapping.update(
-                        dict(((VarPowerFlowReferenceType.vt_C, vt_C),)))
+                        dict(((VarPowerFlowReferenceType.vt_C, vt_C_working_block),)))
                     # add connection variables (currents)
                     it_C = self.var_factory.add_var('net_conn_it_C', VarPowerFlowReferenceType.it_C, True)
                     self.main_block.out_vars.append(it_C)
                     self.main_block.external_mapping.update(dict(((VarPowerFlowReferenceType.it_C, it_C),)))
                 else:
                     pass
+
 
 
 
@@ -8011,9 +7892,16 @@ class DynamicBlockEditorGUI(QtWidgets.QMainWindow):
                 Vdc, _, _, _ = get_bus_emt_algebraic_vars(self.api_object.bus.emt_model)
 
                 if Vdc is not None:
-                    self.main_block.in_vars.append(Vdc)
+                    # Keep the bus identity while giving the working block its own variable.
+                    Vdc_working_block: Var = self.var_factory.add_var(
+                        name="Vdc",
+                        reference=Vdc.ref,
+                        network_conn=Vdc.network_conn,
+                        uid=Vdc.uid,
+                    )
+                    self.main_block.in_vars.append(Vdc_working_block)
                     self.main_block.external_mapping.update(
-                        dict(((VarPowerFlowReferenceType.Vdc, Vdc),)))
+                        dict(((VarPowerFlowReferenceType.Vdc, Vdc_working_block),)))
                     # add connection variables (currents)
                     Idc = self.var_factory.add_var('net_conn_Idc', VarPowerFlowReferenceType.Idc, True)
                     self.main_block.out_vars.append(Idc)
@@ -8024,9 +7912,16 @@ class DynamicBlockEditorGUI(QtWidgets.QMainWindow):
                 v_N, v_A, v_B, v_C = get_bus_emt_algebraic_vars(self.api_object.bus.emt_model)
 
                 if v_N is not None:
-                    self.main_block.in_vars.append(v_N)
+                    # Keep the bus identity while giving the working block its own variable.
+                    v_N_working_block: Var = self.var_factory.add_var(
+                        name="v_N",
+                        reference=v_N.ref,
+                        network_conn=v_N.network_conn,
+                        uid=v_N.uid,
+                    )
+                    self.main_block.in_vars.append(v_N_working_block)
                     self.main_block.external_mapping.update(
-                        dict(((VarPowerFlowReferenceType.v_N, v_N),)))
+                        dict(((VarPowerFlowReferenceType.v_N, v_N_working_block),)))
                     # add connection variables
                     i_N = self.var_factory.add_var('net_conn_i_N', VarPowerFlowReferenceType.i_N, True)
                     self.main_block.out_vars.append(i_N)
@@ -8035,9 +7930,16 @@ class DynamicBlockEditorGUI(QtWidgets.QMainWindow):
                 else:
                     pass
                 if v_A is not None:
-                    self.main_block.in_vars.append(v_A)
+                    # Keep the bus identity while giving the working block its own variable.
+                    v_A_working_block: Var = self.var_factory.add_var(
+                        name="v_A",
+                        reference=v_A.ref,
+                        network_conn=v_A.network_conn,
+                        uid=v_A.uid,
+                    )
+                    self.main_block.in_vars.append(v_A_working_block)
                     self.main_block.external_mapping.update(
-                        dict(((VarPowerFlowReferenceType.v_A, v_A),)))
+                        dict(((VarPowerFlowReferenceType.v_A, v_A_working_block),)))
                     # add connection variables
                     i_A = self.var_factory.add_var('net_conn_i_A', VarPowerFlowReferenceType.i_A, True)
                     self.main_block.out_vars.append(i_A)
@@ -8046,9 +7948,16 @@ class DynamicBlockEditorGUI(QtWidgets.QMainWindow):
                 else:
                     pass
                 if v_B is not None:
-                    self.main_block.in_vars.append(v_B)
+                    # Keep the bus identity while giving the working block its own variable.
+                    v_B_working_block: Var = self.var_factory.add_var(
+                        name="v_B",
+                        reference=v_B.ref,
+                        network_conn=v_B.network_conn,
+                        uid=v_B.uid,
+                    )
+                    self.main_block.in_vars.append(v_B_working_block)
                     self.main_block.external_mapping.update(
-                        dict(((VarPowerFlowReferenceType.v_B, v_B),)))
+                        dict(((VarPowerFlowReferenceType.v_B, v_B_working_block),)))
                     # add connection variables
                     i_B = self.var_factory.add_var('net_conn_i_B', VarPowerFlowReferenceType.i_B, True)
                     self.main_block.out_vars.append(i_B)
@@ -8057,9 +7966,16 @@ class DynamicBlockEditorGUI(QtWidgets.QMainWindow):
                 else:
                     pass
                 if v_C is not None:
-                    self.main_block.in_vars.append(v_C)
+                    # Keep the bus identity while giving the working block its own variable.
+                    v_C_working_block: Var = self.var_factory.add_var(
+                        name="v_C",
+                        reference=v_C.ref,
+                        network_conn=v_C.network_conn,
+                        uid=v_C.uid,
+                    )
+                    self.main_block.in_vars.append(v_C_working_block)
                     self.main_block.external_mapping.update(
-                        dict(((VarPowerFlowReferenceType.v_C, v_C),)))
+                        dict(((VarPowerFlowReferenceType.v_C, v_C_working_block),)))
                     # add connection variables
                     i_C = self.var_factory.add_var('net_conn_i_C', VarPowerFlowReferenceType.i_C, True)
                     self.main_block.out_vars.append(i_C)
@@ -8069,6 +7985,7 @@ class DynamicBlockEditorGUI(QtWidgets.QMainWindow):
                     pass
         else:
             pass
+
 
     def add_connection_vars(self, bus: ALL_DEV_TYPES) -> List[Var]:
         """
@@ -8653,197 +8570,6 @@ class DynamicBlockEditorGUI(QtWidgets.QMainWindow):
         else:
             return False
 
-    def _remove_legacy_root_self_nodes(self) -> bool:
-        """
-        Remove persisted diagram nodes that incorrectly represent the container.
-
-        Root editor containers are never operations. An empty non-root leaf is
-        also only an editable boundary: older editor versions persisted a copy
-        of that leaf between its own ports, which made an empty ``Generic``
-        appear to contain itself. Removing that stale node also migrates files
-        saved while that regression was present.
-
-        :return: ``True`` when any invalid self node or connection was removed.
-        """
-        node_uids_to_remove: list[int] = list()
-        node_uid: int
-        node: BlockDiagramNode
-        changed: bool = False
-        block_type: BlockType | None
-
-        remove_self_nodes: bool = self.is_root_editor or (
-                not self.main_block.children
-                and not block_has_internal_equation_content(self.main_block)
-        )
-        if not remove_self_nodes:
-            return False
-        else:
-            pass
-
-        for node_uid, node in self.diagram.node_data.items():
-            if node.tpe in BlockType.__members__:
-                block_type = BlockType[node.tpe]
-            else:
-                block_type = None
-
-            if block_type in set((BlockType.INPUT_CONN, BlockType.OUTPUT_CONN,)):
-                pass
-            elif node.device_uid == self.main_block.uid:
-                node_uids_to_remove.append(node_uid)
-            else:
-                pass
-
-        connection_uids_to_remove: list[int] = list()
-        connection_uid: int
-        connection_record: BlockDiagramConnection
-        for connection_uid, connection_record in self.diagram.con_data.items():
-            if connection_record.from_uid in node_uids_to_remove or connection_record.to_uid in node_uids_to_remove:
-                connection_uids_to_remove.append(connection_uid)
-            else:
-                pass
-
-        for connection_uid in connection_uids_to_remove:
-            changed = self._remove_persisted_root_interface_connection_by_uid(connection_uid=connection_uid) or changed
-
-        for node_uid in node_uids_to_remove:
-            del self.diagram.node_data[node_uid]
-            changed = True
-
-        return changed
-
-    def _remove_root_interface_wrapper_connections_for_uid(self, wrapper_uid: int) -> None:
-        """
-        Remove every persisted wire connected to one root-interface wrapper.
-
-        :param wrapper_uid: Wrapper block UID and diagram-node UID.
-        :return: None.
-        """
-        connection_items: list[graph.ConnectionItem] = list()
-        scene_item: QGraphicsItem
-        connection_item: graph.ConnectionItem
-
-        for scene_item in self.scene.items():
-            if isinstance(scene_item, graph.ConnectionItem):
-                if scene_item.con_uid in self.diagram.con_data:
-                    connection_record = self.diagram.con_data[scene_item.con_uid]
-                    if connection_record.from_uid == wrapper_uid or connection_record.to_uid == wrapper_uid:
-                        connection_items.append(scene_item)
-                    else:
-                        pass
-                else:
-                    pass
-            else:
-                pass
-
-        for connection_item in connection_items:
-            self.remove_connection_item(connection_item)
-
-        stale_connection_uids: list[int] = list()
-        connection_uid: int
-        connection_record: BlockDiagramConnection
-        for connection_uid, connection_record in self.diagram.con_data.items():
-            if connection_record.from_uid == wrapper_uid or connection_record.to_uid == wrapper_uid:
-                stale_connection_uids.append(connection_uid)
-            else:
-                pass
-
-        for connection_uid in stale_connection_uids:
-            self._remove_persisted_root_interface_connection_by_uid(connection_uid=connection_uid)
-
-    def _remove_persisted_root_interface_connection_by_uid(self, connection_uid: int) -> bool:
-        """
-        Remove one persisted root-interface wire symbolically without a live scene item.
-
-        :param connection_uid: Persisted diagram connection UID.
-        :return: ``True`` when one persisted connection was removed.
-        """
-        connection_record: BlockDiagramConnection | None = self.diagram.con_data.get(connection_uid, None)
-        source_block: Block | None
-        target_block: Block | None
-        source_block_item: graph.BlockItem | graph.GenericBlockItem | graph.RoundBaseArithmeticOpItem | graph.RectBaseArithmeticOpItem | graph.UnOpItem | graph.PairedItem | None
-        target_block_item: graph.BlockItem | graph.GenericBlockItem | graph.RoundBaseArithmeticOpItem | graph.RectBaseArithmeticOpItem | graph.UnOpItem | graph.PairedItem | None
-        source_port: graph.PortItem | None = None
-        target_port: graph.PortItem | None = None
-        removed: bool = False
-
-        if connection_record is None:
-            return False
-        else:
-            pass
-
-        source_block = self.get_block_from_main_block(connection_record.from_uid)
-        target_block = self.get_block_from_main_block(connection_record.to_uid)
-
-        if source_block is not None and 0 <= connection_record.port_number_from < len(source_block.out_vars):
-            source_block_item = self.get_scene_item_by_block_uid(source_block.uid)
-            if source_block_item is not None and connection_record.port_number_from < len(source_block_item.outputs):
-                source_port = source_block_item.outputs[connection_record.port_number_from]
-            else:
-                pass
-        else:
-            pass
-
-        if target_block is not None and 0 <= connection_record.port_number_to < len(target_block.in_vars):
-            target_block_item = self.get_scene_item_by_block_uid(target_block.uid)
-            if target_block_item is not None and connection_record.port_number_to < len(target_block_item.inputs):
-                target_port = target_block_item.inputs[connection_record.port_number_to]
-            else:
-                pass
-        else:
-            pass
-
-        if source_port is not None and target_port is not None:
-            self._unregister_symbolic_connection_between_ports(source_port, target_port)
-        else:
-            pass
-
-        del self.diagram.con_data[connection_uid]
-        if self._qt_routing_session is not None:
-            self._qt_routing_session.remove_connection(connection_uid)
-        else:
-            pass
-
-        removed = True
-        return removed
-
-    def _remove_root_interface_wrapper_by_uid(self, wrapper_uid: int) -> bool:
-        """
-        Remove one protected root-interface wrapper block and diagram node.
-
-        :param wrapper_uid: Wrapper block UID and diagram-node UID.
-        :return: ``True`` when the wrapper existed and was removed.
-        """
-        child_block: Block
-        kept_children: list[Block] = list()
-        wrapper_removed: bool = False
-        scene_item: QGraphicsItem
-
-        self._remove_root_interface_wrapper_connections_for_uid(wrapper_uid=wrapper_uid)
-
-        for child_block in self.main_block.children:
-            if child_block.uid == wrapper_uid:
-                wrapper_removed = True
-            else:
-                kept_children.append(child_block)
-        self.main_block.children = kept_children
-
-        if wrapper_uid in self.diagram.node_data:
-            del self.diagram.node_data[wrapper_uid]
-            wrapper_removed = True
-        else:
-            pass
-
-        for scene_item in self.scene.items():
-            if isinstance(scene_item, graph.ProtectedConnectionBlockItem):
-                if scene_item.subsys is not None and scene_item.subsys.uid == wrapper_uid:
-                    self.scene.remove_block_item(block_uid=wrapper_uid, item=scene_item)
-                else:
-                    pass
-            else:
-                pass
-
-        return wrapper_removed
-
     def _get_semantic_root_interface_reference(
             self,
             wrapper_block: Block,
@@ -8923,530 +8649,6 @@ class DynamicBlockEditorGUI(QtWidgets.QMainWindow):
         else:
             return None
 
-    def _find_protected_wrapper_blocks_by_ref(self) -> tuple[
-        dict[VarPowerFlowReferenceType, Block], dict[VarPowerFlowReferenceType, Block]]:
-        """
-        Index live protected wrapper child blocks by root-interface reference.
-
-        :return: ``(input_wrappers_by_ref, output_wrappers_by_ref)``.
-        """
-        input_wrappers_by_ref: dict[VarPowerFlowReferenceType, Block] = dict()
-        output_wrappers_by_ref: dict[VarPowerFlowReferenceType, Block] = dict()
-        child_block: Block
-        semantic_reference: VarPowerFlowReferenceType | None
-
-        for child_block in self.main_block.children:
-            if not is_root_interface_wrapper_block(block_model=child_block,
-                                                   diagram=self.diagram):
-                pass
-            elif len(child_block.out_vars) == 1 and len(child_block.in_vars) == 0:
-                semantic_reference = self._get_semantic_root_interface_reference(
-                    wrapper_block=child_block,
-                    block_type=BlockType.INPUT_CONN,
-                )
-                if semantic_reference is not None:
-                    input_wrappers_by_ref[semantic_reference] = child_block
-                else:
-                    pass
-            elif len(child_block.in_vars) == 1 and len(child_block.out_vars) == 0:
-                semantic_reference = self._get_semantic_root_interface_reference(
-                    wrapper_block=child_block,
-                    block_type=BlockType.OUTPUT_CONN,
-                )
-                if semantic_reference is not None:
-                    output_wrappers_by_ref[semantic_reference] = child_block
-                else:
-                    pass
-            else:
-                pass
-
-        return input_wrappers_by_ref, output_wrappers_by_ref
-
-    def _recover_legacy_root_interface_nodes(self) -> bool:
-        """
-        Recover missing interface-node types in legacy root diagrams.
-
-        Current files persist wrapper semantics as ``INPUT_CONN`` and
-        ``OUTPUT_CONN`` diagram nodes. Older diagrams can contain a pure
-        one-port shell with a missing or generic node type. Only shells whose
-        root reference belongs to the current device interface are migrated,
-        keeping this compatibility decision inside the GUI layer.
-
-        :return: ``True`` when any legacy diagram node was recovered.
-        """
-        child_block: Block
-        interface_var: Var | None
-        expected_inputs_by_ref: dict[VarPowerFlowReferenceType, Var]
-        expected_outputs_by_ref: dict[VarPowerFlowReferenceType, Var]
-        changed: bool = False
-        diagram_node: BlockDiagramNode | None
-        recovered_block_type: BlockType | None
-        recovered_x: float
-        recovered_y: float
-        input_index: int = 0
-        output_index: int = 0
-
-        if not self.is_root_editor:
-            return False
-        else:
-            pass
-
-        expected_inputs_by_ref, expected_outputs_by_ref = self._build_expected_root_interface_for_current_mode()
-
-        for child_block in self.main_block.children:
-            interface_var = get_single_interface_var(child_block)
-            diagram_node = self.diagram.node_data.get(child_block.uid, None)
-            recovered_block_type = None
-
-            if interface_var is None or interface_var.ref is None:
-                pass
-            elif is_root_interface_shell_for_type(block_model=child_block,
-                                                  block_type=BlockType.INPUT_CONN) and (
-                    interface_var.ref in expected_inputs_by_ref):
-                recovered_block_type = BlockType.INPUT_CONN
-            elif is_root_interface_shell_for_type(block_model=child_block,
-                                                  block_type=BlockType.OUTPUT_CONN) and (
-                    interface_var.ref in expected_outputs_by_ref):
-                recovered_block_type = BlockType.OUTPUT_CONN
-            else:
-                pass
-
-            if recovered_block_type is None:
-                pass
-            elif diagram_node is not None and diagram_node.tpe == recovered_block_type.name:
-                pass
-            elif diagram_node is not None:
-                diagram_node.tpe = recovered_block_type.name
-                diagram_node.device_uid = child_block.uid
-                changed = True
-            elif recovered_block_type == BlockType.INPUT_CONN:
-                recovered_x = 100.0
-                recovered_y = 100.0 + (100.0 * input_index)
-                self.diagram.add_node(name=child_block.name,
-                                      x=recovered_x,
-                                      y=recovered_y,
-                                      tpe=recovered_block_type.name,
-                                      device_uid=child_block.uid)
-                changed = True
-            elif recovered_block_type == BlockType.OUTPUT_CONN:
-                recovered_x = 1020.0
-                recovered_y = 100.0 + (100.0 * output_index)
-                self.diagram.add_node(name=child_block.name,
-                                      x=recovered_x,
-                                      y=recovered_y,
-                                      tpe=recovered_block_type.name,
-                                      device_uid=child_block.uid)
-                changed = True
-            else:
-                pass
-
-            if recovered_block_type == BlockType.INPUT_CONN:
-                input_index += 1
-            elif recovered_block_type == BlockType.OUTPUT_CONN:
-                output_index += 1
-            else:
-                pass
-
-        return changed
-
-    def _remove_stale_root_interface_duplicate_children(self) -> bool:
-        """
-        Remove leaked non-wrapper root-interface child shells from the root block.
-
-        Some reopen paths can keep stale one-port child shells such as ``v_A`` or
-        ``net_conn_i_A`` in ``main_block.children`` even though the authoritative
-        root interface is already represented by protected wrappers. Those leaked
-        shells are not real internal dynamic-model blocks and must not appear as
-        regular rectangles on the canvas.
-
-        :return: ``True`` when any leaked child shell was removed.
-        """
-        expected_inputs_by_ref: dict[VarPowerFlowReferenceType, Var]
-        expected_outputs_by_ref: dict[VarPowerFlowReferenceType, Var]
-        kept_children: List[Block] = list()
-        child_block: Block
-        interface_var: Var | None
-        changed: bool = False
-        node_uid_to_remove: List[int] = list()
-        node_uid: int
-        node: BlockDiagramNode
-
-        if not self.is_root_editor:
-            return False
-        else:
-            pass
-
-        expected_inputs_by_ref, expected_outputs_by_ref = self._build_expected_root_interface_for_current_mode()
-
-        for child_block in self.main_block.children:
-            interface_var = get_single_interface_var(child_block)
-
-            if is_root_interface_wrapper_block(block_model=child_block,
-                                               diagram=self.diagram):
-                kept_children.append(child_block)
-            elif interface_var is None or interface_var.ref is None:
-                kept_children.append(child_block)
-            elif len(child_block.children) > 0:
-                kept_children.append(child_block)
-            elif len(child_block.algebraic_vars) > 0:
-                kept_children.append(child_block)
-            elif len(child_block.state_vars) > 0:
-                kept_children.append(child_block)
-            elif len(child_block.diff_vars) > 0:
-                kept_children.append(child_block)
-            elif len(child_block.parameters) > 0:
-                kept_children.append(child_block)
-            elif len(child_block.out_vars) == 1 and len(child_block.in_vars) == 0:
-                if interface_var.ref in expected_inputs_by_ref:
-                    changed = True
-                    node_uid_to_remove.append(child_block.uid)
-                else:
-                    kept_children.append(child_block)
-            elif len(child_block.in_vars) == 1 and len(child_block.out_vars) == 0:
-                if interface_var.ref in expected_outputs_by_ref:
-                    changed = True
-                    node_uid_to_remove.append(child_block.uid)
-                else:
-                    kept_children.append(child_block)
-            else:
-                kept_children.append(child_block)
-
-        self.main_block.children = kept_children
-
-        for node_uid in node_uid_to_remove:
-            if node_uid in self.diagram.node_data:
-                del self.diagram.node_data[node_uid]
-            else:
-                pass
-
-        if changed:
-            stale_connection_uids: List[int] = list()
-            connection_uid: int
-            connection_record: BlockDiagramConnection
-            for connection_uid, connection_record in self.diagram.con_data.items():
-                if connection_record.from_uid in node_uid_to_remove or connection_record.to_uid in node_uid_to_remove:
-                    stale_connection_uids.append(connection_uid)
-                else:
-                    pass
-
-            for connection_uid in stale_connection_uids:
-                self._remove_persisted_root_interface_connection_by_uid(connection_uid=connection_uid)
-        else:
-            pass
-
-        return changed
-
-    def _ensure_root_interface_wrapper_blocks_exist(self,
-                                                    create_missing: bool = True) -> bool:
-        """
-        Ensure every authoritative root EMT ref has one wrapper child block.
-
-        :param create_missing: Whether missing wrapper blocks may be created.
-        :return: ``True`` when any wrapper block was created.
-        """
-        changed: bool = False
-        input_wrappers_by_ref: dict[VarPowerFlowReferenceType, Block]
-        output_wrappers_by_ref: dict[VarPowerFlowReferenceType, Block]
-        expected_inputs_by_ref: dict[VarPowerFlowReferenceType, Var]
-        expected_outputs_by_ref: dict[VarPowerFlowReferenceType, Var]
-        root_var: Var
-        wrapper_block: Block
-
-        expected_inputs_by_ref, expected_outputs_by_ref = self._build_expected_root_interface_for_current_mode()
-        input_wrappers_by_ref, output_wrappers_by_ref = self._find_protected_wrapper_blocks_by_ref()
-        preserved_non_wrapper_children: list[Block] = list()
-        unresolved_wrapper_children: list[Block] = list()
-        ordered_wrapper_children: list[Block] = list()
-        child_block: Block
-        seen_wrapper_ids: set[int] = set()
-        reference: VarPowerFlowReferenceType
-        root_var_candidate: Var
-
-        for reference, root_var in expected_inputs_by_ref.items():
-            for root_var_candidate in self.main_block.in_vars:
-                if root_var_candidate.ref == reference:
-                    root_var = root_var_candidate
-                    break
-                else:
-                    pass
-
-            if reference not in input_wrappers_by_ref and create_missing:
-                wrapper_block = Block(name=root_var.name)
-                wrapper_block.out_vars = list((root_var,))
-                self.main_block.add(wrapper_block)
-                self.diagram.add_node(name=wrapper_block.name,
-                                      x=100.0,
-                                      y=100.0 + (100.0 * len(input_wrappers_by_ref)),
-                                      tpe=BlockType.INPUT_CONN.name,
-                                      device_uid=wrapper_block.uid)
-                input_wrappers_by_ref[reference] = wrapper_block
-                changed = True
-            else:
-                pass
-
-        for reference, root_var in expected_outputs_by_ref.items():
-            for root_var_candidate in self.main_block.out_vars:
-                if root_var_candidate.ref == reference:
-                    root_var = root_var_candidate
-                    break
-                else:
-                    pass
-
-            if reference not in output_wrappers_by_ref and create_missing:
-                wrapper_block = Block(name=root_var.name)
-                wrapper_block.in_vars = list((root_var,))
-                self.main_block.add(wrapper_block)
-                self.diagram.add_node(name=wrapper_block.name,
-                                      x=1020.0,
-                                      y=100.0 + (100.0 * len(output_wrappers_by_ref)),
-                                      tpe=BlockType.OUTPUT_CONN.name,
-                                      device_uid=wrapper_block.uid)
-                output_wrappers_by_ref[reference] = wrapper_block
-                changed = True
-            else:
-                pass
-
-        for child_block in self.main_block.children:
-            if not is_root_interface_wrapper_block(block_model=child_block,
-                                                   diagram=self.diagram):
-                preserved_non_wrapper_children.append(child_block)
-            else:
-                pass
-
-        for reference in sorted(input_wrappers_by_ref.keys(), key=get_reference_sort_key):
-            if id(input_wrappers_by_ref[reference]) in seen_wrapper_ids:
-                changed = True
-            else:
-                ordered_wrapper_children.append(input_wrappers_by_ref[reference])
-                seen_wrapper_ids.add(id(input_wrappers_by_ref[reference]))
-
-        for reference in sorted(output_wrappers_by_ref.keys(), key=get_reference_sort_key):
-            if id(output_wrappers_by_ref[reference]) in seen_wrapper_ids:
-                changed = True
-            else:
-                ordered_wrapper_children.append(output_wrappers_by_ref[reference])
-                seen_wrapper_ids.add(id(output_wrappers_by_ref[reference]))
-
-        for child_block in self.main_block.children:
-            if not is_root_interface_wrapper_block(block_model=child_block,
-                                                   diagram=self.diagram):
-                pass
-            elif id(child_block) in seen_wrapper_ids:
-                pass
-            elif len(child_block.out_vars) == 1 and len(child_block.in_vars) == 0:
-                reference = self._get_semantic_root_interface_reference(
-                    wrapper_block=child_block,
-                    block_type=BlockType.INPUT_CONN,
-                )
-                if reference is None:
-                    unresolved_wrapper_children.append(child_block)
-                    seen_wrapper_ids.add(id(child_block))
-                else:
-                    changed = True
-            elif len(child_block.in_vars) == 1 and len(child_block.out_vars) == 0:
-                reference = self._get_semantic_root_interface_reference(
-                    wrapper_block=child_block,
-                    block_type=BlockType.OUTPUT_CONN,
-                )
-                if reference is None:
-                    unresolved_wrapper_children.append(child_block)
-                    seen_wrapper_ids.add(id(child_block))
-                else:
-                    changed = True
-            else:
-                unresolved_wrapper_children.append(child_block)
-                seen_wrapper_ids.add(id(child_block))
-
-        self.main_block.children = (
-                preserved_non_wrapper_children
-                + ordered_wrapper_children
-                + unresolved_wrapper_children
-        )
-
-        return changed
-
-    def _refresh_interface_wrapper_scene_items(self) -> None:
-        """
-        Refresh visible protected-wrapper names and tooltips after reconciliation.
-
-        :return: None.
-        """
-        scene_item: QGraphicsItem
-
-        for scene_item in self.scene.items():
-            if isinstance(scene_item, graph.ProtectedConnectionBlockItem):
-                scene_item.refresh_block_name()
-                scene_item.refresh_port_metadata()
-            else:
-                pass
-
-    def _ensure_root_interface_wrapper_nodes_exist(self) -> bool:
-        """
-        Materialize missing protected-wrapper child blocks and diagram nodes.
-
-        Newly added derived root EMT refs must exist as protected connection ovals
-        before the scene rebuild runs, even when the saved diagram came from an
-        older smaller topology.
-
-        :return: ``True`` when any wrapper child or node was created.
-        """
-        changed: bool = False
-        interface_input_wrappers: dict[VarPowerFlowReferenceType, Block]
-        interface_output_wrappers: dict[VarPowerFlowReferenceType, Block]
-        reference: VarPowerFlowReferenceType
-        root_var: Var
-        existing_y_values: list[float] = list()
-        next_input_y: float
-        next_output_y: float
-        wrapper_block: Block | None
-        node_uid: int
-        node: BlockDiagramNode
-        kept_non_interface_nodes: list[tuple[int, BlockDiagramNode]] = list()
-        wrapper_block_for_node: Block | None
-        interface_var: Var | None
-        existing_input_positions: dict[VarPowerFlowReferenceType, tuple[float, float]] = dict()
-        existing_output_positions: dict[VarPowerFlowReferenceType, tuple[float, float]] = dict()
-        existing_input_node_uids: dict[VarPowerFlowReferenceType, int] = dict()
-        existing_output_node_uids: dict[VarPowerFlowReferenceType, int] = dict()
-        rebuilt_node_data: dict[int, BlockDiagramNode] = dict()
-        expected_inputs_by_ref: dict[VarPowerFlowReferenceType, Var]
-        expected_outputs_by_ref: dict[VarPowerFlowReferenceType, Var]
-        ordered_input_refs: list[VarPowerFlowReferenceType]
-        ordered_output_refs: list[VarPowerFlowReferenceType]
-
-        if not self.is_root_editor:
-            return False
-        else:
-            pass
-
-        expected_inputs_by_ref, expected_outputs_by_ref = self._build_expected_root_interface_for_current_mode()
-        ordered_input_refs = build_expected_root_interface_ref_order(block_type=BlockType.INPUT_CONN,
-                                                                     input_refs=expected_inputs_by_ref,
-                                                                     output_refs=expected_outputs_by_ref)
-        ordered_output_refs = build_expected_root_interface_ref_order(block_type=BlockType.OUTPUT_CONN,
-                                                                      input_refs=expected_inputs_by_ref,
-                                                                      output_refs=expected_outputs_by_ref)
-
-        changed = self._ensure_root_interface_wrapper_blocks_exist(create_missing=True) or changed
-        interface_input_wrappers, interface_output_wrappers = self._find_protected_wrapper_blocks_by_ref()
-
-        for node_uid, node in self.diagram.node_data.items():
-            if node.tpe in set((BlockType.INPUT_CONN.name, BlockType.OUTPUT_CONN.name,)):
-                existing_y_values.append(node.y)
-                wrapper_block_for_node = self.get_block_from_main_block(node.device_uid)
-                if wrapper_block_for_node is None and node.device_uid != node_uid:
-                    wrapper_block_for_node = self.get_block_from_main_block(node_uid)
-                else:
-                    pass
-
-                if wrapper_block_for_node is None:
-                    reference = None
-                elif node.tpe == BlockType.INPUT_CONN.name:
-                    reference = self._get_semantic_root_interface_reference(
-                        wrapper_block=wrapper_block_for_node,
-                        block_type=BlockType.INPUT_CONN,
-                    )
-                else:
-                    reference = self._get_semantic_root_interface_reference(
-                        wrapper_block=wrapper_block_for_node,
-                        block_type=BlockType.OUTPUT_CONN,
-                    )
-
-                if reference is not None:
-                    if node.tpe == BlockType.INPUT_CONN.name:
-                        existing_input_positions[reference] = (node.x, node.y)
-                        existing_input_node_uids[reference] = node_uid
-                    else:
-                        existing_output_positions[reference] = (node.x, node.y)
-                        existing_output_node_uids[reference] = node_uid
-                else:
-                    pass
-            else:
-                kept_non_interface_nodes.append((node_uid, node))
-
-        if len(existing_y_values) > 0:
-            next_input_y = min(existing_y_values)
-            next_output_y = max(existing_y_values)
-        else:
-            next_input_y = 100.0
-            next_output_y = 100.0
-
-        for reference in sorted(expected_inputs_by_ref.keys(), key=get_reference_sort_key):
-            root_var = expected_inputs_by_ref[reference]
-            wrapper_block = interface_input_wrappers.get(reference, None)
-            if wrapper_block is None:
-                wrapper_block = Block(name=root_var.name)
-                wrapper_block.out_vars = list((root_var,))
-                self.main_block.add(wrapper_block)
-                changed = True
-            elif wrapper_block.uid != existing_input_node_uids.get(reference, wrapper_block.uid):
-                changed = True
-            else:
-                pass
-
-            wrapper_block.out_vars = list((root_var,))
-            wrapper_block.in_vars = list()
-            wrapper_block.set_name(root_var.name)
-
-            stored_position = existing_input_positions.get(reference, None)
-            if stored_position is None:
-                node_x = 100.0
-                node_y = next_input_y
-            else:
-                node_x, node_y = stored_position
-            self.diagram.add_node(name=wrapper_block.name,
-                                  x=node_x,
-                                  y=node_y,
-                                  tpe=BlockType.INPUT_CONN.name,
-                                  device_uid=wrapper_block.uid)
-            rebuilt_node_data[wrapper_block.uid] = self.diagram.node_data[wrapper_block.uid]
-            next_input_y += 100.0
-
-        expected_output_by_ref: dict[VarPowerFlowReferenceType, Var] = dict()
-        for root_var in self.main_block.out_vars:
-            if root_var.ref is not None:
-                expected_output_by_ref[root_var.ref] = root_var
-            else:
-                pass
-
-        for reference in sorted(expected_outputs_by_ref.keys(), key=get_reference_sort_key):
-            root_var = expected_output_by_ref[reference]
-            wrapper_block = interface_output_wrappers.get(reference, None)
-            if wrapper_block is None:
-                wrapper_block = Block(name=root_var.name)
-                wrapper_block.in_vars = list((root_var,))
-                self.main_block.add(wrapper_block)
-                changed = True
-            elif wrapper_block.uid != existing_output_node_uids.get(reference, wrapper_block.uid):
-                changed = True
-            else:
-                pass
-
-            wrapper_block.in_vars = list((root_var,))
-            wrapper_block.out_vars = list()
-            wrapper_block.set_name(root_var.name)
-
-            stored_position = existing_output_positions.get(reference, None)
-            if stored_position is None:
-                node_x = 1020.0
-                node_y = next_output_y
-            else:
-                node_x, node_y = stored_position
-            self.diagram.add_node(name=wrapper_block.name,
-                                  x=node_x,
-                                  y=node_y,
-                                  tpe=BlockType.OUTPUT_CONN.name,
-                                  device_uid=wrapper_block.uid)
-            rebuilt_node_data[wrapper_block.uid] = self.diagram.node_data[wrapper_block.uid]
-            next_output_y += 100.0
-
-        self.diagram.node_data = dict()
-        for node_uid, node in kept_non_interface_nodes:
-            self.diagram.node_data[node_uid] = node
-        self.diagram.node_data.update(rebuilt_node_data)
-
-        return changed
-
     def _materialize_missing_root_interface_scene_items(
             self,
             uid_to_blockitem: Dict[
@@ -9523,523 +8725,6 @@ class DynamicBlockEditorGUI(QtWidgets.QMainWindow):
                         block_item.setPos(QPointF(node.x, node.y))
                         uid_to_blockitem[node_uid] = block_item
 
-    def _disconnect_all_root_interface_wires(self) -> bool:
-        """
-        Remove every connection incident to any protected root-interface wrapper.
-
-        :return: ``True`` when any live or persisted root-interface connection was removed.
-        """
-        wrapper_uids: set[int] = set()
-        child_block: Block
-        connection_uids_to_remove: list[int] = list()
-        connection_uid: int
-        connection_record: BlockDiagramConnection
-        changed: bool = False
-
-        for child_block in self.main_block.children:
-            if is_root_interface_wrapper_block(block_model=child_block,
-                                               diagram=self.diagram):
-                wrapper_uids.add(child_block.uid)
-            else:
-                pass
-
-        for child_block in self.main_block.children:
-            if child_block.uid in wrapper_uids:
-                changed = self._remove_root_interface_wrapper_connections_for_uid(child_block.uid) or changed
-            else:
-                pass
-
-        for connection_uid, connection_record in self.diagram.con_data.items():
-            if connection_record.from_uid in wrapper_uids or connection_record.to_uid in wrapper_uids:
-                connection_uids_to_remove.append(connection_uid)
-            else:
-                pass
-
-        for connection_uid in connection_uids_to_remove:
-            changed = self._remove_persisted_root_interface_connection_by_uid(connection_uid=connection_uid) or changed
-
-        return changed
-
-    def _rebuild_full_root_emt_interface_from_current_topology(self) -> bool:
-        """
-        Replace the full root EMT network interface from current synchronized bus shells.
-
-        :return: ``True`` when the root contract changed.
-        """
-        expected_inputs_by_ref: dict[VarPowerFlowReferenceType, Var]
-        expected_outputs_by_ref: dict[VarPowerFlowReferenceType, Var]
-        current_input_by_ref: dict[VarPowerFlowReferenceType, Var] = dict()
-        current_output_by_ref: dict[VarPowerFlowReferenceType, Var] = dict()
-        interface_input_wrappers: dict[VarPowerFlowReferenceType, Block]
-        interface_output_wrappers: dict[VarPowerFlowReferenceType, Block]
-        changed: bool = False
-        reference: VarPowerFlowReferenceType
-        root_var: Var
-        mapping_key: VarPowerFlowReferenceType
-        has_unpersisted_template_terminal_child: bool = False
-        child_block: Block
-        child_input: Var
-        if isinstance(self.api_object, BranchParent) and not self.main_block.diagram.node_data:
-            for child_block in self.main_block.children:
-                for child_input in child_block.in_vars:
-                    if child_input.ref in (
-                            VarPowerFlowReferenceType.vf_N,
-                            VarPowerFlowReferenceType.vf_A,
-                            VarPowerFlowReferenceType.vf_B,
-                            VarPowerFlowReferenceType.vf_C,
-                            VarPowerFlowReferenceType.Vf_dc,
-                            VarPowerFlowReferenceType.vt_N,
-                            VarPowerFlowReferenceType.vt_A,
-                            VarPowerFlowReferenceType.vt_B,
-                            VarPowerFlowReferenceType.vt_C,
-                            VarPowerFlowReferenceType.Vt_dc,
-                    ):
-                        has_unpersisted_template_terminal_child = True
-                    else:
-                        pass
-        else:
-            pass
-        is_template_backed_branch: bool = (
-                isinstance(self.api_object, BranchParent)
-                and (
-                        self.api_object.emt_template is not None
-                        or has_unpersisted_template_terminal_child
-                )
-        )
-
-        expected_inputs_by_ref, expected_outputs_by_ref = build_expected_root_emt_interface_for_device(self.api_object)
-
-        for root_var in self.main_block.in_vars:
-            if root_var.ref is not None:
-                current_input_by_ref[root_var.ref] = root_var
-            else:
-                pass
-
-        for root_var in self.main_block.out_vars:
-            if root_var.ref is not None:
-                current_output_by_ref[root_var.ref] = root_var
-            else:
-                pass
-
-        self._ensure_root_interface_wrapper_blocks_exist(create_missing=False)
-        interface_input_wrappers, interface_output_wrappers = self._find_protected_wrapper_blocks_by_ref()
-
-        changed = self._disconnect_all_root_interface_wires() or changed
-
-        for reference in list(current_input_by_ref.keys()):
-            if reference not in expected_inputs_by_ref:
-                wrapper_block = interface_input_wrappers.get(reference, None)
-                if wrapper_block is not None:
-                    changed = self._remove_root_interface_wrapper_by_uid(wrapper_uid=wrapper_block.uid) or changed
-                else:
-                    pass
-                self._remove_root_connection_var(connection_var=current_input_by_ref[reference], direction="input")
-                changed = True
-            else:
-                pass
-
-        for reference in list(current_output_by_ref.keys()):
-            if reference not in expected_outputs_by_ref:
-                wrapper_block = interface_output_wrappers.get(reference, None)
-                if wrapper_block is not None:
-                    changed = self._remove_root_interface_wrapper_by_uid(wrapper_uid=wrapper_block.uid) or changed
-                else:
-                    pass
-                self._remove_root_connection_var(connection_var=current_output_by_ref[reference], direction="output")
-                changed = True
-            else:
-                pass
-
-        rebuilt_input_by_ref: dict[VarPowerFlowReferenceType, Var] = dict()
-        if is_template_backed_branch:
-            rebuilt_inputs: list[Var] = list()
-            for reference, authoritative_bus_input in expected_inputs_by_ref.items():
-                existing_input: Var | None = current_input_by_ref.get(reference, None)
-                if existing_input is None:
-                    rebuilt_input: Var = self.var_factory.add_var(
-                        name=reference.name,
-                        reference=reference,
-                    )
-                    changed = True
-                else:
-                    rebuilt_input = existing_input
-
-                # A template-backed branch owns distinct vf/vt endpoints. The
-                # bus v_* variable remains the physical source for each one.
-                self.var_factory.add_connections(
-                    vars_to_subs=list((rebuilt_input,)),
-                    incoming_vars=list((authoritative_bus_input,)),
-                )
-                rebuilt_inputs.append(rebuilt_input)
-                rebuilt_input_by_ref[reference] = rebuilt_input
-            self.main_block.in_vars = rebuilt_inputs
-        else:
-            self.main_block.in_vars = [
-                expected_inputs_by_ref[reference]
-                for reference in expected_inputs_by_ref.keys()
-            ]
-            for reference, authoritative_input in expected_inputs_by_ref.items():
-                rebuilt_input_by_ref[reference] = authoritative_input
-
-        rebuilt_outputs: list[Var] = list()
-        for reference in expected_outputs_by_ref.keys():
-            existing_output: Var | None = current_output_by_ref.get(reference, None)
-            if existing_output is not None:
-                existing_output._network_conn = True
-                rebuilt_outputs.append(existing_output)
-            else:
-                rebuilt_outputs.append(self.var_factory.add_var(name=build_expected_root_emt_output_name(reference),
-                                                                reference=reference,
-                                                                network_conn=True))
-                changed = True
-        self.main_block.out_vars = rebuilt_outputs
-
-        for mapping_key in list(self.main_block.external_mapping.keys()):
-            if isinstance(mapping_key, VarPowerFlowReferenceType) and self._is_emt_interface_reference(mapping_key):
-                del self.main_block.external_mapping[mapping_key]
-            else:
-                pass
-
-        for reference, rebuilt_input in rebuilt_input_by_ref.items():
-            self.main_block.external_mapping[reference] = rebuilt_input
-
-        for root_var in self.main_block.out_vars:
-            if root_var.ref is not None:
-                self.main_block.external_mapping[root_var.ref] = root_var
-            else:
-                pass
-
-        for reference, rebuilt_input in rebuilt_input_by_ref.items():
-            wrapper_block = interface_input_wrappers.get(reference, None)
-            if wrapper_block is not None:
-                wrapper_block.out_vars = list((rebuilt_input,))
-                wrapper_block.in_vars = list()
-                wrapper_block.set_name(rebuilt_input.name)
-            else:
-                pass
-
-        for reference in expected_outputs_by_ref.keys():
-            wrapper_block = interface_output_wrappers.get(reference, None)
-            current_output = self.main_block.external_mapping.get(reference, None)
-            if wrapper_block is not None and current_output is not None:
-                wrapper_block.in_vars = list((current_output,))
-                wrapper_block.out_vars = list()
-                wrapper_block.set_name(current_output.name)
-            else:
-                pass
-
-        # The wrapper maps captured before reconciliation can reference blocks that
-        # were removed or replaced during the same shrink/expand cycle. Rebuild the
-        # authoritative wrapper index before regenerating wrapper nodes.
-        self._ensure_root_interface_wrapper_blocks_exist(create_missing=True)
-        changed = self._ensure_root_interface_wrapper_nodes_exist() or changed
-        self._materialize_missing_non_interface_diagram_nodes()
-        self._refresh_interface_wrapper_scene_items()
-        return changed
-
-    def _branch_root_contract_is_stale_against_expected_topology(self) -> bool:
-        """
-        Return whether the branch root working copy differs from the authoritative live contract.
-
-        :return: ``True`` when the branch root contract must be rebuilt from authoritative refs.
-        """
-        expected_inputs_by_ref: dict[VarPowerFlowReferenceType, Var]
-        expected_outputs_by_ref: dict[VarPowerFlowReferenceType, Var]
-        current_input_refs: set[VarPowerFlowReferenceType] = set()
-        current_output_refs: set[VarPowerFlowReferenceType] = set()
-        root_var: Var
-
-        if not isinstance(self.api_object, BranchParent):
-            return False
-        elif self.mode != DynamicSimulationMode.EMT:
-            return False
-        else:
-            pass
-
-        expected_inputs_by_ref, expected_outputs_by_ref = build_expected_root_emt_interface_for_device(self.api_object)
-
-        for root_var in self.main_block.in_vars:
-            if root_var.ref is None:
-                pass
-            else:
-                current_input_refs.add(root_var.ref)
-
-        for root_var in self.main_block.out_vars:
-            if root_var.ref is None:
-                pass
-            else:
-                current_output_refs.add(root_var.ref)
-
-        if current_input_refs != set(expected_inputs_by_ref.keys()):
-            return True
-        elif current_output_refs != set(expected_outputs_by_ref.keys()):
-            return True
-        else:
-            return False
-
-    def reconcile_root_emt_topology_now(self) -> bool:
-        """
-        Synchronize live bus shells and reconcile the current root EMT working copy.
-
-        :return: ``True`` when the working root contract changed structurally.
-        """
-        topology_changed: bool = False
-
-        if not self.is_root_editor or self.mode != DynamicSimulationMode.EMT:
-            return False
-        else:
-            pass
-
-        dialog_models.initialize_connected_bus_models_for_editor_assignment(api_object=self.api_object,
-                                                                            circuit=self.circuit,
-                                                                            var_factory=self.var_factory,
-                                                                            mode=self.mode)
-        topology_changed = self._reconcile_root_emt_interface_from_current_topology()
-
-        if topology_changed:
-            self.has_unapplied_changes = True
-            self.changes_applied = False
-        else:
-            pass
-
-        return topology_changed
-
-    def _reconcile_root_emt_interface_from_current_topology(self) -> bool:
-        """
-        Reconcile the working-copy EMT root interface against the live bus shells.
-
-        :return: ``True`` when the working model or diagram changed structurally.
-        """
-        expected_inputs_by_ref: dict[VarPowerFlowReferenceType, Var]
-        expected_outputs_by_ref: dict[VarPowerFlowReferenceType, Var]
-        current_input_by_ref: dict[VarPowerFlowReferenceType, Var] = dict()
-        current_output_by_ref: dict[VarPowerFlowReferenceType, Var] = dict()
-        interface_input_wrappers: dict[VarPowerFlowReferenceType, Block]
-        interface_output_wrappers: dict[VarPowerFlowReferenceType, Block]
-        changed: bool = False
-        created_initial_authoritative_interface: bool = False
-        root_var: Var
-        reference: VarPowerFlowReferenceType
-        has_unpersisted_template_terminal_child: bool = False
-        child_block: Block
-        child_input: Var
-        if isinstance(self.api_object, BranchParent) and not self.main_block.diagram.node_data:
-            for child_block in self.main_block.children:
-                for child_input in child_block.in_vars:
-                    if child_input.ref in (
-                            VarPowerFlowReferenceType.vf_N,
-                            VarPowerFlowReferenceType.vf_A,
-                            VarPowerFlowReferenceType.vf_B,
-                            VarPowerFlowReferenceType.vf_C,
-                            VarPowerFlowReferenceType.Vf_dc,
-                            VarPowerFlowReferenceType.vt_N,
-                            VarPowerFlowReferenceType.vt_A,
-                            VarPowerFlowReferenceType.vt_B,
-                            VarPowerFlowReferenceType.vt_C,
-                            VarPowerFlowReferenceType.Vt_dc,
-                    ):
-                        has_unpersisted_template_terminal_child = True
-                    else:
-                        pass
-        else:
-            pass
-        is_template_backed_branch: bool = (
-                isinstance(self.api_object, BranchParent)
-                and (
-                        self.api_object.emt_template is not None
-                        or has_unpersisted_template_terminal_child
-                )
-        )
-
-        if not self.is_root_editor or self.mode != DynamicSimulationMode.EMT:
-            return False
-        else:
-            pass
-
-        if self._branch_root_contract_is_stale_against_expected_topology():
-            return self._rebuild_full_root_emt_interface_from_current_topology()
-        else:
-            pass
-
-        expected_inputs_by_ref, expected_outputs_by_ref = build_expected_root_emt_interface_for_device(self.api_object)
-
-        for root_var in self.main_block.in_vars:
-            if root_var.ref is not None:
-                current_input_by_ref[root_var.ref] = root_var
-            else:
-                pass
-
-        for root_var in self.main_block.out_vars:
-            if root_var.ref is not None:
-                current_output_by_ref[root_var.ref] = root_var
-            else:
-                pass
-
-        interface_input_wrappers, interface_output_wrappers = self._find_protected_wrapper_blocks_by_ref()
-
-        if len(current_input_by_ref) == 0 and len(current_output_by_ref) == 0 and len(
-                interface_input_wrappers) == 0 and len(interface_output_wrappers) == 0:
-            created_initial_authoritative_interface = True
-        else:
-            pass
-
-        removed_input_refs: list[VarPowerFlowReferenceType] = sorted(
-            [ref for ref in current_input_by_ref.keys() if ref not in expected_inputs_by_ref],
-            key=get_reference_sort_key)
-        removed_output_refs: list[VarPowerFlowReferenceType] = sorted(
-            [ref for ref in current_output_by_ref.keys() if ref not in expected_outputs_by_ref],
-            key=get_reference_sort_key)
-        added_input_refs: list[VarPowerFlowReferenceType] = sorted(
-            [ref for ref in expected_inputs_by_ref.keys() if ref not in current_input_by_ref],
-            key=get_reference_sort_key)
-        added_output_refs: list[VarPowerFlowReferenceType] = sorted(
-            [ref for ref in expected_outputs_by_ref.keys() if ref not in current_output_by_ref],
-            key=get_reference_sort_key)
-
-        if len(removed_input_refs) > 0 or len(removed_output_refs) > 0:
-            return self._rebuild_full_root_emt_interface_from_current_topology()
-        else:
-            pass
-
-        missing_input_wrapper_refs: list[VarPowerFlowReferenceType] = [
-            ref for ref in expected_inputs_by_ref.keys()
-            if not created_initial_authoritative_interface and interface_input_wrappers.get(ref, None) is None
-        ]
-        missing_output_wrapper_refs: list[VarPowerFlowReferenceType] = [
-            ref for ref in expected_outputs_by_ref.keys()
-            if not created_initial_authoritative_interface and interface_output_wrappers.get(ref, None) is None
-        ]
-
-        for reference in removed_input_refs:
-            wrapper_block = interface_input_wrappers.get(reference, None)
-            if wrapper_block is not None:
-                changed = self._remove_root_interface_wrapper_by_uid(wrapper_uid=wrapper_block.uid) or changed
-            else:
-                pass
-
-            self._remove_root_connection_var(connection_var=current_input_by_ref[reference], direction="input")
-            changed = True
-
-        for reference in removed_output_refs:
-            wrapper_block = interface_output_wrappers.get(reference, None)
-            if wrapper_block is not None:
-                changed = self._remove_root_interface_wrapper_by_uid(wrapper_uid=wrapper_block.uid) or changed
-            else:
-                pass
-
-            self._remove_root_connection_var(connection_var=current_output_by_ref[reference], direction="output")
-            changed = True
-
-        for reference, authoritative_input in expected_inputs_by_ref.items():
-            existing_input: Var | None = current_input_by_ref.get(reference, None)
-            if is_template_backed_branch:
-                if existing_input is None:
-                    root_input: Var = self.var_factory.add_var(
-                        name=reference.name,
-                        reference=reference,
-                    )
-                    self.main_block.in_vars.append(root_input)
-                    self.main_block.external_mapping[reference] = root_input
-                    if not created_initial_authoritative_interface and interface_input_wrappers.get(reference,
-                                                                                                    None) is None:
-                        wrapper_block = Block(name=root_input.name)
-                        wrapper_block.out_vars = list((root_input,))
-                        self.main_block.add(wrapper_block)
-                        interface_input_wrappers[reference] = wrapper_block
-                    else:
-                        pass
-                    changed = True
-                else:
-                    root_input = existing_input
-                    self.main_block.external_mapping[reference] = root_input
-
-                # Only direct branch templates expose side-specific vf/vt root
-                # variables that must remain separate from the bus identity.
-                self.var_factory.add_connections(
-                    vars_to_subs=list((root_input,)),
-                    incoming_vars=list((authoritative_input,)),
-                )
-            else:
-                if existing_input is None:
-                    root_input = authoritative_input
-                    self.main_block.in_vars.append(root_input)
-                    self.main_block.external_mapping[reference] = root_input
-                    if not created_initial_authoritative_interface and interface_input_wrappers.get(reference,
-                                                                                                    None) is None:
-                        wrapper_block = Block(name=root_input.name)
-                        wrapper_block.out_vars = list((root_input,))
-                        self.main_block.add(wrapper_block)
-                        interface_input_wrappers[reference] = wrapper_block
-                    else:
-                        pass
-                    changed = True
-                else:
-                    if existing_input is authoritative_input:
-                        pass
-                    else:
-                        if reference in missing_input_wrapper_refs:
-                            self.main_block.update_model(existing_input, authoritative_input)
-                            rehash_block_tree_var_keyed_dicts(root_block=self.root_block)
-                            changed = True
-                        else:
-                            pass
-                    root_input = authoritative_input
-                    self.main_block.external_mapping[reference] = root_input
-
-            wrapper_block = interface_input_wrappers.get(reference, None)
-            if wrapper_block is not None:
-                wrapper_block.out_vars = list((root_input,))
-                wrapper_block.in_vars = list()
-                wrapper_block.set_name(root_input.name)
-            else:
-                pass
-
-        for reference, authoritative_output in expected_outputs_by_ref.items():
-            existing_output: Var | None = current_output_by_ref.get(reference, None)
-            if existing_output is None:
-                new_output_name: str = build_expected_root_emt_output_name(reference=reference)
-                new_output: Var = self.var_factory.add_var(name=new_output_name,
-                                                           reference=reference,
-                                                           network_conn=True)
-                self.main_block.out_vars.append(new_output)
-                self.main_block.external_mapping[reference] = new_output
-                if not created_initial_authoritative_interface and interface_output_wrappers.get(reference,
-                                                                                                 None) is None:
-                    wrapper_block = Block(name=new_output.name)
-                    wrapper_block.in_vars = list((new_output,))
-                    self.main_block.add(wrapper_block)
-                    interface_output_wrappers[reference] = wrapper_block
-                else:
-                    pass
-                changed = True
-            else:
-                existing_output._network_conn = True
-                self.main_block.external_mapping[reference] = existing_output
-                wrapper_block = interface_output_wrappers.get(reference, None)
-                if wrapper_block is not None:
-                    wrapper_block.in_vars = list((existing_output,))
-                    wrapper_block.out_vars = list()
-                    wrapper_block.set_name(existing_output.name)
-                else:
-                    pass
-
-        if len(added_input_refs) > 0 or len(added_output_refs) > 0:
-            changed = True
-            changed = self._ensure_root_interface_wrapper_nodes_exist() or changed
-            self._materialize_missing_non_interface_diagram_nodes()
-        elif len(missing_input_wrapper_refs) > 0 or len(missing_output_wrapper_refs) > 0:
-            changed = True
-            self._materialize_missing_non_interface_diagram_nodes()
-        else:
-            pass
-
-        self._refresh_interface_wrapper_scene_items()
-
-        if created_initial_authoritative_interface:
-            return False
-        else:
-            return changed
-
     def _remove_shared_branch_emt_root_refs(self) -> None:
         """
         Remove shared AC EMT root refs from one branch root contract.
@@ -10097,709 +8782,6 @@ class DynamicBlockEditorGUI(QtWidgets.QMainWindow):
             else:
                 pass
 
-    def _is_emt_interface_reference(self, reference: VarPowerFlowReferenceType | None) -> bool:
-        """
-        Return whether one reference belongs to the EMT AC editor interface.
-
-        The pruning step must only touch EMT phase-interface variables. Other
-        references, such as RMS quantities, DC quantities, parameters, or user
-        internals, must remain untouched when the editor applies the model.
-
-        :param reference: Reference carried by one root-interface variable.
-        :return: ``True`` when the reference is one EMT AC interface key.
-        """
-        emt_interface_refs: set[VarPowerFlowReferenceType] = set()
-        is_interface_reference: bool = False
-
-        emt_interface_refs.add(VarPowerFlowReferenceType.v_N)
-        emt_interface_refs.add(VarPowerFlowReferenceType.v_A)
-        emt_interface_refs.add(VarPowerFlowReferenceType.v_B)
-        emt_interface_refs.add(VarPowerFlowReferenceType.v_C)
-        emt_interface_refs.add(VarPowerFlowReferenceType.i_N)
-        emt_interface_refs.add(VarPowerFlowReferenceType.i_A)
-        emt_interface_refs.add(VarPowerFlowReferenceType.i_B)
-        emt_interface_refs.add(VarPowerFlowReferenceType.i_C)
-        emt_interface_refs.add(VarPowerFlowReferenceType.vf_N)
-        emt_interface_refs.add(VarPowerFlowReferenceType.vf_A)
-        emt_interface_refs.add(VarPowerFlowReferenceType.vf_B)
-        emt_interface_refs.add(VarPowerFlowReferenceType.vf_C)
-        emt_interface_refs.add(VarPowerFlowReferenceType.if_N)
-        emt_interface_refs.add(VarPowerFlowReferenceType.if_A)
-        emt_interface_refs.add(VarPowerFlowReferenceType.if_B)
-        emt_interface_refs.add(VarPowerFlowReferenceType.if_C)
-        emt_interface_refs.add(VarPowerFlowReferenceType.vt_N)
-        emt_interface_refs.add(VarPowerFlowReferenceType.vt_A)
-        emt_interface_refs.add(VarPowerFlowReferenceType.vt_B)
-        emt_interface_refs.add(VarPowerFlowReferenceType.vt_C)
-        emt_interface_refs.add(VarPowerFlowReferenceType.it_N)
-        emt_interface_refs.add(VarPowerFlowReferenceType.it_A)
-        emt_interface_refs.add(VarPowerFlowReferenceType.it_B)
-        emt_interface_refs.add(VarPowerFlowReferenceType.it_C)
-
-        if reference is not None:
-            if reference in emt_interface_refs:
-                is_interface_reference = True
-            else:
-                is_interface_reference = False
-        else:
-            is_interface_reference = False
-
-        return is_interface_reference
-
-    def _materialize_missing_non_interface_diagram_nodes(self) -> None:
-        """
-        Add laid-out diagram nodes for non-interface blocks missing from the diagram.
-
-        Template-assigned models can exist as symbolic children without any saved
-        diagram node positions. Missing siblings are passed through the same
-        connection-aware layered layout as a wholly empty diagram instead of
-        sharing the old ``(0, 0)`` fallback position.
-
-        :return: None.
-        """
-        existing_node_uids: set[int] = set(self.diagram.node_data.keys())
-        child_block: Block
-        materializable_blocks: List[Block] = list()
-        missing_blocks: List[Block] = list()
-        expected_inputs_by_ref: dict[VarPowerFlowReferenceType, Var]
-        expected_outputs_by_ref: dict[VarPowerFlowReferenceType, Var]
-        interface_var: Var | None
-        layout_blocks: List[Block]
-        layout_graph: SugiyamaGraph
-        layout_result: EngineResult
-        block_positions: Dict[int, Tuple[float, float]]
-        existing_materialized_uids: set[int]
-        layout_offset_x: float = 0.0
-        layout_offset_y: float = 0.0
-
-        expected_inputs_by_ref, expected_outputs_by_ref = self._build_expected_root_interface_for_current_mode()
-
-        for child_block in self.main_block.children:
-            interface_var = get_single_interface_var(child_block)
-            if is_root_interface_wrapper_block(block_model=child_block,
-                                               diagram=self.diagram):
-                # Derived root interface wrappers are rebuilt through the dedicated
-                # protected-wrapper path and must not be materialized as generic blocks.
-                pass
-            elif self.is_root_editor and interface_var is not None and interface_var.ref is not None:
-                if len(child_block.out_vars) == 1 and len(child_block.in_vars) == 0:
-                    if interface_var.ref in expected_inputs_by_ref:
-                        pass
-                    else:
-                        materializable_blocks.append(child_block)
-                elif len(child_block.in_vars) == 1 and len(child_block.out_vars) == 0:
-                    if interface_var.ref in expected_outputs_by_ref:
-                        pass
-                    else:
-                        materializable_blocks.append(child_block)
-                else:
-                    materializable_blocks.append(child_block)
-            else:
-                materializable_blocks.append(child_block)
-
-        missing_blocks = [
-            block_model for block_model in materializable_blocks
-            if block_model.uid not in existing_node_uids
-        ]
-        if len(missing_blocks) == 0:
-            return
-        else:
-            pass
-
-        existing_materialized_uids = set(
-            block_model.uid for block_model in materializable_blocks
-            if block_model.uid in existing_node_uids
-        )
-        if len(existing_materialized_uids) == 0:
-            layout_blocks = materializable_blocks
-        else:
-            # Existing nodes are user-owned positions. Lay out only newly
-            # materialized siblings in a separate column to their right.
-            layout_blocks = missing_blocks
-
-        layout_graph = self._build_elk_layout_graph(
-            child_blocks=layout_blocks,
-            input_output_blocks=list(),
-        )
-        layout_result = SugiyamaLayeredPythonEngine().compute(layout_graph)
-        block_positions = {
-            int(node.identifier): (node.x or 0.0, node.y or 0.0)
-            for node in layout_result.graph.children
-        }
-
-        if len(existing_materialized_uids) > 0:
-            existing_nodes: List[BlockDiagramNode] = [
-                self.diagram.node_data[node_uid]
-                for node_uid in existing_materialized_uids
-            ]
-            minimum_layout_x: float = min(position[0] for position in block_positions.values())
-            minimum_layout_y: float = min(position[1] for position in block_positions.values())
-            layout_offset_x = max(node.x for node in existing_nodes) + 320.0 - minimum_layout_x
-            layout_offset_y = min(node.y for node in existing_nodes) - minimum_layout_y
-        else:
-            pass
-
-        for child_block in missing_blocks:
-            child_position: Tuple[float, float] = block_positions.get(child_block.uid, (0.0, 0.0))
-            self.generate_block_item_for_block(
-                child_block,
-                x_pos=child_position[0] + layout_offset_x,
-                y_pos=child_position[1] + layout_offset_y,
-            )
-
-    def _rebuild_missing_non_interface_connections(
-            self,
-            rebuild_interface_connections: bool,
-    ) -> None:
-        """
-        Recreate inferred symbolic wires after auto-materializing missing blocks.
-
-        Symbolic connections between real model siblings remain authoritative on
-        every reopen. Root-interface connections are inferred only for a fresh
-        no-diagram bootstrap so explicitly partial user wiring stays partial.
-
-        :param rebuild_interface_connections: Whether fresh root wrappers should
-            also be connected to matching model ports.
-        :return: None.
-        """
-        items_list: list[graph.DynamicBlockGraphicsItem] = self._collect_non_interface_scene_items()
-
-        if len(items_list) > 0:
-            self._rebuild_visible_symbolic_connections(items_list)
-            if rebuild_interface_connections:
-                self._rebuild_editor_interface_graphical_connections(items_list)
-            else:
-                pass
-            self._refresh_all_variable_displays()
-        else:
-            pass
-
-    def _collect_non_interface_scene_items(self) -> list[graph.DynamicBlockGraphicsItem]:
-        """
-        Return the visible non-interface block items in the scene.
-
-        The reconnect pass operates only on real model blocks. The protected
-        editor interface wrappers are intentionally excluded from this list.
-
-        Arithmetic and unary decomposition items must be included because ELK
-        equation diagrams consist primarily of those specialized item types.
-
-        :return: Block items excluding editor interface wrappers.
-        """
-        items_list: list[graph.DynamicBlockGraphicsItem] = list()
-        scene_item: QGraphicsItem
-        node_data: BlockDiagramNode | None
-
-        for scene_item in self.scene.items():
-            if isinstance(scene_item, (
-                    graph.BlockItem,
-                    graph.GenericBlockItem,
-                    graph.RoundBaseArithmeticOpItem,
-                    graph.RectBaseArithmeticOpItem,
-                    graph.PairedItem,
-            )):
-                if scene_item.subsys is not None:
-                    node_data: BlockDiagramNode | None = self.diagram.node_data.get(scene_item.subsys.uid, None)
-                else:
-                    node_data = None
-
-                if node_data is None:
-                    pass
-                elif node_data.tpe in set((BlockType.INPUT_CONN.name, BlockType.OUTPUT_CONN.name,)):
-                    pass
-                else:
-                    items_list.append(scene_item)
-            else:
-                pass
-
-        return items_list
-
-    def _rebuild_visible_symbolic_connections(self, items_list: List[graph.DynamicBlockGraphicsItem]) -> None:
-        """
-        Recreate missing symbolic wires between all visible non-interface blocks.
-
-        The saved diagram may miss some graphical arrows even when the symbolic
-        block graph still carries enough metadata to infer them. Re-run the
-        visible block-pair connection discovery so the scene reflects the actual
-        symbolic connectivity.
-
-        :param items_list: Visible non-interface block items.
-        :return: None.
-        """
-        item_source: graph.DynamicBlockGraphicsItem
-        item_target: graph.DynamicBlockGraphicsItem
-        pairs: list[tuple[Var, Var]]
-        power_flow_pairs: list[tuple[Var, Var]]
-
-        for item_source in items_list:
-            if item_source.subsys is None:
-                pass
-            else:
-                for item_target in items_list:
-                    if item_target.subsys is None:
-                        pass
-                    else:
-                        if item_source.subsys.uid == item_target.subsys.uid:
-                            pass
-                        else:
-                            pairs, power_flow_pairs = find_connections(item_source.subsys, item_target.subsys)
-                            self._create_missing_connection_items(item_source, item_target, pairs)
-                            self._create_missing_connection_items(item_source, item_target, power_flow_pairs)
-
-                            pairs, power_flow_pairs = find_connections(item_target.subsys, item_source.subsys)
-                            self._create_missing_connection_items(item_target, item_source, pairs)
-                            self._create_missing_connection_items(item_target, item_source, power_flow_pairs)
-
-    def _rebuild_editor_interface_graphical_connections(self, items_list: List[graph.DynamicBlockGraphicsItem]) -> None:
-        """
-        Recreate visible wires between editor interface blocks and visible model blocks.
-
-        Device-level EMT interfaces retain their topology-aware reference
-        translation. Nested RMS and atomic DAE editors additionally match ports
-        by their stable structural key, allowing ordinary shared-reference and
-        named signals to reconnect to their boundary wrappers after reopen.
-
-        :param items_list: Visible non-interface block items.
-        :return: None.
-        """
-        # In an RMS root editor, wires between the device connection variables
-        # and a block dropped from the Library are exclusively user-authored.
-        # Only nested editors may infer their own boundary-to-equation wiring.
-        # Fresh complete root models are bootstrapped separately by their ELK
-        # layout, so this guard does not remove template-defined connections.
-        if self.is_root_editor and self.mode == DynamicSimulationMode.RMS:
-            return
-        else:
-            pass
-
-        interface_inputs_by_ref: Dict[VarPowerFlowReferenceType, graph.ProtectedConnectionBlockItem] = dict()
-        interface_outputs_by_ref: Dict[VarPowerFlowReferenceType, graph.ProtectedConnectionBlockItem] = dict()
-        interface_inputs_by_key: Dict[tuple[str, str], graph.ProtectedConnectionBlockItem] = dict()
-        interface_outputs_by_key: Dict[tuple[str, str], graph.ProtectedConnectionBlockItem] = dict()
-        scene_item: QGraphicsItem
-        node_data: BlockDiagramNode | None
-        reference_var: Var | None
-        block_item: graph.DynamicBlockGraphicsItem
-        input_index: int
-        output_index: int
-        input_var: Var
-        output_var: Var
-        protected_item: graph.ProtectedConnectionBlockItem | None
-        branch_input_refs: set[VarPowerFlowReferenceType] = set(list(
-            (VarPowerFlowReferenceType.vf_N, VarPowerFlowReferenceType.vf_A, VarPowerFlowReferenceType.vf_B,
-             VarPowerFlowReferenceType.vf_C, VarPowerFlowReferenceType.Vf_dc, VarPowerFlowReferenceType.vt_N,
-             VarPowerFlowReferenceType.vt_A, VarPowerFlowReferenceType.vt_B, VarPowerFlowReferenceType.vt_C,
-             VarPowerFlowReferenceType.Vt_dc,)))
-        branch_output_refs: set[VarPowerFlowReferenceType] = set(list(
-            (VarPowerFlowReferenceType.if_N, VarPowerFlowReferenceType.if_A, VarPowerFlowReferenceType.if_B,
-             VarPowerFlowReferenceType.if_C, VarPowerFlowReferenceType.If_dc, VarPowerFlowReferenceType.it_N,
-             VarPowerFlowReferenceType.it_A, VarPowerFlowReferenceType.it_B, VarPowerFlowReferenceType.it_C,
-             VarPowerFlowReferenceType.It_dc,)))
-
-        for scene_item in self.scene.items():
-            if isinstance(scene_item, graph.ProtectedConnectionBlockItem) and scene_item.subsys is not None:
-                node_data = self.diagram.node_data.get(scene_item.subsys.uid, None)
-
-                if node_data is None:
-                    pass
-                elif node_data.tpe == BlockType.INPUT_CONN.name:
-                    if len(scene_item.subsys.out_vars) > 0:
-                        reference_var = scene_item.subsys.out_vars[0]
-                    else:
-                        reference_var = None
-
-                    if isinstance(reference_var, Var) and isinstance(reference_var.ref, VarPowerFlowReferenceType):
-                        interface_inputs_by_ref[reference_var.ref] = scene_item
-                    else:
-                        pass
-                    if isinstance(reference_var, Var):
-                        interface_inputs_by_key[get_structural_port_key(reference_var)] = scene_item
-                    else:
-                        pass
-                elif node_data.tpe == BlockType.OUTPUT_CONN.name:
-                    if len(scene_item.subsys.in_vars) > 0:
-                        reference_var = scene_item.subsys.in_vars[0]
-                    else:
-                        reference_var = None
-
-                    if isinstance(reference_var, Var) and isinstance(reference_var.ref, VarPowerFlowReferenceType):
-                        interface_outputs_by_ref[reference_var.ref] = scene_item
-                    else:
-                        pass
-                    if isinstance(reference_var, Var):
-                        interface_outputs_by_key[get_structural_port_key(reference_var)] = scene_item
-                    else:
-                        pass
-                else:
-                    pass
-            else:
-                pass
-
-        for block_item in items_list:
-            if block_item.subsys is None:
-                pass
-            else:
-                for input_index, input_var in enumerate(block_item.subsys.in_vars):
-                    if isinstance(input_var.ref, VarPowerFlowReferenceType):
-                        if isinstance(self.api_object, BranchParent) and input_var.ref in branch_input_refs:
-                            protected_item = interface_inputs_by_ref.get(input_var.ref, None)
-                        else:
-                            protected_item = self._get_editor_interface_input_item_for_ref(
-                                interface_inputs_by_ref=interface_inputs_by_ref,
-                                model_ref=input_var.ref,
-                            )
-                        if protected_item is None:
-                            protected_item = interface_inputs_by_key.get(get_structural_port_key(input_var), None)
-                        else:
-                            pass
-                        if protected_item is not None and len(protected_item.outputs) > 0 and input_index < len(
-                                block_item.inputs):
-                            if self._connection_exists_between_ports(protected_item.outputs[0],
-                                                                     block_item.inputs[input_index]):
-                                pass
-                            else:
-                                connection_item: graph.ConnectionItem = graph.ConnectionItem(
-                                    source_port=protected_item.outputs[0],
-                                    target_port=block_item.inputs[input_index],
-                                    diagram=self.diagram,
-                                    editor=self,
-                                )
-                                self.attach_new_connection_item(
-                                    item=connection_item,
-                                    refresh_variable_displays=False,
-                                )
-                        else:
-                            pass
-                    else:
-                        protected_item = interface_inputs_by_key.get(get_structural_port_key(input_var), None)
-                        if protected_item is not None and len(protected_item.outputs) > 0 and input_index < len(
-                                block_item.inputs):
-                            if self._connection_exists_between_ports(protected_item.outputs[0],
-                                                                     block_item.inputs[input_index]):
-                                pass
-                            else:
-                                connection_item = graph.ConnectionItem(
-                                    source_port=protected_item.outputs[0],
-                                    target_port=block_item.inputs[input_index],
-                                    diagram=self.diagram,
-                                    editor=self,
-                                )
-                                self.attach_new_connection_item(
-                                    item=connection_item,
-                                    refresh_variable_displays=False,
-                                )
-                        else:
-                            pass
-
-                for output_index, output_var in enumerate(block_item.subsys.out_vars):
-                    if isinstance(output_var.ref, VarPowerFlowReferenceType):
-                        if isinstance(self.api_object, BranchParent) and output_var.ref in branch_output_refs:
-                            protected_item = interface_outputs_by_ref.get(output_var.ref, None)
-                        else:
-                            protected_item = self._get_editor_interface_output_item_for_ref(
-                                interface_outputs_by_ref=interface_outputs_by_ref,
-                                model_ref=output_var.ref,
-                            )
-                        if protected_item is None:
-                            protected_item = interface_outputs_by_key.get(get_structural_port_key(output_var), None)
-                        else:
-                            pass
-                        if protected_item is not None and len(protected_item.inputs) > 0 and output_index < len(
-                                block_item.outputs):
-                            if self._connection_exists_between_ports(block_item.outputs[output_index],
-                                                                     protected_item.inputs[0]):
-                                pass
-                            else:
-                                connection_item = graph.ConnectionItem(
-                                    source_port=block_item.outputs[output_index],
-                                    target_port=protected_item.inputs[0],
-                                    diagram=self.diagram,
-                                    editor=self,
-                                )
-                                self.attach_new_connection_item(
-                                    item=connection_item,
-                                    refresh_variable_displays=False,
-                                )
-                        else:
-                            pass
-                    else:
-                        protected_item = interface_outputs_by_key.get(get_structural_port_key(output_var), None)
-                        if protected_item is not None and len(protected_item.inputs) > 0 and output_index < len(
-                                block_item.outputs):
-                            if self._connection_exists_between_ports(block_item.outputs[output_index],
-                                                                     protected_item.inputs[0]):
-                                pass
-                            else:
-                                connection_item = graph.ConnectionItem(
-                                    source_port=block_item.outputs[output_index],
-                                    target_port=protected_item.inputs[0],
-                                    diagram=self.diagram,
-                                    editor=self,
-                                )
-                                self.attach_new_connection_item(
-                                    item=connection_item,
-                                    refresh_variable_displays=False,
-                                )
-                        else:
-                            pass
-
-    def _get_editor_interface_input_item_for_ref(self,
-                                                 interface_inputs_by_ref: Dict[
-                                                     VarPowerFlowReferenceType, graph.ProtectedConnectionBlockItem],
-                                                 model_ref: VarPowerFlowReferenceType) -> graph.ProtectedConnectionBlockItem | None:
-        """
-        Resolve one editor input wrapper for one model-side EMT input reference.
-
-        :param interface_inputs_by_ref: Editor input wrappers keyed by editor EMT ref.
-        :param model_ref: Model-side EMT input ref.
-        :return: Matching editor input wrapper or ``None``.
-        """
-        if isinstance(self.api_object, BranchParent):
-            ac_side_is_from: bool = False
-            ac_side_is_to: bool = False
-
-            if self.api_object.device_type == DeviceType.VscDevice:
-                if self.api_object.bus_from.is_dc:
-                    ac_side_is_to = True
-                else:
-                    if self.api_object.bus_to.is_dc:
-                        ac_side_is_from = True
-                    else:
-                        ac_side_is_from = True
-            else:
-                if model_ref in list(
-                        (VarPowerFlowReferenceType.vf_N, VarPowerFlowReferenceType.vf_A, VarPowerFlowReferenceType.vf_B,
-                         VarPowerFlowReferenceType.vf_C, VarPowerFlowReferenceType.Vf_dc,)):
-                    ac_side_is_from = True
-                elif model_ref in list(
-                        (VarPowerFlowReferenceType.vt_N, VarPowerFlowReferenceType.vt_A, VarPowerFlowReferenceType.vt_B,
-                         VarPowerFlowReferenceType.vt_C, VarPowerFlowReferenceType.Vt_dc,)):
-                    ac_side_is_to = True
-                else:
-                    ac_side_is_from = True
-
-            if model_ref == VarPowerFlowReferenceType.v_N:
-                if ac_side_is_to:
-                    return interface_inputs_by_ref.get(VarPowerFlowReferenceType.vt_N, None)
-                elif ac_side_is_from:
-                    return interface_inputs_by_ref.get(VarPowerFlowReferenceType.vf_N, None)
-                else:
-                    return interface_inputs_by_ref.get(VarPowerFlowReferenceType.vf_N, None)
-            elif model_ref == VarPowerFlowReferenceType.v_A:
-                if ac_side_is_to:
-                    return interface_inputs_by_ref.get(VarPowerFlowReferenceType.vt_A, None)
-                elif ac_side_is_from:
-                    return interface_inputs_by_ref.get(VarPowerFlowReferenceType.vf_A, None)
-                else:
-                    return interface_inputs_by_ref.get(VarPowerFlowReferenceType.vf_A, None)
-            elif model_ref == VarPowerFlowReferenceType.vf_N:
-                return interface_inputs_by_ref.get(VarPowerFlowReferenceType.vf_N, None)
-            elif model_ref == VarPowerFlowReferenceType.vf_A:
-                return interface_inputs_by_ref.get(VarPowerFlowReferenceType.vf_A, None)
-            elif model_ref == VarPowerFlowReferenceType.vf_B:
-                return interface_inputs_by_ref.get(VarPowerFlowReferenceType.vf_B, None)
-            elif model_ref == VarPowerFlowReferenceType.vf_C:
-                return interface_inputs_by_ref.get(VarPowerFlowReferenceType.vf_C, None)
-            elif model_ref == VarPowerFlowReferenceType.vt_N:
-                return interface_inputs_by_ref.get(VarPowerFlowReferenceType.vt_N, None)
-            elif model_ref == VarPowerFlowReferenceType.vt_A:
-                return interface_inputs_by_ref.get(VarPowerFlowReferenceType.vt_A, None)
-            elif model_ref == VarPowerFlowReferenceType.vt_B:
-                return interface_inputs_by_ref.get(VarPowerFlowReferenceType.vt_B, None)
-            elif model_ref == VarPowerFlowReferenceType.vt_C:
-                return interface_inputs_by_ref.get(VarPowerFlowReferenceType.vt_C, None)
-            elif model_ref == VarPowerFlowReferenceType.v_B:
-                if ac_side_is_to:
-                    return interface_inputs_by_ref.get(VarPowerFlowReferenceType.vt_B, None)
-                elif ac_side_is_from:
-                    return interface_inputs_by_ref.get(VarPowerFlowReferenceType.vf_B, None)
-                else:
-                    return interface_inputs_by_ref.get(VarPowerFlowReferenceType.vf_B, None)
-            elif model_ref == VarPowerFlowReferenceType.v_C:
-                if ac_side_is_to:
-                    return interface_inputs_by_ref.get(VarPowerFlowReferenceType.vt_C, None)
-                elif ac_side_is_from:
-                    return interface_inputs_by_ref.get(VarPowerFlowReferenceType.vf_C, None)
-                else:
-                    return interface_inputs_by_ref.get(VarPowerFlowReferenceType.vf_C, None)
-            elif model_ref == VarPowerFlowReferenceType.Vdc:
-                if self.api_object.bus_from.is_dc:
-                    return interface_inputs_by_ref.get(VarPowerFlowReferenceType.Vf_dc, None)
-                elif self.api_object.bus_to.is_dc:
-                    return interface_inputs_by_ref.get(VarPowerFlowReferenceType.Vt_dc, None)
-                else:
-                    return interface_inputs_by_ref.get(VarPowerFlowReferenceType.Vdc, None)
-            else:
-                return interface_inputs_by_ref.get(model_ref, None)
-        else:
-            return interface_inputs_by_ref.get(model_ref, None)
-
-    def _get_editor_interface_output_item_for_ref(self,
-                                                  interface_outputs_by_ref: Dict[
-                                                      VarPowerFlowReferenceType, graph.ProtectedConnectionBlockItem],
-                                                  model_ref: VarPowerFlowReferenceType) -> graph.ProtectedConnectionBlockItem | None:
-        """
-        Resolve one editor output wrapper for one model-side EMT output reference.
-
-        :param interface_outputs_by_ref: Editor output wrappers keyed by editor EMT ref.
-        :param model_ref: Model-side EMT output ref.
-        :return: Matching editor output wrapper or ``None``.
-        """
-        if isinstance(self.api_object, BranchParent):
-            ac_side_is_from: bool = False
-            ac_side_is_to: bool = False
-
-            if self.api_object.device_type == DeviceType.VscDevice:
-                if self.api_object.bus_from.is_dc:
-                    ac_side_is_to = True
-                else:
-                    if self.api_object.bus_to.is_dc:
-                        ac_side_is_from = True
-                    else:
-                        ac_side_is_from = True
-            else:
-                if model_ref in list(
-                        (VarPowerFlowReferenceType.if_N, VarPowerFlowReferenceType.if_A, VarPowerFlowReferenceType.if_B,
-                         VarPowerFlowReferenceType.if_C, VarPowerFlowReferenceType.If_dc,)):
-                    ac_side_is_from = True
-                elif model_ref in list(
-                        (VarPowerFlowReferenceType.it_N, VarPowerFlowReferenceType.it_A, VarPowerFlowReferenceType.it_B,
-                         VarPowerFlowReferenceType.it_C, VarPowerFlowReferenceType.It_dc,)):
-                    ac_side_is_to = True
-                else:
-                    ac_side_is_from = True
-
-            if model_ref == VarPowerFlowReferenceType.i_N:
-                if ac_side_is_to:
-                    return interface_outputs_by_ref.get(VarPowerFlowReferenceType.it_N, None)
-                elif ac_side_is_from:
-                    return interface_outputs_by_ref.get(VarPowerFlowReferenceType.if_N, None)
-                else:
-                    return interface_outputs_by_ref.get(VarPowerFlowReferenceType.if_N, None)
-            elif model_ref == VarPowerFlowReferenceType.i_A:
-                if ac_side_is_to:
-                    return interface_outputs_by_ref.get(VarPowerFlowReferenceType.it_A, None)
-                elif ac_side_is_from:
-                    return interface_outputs_by_ref.get(VarPowerFlowReferenceType.if_A, None)
-                else:
-                    return interface_outputs_by_ref.get(VarPowerFlowReferenceType.if_A, None)
-            elif model_ref == VarPowerFlowReferenceType.if_N:
-                return interface_outputs_by_ref.get(VarPowerFlowReferenceType.if_N, None)
-            elif model_ref == VarPowerFlowReferenceType.if_A:
-                return interface_outputs_by_ref.get(VarPowerFlowReferenceType.if_A, None)
-            elif model_ref == VarPowerFlowReferenceType.if_B:
-                return interface_outputs_by_ref.get(VarPowerFlowReferenceType.if_B, None)
-            elif model_ref == VarPowerFlowReferenceType.if_C:
-                return interface_outputs_by_ref.get(VarPowerFlowReferenceType.if_C, None)
-            elif model_ref == VarPowerFlowReferenceType.it_N:
-                return interface_outputs_by_ref.get(VarPowerFlowReferenceType.it_N, None)
-            elif model_ref == VarPowerFlowReferenceType.it_A:
-                return interface_outputs_by_ref.get(VarPowerFlowReferenceType.it_A, None)
-            elif model_ref == VarPowerFlowReferenceType.it_B:
-                return interface_outputs_by_ref.get(VarPowerFlowReferenceType.it_B, None)
-            elif model_ref == VarPowerFlowReferenceType.it_C:
-                return interface_outputs_by_ref.get(VarPowerFlowReferenceType.it_C, None)
-            elif model_ref == VarPowerFlowReferenceType.i_B:
-                if ac_side_is_to:
-                    return interface_outputs_by_ref.get(VarPowerFlowReferenceType.it_B, None)
-                elif ac_side_is_from:
-                    return interface_outputs_by_ref.get(VarPowerFlowReferenceType.if_B, None)
-                else:
-                    return interface_outputs_by_ref.get(VarPowerFlowReferenceType.if_B, None)
-            elif model_ref == VarPowerFlowReferenceType.i_C:
-                if ac_side_is_to:
-                    return interface_outputs_by_ref.get(VarPowerFlowReferenceType.it_C, None)
-                elif ac_side_is_from:
-                    return interface_outputs_by_ref.get(VarPowerFlowReferenceType.if_C, None)
-                else:
-                    return interface_outputs_by_ref.get(VarPowerFlowReferenceType.if_C, None)
-            elif model_ref == VarPowerFlowReferenceType.Idc:
-                if self.api_object.bus_from.is_dc:
-                    return interface_outputs_by_ref.get(VarPowerFlowReferenceType.If_dc, None)
-                elif self.api_object.bus_to.is_dc:
-                    return interface_outputs_by_ref.get(VarPowerFlowReferenceType.It_dc, None)
-                else:
-                    return interface_outputs_by_ref.get(VarPowerFlowReferenceType.Idc, None)
-            else:
-                return interface_outputs_by_ref.get(model_ref, None)
-        else:
-            return interface_outputs_by_ref.get(model_ref, None)
-
-    def _create_missing_connection_items(self,
-                                         item_source: graph.DynamicBlockGraphicsItem,
-                                         item_dest: graph.DynamicBlockGraphicsItem,
-                                         pairs: List[tuple[Var, Var]]) -> None:
-        """
-        Create only the currently missing connection items for one block pair.
-
-        :param item_source: Source block item.
-        :param item_dest: Destination block item.
-        :param pairs: Candidate variable pairs.
-        :return: None.
-        """
-        source_var: Var
-        target_var: Var
-        source_port: graph.PortItem | None
-        target_port: graph.PortItem | None
-        port: graph.PortItem
-
-        for source_var, target_var in pairs:
-            source_port = self._find_output_port_for_var(item_source=item_source, source_var=source_var)
-            target_port = self._find_input_port_for_var(item_dest=item_dest, target_var=target_var)
-
-            if source_port is not None and target_port is not None:
-                if self._connection_exists_between_ports(source_port, target_port):
-                    pass
-                else:
-                    connection = graph.ConnectionItem(
-                        source_port=source_port,
-                        target_port=target_port,
-                        diagram=self.diagram,
-                        editor=self,
-                    )
-                    self.attach_new_connection_item(
-                        item=connection,
-                        refresh_variable_displays=False,
-                    )
-            else:
-                pass
-
-    def _find_output_port_for_var(self,
-                                  item_source: graph.DynamicBlockGraphicsItem,
-                                  source_var: Var) -> graph.PortItem | None:
-        """
-        Find the visible output port corresponding to one symbolic variable.
-
-        :param item_source: Source item.
-        :param source_var: Source variable.
-        :return: Matching output port or ``None``.
-        """
-        port: graph.PortItem
-        for port in item_source.outputs:
-            if vars_match_for_visible_connection(port.base_var, source_var):
-                return port
-            else:
-                pass
-        return None
-
-    def _find_input_port_for_var(self,
-                                 item_dest: graph.DynamicBlockGraphicsItem,
-                                 target_var: Var) -> graph.PortItem | None:
-        """
-        Find the visible input port corresponding to one symbolic variable.
-
-        :param item_dest: Destination item.
-        :param target_var: Target variable.
-        :return: Matching input port or ``None``.
-        """
-        port: graph.PortItem
-        for port in item_dest.inputs:
-            if vars_match_for_visible_connection(port.base_var, target_var):
-                return port
-            else:
-                pass
-        return None
-
     def _connection_exists_between_ports(
             self,
             source_port: graph.PortItem | graph.BranchingItem,
@@ -10825,84 +8807,6 @@ class DynamicBlockEditorGUI(QtWidgets.QMainWindow):
                 pass
 
         return False
-
-    def _repair_saved_branch_template_root_wires(self) -> None:
-        """
-        Repair persisted root-interface wires for saved branch EMT template editors.
-
-        Older saved branch EMT diagrams can reopen with persisted root-interface
-        connections bound to the wrong side. Replaying those saved branches as-is
-        preserves the wrong wiring. This repair pass removes persisted branch
-        template wires between root wrappers and visible internal blocks, then
-        rebuilds them by exact side-specific EMT refs.
-
-        :return: None.
-        """
-        wrapper_uids: set[int] = set()
-        child_block: Block
-        scene_item: object
-        items_list: list[graph.GenericBlockItem]
-        connection_uid: int
-        connection_record: BlockDiagramConnection
-        stale_connection_uids: list[int] = list()
-
-        for child_block in self.main_block.children:
-            if is_root_interface_wrapper_block(block_model=child_block,
-                                               diagram=self.diagram):
-                wrapper_uids.add(child_block.uid)
-            else:
-                pass
-
-        for connection_uid, connection_record in self.diagram.con_data.items():
-            if connection_record.from_uid in wrapper_uids or connection_record.to_uid in wrapper_uids:
-                stale_connection_uids.append(connection_uid)
-            else:
-                pass
-
-        for connection_uid in stale_connection_uids:
-            self._remove_persisted_root_interface_connection_by_uid(connection_uid=connection_uid)
-
-        items_list = self._collect_non_interface_scene_items()
-        if len(items_list) > 0:
-            self._rebuild_editor_interface_graphical_connections(items_list)
-        else:
-            pass
-
-    def add_api_obj_mapping(self) -> None:
-
-        # Todo: add static_parameters_maping logic to add this depending on the type of device
-        """
-        Adds API object mapping for the main block based on the device type.
-
-        This method checks the device type of the API object. If it matches the
-        `DeviceType.LineDevice`, it performs the following actions:
-        - Creates three new variables: g, b, and bsh using the variable factory.
-        - Assigns constant values to these variables as parameters for the main block.
-        - Maps the power flow reference type parameters to the corresponding newly
-          created variables within the main block's API object mapping.
-
-        :raises RuntimeError: Raised if required attributes or methods are missing.
-        :return: None
-        """
-        if self.mode == DynamicSimulationMode.EMT:
-            return
-        else:
-            pass
-
-        if isinstance(self.api_object, BranchParent):
-            g = self.var_factory.add_var("g")
-            b = self.var_factory.add_var("b")
-            bsh = self.var_factory.add_var("bsh")
-
-            self.main_block.parameters[g] = self.var_factory.add_const(0.029585)
-            self.main_block.parameters[b] = self.var_factory.add_const(0.0710059)
-            self.main_block.parameters[bsh] = self.var_factory.add_const(0.03)
-
-            self.main_block.api_obj_mapping = dict(
-                ((ParamPowerFlowReferenceType.g, g), (ParamPowerFlowReferenceType.b, b),
-                 (ParamPowerFlowReferenceType.bsh, bsh),))
-        else:
-            pass
 
     def get_block_from_main_block(self, device_uid: int) -> Block | None:
         """
@@ -11290,50 +9194,6 @@ class DynamicBlockEditorGUI(QtWidgets.QMainWindow):
             pass
 
         return wrapper_block
-
-    def _get_root_interface_index_from_expected_order(self,
-                                                      block_type: BlockType,
-                                                      node_uid: int) -> int | None:
-        """
-        Return the authoritative wrapper index for one persisted wrapper node UID.
-
-        :param block_type: Wrapper direction.
-        :param node_uid: Persisted wrapper node UID.
-        :return: Current authoritative index or ``None``.
-        """
-        expected_inputs_by_ref: dict[VarPowerFlowReferenceType, Var]
-        expected_outputs_by_ref: dict[VarPowerFlowReferenceType, Var]
-        ordered_refs: list[VarPowerFlowReferenceType]
-        wrapper_nodes: list[tuple[int, BlockDiagramNode]] = list()
-        current_index: int
-        current_node_uid: int
-        current_node: BlockDiagramNode
-
-        expected_inputs_by_ref, expected_outputs_by_ref = self._build_expected_root_interface_for_current_mode()
-        ordered_refs = build_expected_root_interface_ref_order(block_type=block_type,
-                                                               input_refs=expected_inputs_by_ref,
-                                                               output_refs=expected_outputs_by_ref)
-
-        for current_node_uid, current_node in self.diagram.node_data.items():
-            if block_type == BlockType.INPUT_CONN and current_node.tpe == BlockType.INPUT_CONN.name:
-                wrapper_nodes.append((current_node_uid, current_node))
-            elif block_type == BlockType.OUTPUT_CONN and current_node.tpe == BlockType.OUTPUT_CONN.name:
-                wrapper_nodes.append((current_node_uid, current_node))
-            else:
-                pass
-
-        wrapper_nodes.sort(key=get_block_diagram_node_position_sort_key)
-
-        for current_index, (current_node_uid, _current_node) in enumerate(wrapper_nodes):
-            if current_node_uid == node_uid:
-                if current_index < len(ordered_refs):
-                    return current_index
-                else:
-                    return None
-            else:
-                pass
-
-        return None
 
     def refresh_editor_block_name_displays(self,
                                            block: Block) -> None:
@@ -11776,32 +9636,86 @@ class DynamicBlockEditorGUI(QtWidgets.QMainWindow):
             return
 
         candidate_block.name = target_block.name
+        rebuild_block_type: BlockType = request.get_block_type()
         old_inputs: List[Var] = list(target_block.in_vars)
         old_outputs: List[Var] = list(target_block.out_vars)
-        new_input_indexes: Dict[tuple[str, str], int] = build_port_index_by_key(candidate_block.in_vars)
-        new_output_indexes: Dict[tuple[str, str], int] = build_port_index_by_key(candidate_block.out_vars)
-        old_input_by_key: Dict[tuple[str, str], Var] = dict(
-            (get_structural_port_key(variable), variable) for variable in old_inputs
+        old_input_keys: List[tuple[str, str]] = build_rebuild_port_keys(
+            block=target_block,
+            block_type=rebuild_block_type,
+            is_input=True,
         )
-        old_output_by_key: Dict[tuple[str, str], Var] = dict(
-            (get_structural_port_key(variable), variable) for variable in old_outputs
+        old_output_keys: List[tuple[str, str]] = build_rebuild_port_keys(
+            block=target_block,
+            block_type=rebuild_block_type,
+            is_input=False,
         )
+        new_input_keys: List[tuple[str, str]] = build_rebuild_port_keys(
+            block=candidate_block,
+            block_type=rebuild_block_type,
+            is_input=True,
+        )
+        new_output_keys: List[tuple[str, str]] = build_rebuild_port_keys(
+            block=candidate_block,
+            block_type=rebuild_block_type,
+            is_input=False,
+        )
+        has_valid_port_contract: bool = (
+            len(old_input_keys) == len(old_inputs)
+            and len(old_output_keys) == len(old_outputs)
+            and len(new_input_keys) == len(candidate_block.in_vars)
+            and len(new_output_keys) == len(candidate_block.out_vars)
+        )
+        if not has_valid_port_contract:
+            request.set_result(
+                False,
+                "The block port structure does not match its General Structure configuration.",
+            )
+            return
+        else:
+            pass
+
+        new_input_indexes: Dict[tuple[str, str], int] = dict()
+        new_output_indexes: Dict[tuple[str, str], int] = dict()
+        old_input_by_key: Dict[tuple[str, str], Var] = dict()
+        old_output_by_key: Dict[tuple[str, str], Var] = dict()
+        port_index: int
+        port_key: tuple[str, str]
+        for port_index, port_key in enumerate(new_input_keys):
+            new_input_indexes[port_key] = port_index
+        else:
+            pass
+        for port_index, port_key in enumerate(new_output_keys):
+            new_output_indexes[port_key] = port_index
+        else:
+            pass
+        for port_index, port_key in enumerate(old_input_keys):
+            old_input_by_key[port_key] = old_inputs[port_index]
+        else:
+            pass
+        for port_index, port_key in enumerate(old_output_keys):
+            old_output_by_key[port_key] = old_outputs[port_index]
+        else:
+            pass
 
         # Preserve the exact Var objects for every semantic port that survives.
         replacements: Dict[Var, Var] = dict()
         candidate_var: Var
-        for candidate_var in candidate_block.in_vars:
-            surviving_input: Var | None = old_input_by_key.get(get_structural_port_key(candidate_var), None)
+        for port_index, candidate_var in enumerate(candidate_block.in_vars):
+            surviving_input: Var | None = old_input_by_key.get(new_input_keys[port_index], None)
             if surviving_input is not None:
                 replacements[candidate_var] = surviving_input
             else:
                 pass
-        for candidate_var in candidate_block.out_vars:
-            surviving_output: Var | None = old_output_by_key.get(get_structural_port_key(candidate_var), None)
+        else:
+            pass
+        for port_index, candidate_var in enumerate(candidate_block.out_vars):
+            surviving_output: Var | None = old_output_by_key.get(new_output_keys[port_index], None)
             if surviving_output is not None:
                 replacements[candidate_var] = surviving_output
             else:
                 pass
+        else:
+            pass
 
         # Migrate diagram port indexes by semantics and explicitly disconnect
         # wires whose phase or generated port no longer exists.
@@ -11812,7 +9726,7 @@ class DynamicBlockEditorGUI(QtWidgets.QMainWindow):
             keep_connection: bool = True
             if connection.to_uid == target_block.uid:
                 if 0 <= connection.port_number_to < len(old_inputs):
-                    input_key: tuple[str, str] = get_structural_port_key(old_inputs[connection.port_number_to])
+                    input_key: tuple[str, str] = old_input_keys[connection.port_number_to]
                     new_input_index: int | None = new_input_indexes.get(input_key, None)
                     if new_input_index is not None:
                         connection.port_number_to = new_input_index
@@ -11824,7 +9738,7 @@ class DynamicBlockEditorGUI(QtWidgets.QMainWindow):
                 pass
             if connection.from_uid == target_block.uid and keep_connection:
                 if 0 <= connection.port_number_from < len(old_outputs):
-                    output_key: tuple[str, str] = get_structural_port_key(old_outputs[connection.port_number_from])
+                    output_key: tuple[str, str] = old_output_keys[connection.port_number_from]
                     new_output_index: int | None = new_output_indexes.get(output_key, None)
                     if new_output_index is not None:
                         connection.port_number_from = new_output_index
@@ -12196,12 +10110,7 @@ class DynamicBlockEditorGUI(QtWidgets.QMainWindow):
             # the editor-owned root. Synchronize only their external device
             # interface; static API mappings remain on their declaring blocks.
             synchronize_saved_rms_root_mappings_from_children(device=self.api_object)
-            # Rebuild the connected bus helper models so the saved block stays
-            # consistent with the rest of the dynamic network representation.
-            dialog_models.initialize_connected_bus_models_for_editor_assignment(api_object=self.api_object,
-                                                                                circuit=self.circuit,
-                                                                                var_factory=persistent_var_factory,
-                                                                                mode=self.mode)
+
             # Mark the editor state as clean because all in-memory edits were
             # transferred back to the owned device model successfully.
             self.has_unapplied_changes = False
@@ -12250,10 +10159,7 @@ class DynamicBlockEditorGUI(QtWidgets.QMainWindow):
             register_saved_emt_model_vars_for_device(device=self.api_object,
                                                      var_factory=persistent_var_factory)
 
-            dialog_models.initialize_connected_bus_models_for_editor_assignment(api_object=self.api_object,
-                                                                                circuit=self.circuit,
-                                                                                var_factory=persistent_var_factory,
-                                                                                mode=self.mode)
+
             attach_emt_model_to_buses(device=self.api_object,
                                       model=self.api_object.emt_model,
                                       var_factory=persistent_var_factory)
@@ -12785,17 +10691,6 @@ class DynamicBlockEditorGUI(QtWidgets.QMainWindow):
         con: BlockDiagramConnection
 
         self.scene.clear_block_items()
-        if self.mode == DynamicSimulationMode.EMT:
-            # EMT persists one protected wrapper per authoritative network
-            # variable. Reconcile those individual identities before the
-            # diagram is materialized so every port retains its exact ref.
-            self._ensure_root_interface_wrapper_nodes_exist()
-            self._remove_stale_root_interface_duplicate_children()
-            self._refresh_interface_wrapper_scene_items()
-        else:
-            # RMS connection nodes can represent grouped measurement ports and
-            # must retain their current multi-variable block representation.
-            pass
 
         # Recreate every persisted node, repairing old wrapper identities in place.
         for uid, node in self.diagram.node_data.items():
@@ -12820,7 +10715,7 @@ class DynamicBlockEditorGUI(QtWidgets.QMainWindow):
 
             item: graph.PairedItem | graph.RoundBaseArithmeticOpItem | \
                   graph.RectBaseArithmeticOpItem | graph.UnOpItem | \
-                  graph.GenericBlockItem | None = None
+                  graph.IntegratorItem | graph.DerivativeItem | graph.GenericBlockItem | None = None
 
             if block_type in [BlockType.INPUT_CONN,
                               BlockType.OUTPUT_CONN,
@@ -12831,108 +10726,35 @@ class DynamicBlockEditorGUI(QtWidgets.QMainWindow):
                               BlockType.MEASUREMENTS_VOLTAGE_FROM_DC,
                               BlockType.MEASUREMENTS_VOLTAGE_FROM_POLAR,
                               BlockType.MEASUREMENTS_PLL]:
-                if self.mode == DynamicSimulationMode.EMT:
-                    # EMT interface nodes are individual protected views over
-                    # one authoritative root variable. Repair legacy identity
-                    # before building the corresponding graphical wrapper.
-                    repaired_wrapper: Block | None = self._build_root_interface_wrapper_block(
-                        block_type=block_type,
-                        fallback_block_model=block_model,
-                        interface_index=self._get_root_interface_index_from_expected_order(
-                            block_type=block_type,
-                            node_uid=uid,
-                        ),
-                        wrapper_uid=uid,
+
+                if block_model is not None:
+
+                    if self.mode == DynamicSimulationMode.EMT:
+                        self.ensure_correct_bus_variables(block_model)
+
+                    measurements_item: graph.MeasurementsItem = graph.MeasurementsItem(
+                        editor=self,
+                        var_factory=self.var_factory,
+                        name=block_model.name,
+                        mode=self.mode,
+                        api_object=self.api_object,
                     )
+                    measurements_item.set_subsystem(block_model)
+                    measurements_item.position_changed_callback = self.build_position_changed_callback(uid)
+                    measurements_item.build_item()
+                    measurements_item.recolour()
+                    self.apply_diagram_node_color_to_block_item(measurements_item)
+                    self.scene.add_block_item(block_uid=block_model.uid, item=measurements_item)
+                    measurements_item.setPos(QPointF(node.x, node.y))
+                    uid_to_blockitem[node.device_uid] = measurements_item
 
-                    if repaired_wrapper is not None:
-                        block_model = repaired_wrapper
-                        wrapper_is_registered: bool = False
-                        child_block: Block
-                        for child_block in self.main_block.children:
-                            if child_block is block_model:
-                                wrapper_is_registered = True
-                            else:
-                                pass
-
-                        if wrapper_is_registered:
-                            pass
-                        else:
-                            self.main_block.add(block_model)
-
-                        # Persisted endpoints and legacy aliases must resolve
-                        # to the repaired wrapper UID used by the scene item.
-                        node.device_uid = uid
-                        node.name = block_model.name
-                        register_legacy_interface_uid_alias(
-                            aliases=legacy_interface_uid_aliases,
-                            old_uid=persisted_node_uid,
-                            repaired_uid=uid,
-                        )
-                        register_legacy_interface_uid_alias(
-                            aliases=legacy_interface_uid_aliases,
-                            old_uid=persisted_block_uid,
-                            repaired_uid=uid,
-                        )
-
-                        interface_var: Var | None = get_single_interface_var(block_model)
-                        if interface_var is not None:
-                            register_legacy_interface_uid_alias(
-                                aliases=legacy_interface_uid_aliases,
-                                old_uid=interface_var.uid,
-                                repaired_uid=uid,
-                            )
-                        else:
-                            pass
-
-                        protected_item: graph.ProtectedConnectionBlockItem = graph.ProtectedConnectionBlockItem(
-                            editor=self,
-                            var_factory=self.var_factory,
-                            name=block_model.name,
-                            mode=self.mode,
-                            api_object=self.api_object,
-                        )
-                        protected_item.set_subsystem(block_model)
-                        protected_item.position_changed_callback = self.build_position_changed_callback(uid)
-                        protected_item.build_item()
-                        protected_item.recolour()
-                        self.apply_diagram_node_color_to_block_item(protected_item)
-                        self.scene.add_block_item(block_uid=block_model.uid, item=protected_item)
-                        protected_item.setPos(QPointF(node.x, node.y))
-                        uid_to_blockitem[uid] = protected_item
-
-                        current_count: int = self.block_counters.get(block_type, 0) + 1
-                        self.block_counters[block_type] = current_count
-                    else:
-                        pass
-                elif self.mode == DynamicSimulationMode.RMS:
-                    # RMS retains its current grouped measurement container;
-                    # every variable in the block becomes one visible port.
-                    if block_model is not None:
-                        measurements_item: graph.MeasurementsItem = graph.MeasurementsItem(
-                            editor=self,
-                            var_factory=self.var_factory,
-                            name=block_model.name,
-                            mode=self.mode,
-                            api_object=self.api_object,
-                        )
-                        measurements_item.set_subsystem(block_model)
-                        measurements_item.position_changed_callback = self.build_position_changed_callback(uid)
-                        measurements_item.build_item()
-                        measurements_item.recolour()
-                        self.apply_diagram_node_color_to_block_item(measurements_item)
-                        self.scene.add_block_item(block_uid=block_model.uid, item=measurements_item)
-                        measurements_item.setPos(QPointF(node.x, node.y))
-                        uid_to_blockitem[node.device_uid] = measurements_item
-
-                        current_count = self.block_counters.get(block_type, 0) + 1
-                        self.block_counters[block_type] = current_count
-                    else:
-                        # A malformed persisted RMS boundary cannot be rendered
-                        # safely because its grouped port model is unavailable.
-                        pass
+                    current_count = self.block_counters.get(block_type, 0) + 1
+                    self.block_counters[block_type] = current_count
                 else:
+                    # A malformed persisted RMS boundary cannot be rendered
+                    # safely because its grouped port model is unavailable.
                     pass
+
             elif block_model is None:
                 # Malformed non-interface nodes are skipped without aborting the rebuild.
                 pass
@@ -12971,6 +10793,29 @@ class DynamicBlockEditorGUI(QtWidgets.QMainWindow):
                     )
 
                 self.block_counters[block_type] = count
+                item.recolour()
+            elif block_type in (BlockType.INTEGRATOR, BlockType.STARTUP_FREEZE_INTEGRATOR):
+                item = graph.IntegratorItem(
+                    editor=self,
+                    var_factory=self.var_factory,
+                    subsys=block_model,
+                    api_object=self.api_object,
+                    mode=self.mode,
+                    block_type=block_type,
+                    name=block_model.name,
+                    position_changed_callback=self.build_position_changed_callback(block_model.uid),
+                )
+                item.recolour()
+            elif block_type == BlockType.DERIVATIVE:
+                item = graph.DerivativeItem(
+                    editor=self,
+                    var_factory=self.var_factory,
+                    subsys=block_model,
+                    api_object=self.api_object,
+                    mode=self.mode,
+                    name=block_model.name,
+                    position_changed_callback=self.build_position_changed_callback(block_model.uid),
+                )
                 item.recolour()
             elif block_type in self.UNARY_MATH_BLOCK_TYPES:
                 if block_type is not None:
@@ -13011,12 +10856,12 @@ class DynamicBlockEditorGUI(QtWidgets.QMainWindow):
         # Restore From/To pairs before branches are replayed. Both graphical
         # tags are rebound to one stable symbolic identity, and any legacy
         # downstream VarFactory edges are migrated to that identity.
-        if self.mode == DynamicSimulationMode.EMT:
+        # if self.mode == DynamicSimulationMode.EMT:
             # Only EMT uses individual protected wrappers. RMS grouped
             # MeasurementsItems are already materialized by the loop above.
-            self._materialize_missing_root_interface_scene_items(uid_to_blockitem)
-        else:
-            pass
+            # self._materialize_missing_root_interface_scene_items(uid_to_blockitem)
+        # else:
+        #     pass
 
         self._restore_signal_pair_relationships(
             signal_input_items=signal_in_items,
@@ -13402,6 +11247,74 @@ class DynamicBlockEditorGUI(QtWidgets.QMainWindow):
                 event.ignore()
         else:
             event.ignore()
+
+    def ensure_correct_bus_variables(self, block_model: Block):
+        # find # bus variables and check
+
+        bus_vars_list: List[Var] = list()
+        if isinstance(self.api_object, BranchParent):
+
+            # connect bus variables
+
+            # get bus variables for bus from
+            if self.api_object.bus_from.is_dc:
+                Vf_dc, _, _, _ = get_bus_emt_algebraic_vars(self.api_object.bus_from.emt_model)
+                if Vf_dc is not None:
+                    bus_vars_list.append(Vf_dc)
+
+            else:
+                vf_N, vf_A, vf_B, vf_C = get_bus_emt_algebraic_vars(self.api_object.bus_from.emt_model)
+                if vf_N is not None:
+                    bus_vars_list.append(vf_N)
+                if vf_A is not None:
+                    bus_vars_list.append(vf_A)
+                if vf_B is not None:
+                    bus_vars_list.append(vf_B)
+                if vf_C is not None:
+                    bus_vars_list.append(vf_C)
+
+            # get bus variables for bus to
+            if self.api_object.bus_to.is_dc:
+                Vt_dc, _, _, _ = get_bus_emt_algebraic_vars(self.api_object.bus_to.emt_model)
+                if Vt_dc is not None:
+                    bus_vars_list.append(Vt_dc)
+
+
+            else:
+                vt_N, vt_A, vt_B, vt_C = get_bus_emt_algebraic_vars(self.api_object.bus_to.emt_model)
+                if vt_N is not None:
+                    bus_vars_list.append(vt_N)
+                if vt_A is not None:
+                    bus_vars_list.append(vt_A)
+                if vt_B is not None:
+                    bus_vars_list.append(vt_B)
+                if vt_C is not None:
+                    bus_vars_list.append(vt_C)
+
+
+        elif isinstance(self.api_object, InjectionParent):
+
+            # connect bus variables
+
+            if self.api_object.bus.is_dc:
+                Vdc, _, _, _ = get_bus_emt_algebraic_vars(self.api_object.bus.emt_model)
+                if Vdc is not None:
+                    bus_vars_list.append(Vdc)
+
+
+            else:
+                v_N, v_A, v_B, v_C = get_bus_emt_algebraic_vars(self.api_object.bus.emt_model)
+                if v_N is not None:
+                    bus_vars_list.append(v_N)
+                if v_A is not None:
+                    bus_vars_list.append(v_A)
+                if v_B is not None:
+                    bus_vars_list.append(v_B)
+                if v_C is not None:
+                    bus_vars_list.append(v_C)
+
+        else:
+            pass
 
     def set_dark_mode(self) -> None:
         """

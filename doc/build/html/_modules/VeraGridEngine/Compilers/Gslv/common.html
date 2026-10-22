@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Compilers.Gslv.common &mdash; VeraGrid 6.7.13 documentation</title>
+  <title>VeraGridEngine.Compilers.Gslv.common &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=16fbabd8"></script>
+      <script src="../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -136,10 +136,10 @@
 <div class="viewcode-block" id="get_gslv_mip_solvers_list">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Compilers.Gslv.html#VeraGridEngine.Compilers.Gslv.common.get_gslv_mip_solvers_list">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_gslv_mip_solvers_list</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Get list of available MIP solvers</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">GSLV_AVAILABLE</span><span class="p">:</span>
         <span class="k">return</span> <span class="nb">list</span><span class="p">()</span>
     <span class="k">else</span><span class="p">:</span>
@@ -148,58 +148,58 @@
 
 <div class="viewcode-block" id="convert_tap_module_control_mode_dict">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Compilers.Gslv.html#VeraGridEngine.Compilers.Gslv.common.convert_tap_module_control_mode_dict">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">convert_tap_module_control_mode_dict</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">TapModuleControl</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="s2">&quot;pg.TapModuleControl&quot;</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">convert_tap_module_control_mode_dict</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">TapModuleControl</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="s2">"pg.TapModuleControl"</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Function to convert a dictionary of TapModuleControl modes to pg.TapModuleControl modes</span>
 <span class="sd">    :param data:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="p">{</span><span class="n">i</span><span class="p">:</span> <span class="n">tap_module_control_mode_dict</span><span class="p">[</span><span class="n">val</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span></div>
 
 
 <div class="viewcode-block" id="convert_tap_module_control_mode_lst">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Compilers.Gslv.html#VeraGridEngine.Compilers.Gslv.common.convert_tap_module_control_mode_lst">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">convert_tap_module_control_mode_lst</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">TapModuleControl</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="s2">&quot;pg.TapModuleControl&quot;</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">convert_tap_module_control_mode_lst</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">TapModuleControl</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="s2">"pg.TapModuleControl"</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Function to convert a list of TapModuleControl modes to pg.TapModuleControl modes</span>
 <span class="sd">    :param data:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="p">[</span><span class="n">tap_module_control_mode_dict</span><span class="p">[</span><span class="n">val</span><span class="p">]</span> <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">data</span><span class="p">]</span></div>
 
 
 <div class="viewcode-block" id="convert_tap_phase_control_mode_dict">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Compilers.Gslv.html#VeraGridEngine.Compilers.Gslv.common.convert_tap_phase_control_mode_dict">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">convert_tap_phase_control_mode_dict</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">TapPhaseControl</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="s2">&quot;pg.TapPhaseControl&quot;</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">convert_tap_phase_control_mode_dict</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">TapPhaseControl</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="s2">"pg.TapPhaseControl"</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Function to convert a dictionary of TapPhaseControl modes to pg.TapPhaseControl modes</span>
 <span class="sd">    :param data:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="p">{</span><span class="n">i</span><span class="p">:</span> <span class="n">tap_phase_control_mode_dict</span><span class="p">[</span><span class="n">val</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span></div>
 
 
 <div class="viewcode-block" id="convert_tap_phase_control_mode_lst">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Compilers.Gslv.html#VeraGridEngine.Compilers.Gslv.common.convert_tap_phase_control_mode_lst">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">convert_tap_phase_control_mode_lst</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">TapPhaseControl</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="s2">&quot;pg.TapPhaseControl&quot;</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">convert_tap_phase_control_mode_lst</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">TapPhaseControl</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="s2">"pg.TapPhaseControl"</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Function to convert a list of TapPhaseControl modes to pg.TapPhaseControl modes</span>
 <span class="sd">    :param data:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="p">[</span><span class="n">tap_phase_control_mode_dict</span><span class="p">[</span><span class="n">val</span><span class="p">]</span> <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">data</span><span class="p">]</span></div>
 
 
 <div class="viewcode-block" id="fill_profile">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Compilers.Gslv.html#VeraGridEngine.Compilers.Gslv.common.fill_profile">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">fill_profile</span><span class="p">(</span><span class="n">gslv_profile</span><span class="p">:</span> <span class="s2">&quot;pg.Profiledouble|pg.Profilebool|pg.Profileint|pg.Profileuint&quot;</span><span class="p">,</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">fill_profile</span><span class="p">(</span><span class="n">gslv_profile</span><span class="p">:</span> <span class="s2">"pg.Profiledouble|pg.Profilebool|pg.Profileint|pg.Profileuint"</span><span class="p">,</span>
                  <span class="n">gc_profile</span><span class="p">:</span> <span class="n">AnyProfile</span><span class="p">,</span>
                  <span class="n">use_time_series</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
                  <span class="n">time_indices</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">IntVec</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span>
                  <span class="n">n_time</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
                  <span class="n">default_val</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">bool</span> <span class="o">|</span> <span class="n">TapPhaseControl</span> <span class="o">|</span> <span class="n">TapModuleControl</span> <span class="o">=</span> <span class="mi">0</span>
-                 <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;pg.Profiledouble|pg.Profilebool|pg.Profileint|pg.Profileuint&quot;</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+                 <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"pg.Profiledouble|pg.Profilebool|pg.Profileint|pg.Profileuint"</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Generates a default time series</span>
 <span class="sd">    :param gslv_profile: Profile from gslv to fill in</span>
 <span class="sd">    :param gc_profile: Profile from veragrid to convert</span>
@@ -208,7 +208,7 @@
 <span class="sd">    :param n_time: number of time steps</span>
 <span class="sd">    :param default_val: Default value</span>
 <span class="sd">    :return: Filled GSLV profile.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">if</span> <span class="n">use_time_series</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">gc_profile</span><span class="o">.</span><span class="n">is_sparse</span><span class="p">:</span>
@@ -314,13 +314,13 @@
 
 <div class="viewcode-block" id="fill_profile_with_array">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Compilers.Gslv.html#VeraGridEngine.Compilers.Gslv.common.fill_profile_with_array">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">fill_profile_with_array</span><span class="p">(</span><span class="n">gslv_profile</span><span class="p">:</span> <span class="s2">&quot;pg.Profiledouble&quot;</span><span class="p">,</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">fill_profile_with_array</span><span class="p">(</span><span class="n">gslv_profile</span><span class="p">:</span> <span class="s2">"pg.Profiledouble"</span><span class="p">,</span>
                             <span class="n">arr</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
                             <span class="n">use_time_series</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
                             <span class="n">time_indices</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">IntVec</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span>
                             <span class="n">n_time</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
-                            <span class="n">default_val</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;pg.Profiledouble&quot;</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+                            <span class="n">default_val</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"pg.Profiledouble"</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Generate one profile from a dense array.</span>
 
 <span class="sd">    :param gslv_profile: GSLV profile to fill.</span>
@@ -330,7 +330,7 @@
 <span class="sd">    :param n_time: Number of exported time steps.</span>
 <span class="sd">    :param default_val: Scalar fallback value for snapshot exports.</span>
 <span class="sd">    :return: Filled GSLV profile.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">if</span> <span class="n">use_time_series</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">time_indices</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -350,11 +350,11 @@
 
 <div class="viewcode-block" id="set_injection_associations">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Compilers.Gslv.html#VeraGridEngine.Compilers.Gslv.common.set_injection_associations">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">set_injection_associations</span><span class="p">(</span><span class="n">gslv_elm</span><span class="p">:</span> <span class="s2">&quot;pg.InjectionParent&quot;</span><span class="p">,</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">set_injection_associations</span><span class="p">(</span><span class="n">gslv_elm</span><span class="p">:</span> <span class="s2">"pg.InjectionParent"</span><span class="p">,</span>
                                <span class="n">elm</span><span class="p">:</span> <span class="n">Load</span> <span class="o">|</span> <span class="n">Generator</span> <span class="o">|</span> <span class="n">StaticGenerator</span> <span class="o">|</span> <span class="n">Shunt</span> <span class="o">|</span> <span class="n">ControllableShunt</span><span class="p">,</span>
-                               <span class="n">facility_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Facility</span><span class="p">,</span> <span class="s2">&quot;pg.Facility&quot;</span><span class="p">],</span>
-                               <span class="n">technology_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Technology</span><span class="p">,</span> <span class="s2">&quot;pg.Technology&quot;</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+                               <span class="n">facility_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Facility</span><span class="p">,</span> <span class="s2">"pg.Facility"</span><span class="p">],</span>
+                               <span class="n">technology_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Technology</span><span class="p">,</span> <span class="s2">"pg.Technology"</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Copy common VeraGrid injection associations into one GSLV injection.</span>
 
 <span class="sd">    :param gslv_elm: Target GSLV injection.</span>
@@ -362,7 +362,7 @@
 <span class="sd">    :param facility_dict: VeraGrid-to-GSLV facility lookup.</span>
 <span class="sd">    :param technology_dict: VeraGrid-to-GSLV technology lookup.</span>
 <span class="sd">    :return: None.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">elm</span><span class="o">.</span><span class="n">facility</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">pass</span>
     <span class="k">else</span><span class="p">:</span>
@@ -383,13 +383,13 @@
 
 <div class="viewcode-block" id="set_generator_associations">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Compilers.Gslv.html#VeraGridEngine.Compilers.Gslv.common.set_generator_associations">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">set_generator_associations</span><span class="p">(</span><span class="n">gslv_elm</span><span class="p">:</span> <span class="s2">&quot;pg.Generator&quot;</span><span class="p">,</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">set_generator_associations</span><span class="p">(</span><span class="n">gslv_elm</span><span class="p">:</span> <span class="s2">"pg.Generator"</span><span class="p">,</span>
                                <span class="n">elm</span><span class="p">:</span> <span class="n">Generator</span><span class="p">,</span>
-                               <span class="n">facility_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Facility</span><span class="p">,</span> <span class="s2">&quot;pg.Facility&quot;</span><span class="p">],</span>
-                               <span class="n">technology_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Technology</span><span class="p">,</span> <span class="s2">&quot;pg.Technology&quot;</span><span class="p">],</span>
-                               <span class="n">fuel_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Fuel</span><span class="p">,</span> <span class="s2">&quot;pg.Fuel&quot;</span><span class="p">],</span>
-                               <span class="n">emission_gas_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">EmissionGas</span><span class="p">,</span> <span class="s2">&quot;pg.EmissionGas&quot;</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+                               <span class="n">facility_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Facility</span><span class="p">,</span> <span class="s2">"pg.Facility"</span><span class="p">],</span>
+                               <span class="n">technology_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Technology</span><span class="p">,</span> <span class="s2">"pg.Technology"</span><span class="p">],</span>
+                               <span class="n">fuel_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Fuel</span><span class="p">,</span> <span class="s2">"pg.Fuel"</span><span class="p">],</span>
+                               <span class="n">emission_gas_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">EmissionGas</span><span class="p">,</span> <span class="s2">"pg.EmissionGas"</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Copy VeraGrid generator associations into one GSLV generator-like injection.</span>
 
 <span class="sd">    :param gslv_elm: Target GSLV generator or battery.</span>
@@ -399,7 +399,7 @@
 <span class="sd">    :param fuel_dict: VeraGrid-to-GSLV fuel lookup.</span>
 <span class="sd">    :param emission_gas_dict: VeraGrid-to-GSLV emission gas lookup.</span>
 <span class="sd">    :return: None.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">set_injection_associations</span><span class="p">(</span>
         <span class="n">gslv_elm</span><span class="o">=</span><span class="n">gslv_elm</span><span class="p">,</span>
         <span class="n">elm</span><span class="o">=</span><span class="n">elm</span><span class="p">,</span>
@@ -428,14 +428,14 @@
         <span class="n">use_time_series</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
         <span class="n">time_indices</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">IntVec</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span>
         <span class="n">n_time</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Return the original VeraGrid snapshot index when one three-phase slice is being exported.</span>
 
 <span class="sd">    :param use_time_series: Whether the conversion uses time-series slicing.</span>
 <span class="sd">    :param time_indices: Requested time indices.</span>
 <span class="sd">    :param n_time: Number of exported time steps.</span>
 <span class="sd">    :return: Original time index when there is exactly one slice, else ``None``.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">use_time_series</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">time_indices</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">n_time</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
@@ -450,15 +450,15 @@
 
 <div class="viewcode-block" id="apply_three_phase_load_data">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Compilers.Gslv.html#VeraGridEngine.Compilers.Gslv.common.apply_three_phase_load_data">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">apply_three_phase_load_data</span><span class="p">(</span><span class="n">gslv_load</span><span class="p">:</span> <span class="s2">&quot;pg.Load&quot;</span><span class="p">,</span> <span class="n">elm</span><span class="p">:</span> <span class="n">Load</span><span class="p">,</span> <span class="n">time_index</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">apply_three_phase_load_data</span><span class="p">(</span><span class="n">gslv_load</span><span class="p">:</span> <span class="s2">"pg.Load"</span><span class="p">,</span> <span class="n">elm</span><span class="p">:</span> <span class="n">Load</span><span class="p">,</span> <span class="n">time_index</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Copy explicit three-phase load data into one GSLV load object.</span>
 
 <span class="sd">    :param gslv_load: Target GSLV load.</span>
 <span class="sd">    :param elm: Source VeraGrid load.</span>
 <span class="sd">    :param time_index: Source time index when exporting one time slice.</span>
 <span class="sd">    :return: None.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">pa</span><span class="p">:</span> <span class="nb">float</span>
     <span class="n">pb</span><span class="p">:</span> <span class="nb">float</span>
     <span class="n">pc</span><span class="p">:</span> <span class="nb">float</span>
@@ -544,17 +544,17 @@
 <div class="viewcode-block" id="apply_three_phase_shunt_data">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Compilers.Gslv.html#VeraGridEngine.Compilers.Gslv.common.apply_three_phase_shunt_data">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">apply_three_phase_shunt_data</span><span class="p">(</span>
-        <span class="n">gslv_shunt</span><span class="p">:</span> <span class="s2">&quot;pg.Shunt | pg.ControllableShunt&quot;</span><span class="p">,</span>
+        <span class="n">gslv_shunt</span><span class="p">:</span> <span class="s2">"pg.Shunt | pg.ControllableShunt"</span><span class="p">,</span>
         <span class="n">elm</span><span class="p">:</span> <span class="n">ShuntParent</span><span class="p">,</span>
         <span class="n">time_index</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Copy explicit three-phase shunt data into one GSLV shunt-like object.</span>
 
 <span class="sd">    :param gslv_shunt: Target GSLV shunt-like object.</span>
 <span class="sd">    :param elm: Source VeraGrid shunt-like object.</span>
 <span class="sd">    :param time_index: Source time index when exporting one time slice.</span>
 <span class="sd">    :return: None.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">ga</span><span class="p">:</span> <span class="nb">float</span>
     <span class="n">gb</span><span class="p">:</span> <span class="nb">float</span>
     <span class="n">gc</span><span class="p">:</span> <span class="nb">float</span>

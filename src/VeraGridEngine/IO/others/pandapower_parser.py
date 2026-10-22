@@ -17,6 +17,10 @@ from VeraGridEngine.enumerations import (ExternalGridMode, TapChangerTypes, Gene
 from VeraGridEngine.Devices.types import ALL_DEV_TYPES
 from VeraGridEngine.basic_structures import Logger
 
+from VeraGridEngine.Utils.optional_dependencies import optional_dependency_failure
+
+# Old pandapower or incompatible NumPy binaries must disable this reader, not GUI startup.
+# Keep the required exports inside the guard; importing the package alone is insufficient.
 try:
     alias_map = {
         "Inf": np.inf,
@@ -36,10 +40,12 @@ try:
     from pandapower.io_utils import PPJSONDecoder
 
     PANDAPOWER_AVAILABLE = True
+    PANDAPOWER_UNAVAILABLE_REASON: str = ""
 
-except ImportError:
+except (ImportError, AttributeError, OSError, RuntimeError, ValueError, TypeError) as error:
     pandapower = None
     PANDAPOWER_AVAILABLE = False
+    PANDAPOWER_UNAVAILABLE_REASON = optional_dependency_failure("pandapower", error)
 
 
 def is_pandapower_pickle(file_path):
@@ -237,7 +243,7 @@ class Panda2VeraGrid:
             self.panda_net = None
             self.fBase = 50.0
             self.load_scale = 1
-            self.logger.add_info("Pandapower not available :/, try pip install pandapower")
+            self.logger.add_error(f"Pandapower unavailable: {PANDAPOWER_UNAVAILABLE_REASON}")
 
     def register(self, panda_type: str, panda_code: int, api_obj: ALL_DEV_TYPES):
         """

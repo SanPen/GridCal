@@ -1374,8 +1374,9 @@ def get_generator_data(
                               fill_three_phase=fill_three_phase)
 
         if opf_results is not None:
-            # overwrite P with the OPF results
-            if time_series:
+            # Overwrite P with the OPF results.
+            # Need to check if it is time series or a snapshot 
+            if time_series and opf_results.generator_power.ndim == 2:
                 data.p[k] = opf_results.generator_power[t_idx, k] - opf_results.generator_shedding[t_idx, k]
             else:
                 data.p[k] = opf_results.generator_power[k] - opf_results.generator_shedding[k]
@@ -1453,8 +1454,9 @@ def get_battery_data(
         data.charge_efficiency[k] = elm.charge_efficiency
 
         if opf_results is not None:
-            # overwrite P with the OPF results
-            if time_series:
+            # overwrite P with the OPF results.
+            # Need to discern between time series and single snapshot
+            if time_series and opf_results.battery_power.ndim == 2:
                 data.p[k] = opf_results.battery_power[t_idx, k]
             else:
                 data.p[k] = opf_results.battery_power[k]
@@ -1742,10 +1744,14 @@ def get_branch_data(
             k4 = 4 * ii + idx4
             y1 = elm.ys.values + elm.ysh.values / 2.0 * 1e-6
             y2 = - elm.ys.values
-            data.Yff3[k4, :] = y1
-            data.Yft3[k4, :] = y2
-            data.Ytf3[k4, :] = y2
-            data.Ytt3[k4, :] = y1
+            # Stored Line matrices use the from voltage reference. Convert both
+            # voltage inputs and physical terminal currents exactly once.
+            tap_from: float = data.virtual_tap_f[ii]
+            tap_to: float = data.virtual_tap_t[ii]
+            data.Yff3[k4, :] = y1 / (tap_from * tap_from)
+            data.Yft3[k4, :] = y2 / (tap_from * tap_to)
+            data.Ytf3[k4, :] = y2 / (tap_from * tap_to)
+            data.Ytt3[k4, :] = y1 / (tap_to * tap_to)
 
             """ Save the phases of each line """
             data.phN[ii] = elm.ys.phN
@@ -2355,10 +2361,38 @@ def get_vsc_data(
         data.control2_droop_val_min[ii] = elm.control2_droop_val_min
         data.control2_droop_val_max[ii] = elm.control2_droop_val_max
 
+        control1_dev: Bus | BRANCH_TYPES | None = elm.get_control1_dev_at(t_idx)
+        control2_dev: Bus | BRANCH_TYPES | None = elm.get_control2_dev_at(t_idx)
+        if opf_results is not None:
+            # Reproduce the optimized converter flow. The converter holding the DC voltage keeps
+            # closing its link balance, and every other one injects the optimized power at unit
+            # power factor. The AC side power is minus the flow leaving the DC (from) side.
+            if opf_results.vsc_Pf.ndim == 1:
+                vsc_flow: float = float(opf_results.vsc_Pf[i])
+            else:
+                vsc_flow = float(opf_results.vsc_Pf[t_idx, i])
+            if data.control1_int[ii] == ConverterControlType.Vm_dc.idx():
+                data.control2_int[ii] = ConverterControlType.Qac.idx()
+                data.control2_val[ii] = 0.0
+                control2_dev = None
+            elif data.control2_int[ii] == ConverterControlType.Vm_dc.idx():
+                data.control1_int[ii] = ConverterControlType.Qac.idx()
+                data.control1_val[ii] = 0.0
+                control1_dev = None
+            else:
+                data.control1_int[ii] = ConverterControlType.Pac.idx()
+                data.control1_val[ii] = -vsc_flow
+                data.control2_int[ii] = ConverterControlType.Qac.idx()
+                data.control2_val[ii] = 0.0
+                control1_dev = None
+                control2_dev = None
+        else:
+            pass  # keep the converter controls of the grid
+
         # Using DC_positive to set the controls, may need to also pass DC_negative
         set_control_dev(k=ii, f=f, t=t,
                         control_int=data.control1_int[ii],
-                        control_dev=elm.get_control1_dev_at(t_idx),
+                        control_dev=control1_dev,
                         control_val=data.control1_val[ii],
                         control_bus_idx=data.control1_bus_idx,
                         control_branch_idx=data.control1_branch_idx,
@@ -2371,7 +2405,7 @@ def get_vsc_data(
 
         set_control_dev(k=ii, f=f, t=t,
                         control_int=data.control2_int[ii],
-                        control_dev=elm.get_control2_dev_at(t_idx),
+                        control_dev=control2_dev,
                         control_val=data.control2_val[ii],
                         control_bus_idx=data.control2_bus_idx,
                         control_branch_idx=data.control2_branch_idx,
@@ -2444,7 +2478,11 @@ def get_hvdc_data(data: HvdcData,
         if opf_results is not None:
             # if we are taking the values from the OPF, do not allow the free mode
             data.control_mode_int[i] = HvdcControlType.type_1_Pset.idx()
-            data.Pset[i] = opf_results.hvdc_Pf[t_idx, i]
+            # a single operating point, or one row per time step
+            if opf_results.hvdc_Pf.ndim == 1:
+                data.Pset[i] = opf_results.hvdc_Pf[i]
+            else:
+                data.Pset[i] = opf_results.hvdc_Pf[t_idx, i]
         else:
             data.control_mode_int[i] = elm.control_mode.idx()
             data.Pset[i] = elm.get_Pset_at(t_idx)

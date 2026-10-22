@@ -7,11 +7,14 @@ from typing import Any, List, Tuple
 import numpy as np
 
 from VeraGridEngine.Devices.Branches.line import Line
+from VeraGridEngine.Devices.Dynamic.var_factory import VarFactory
 from VeraGridEngine.Simulations.EMT.JMARTI_Sim.jmarti_fit_bundle import JMartiFitBundle
 from VeraGridEngine.Simulations.EMT.JMARTI_Sim.jmarti_runtime_data import JMartiModeRuntimeData
 from VeraGridEngine.Simulations.EMT.JMARTI_Sim.jmarti_runtime_data import JMartiRuntimeData
 from VeraGridEngine.Simulations.EMT.JMARTI_Sim.jmarti_runtime_data import build_jmarti_runtime_data
+from VeraGridEngine.Simulations.EMT.JMARTI_Sim.jmarti_runtime_data import is_jmarti_phase_real_runtime_data
 from VeraGridEngine.Utils.Symbolic.block import Block, Var
+from VeraGridEngine.Utils.Symbolic.symbolic import Const, Expr
 from VeraGridEngine.enumerations import VarPowerFlowReferenceType
 
 
@@ -37,7 +40,6 @@ class JMartiHistoryRuntime:
         'Ih_f',
         'Ih_t',
         'direct_yc_modal',
-        'direct_zc_modal',
         'direct_yc_phase',
         'max_delay_steps',
         'buffer_size',
@@ -55,6 +57,33 @@ class JMartiHistoryRuntime:
         'idx_vt',
         'idx_p_hf',
         'idx_p_ht',
+        'coupling_block',
+        'coupling_var_factory',
+        'instantaneous_h_modal',
+        'phase_coupling',
+        'phase_current_coupling',
+        'outgoing_wave_f_re',
+        'outgoing_wave_t_re',
+        'incoming_voltage_f_re',
+        'incoming_voltage_t_re',
+        'idx_wave_f_re',
+        'idx_wave_t_re',
+        'idx_q_f_re',
+        'idx_q_t_re',
+        'initial_source_phasors',
+        'initial_source_frequency_hz',
+        'initial_source_available',
+        'initial_phase_waves',
+        'initial_voltage_offsets',
+        'phase_real_kernel',
+        'outgoing_wave_f_im',
+        'outgoing_wave_t_im',
+        'incoming_voltage_f_im',
+        'incoming_voltage_t_im',
+        'idx_wave_f_im',
+        'idx_wave_t_im',
+        'idx_q_f_im',
+        'idx_q_t_im',
     )
 
     def __init__(self, line: Any, line_block: Block, h: float) -> None:
@@ -85,7 +114,6 @@ class JMartiHistoryRuntime:
         self.Ih_f: List[Var] = _extract_jmarti_history_vars(line_block=self.block, prefix="Ih_f_", active_ph=self.active_ph, line_name=line.name)
         self.Ih_t: List[Var] = _extract_jmarti_history_vars(line_block=self.block, prefix="Ih_t_", active_ph=self.active_ph, line_name=line.name)
         self.direct_yc_modal: np.ndarray = np.zeros(self.m, dtype=np.complex128)
-        self.direct_zc_modal: np.ndarray = np.zeros(self.m, dtype=np.complex128)
         self.direct_yc_phase: np.ndarray = np.zeros((self.m, self.m), dtype=np.complex128)
         self.max_delay_steps: int = 0
         self.buffer_size: int = 0
@@ -103,6 +131,35 @@ class JMartiHistoryRuntime:
         self.idx_vt = None
         self.idx_p_hf = None
         self.idx_p_ht = None
+
+        # Companion ownership and restart storage are private to this problem.
+        self.coupling_block: Block | None = None
+        self.coupling_var_factory: VarFactory | None = None
+        self.instantaneous_h_modal: np.ndarray = np.zeros(self.m, dtype=complex)
+        self.phase_coupling: np.ndarray = np.empty((0, 0), dtype=complex)
+        self.phase_current_coupling: np.ndarray = np.empty((0, 0), dtype=complex)
+        self.phase_real_kernel: bool = False
+        self.initial_source_phasors: np.ndarray = np.empty((4, 0), dtype=complex)
+        self.initial_source_frequency_hz: float = 0.0
+        self.initial_source_available: bool = False
+        self.initial_phase_waves: np.ndarray = np.empty((2, 0), dtype=complex)
+        self.initial_voltage_offsets: np.ndarray = np.empty((2, 0), dtype=complex)
+        self.outgoing_wave_f_re: list[Var] = list()
+        self.incoming_voltage_f_re: list[Var] = list()
+        self.idx_wave_f_re: list[int] = list()
+        self.idx_q_f_re: list[int] = list()
+        self.outgoing_wave_f_im: list[Var] = list()
+        self.incoming_voltage_f_im: list[Var] = list()
+        self.idx_wave_f_im: list[int] = list()
+        self.idx_q_f_im: list[int] = list()
+        self.outgoing_wave_t_re: list[Var] = list()
+        self.incoming_voltage_t_re: list[Var] = list()
+        self.idx_wave_t_re: list[int] = list()
+        self.idx_q_t_re: list[int] = list()
+        self.outgoing_wave_t_im: list[Var] = list()
+        self.incoming_voltage_t_im: list[Var] = list()
+        self.idx_wave_t_im: list[int] = list()
+        self.idx_q_t_im: list[int] = list()
 
         _initialize_jmarti_runtime_storage(self)
 
@@ -158,6 +215,37 @@ class JMartiHistoryRuntime:
             self.v_t_vars.append(vt_var)
             phase_list_index += 1
 
+        if self.coupling_block is not None:
+            # The same private rows enter the common g for every backend;
+            # no local division by 1-B^2 is valid at a singular direct path.
+            row: int
+            col: int
+            for row in range(self.m):
+                from_real: Expr = self.outgoing_wave_f_re[row] + self.incoming_voltage_f_re[row] - self.v_f_vars[row]
+                to_real: Expr = self.outgoing_wave_t_re[row] + self.incoming_voltage_t_re[row] - self.v_t_vars[row]
+                for col in range(self.m):
+                    from_real = from_real + float(self.phase_coupling[row, col].real) * self.outgoing_wave_t_re[col]
+                    to_real = to_real + float(self.phase_coupling[row, col].real) * self.outgoing_wave_f_re[col]
+                    if self.phase_real_kernel:
+                        pass
+                    else:
+                        from_real = from_real - float(self.phase_coupling[row, col].imag) * self.outgoing_wave_t_im[col]
+                        to_real = to_real - float(self.phase_coupling[row, col].imag) * self.outgoing_wave_f_im[col]
+                self.coupling_block.algebraic_eqs[row] = from_real
+                self.coupling_block.algebraic_eqs[self.m + row] = to_real
+                if self.phase_real_kernel:
+                    pass
+                else:
+                    from_imag: Expr = self.outgoing_wave_f_im[row] + self.incoming_voltage_f_im[row]
+                    to_imag: Expr = self.outgoing_wave_t_im[row] + self.incoming_voltage_t_im[row]
+                    for col in range(self.m):
+                        from_imag = from_imag + float(self.phase_coupling[row, col].imag) * self.outgoing_wave_t_re[col] + float(self.phase_coupling[row, col].real) * self.outgoing_wave_t_im[col]
+                        to_imag = to_imag + float(self.phase_coupling[row, col].imag) * self.outgoing_wave_f_re[col] + float(self.phase_coupling[row, col].real) * self.outgoing_wave_f_im[col]
+                    self.coupling_block.algebraic_eqs[2 * self.m + row] = from_imag
+                    self.coupling_block.algebraic_eqs[3 * self.m + row] = to_imag
+        else:
+            pass
+
     def get_nodal_injections(self) -> Tuple[List[Any], List[Any]]:
         """
         Return the phase-domain Norton injections seen by the EMT nodal solver.
@@ -184,6 +272,16 @@ class JMartiHistoryRuntime:
             while col_index < self.m:
                 expr_f = expr_f + self.direct_yc_phase[row_index, col_index] * self.v_f_vars[col_index]
                 expr_t = expr_t + self.direct_yc_phase[row_index, col_index] * self.v_t_vars[col_index]
+                if self.coupling_block is not None:
+                    expr_f = expr_f - 2.0 * float(self.phase_current_coupling[row_index, col_index].real) * self.outgoing_wave_t_re[col_index]
+                    expr_t = expr_t - 2.0 * float(self.phase_current_coupling[row_index, col_index].real) * self.outgoing_wave_f_re[col_index]
+                    if self.phase_real_kernel:
+                        pass
+                    else:
+                        expr_f = expr_f + 2.0 * float(self.phase_current_coupling[row_index, col_index].imag) * self.outgoing_wave_t_im[col_index]
+                        expr_t = expr_t + 2.0 * float(self.phase_current_coupling[row_index, col_index].imag) * self.outgoing_wave_f_im[col_index]
+                else:
+                    pass
                 col_index += 1
 
             i_f_red.append(expr_f)
@@ -215,6 +313,22 @@ class JMartiHistoryRuntime:
         self.idx_vt = [uid2idx_vars[v.uid] for v in self.v_t_vars]
         self.idx_p_hf = [uid2idx_event_params[p.uid] + params_offset for p in self.Ih_f]
         self.idx_p_ht = [uid2idx_event_params[p.uid] + params_offset for p in self.Ih_t]
+        # Own indices were allocated at construction and are filled in place.
+        variables: list[Var]
+        indices: list[int]
+        index: int
+        for variables, indices in ((self.outgoing_wave_f_re, self.idx_wave_f_re),
+                                   (self.outgoing_wave_t_re, self.idx_wave_t_re),
+                                   (self.outgoing_wave_f_im, self.idx_wave_f_im),
+                                   (self.outgoing_wave_t_im, self.idx_wave_t_im)):
+            for index in range(len(variables)):
+                indices[index] = uid2idx_vars[variables[index].uid]
+        for variables, indices in ((self.incoming_voltage_f_re, self.idx_q_f_re),
+                                   (self.incoming_voltage_t_re, self.idx_q_t_re),
+                                   (self.incoming_voltage_f_im, self.idx_q_f_im),
+                                   (self.incoming_voltage_t_im, self.idx_q_t_im)):
+            for index in range(len(variables)):
+                indices[index] = uid2idx_event_params[variables[index].uid] + params_offset
 
     def get_mode_count(self) -> int:
         """
@@ -229,94 +343,19 @@ class JMartiHistoryRuntime:
                                       v_t0_red: np.ndarray,
                                       i_f0_red: np.ndarray,
                                       i_t0_red: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+        """Initialize a constant point through the full discrete Yc/H owner.
+
+        :param v_f0_red: From-side constant active-phase voltages.
+        :param v_t0_red: To-side constant active-phase voltages.
+        :param i_f0_red: From-side constant active-phase currents.
+        :param i_t0_red: To-side constant active-phase currents.
+        :return: Real Norton offsets including instantaneous wave feedback.
         """
-        Initialize buffers and history parameters from one steady-state point.
-
-        :param v_f0_red: From-side active-phase voltages in phase coordinates.
-        :param v_t0_red: To-side active-phase voltages in phase coordinates.
-        :param i_f0_red: From-side active-phase currents in phase coordinates.
-        :param i_t0_red: To-side active-phase currents in phase coordinates.
-        :return: Tuple ``(ih_f_phase, ih_t_phase)`` used to seed event parameters.
-        """
-        v_f0_modal: np.ndarray = self.runtime_data.get_modal_transform_inv() @ np.asarray(v_f0_red, dtype=np.complex128)
-        v_t0_modal: np.ndarray = self.runtime_data.get_modal_transform_inv() @ np.asarray(v_t0_red, dtype=np.complex128)
-        i_f0_modal: np.ndarray = self.runtime_data.get_modal_transform_inv() @ np.asarray(i_f0_red, dtype=np.complex128)
-        i_t0_modal: np.ndarray = self.runtime_data.get_modal_transform_inv() @ np.asarray(i_t0_red, dtype=np.complex128)
-        a_f0_modal: np.ndarray = 0.5 * (v_f0_modal + self.direct_zc_modal * i_f0_modal)
-        a_t0_modal: np.ndarray = 0.5 * (v_t0_modal + self.direct_zc_modal * i_t0_modal)
-        ih_f_modal: np.ndarray = np.zeros(self.m, dtype=np.complex128)
-        ih_t_modal: np.ndarray = np.zeros(self.m, dtype=np.complex128)
-        buffer_index: int = 0
-        mode_index: int = 0
-        mode_data: JMartiModeRuntimeData
-        current_hres_from: complex
-        current_hres_to: complex
-        yc_input_from: complex
-        yc_input_to: complex
-        yc_order_count: int
-        hres_order_count: int
-
-        while buffer_index < self.buffer_size:
-            self.buf_a_f[buffer_index, :] = a_f0_modal
-            self.buf_a_t[buffer_index, :] = a_t0_modal
-            buffer_index += 1
-
-        self.yc_state_from.fill(0.0)
-        self.yc_state_to.fill(0.0)
-        self.hres_state_from.fill(0.0)
-        self.hres_state_to.fill(0.0)
-
-        while mode_index < self.m:
-            mode_data = self.runtime_data.get_mode_data()[mode_index]
-            yc_order_count = int(self.yc_order_counts[mode_index])
-            hres_order_count = int(self.hres_order_counts[mode_index])
-
-            if hres_order_count > 0:
-                self.hres_state_from[mode_index, :hres_order_count] = _build_jmarti_steady_state_state_row(
-                    alpha=mode_data.get_hres_alpha(),
-                    beta=mode_data.get_hres_beta(),
-                    input_value=a_t0_modal[mode_index],
-                )
-                self.hres_state_to[mode_index, :hres_order_count] = _build_jmarti_steady_state_state_row(
-                    alpha=mode_data.get_hres_alpha(),
-                    beta=mode_data.get_hres_beta(),
-                    input_value=a_f0_modal[mode_index],
-                )
-            else:
-                pass
-
-            current_hres_from = (
-                mode_data.get_hres_constant_term() * a_t0_modal[mode_index]
-                + _sum_state_row(self.hres_state_from, mode_index, hres_order_count)
-            )
-            current_hres_to = (
-                mode_data.get_hres_constant_term() * a_f0_modal[mode_index]
-                + _sum_state_row(self.hres_state_to, mode_index, hres_order_count)
-            )
-            yc_input_from = v_f0_modal[mode_index] - 2.0 * current_hres_from
-            yc_input_to = v_t0_modal[mode_index] - 2.0 * current_hres_to
-
-            if yc_order_count > 0:
-                self.yc_state_from[mode_index, :yc_order_count] = _build_jmarti_steady_state_state_row(
-                    alpha=mode_data.get_yc_alpha(),
-                    beta=mode_data.get_yc_beta(),
-                    input_value=yc_input_from,
-                )
-                self.yc_state_to[mode_index, :yc_order_count] = _build_jmarti_steady_state_state_row(
-                    alpha=mode_data.get_yc_alpha(),
-                    beta=mode_data.get_yc_beta(),
-                    input_value=yc_input_to,
-                )
-            else:
-                pass
-
-            ih_f_modal[mode_index] = _sum_state_row(self.yc_state_from, mode_index, yc_order_count) - 2.0 * self.direct_yc_modal[mode_index] * current_hres_from
-            ih_t_modal[mode_index] = _sum_state_row(self.yc_state_to, mode_index, yc_order_count) - 2.0 * self.direct_yc_modal[mode_index] * current_hres_to
-            mode_index += 1
-
-        return (
-            self.runtime_data.get_modal_transform() @ ih_f_modal,
-            self.runtime_data.get_modal_transform() @ ih_t_modal,
+        return self.initialize_from_fundamental_phasors(
+            1j * np.asarray(v_f0_red) / np.sqrt(2.0),
+            1j * np.asarray(v_t0_red) / np.sqrt(2.0),
+            1j * np.asarray(i_f0_red) / np.sqrt(2.0),
+            1j * np.asarray(i_t0_red) / np.sqrt(2.0), 0.0,
         )
 
     def initialize_from_fundamental_phasors(self,
@@ -325,68 +364,222 @@ class JMartiHistoryRuntime:
                                             i_f0_phasor_red: np.ndarray,
                                             i_t0_phasor_red: np.ndarray,
                                             system_frequency_hz: float) -> tuple[np.ndarray, np.ndarray]:
-        """
-        Initialize one JMARTI runtime from one sinusoidal fundamental operating point.
+        """Initialize real periodic excitation without losing conjugate pole states.
 
-        The runtime states represent first-order discrete filters, so their
-        consistent steady state under a balanced sinusoidal operating point is not
-        the constant-input equilibrium. This initializer seeds the internal modal
-        states with the periodic discrete-time solution at the requested
-        fundamental frequency.
+        The regular boundary determines outgoing waves from terminal voltages and
+        the full delayed propagation response. A numerically singular compatible
+        boundary uses the supplied currents and full discrete admittance to
+        determine its otherwise unobservable wave difference. Every sign/mode
+        is checked before any retained buffer or filter state is modified.
 
-        :param v_f0_phasor_red: From-side phase phasors in RMS complex form.
-        :param v_t0_phasor_red: To-side phase phasors in RMS complex form.
-        :param i_f0_phasor_red: From-side branch-current phasors in RMS complex form.
-        :param i_t0_phasor_red: To-side branch-current phasors in RMS complex form.
-        :param system_frequency_hz: Fundamental system frequency in Hz.
-        :return: Tuple ``(ih_f_phase, ih_t_phase)`` used to seed event parameters.
+        :param v_f0_phasor_red: From-side active-phase RMS voltage phasors.
+        :param v_t0_phasor_red: To-side active-phase RMS voltage phasors.
+        :param i_f0_phasor_red: From-side active-phase RMS current phasors.
+        :param i_t0_phasor_red: To-side active-phase RMS current phasors.
+        :param system_frequency_hz: Excitation frequency in Hz, including DC.
+        :return: Norton histories preserving supplied physical currents at t0.
+        :raises ValueError: If a singular boundary cannot be resolved compatibly.
         """
-        omega = 2.0 * np.pi * float(system_frequency_hz)
-        inverse = self.runtime_data.get_modal_transform_inv()
-        vf_analytic = -1j * np.sqrt(2.0) * np.asarray(v_f0_phasor_red)
-        vt_analytic = -1j * np.sqrt(2.0) * np.asarray(v_t0_phasor_red)
+        omega: float = 2.0 * np.pi * float(system_frequency_hz)
+        inverse: np.ndarray = self.runtime_data.get_modal_transform_inv()
+        analytic_vf: np.ndarray = -1j * np.sqrt(2.0) * np.asarray(v_f0_phasor_red)
+        analytic_vt: np.ndarray = -1j * np.sqrt(2.0) * np.asarray(v_t0_phasor_red)
+        analytic_if: np.ndarray = -1j * np.sqrt(2.0) * np.asarray(i_f0_phasor_red)
+        analytic_it: np.ndarray = -1j * np.sqrt(2.0) * np.asarray(i_t0_phasor_red)
+        # Validate all physical inputs before any retained mutation. Shapes
+        # and coefficient identity remain owned by the typed runtime dataset.
+        transform: np.ndarray = self.runtime_data.get_modal_transform()
+        if (np.isfinite(system_frequency_hz) and np.isfinite(omega)
+                and np.isfinite(analytic_vf).all() and np.isfinite(analytic_vt).all()
+                and np.isfinite(analytic_if).all() and np.isfinite(analytic_it).all()
+                and np.isfinite(inverse).all() and np.isfinite(transform).all()):
+            pass
+        else:
+            raise ValueError("JMARTI periodic terminal data, frequency or modal transform is not finite")
+        advances: np.ndarray = np.exp(1j * omega * self.h * np.array((1.0, -1.0)))
+        voltages_f: np.ndarray = np.empty((2, self.m), dtype=complex)
+        voltages_t: np.ndarray = np.empty((2, self.m), dtype=complex)
+        outgoing_f: np.ndarray = np.empty((2, self.m), dtype=complex)
+        outgoing_t: np.ndarray = np.empty((2, self.m), dtype=complex)
+        delays: np.ndarray = np.empty((2, self.m), dtype=complex)
+        propagations: np.ndarray = np.empty((2, self.m), dtype=complex)
+        sign_index: int
+        mode_index: int
+        mode: JMartiModeRuntimeData
+
+        # Validate and resolve both frequency signs first. Failed preflight must
+        # leave a previously initialized runtime intact instead of clearing it.
+        for sign_index in range(2):
+            currents_f: np.ndarray
+            currents_t: np.ndarray
+            if sign_index == 0:
+                voltages_f[sign_index] = inverse @ analytic_vf / 2.0
+                voltages_t[sign_index] = inverse @ analytic_vt / 2.0
+                currents_f = inverse @ analytic_if / 2.0
+                currents_t = inverse @ analytic_it / 2.0
+            else:
+                voltages_f[sign_index] = inverse @ analytic_vf.conj() / 2.0
+                voltages_t[sign_index] = inverse @ analytic_vt.conj() / 2.0
+                currents_f = inverse @ analytic_if.conj() / 2.0
+                currents_t = inverse @ analytic_it.conj() / 2.0
+            advance: complex = complex(advances[sign_index])
+            for mode_index in range(self.m):
+                mode = self.runtime_data.get_mode_data()[mode_index]
+                fraction: float = min(max(mode.get_residual_delay_s() / self.h, 0.0), 1.0)
+                delay: complex = advance ** (-mode.get_delay_step_count()) * (1.0 - fraction + fraction / advance)
+                h_denominator: np.ndarray = advance - mode.get_hres_alpha()
+                yc_denominator: np.ndarray = advance - mode.get_yc_alpha()
+                if np.any(np.abs(h_denominator) <= 1.0e-14) or np.any(np.abs(yc_denominator) <= 1.0e-14):
+                    raise ValueError("JMARTI periodic filter has an unresolved excitation-frequency pole")
+                else:
+                    pass
+                h_response: complex = complex(mode.get_hres_constant_term() + np.sum(
+                    mode.get_hres_beta() / h_denominator,
+                ))
+                yc_response: complex = complex(mode.get_yc_constant_term() + np.sum(
+                    mode.get_yc_beta() / yc_denominator,
+                ))
+                if np.isfinite(yc_response) and np.isfinite(h_response):
+                    pass
+                else:
+                    raise ValueError("JMARTI periodic full Yc or propagation response is not finite")
+                propagation: complex = h_response * delay
+                voltage_f: complex = complex(voltages_f[sign_index, mode_index])
+                voltage_t: complex = complex(voltages_t[sign_index, mode_index])
+                boundary: np.ndarray = np.array(((1.0, propagation), (propagation, 1.0)), dtype=complex)
+                if np.isfinite(boundary).all() and np.isfinite(voltage_f) and np.isfinite(voltage_t):
+                    pass
+                else:
+                    raise ValueError("JMARTI periodic voltage boundary is not finite")
+                if abs(1.0 - propagation * propagation) <= 1.0e-14:
+                    # Only this degenerate voltage boundary may use the current
+                    # quadrature. Direct Yc would discard the fitted dynamics.
+                    current_f: complex = complex(currents_f[mode_index])
+                    current_t: complex = complex(currents_t[mode_index])
+                    if not np.isfinite(yc_response) or yc_response == 0.0:
+                        raise ValueError("JMARTI singular boundary cannot be resolved with zero or nonfinite full Yc")
+                    else:
+                        pass
+                    wave_f: complex = 0.5 * (voltage_f + current_f / yc_response)
+                    wave_t: complex = 0.5 * (voltage_t + current_t / yc_response)
+                    residuals: np.ndarray = np.array((
+                        wave_f + propagation * wave_t - voltage_f,
+                        wave_t + propagation * wave_f - voltage_t,
+                        yc_response * (wave_f - propagation * wave_t) - current_f,
+                        yc_response * (wave_t - propagation * wave_f) - current_t,
+                    ), dtype=complex)
+                    # Bound each equation separately by its term magnitudes and
+                    # a conservative count of scalar transform/filter/residual
+                    # operations; do not use the test's physical error tolerance.
+                    scales: np.ndarray = np.array((
+                        max(1.0, abs(voltage_f), abs(wave_f) + abs(propagation * wave_t)),
+                        max(1.0, abs(voltage_t), abs(wave_t) + abs(propagation * wave_f)),
+                        max(1.0, abs(current_f), abs(yc_response * wave_f) + abs(yc_response * propagation * wave_t)),
+                        max(1.0, abs(current_t), abs(yc_response * wave_t) + abs(yc_response * propagation * wave_f)),
+                    ), dtype=float)
+                    operation_count: int = 32 + 8 * (self.m + yc_denominator.size + h_denominator.size)
+                    bounds: np.ndarray = np.finfo(np.float64).eps * operation_count * scales
+                    if np.isfinite(residuals).all() and np.isfinite(bounds).all() and np.all(np.abs(residuals) <= bounds):
+                        pass
+                    else:
+                        raise ValueError("JMARTI singular boundary has incompatible terminal voltages or currents")
+                else:
+                    waves: np.ndarray = np.linalg.solve(boundary, np.array((voltage_f, voltage_t), dtype=complex))
+                    wave_f = complex(waves[0])
+                    wave_t = complex(waves[1])
+                if np.isfinite(wave_f) and np.isfinite(wave_t):
+                    pass
+                else:
+                    raise ValueError("JMARTI periodic outgoing waves are not finite")
+                outgoing_f[sign_index, mode_index] = wave_f
+                outgoing_t[sign_index, mode_index] = wave_t
+                delays[sign_index, mode_index] = delay
+                propagations[sign_index, mode_index] = propagation
+
+        # A real excitation contains both signs. Individual conjugate-pole
+        # states remain complex even when their combined output is real.
         self.buf_a_f.fill(0.0)
         self.buf_a_t.fill(0.0)
-        for states in (self.yc_state_from, self.yc_state_to,
-                       self.hres_state_from, self.hres_state_to):
-            states.fill(0.0)
-
-        # A real sinusoid contains both frequency signs. Filter coefficients
-        # may be complex (conjugate pole pairs), so taking real(state) alone
-        # would discard information required by the recurrence.
-        for sign in (1, -1):
-            advance = np.exp(sign * 1j * omega * self.h)
-            vf = inverse @ (vf_analytic if sign == 1 else vf_analytic.conj()) / 2.0
-            vt = inverse @ (vt_analytic if sign == 1 else vt_analytic.conj()) / 2.0
-            for k, mode in enumerate(self.runtime_data.get_mode_data()):
-                fraction = min(max(mode.get_residual_delay_s() / self.h, 0.0), 1.0)
-                delay = advance ** (-mode.get_delay_step_count()) * (1.0 - fraction + fraction / advance)
-                h_response = mode.get_hres_constant_term() + np.sum(
-                    mode.get_hres_beta() / (advance - mode.get_hres_alpha()))
-                propagation = h_response * delay
-                # v_f = a_f + H*a_t and v_t = a_t + H*a_f.
-                af, at = np.linalg.solve(np.array([[1, propagation], [propagation, 1]]),
-                                         np.array([vf[k], vt[k]]))
+        self.yc_state_from.fill(0.0)
+        self.yc_state_to.fill(0.0)
+        self.hres_state_from.fill(0.0)
+        self.hres_state_to.fill(0.0)
+        slot: int
+        for sign_index in range(2):
+            advance = complex(advances[sign_index])
+            for mode_index in range(self.m):
+                mode = self.runtime_data.get_mode_data()[mode_index]
+                wave_f = complex(outgoing_f[sign_index, mode_index])
+                wave_t = complex(outgoing_t[sign_index, mode_index])
                 for slot in range(self.buffer_size):
-                    sample_index = 0 if slot == 0 else slot - self.buffer_size
-                    self.buf_a_f[slot, k] += af * advance ** sample_index
-                    self.buf_a_t[slot, k] += at * advance ** sample_index
-                for states, incoming in ((self.hres_state_from, at), (self.hres_state_to, af)):
-                    count = int(self.hres_order_counts[k])
-                    states[k, :count] += _build_jmarti_periodic_state_row(
-                        mode.get_hres_alpha(), mode.get_hres_beta(), delay * incoming, advance)
-                for states, local, remote in ((self.yc_state_from, vf[k], at),
-                                               (self.yc_state_to, vt[k], af)):
-                    count = int(self.yc_order_counts[k])
-                    states[k, :count] += _build_jmarti_periodic_state_row(
-                        mode.get_yc_alpha(), mode.get_yc_beta(), local - 2 * propagation * remote, advance)
+                    sample_index: int = 0 if slot == 0 else slot - self.buffer_size
+                    self.buf_a_f[slot, mode_index] += wave_f * advance ** sample_index
+                    self.buf_a_t[slot, mode_index] += wave_t * advance ** sample_index
+                h_count: int = int(self.hres_order_counts[mode_index])
+                y_count: int = int(self.yc_order_counts[mode_index])
+                self.hres_state_from[mode_index, :h_count] += _build_jmarti_periodic_state_row(
+                    mode.get_hres_alpha(), mode.get_hres_beta(), delays[sign_index, mode_index] * wave_t, advance,
+                )
+                self.hres_state_to[mode_index, :h_count] += _build_jmarti_periodic_state_row(
+                    mode.get_hres_alpha(), mode.get_hres_beta(), delays[sign_index, mode_index] * wave_f, advance,
+                )
+                self.yc_state_from[mode_index, :y_count] += _build_jmarti_periodic_state_row(
+                    mode.get_yc_alpha(), mode.get_yc_beta(),
+                    voltages_f[sign_index, mode_index] - 2.0 * propagations[sign_index, mode_index] * wave_t, advance,
+                )
+                self.yc_state_to[mode_index, :y_count] += _build_jmarti_periodic_state_row(
+                    mode.get_yc_alpha(), mode.get_yc_beta(),
+                    voltages_t[sign_index, mode_index] - 2.0 * propagations[sign_index, mode_index] * wave_f, advance,
+                )
 
-        # Preserve the supplied PF terminal currents at t=0. If the PF network
-        # differs from the fitted line, that mismatch must be resolved upstream.
-        return (
-            np.sqrt(2.0) * np.imag(i_f0_phasor_red) - self.direct_yc_phase @ (np.sqrt(2.0) * np.imag(v_f0_phasor_red)),
-            np.sqrt(2.0) * np.imag(i_t0_phasor_red) - self.direct_yc_phase @ (np.sqrt(2.0) * np.imag(v_t0_phasor_red)),
-        )
+        ih_from: np.ndarray = np.sqrt(2.0) * np.imag(i_f0_phasor_red) - self.direct_yc_phase @ (np.sqrt(2.0) * np.imag(v_f0_phasor_red))
+        ih_to: np.ndarray = np.sqrt(2.0) * np.imag(i_t0_phasor_red) - self.direct_yc_phase @ (np.sqrt(2.0) * np.imag(v_t0_phasor_red))
+        if self.coupling_block is not None:
+            # Separate known q from the instantaneous remote target waves.
+            phase_from: np.ndarray = transform @ np.sum(outgoing_f, axis=0)
+            phase_to: np.ndarray = transform @ np.sum(outgoing_t, axis=0)
+            q_from: np.ndarray = np.sum(propagations * outgoing_t, axis=0) - self.instantaneous_h_modal * np.sum(outgoing_t, axis=0)
+            q_to: np.ndarray = np.sum(propagations * outgoing_f, axis=0) - self.instantaneous_h_modal * np.sum(outgoing_f, axis=0)
+            self.initial_phase_waves[0] = phase_from
+            self.initial_phase_waves[1] = phase_to
+            self.initial_voltage_offsets[0] = transform @ q_from
+            self.initial_voltage_offsets[1] = transform @ q_to
+            self.initial_source_phasors[0] = v_f0_phasor_red
+            self.initial_source_phasors[1] = v_t0_phasor_red
+            self.initial_source_phasors[2] = i_f0_phasor_red
+            self.initial_source_phasors[3] = i_t0_phasor_red
+            self.initial_source_frequency_hz = float(system_frequency_hz)
+            self.initial_source_available = True
+            ih_from = ih_from + 2.0 * np.real(self.phase_current_coupling @ phase_to)
+            ih_to = ih_to + 2.0 * np.real(self.phase_current_coupling @ phase_from)
+        else:
+            pass
+        return ih_from, ih_to
+
+    def restore_initial_history(self) -> None:
+        """Restore private coupled history before a new fixed-h run starts.
+
+        :return: None; the existing problem owner republishes retained seeds.
+        """
+        if self.coupling_block is not None and self.initial_source_available:
+            self.initialize_from_fundamental_phasors(
+                self.initial_source_phasors[0], self.initial_source_phasors[1],
+                self.initial_source_phasors[2], self.initial_source_phasors[3],
+                self.initial_source_frequency_hz,
+            )
+        else:
+            if self.coupling_block is not None:
+                # Declared zero defaults are not promoted to physical source.
+                self.buf_a_f.fill(0.0)
+                self.buf_a_t.fill(0.0)
+                self.yc_state_from.fill(0.0)
+                self.yc_state_to.fill(0.0)
+                self.hres_state_from.fill(0.0)
+                self.hres_state_to.fill(0.0)
+                self.initial_phase_waves.fill(0.0)
+                self.initial_voltage_offsets.fill(0.0)
+            else:
+                pass
 
     def update_history(self, step_counter: int, x_prev: np.ndarray, full_params: np.ndarray) -> None:
         """
@@ -401,6 +594,8 @@ class JMartiHistoryRuntime:
         # the accepted state at k*h. The startup call must not advance filters.
         if step_counter == 0:
             return
+        else:
+            pass
         step_counter -= 1
         v_f_now_phase: np.ndarray = np.asarray([x_prev[index] if index >= 0 else 0.0 for index in self.idx_vf], dtype=np.complex128)
         v_t_now_phase: np.ndarray = np.asarray([x_prev[index] if index >= 0 else 0.0 for index in self.idx_vt], dtype=np.complex128)
@@ -409,27 +604,51 @@ class JMartiHistoryRuntime:
         # The outgoing voltage wave is a = v - b, where b is the
         # propagated incoming wave. Using (v + i/Yc_direct)/2 is valid only
         # for constant Yc and corrupts the frequency-dependent line response.
-        a_f_now_modal = np.empty(self.m, dtype=np.complex128)
-        a_t_now_modal = np.empty(self.m, dtype=np.complex128)
-        for k, mode in enumerate(self.runtime_data.get_mode_data()):
-            incoming_f = mode.get_hres_constant_term() * _get_delayed_incident_wave(
-                self, k, step_counter, self.buf_a_t, next_step=False)
-            incoming_t = mode.get_hres_constant_term() * _get_delayed_incident_wave(
-                self, k, step_counter, self.buf_a_f, next_step=False)
-            incoming_f += _sum_state_row(self.hres_state_from, k, int(self.hres_order_counts[k]))
-            incoming_t += _sum_state_row(self.hres_state_to, k, int(self.hres_order_counts[k]))
-            a_f_now_modal[k] = v_f_now_modal[k] - incoming_f
-            a_t_now_modal[k] = v_t_now_modal[k] - incoming_t
+        a_f_now_modal: np.ndarray
+        a_t_now_modal: np.ndarray
+        index: int
+        if self.coupling_block is not None:
+            if any(index < 0 for index in self.idx_wave_f_re) or any(index < 0 for index in self.idx_wave_t_re):
+                raise RuntimeError("JMARTI coupled accepted waves are not indexed")
+            else:
+                pass
+            phase_from: np.ndarray = np.asarray(x_prev[self.idx_wave_f_re], dtype=complex)
+            phase_to: np.ndarray = np.asarray(x_prev[self.idx_wave_t_re], dtype=complex)
+            if self.phase_real_kernel:
+                pass
+            else:
+                if any(index < 0 for index in self.idx_wave_f_im) or any(index < 0 for index in self.idx_wave_t_im):
+                    raise RuntimeError("JMARTI coupled imaginary accepted waves are not indexed")
+                else:
+                    pass
+                phase_from += 1j * x_prev[self.idx_wave_f_im]
+                phase_to += 1j * x_prev[self.idx_wave_t_im]
+            a_f_now_modal = self.runtime_data.get_modal_transform_inv() @ phase_from
+            a_t_now_modal = self.runtime_data.get_modal_transform_inv() @ phase_to
+        else:
+            a_f_now_modal = np.empty(self.m, dtype=np.complex128)
+            a_t_now_modal = np.empty(self.m, dtype=np.complex128)
+            for k, mode in enumerate(self.runtime_data.get_mode_data()):
+                incoming_f = mode.get_hres_constant_term() * _get_delayed_incident_wave(
+                    self, k, step_counter, self.buf_a_t, next_step=False)
+                incoming_t = mode.get_hres_constant_term() * _get_delayed_incident_wave(
+                    self, k, step_counter, self.buf_a_f, next_step=False)
+                incoming_f += _sum_state_row(self.hres_state_from, k, int(self.hres_order_counts[k]))
+                incoming_t += _sum_state_row(self.hres_state_to, k, int(self.hres_order_counts[k]))
+                a_f_now_modal[k] = v_f_now_modal[k] - incoming_f
+                a_t_now_modal[k] = v_t_now_modal[k] - incoming_t
         current_buffer_index: int = step_counter % self.buffer_size
         self.buf_a_f[current_buffer_index, :] = a_f_now_modal
         self.buf_a_t[current_buffer_index, :] = a_t_now_modal
 
         ih_f_next_modal: np.ndarray = np.zeros(self.m, dtype=np.complex128)
         ih_t_next_modal: np.ndarray = np.zeros(self.m, dtype=np.complex128)
+        q_f_next_modal: np.ndarray = np.zeros(self.m, dtype=complex)
+        q_t_next_modal: np.ndarray = np.zeros(self.m, dtype=complex)
         mode_index: int = 0
 
         while mode_index < self.m:
-            ih_f_next_modal[mode_index] = _update_jmarti_mode_history(
+            ih_f_next_modal[mode_index], q_f_next_modal[mode_index] = _update_jmarti_mode_history(
                 runtime=self,
                 mode_index=mode_index,
                 step_counter=step_counter,
@@ -438,7 +657,7 @@ class JMartiHistoryRuntime:
                 yc_state=self.yc_state_from,
                 hres_state=self.hres_state_from,
             )
-            ih_t_next_modal[mode_index] = _update_jmarti_mode_history(
+            ih_t_next_modal[mode_index], q_t_next_modal[mode_index] = _update_jmarti_mode_history(
                 runtime=self,
                 mode_index=mode_index,
                 step_counter=step_counter,
@@ -451,11 +670,23 @@ class JMartiHistoryRuntime:
 
         ih_f_next_phase: np.ndarray = self.runtime_data.get_modal_transform() @ ih_f_next_modal
         ih_t_next_phase: np.ndarray = self.runtime_data.get_modal_transform() @ ih_t_next_modal
+        q_f_next_phase: np.ndarray = self.runtime_data.get_modal_transform() @ q_f_next_modal
+        q_t_next_phase: np.ndarray = self.runtime_data.get_modal_transform() @ q_t_next_modal
         phase_index: int = 0
 
         while phase_index < self.m:
             full_params[self.idx_p_hf[phase_index]] = float(np.real(ih_f_next_phase[phase_index]))
             full_params[self.idx_p_ht[phase_index]] = float(np.real(ih_t_next_phase[phase_index]))
+            if self.coupling_block is not None:
+                full_params[self.idx_q_f_re[phase_index]] = q_f_next_phase[phase_index].real
+                full_params[self.idx_q_t_re[phase_index]] = q_t_next_phase[phase_index].real
+                if self.phase_real_kernel:
+                    pass
+                else:
+                    full_params[self.idx_q_f_im[phase_index]] = q_f_next_phase[phase_index].imag
+                    full_params[self.idx_q_t_im[phase_index]] = q_t_next_phase[phase_index].imag
+            else:
+                pass
             phase_index += 1
 
 
@@ -541,13 +772,15 @@ def _resolve_jmarti_runtime_data(line: Any, line_block: Block, time_step_s: floa
         attached_runtime_data: JMartiRuntimeData | None = get_jmarti_block_runtime_data(line_block)
 
         if attached_runtime_data is not None:
-            return attached_runtime_data
+            if attached_runtime_data.get_time_step_s() == time_step_s:
+                return attached_runtime_data
+            else:
+                return build_jmarti_runtime_data(attached_runtime_data, time_step_s)
         else:
             attached_fit_bundle: JMartiFitBundle | None = get_jmarti_block_fit_bundle(line_block)
 
             if attached_fit_bundle is not None:
                 runtime_data: JMartiRuntimeData = build_jmarti_runtime_data(attached_fit_bundle, time_step_s)
-                set_jmarti_block_runtime_data(line_block, runtime_data)
                 return runtime_data
             else:
                 raise ValueError(f"JMARTI line '{line.name}' requires one fit bundle or one runtime data object attached to its EMT block")
@@ -595,6 +828,36 @@ def _initialize_jmarti_runtime_storage(runtime: JMartiHistoryRuntime) -> None:
     :param runtime: Target JMARTI runtime.
     :return: None.
     """
+    if (np.isfinite(runtime.h) and runtime.h > 0.0
+            and np.isfinite(runtime.runtime_data.get_time_step_s())
+            and runtime.runtime_data.get_time_step_s() > 0.0
+            and runtime.runtime_data.get_mode_count() == runtime.m
+            and runtime.runtime_data.get_phase_labels() == tuple(runtime.active_ph)):
+        pass
+    else:
+        raise ValueError("JMARTI runtime phases/timestep do not match the declared data")
+    # Matching-h Data remains authoritative, but every discrete quantity used
+    # by interpolation or a filter must be valid before allocation/declaration.
+    # Continuous poles/residues/tau are not consumed on this path; their full
+    # coherence belongs solely to the converter when a new h is requested.
+    consumed_mode: JMartiModeRuntimeData
+    alpha: np.ndarray
+    beta: np.ndarray
+    for consumed_mode in runtime.runtime_data.get_mode_data():
+        if (consumed_mode.get_delay_step_count() >= 0
+                and np.isfinite(consumed_mode.get_residual_delay_s())
+                and np.isfinite(consumed_mode.get_yc_constant_term())
+                and np.isfinite(consumed_mode.get_hres_constant_term())):
+            pass
+        else:
+            raise ValueError("JMARTI consumed runtime delay/direct coefficients are invalid")
+        for alpha, beta in ((consumed_mode.get_yc_alpha(), consumed_mode.get_yc_beta()),
+                            (consumed_mode.get_hres_alpha(), consumed_mode.get_hres_beta())):
+            if (alpha.ndim == 1 and beta.ndim == 1 and alpha.shape == beta.shape
+                    and np.isfinite(alpha).all() and np.isfinite(beta).all()):
+                pass
+            else:
+                raise ValueError("JMARTI consumed runtime filter arrays are invalid")
     mode_index: int = 0
     max_yc_order: int = 0
     max_hres_order: int = 0
@@ -611,14 +874,47 @@ def _initialize_jmarti_runtime_storage(runtime: JMartiHistoryRuntime) -> None:
         mode_index += 1
 
     runtime.direct_yc_modal = modal_direct_terms
-    runtime.direct_zc_modal = np.zeros(runtime.m, dtype=np.complex128)
-    non_zero_mask: np.ndarray = np.abs(runtime.direct_yc_modal) > 1.0e-14
-    runtime.direct_zc_modal[non_zero_mask] = 1.0 / runtime.direct_yc_modal[non_zero_mask]
-    runtime.direct_yc_phase = np.real(
-        runtime.runtime_data.get_modal_transform()
-        @ np.diag(runtime.direct_yc_modal)
-        @ runtime.runtime_data.get_modal_transform_inv()
-    )
+    # Finite coefficients alone do not guarantee representable matrix products.
+    # Suppress only their expected arithmetic warnings, then reject immediately
+    # before any final storage or private symbolic declarations are allocated.
+    phase_admittance: np.ndarray
+    with np.errstate(over="ignore", invalid="ignore"):
+        phase_admittance = (runtime.runtime_data.get_modal_transform()
+            @ np.diag(runtime.direct_yc_modal)
+            @ runtime.runtime_data.get_modal_transform_inv())
+    if phase_admittance.shape == (runtime.m, runtime.m) and np.isfinite(phase_admittance).all():
+        runtime.direct_yc_phase = np.real(phase_admittance)
+    else:
+        raise ValueError("JMARTI computed phase admittance is not representable")
+
+    # Instantaneous feedback is represented by private wave coordinates. B
+    # uses exactly the interpolation weight used by the unchanged sampler.
+    mode_index = 0
+    while mode_index < runtime.m:
+        mode_data = runtime.runtime_data.get_mode_data()[mode_index]
+        if mode_data.get_delay_step_count() == 0:
+            fraction: float = min(max(mode_data.get_residual_delay_s() / runtime.h, 0.0), 1.0)
+            runtime.instantaneous_h_modal[mode_index] = mode_data.get_hres_constant_term() * (1.0 - fraction)
+        else:
+            pass
+        mode_index += 1
+    has_coupling: bool = bool(np.any(runtime.instantaneous_h_modal != 0.0))
+    if has_coupling:
+        runtime.phase_real_kernel = is_jmarti_phase_real_runtime_data(runtime.runtime_data)
+        with np.errstate(over="ignore", invalid="ignore"):
+            runtime.phase_coupling = (runtime.runtime_data.get_modal_transform()
+                @ np.diag(runtime.instantaneous_h_modal)
+                @ runtime.runtime_data.get_modal_transform_inv())
+            runtime.phase_current_coupling = (runtime.runtime_data.get_modal_transform()
+                @ np.diag(runtime.direct_yc_modal * runtime.instantaneous_h_modal)
+                @ runtime.runtime_data.get_modal_transform_inv())
+        if (np.isfinite(runtime.phase_coupling).all()
+                and np.isfinite(runtime.phase_current_coupling).all()):
+            pass
+        else:
+            raise ValueError("JMARTI computed phase coupling/current coupling is not representable")
+    else:
+        pass
     runtime.max_delay_steps = max(int(mode_data.get_delay_step_count()) for mode_data in runtime.runtime_data.get_mode_data())
     runtime.buffer_size = max(2, runtime.max_delay_steps + 2)
     runtime.buf_a_f = np.zeros((runtime.buffer_size, runtime.m), dtype=np.complex128)
@@ -627,6 +923,68 @@ def _initialize_jmarti_runtime_storage(runtime: JMartiHistoryRuntime) -> None:
     runtime.yc_state_to = np.zeros((runtime.m, max(1, max_yc_order)), dtype=np.complex128)
     runtime.hres_state_from = np.zeros((runtime.m, max(1, max_hres_order)), dtype=np.complex128)
     runtime.hres_state_to = np.zeros((runtime.m, max(1, max_hres_order)), dtype=np.complex128)
+    if has_coupling:
+        runtime.coupling_var_factory = VarFactory(name=f"{runtime.line.name} JMARTI private waves")
+        vf: VarFactory = runtime.coupling_var_factory
+        runtime.initial_source_phasors = np.zeros((4, runtime.m), dtype=complex)
+        runtime.initial_phase_waves = np.zeros((2, runtime.m), dtype=complex)
+        runtime.initial_voltage_offsets = np.zeros((2, runtime.m), dtype=complex)
+        phase: str = runtime.active_ph[0]
+        runtime.outgoing_wave_f_re = list((vf.add_var(f"a_f_re_{phase}"),)) * runtime.m
+        runtime.outgoing_wave_t_re = list((vf.add_var(f"a_t_re_{phase}"),)) * runtime.m
+        runtime.incoming_voltage_f_re = list((vf.add_var(f"q_f_re_{phase}"),)) * runtime.m
+        runtime.incoming_voltage_t_re = list((vf.add_var(f"q_t_re_{phase}"),)) * runtime.m
+        phase_index: int
+        for phase_index in range(1, runtime.m):
+            phase = runtime.active_ph[phase_index]
+            runtime.outgoing_wave_f_re[phase_index] = vf.add_var(f"a_f_re_{phase}")
+            runtime.outgoing_wave_t_re[phase_index] = vf.add_var(f"a_t_re_{phase}")
+            runtime.incoming_voltage_f_re[phase_index] = vf.add_var(f"q_f_re_{phase}")
+            runtime.incoming_voltage_t_re[phase_index] = vf.add_var(f"q_t_re_{phase}")
+        runtime.idx_wave_f_re = list([-1] * runtime.m)
+        runtime.idx_wave_t_re = list([-1] * runtime.m)
+        runtime.idx_q_f_re = list([-1] * runtime.m)
+        runtime.idx_q_t_re = list([-1] * runtime.m)
+        if runtime.phase_real_kernel:
+            coordinate_count: int = 2 * runtime.m
+        else:
+            coordinate_count = 4 * runtime.m
+            phase = runtime.active_ph[0]
+            runtime.outgoing_wave_f_im = list((vf.add_var(f"a_f_im_{phase}"),)) * runtime.m
+            runtime.outgoing_wave_t_im = list((vf.add_var(f"a_t_im_{phase}"),)) * runtime.m
+            runtime.incoming_voltage_f_im = list((vf.add_var(f"q_f_im_{phase}"),)) * runtime.m
+            runtime.incoming_voltage_t_im = list((vf.add_var(f"q_t_im_{phase}"),)) * runtime.m
+            for phase_index in range(1, runtime.m):
+                phase = runtime.active_ph[phase_index]
+                runtime.outgoing_wave_f_im[phase_index] = vf.add_var(f"a_f_im_{phase}")
+                runtime.outgoing_wave_t_im[phase_index] = vf.add_var(f"a_t_im_{phase}")
+                runtime.incoming_voltage_f_im[phase_index] = vf.add_var(f"q_f_im_{phase}")
+                runtime.incoming_voltage_t_im[phase_index] = vf.add_var(f"q_t_im_{phase}")
+            runtime.idx_wave_f_im = list([-1] * runtime.m)
+            runtime.idx_wave_t_im = list([-1] * runtime.m)
+            runtime.idx_q_f_im = list([-1] * runtime.m)
+            runtime.idx_q_t_im = list([-1] * runtime.m)
+        wave_groups: tuple[list[Var], ...] = (runtime.outgoing_wave_f_re, runtime.outgoing_wave_t_re, runtime.outgoing_wave_f_im, runtime.outgoing_wave_t_im)
+        parameter_groups: tuple[list[Var], ...] = (runtime.incoming_voltage_f_re, runtime.incoming_voltage_t_re, runtime.incoming_voltage_f_im, runtime.incoming_voltage_t_im)
+        wave_vars: list[Var] = list((runtime.outgoing_wave_f_re[0],)) * coordinate_count
+        group: list[Var]
+        variable: Var
+        index: int = 0
+        for group in wave_groups:
+            for variable in group:
+                wave_vars[index] = variable
+                index += 1
+        events: dict[Var, Expr | Const] = dict()
+        for group in parameter_groups:
+            for variable in group:
+                events[variable] = vf.add_const(0.0)
+        placeholder: Const = vf.add_const(0.0)
+        rows: list[Expr] = list((placeholder,)) * coordinate_count
+        runtime.coupling_block = Block(algebraic_vars=wave_vars,
+            algebraic_eqs=rows,
+            event_dict=events, name=f"{runtime.line.name} JMARTI wave companion")
+    else:
+        pass
 
 
 def _get_delayed_incident_wave(runtime: JMartiHistoryRuntime,
@@ -715,22 +1073,6 @@ def _update_jmarti_state_row(state_matrix: np.ndarray,
         pass
 
 
-def _build_jmarti_steady_state_state_row(alpha: np.ndarray,
-                                         beta: np.ndarray,
-                                         input_value: complex) -> np.ndarray:
-    """
-    Return the discrete steady-state of one first-order JMARTI state row.
-
-    :param alpha: Exact state-transition multipliers.
-    :param beta: Exact input gains.
-    :param input_value: Constant scalar input.
-    :return: Steady-state row values.
-    """
-    denominator: np.ndarray = 1.0 - np.asarray(alpha, dtype=np.complex128)
-    steady_state: np.ndarray = np.zeros_like(np.asarray(beta, dtype=np.complex128))
-    non_zero_mask: np.ndarray = np.abs(denominator) > 1.0e-14
-    steady_state[non_zero_mask] = np.asarray(beta, dtype=np.complex128)[non_zero_mask] * input_value / denominator[non_zero_mask]
-    return steady_state
 
 
 def _build_jmarti_periodic_state_row(alpha: np.ndarray,
@@ -759,7 +1101,7 @@ def _update_jmarti_mode_history(runtime: JMartiHistoryRuntime,
                                 local_voltage_modal: complex,
                                 remote_incident_buffer: np.ndarray,
                                 yc_state: np.ndarray,
-                                hres_state: np.ndarray) -> complex:
+                                hres_state: np.ndarray) -> tuple[complex, complex]:
     """
     Advance one modal channel and return the next-step history current.
 
@@ -770,7 +1112,7 @@ def _update_jmarti_mode_history(runtime: JMartiHistoryRuntime,
     :param remote_incident_buffer: Ring buffer of remote outgoing waves.
     :param yc_state: Padded local Yc state matrix.
     :param hres_state: Padded propagation-filter state matrix.
-    :return: Next-step history current in modal coordinates.
+    :return: Next-step history current and known incoming voltage offset.
     """
     mode_data: JMartiModeRuntimeData = runtime.runtime_data.get_mode_data()[mode_index]
     yc_order_count: int = int(runtime.yc_order_counts[mode_index])
@@ -796,7 +1138,14 @@ def _update_jmarti_mode_history(runtime: JMartiHistoryRuntime,
         input_value=yc_input_current,
     )
 
-    delayed_wave_next: complex = _get_delayed_incident_wave(runtime, mode_index, step_counter, remote_incident_buffer, next_step=True)
-    next_hres_output: complex = mode_data.get_hres_constant_term() * delayed_wave_next + _sum_state_row(hres_state, mode_index, hres_order_count)
+    next_hres_output: complex
+    if runtime.coupling_block is not None and mode_data.get_delay_step_count() == 0:
+        # The unwritten target slot belongs to the algebraic solve, not memory.
+        next_hres_output = ((mode_data.get_hres_constant_term() - runtime.instantaneous_h_modal[mode_index])
+            * remote_incident_buffer[step_counter % runtime.buffer_size, mode_index]
+            + _sum_state_row(hres_state, mode_index, hres_order_count))
+    else:
+        delayed_wave_next: complex = _get_delayed_incident_wave(runtime, mode_index, step_counter, remote_incident_buffer, next_step=True)
+        next_hres_output = mode_data.get_hres_constant_term() * delayed_wave_next + _sum_state_row(hres_state, mode_index, hres_order_count)
     next_yc_dynamic_output: complex = _sum_state_row(yc_state, mode_index, yc_order_count)
-    return next_yc_dynamic_output - 2.0 * runtime.direct_yc_modal[mode_index] * next_hres_output
+    return next_yc_dynamic_output - 2.0 * runtime.direct_yc_modal[mode_index] * next_hres_output, next_hres_output

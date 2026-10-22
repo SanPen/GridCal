@@ -129,7 +129,7 @@
   <action name="actionNewGroup">
    <property name="icon">
     <iconset resource="../../Icons/icons.qrc">
-     <normaloff>:/Icons/icons/event_group.png</normaloff>:/Icons/icons/event_group.png</iconset>
+     <normaloff>:/Icons/icons/add_event_group.png</normaloff>:/Icons/icons/add_event_group.png</iconset>
    </property>
    <property name="text"><string/></property>
    <property name="toolTip"><string>Create an event group</string></property>

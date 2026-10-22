@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Simulations.NTC.ntc_ts_driver &mdash; VeraGrid 6.7.13 documentation</title>
+  <title>VeraGridEngine.Simulations.NTC.ntc_ts_driver &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=16fbabd8"></script>
+      <script src="../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -132,10 +132,10 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.NTC.html#VeraGridEngine.Simulations.NTC.ntc_ts_driver.OptimalNetTransferCapacityTimeSeriesDriver">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">OptimalNetTransferCapacityTimeSeriesDriver</span><span class="p">(</span><span class="n">TimeSeriesDriverTemplate</span><span class="p">):</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;options&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;unresolved_counter&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;installed_alpha&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;installed_alpha_n1&quot;</span><span class="p">,</span>
+        <span class="s2">"options"</span><span class="p">,</span>
+        <span class="s2">"unresolved_counter"</span><span class="p">,</span>
+        <span class="s2">"installed_alpha"</span><span class="p">,</span>
+        <span class="s2">"installed_alpha_n1"</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="n">tpe</span> <span class="o">=</span> <span class="n">SimulationTypes</span><span class="o">.</span><span class="n">OptimalNetTransferCapacityTimeSeries_run</span>
@@ -144,13 +144,13 @@
                  <span class="n">options</span><span class="p">:</span> <span class="n">OptimalNetTransferCapacityOptions</span><span class="p">,</span>
                  <span class="n">time_indices</span><span class="p">:</span> <span class="n">IntVec</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">clustering_results</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">ClusteringResults</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :param grid: MultiCircuit Object</span>
 <span class="sd">        :param options: Optimal net transfer capacity options</span>
 <span class="sd">        :param time_indices: time index to start (optional)</span>
 <span class="sd">        :param clustering_results: ClusteringResults (optional)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">TimeSeriesDriverTemplate</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
             <span class="n">grid</span><span class="o">=</span><span class="n">grid</span><span class="p">,</span>
@@ -171,9 +171,9 @@
 <div class="viewcode-block" id="OptimalNetTransferCapacityTimeSeriesDriver.opf">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.NTC.html#VeraGridEngine.Simulations.NTC.ntc_ts_driver.OptimalNetTransferCapacityTimeSeriesDriver.opf">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">opf</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Run thread</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">report_progress</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
 
@@ -285,28 +285,11 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">worst_contingency_flow</span><span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">opf_vars</span><span class="o">.</span><span class="n">branch_vars</span><span class="o">.</span><span class="n">worst_contingency_flow</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:]</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">worst_contingency_loading</span><span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">opf_vars</span><span class="o">.</span><span class="n">branch_vars</span><span class="o">.</span><span class="n">worst_contingency_loading</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:]</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">alpha_n1_worst</span><span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">opf_vars</span><span class="o">.</span><span class="n">branch_vars</span><span class="o">.</span><span class="n">alpha_n1_worst</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:]</span>
-            <span class="c1"># keep only the ties of rows the report can show</span>
-            <span class="k">for</span> <span class="n">tie</span> <span class="ow">in</span> <span class="n">opf_vars</span><span class="o">.</span><span class="n">branch_vars</span><span class="o">.</span><span class="n">worst_contingency_ties</span><span class="p">:</span>
-                <span class="n">tie_branch</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">tie</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-                <span class="n">row_loading_pct</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">100.0</span> <span class="o">*</span> <span class="nb">max</span><span class="p">(</span>
-                    <span class="nb">float</span><span class="p">(</span><span class="n">opf_vars</span><span class="o">.</span><span class="n">branch_vars</span><span class="o">.</span><span class="n">worst_contingency_loading</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">tie_branch</span><span class="p">]),</span>
-                    <span class="nb">abs</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">opf_vars</span><span class="o">.</span><span class="n">branch_vars</span><span class="o">.</span><span class="n">loading</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">tie_branch</span><span class="p">])))</span>
-                <span class="k">if</span> <span class="p">(</span><span class="n">opf_vars</span><span class="o">.</span><span class="n">branch_vars</span><span class="o">.</span><span class="n">monitor_logic</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">tie_branch</span><span class="p">]</span>
-                        <span class="ow">and</span> <span class="n">row_loading_pct</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">loading_threshold_to_report</span><span class="p">):</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">worst_contingency_ties</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">t_idx</span><span class="p">,)</span> <span class="o">+</span> <span class="n">tie</span><span class="p">)</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="k">pass</span>  <span class="c1"># the report never displays this branch</span>
 
-            <span class="c1"># The time series only reads the relaxed rows back (total slack per step). Keeping every</span>
-            <span class="c1"># admitted N-1 row instead grows the memory.</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">strict_formulation</span><span class="p">:</span>
-                <span class="k">for</span> <span class="n">report_entry</span> <span class="ow">in</span> <span class="n">opf_vars</span><span class="o">.</span><span class="n">branch_vars</span><span class="o">.</span><span class="n">contingency_flow_data</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">report_entry</span><span class="p">[</span><span class="mi">4</span><span class="p">])</span> <span class="o">+</span> <span class="nb">abs</span><span class="p">(</span><span class="n">report_entry</span><span class="p">[</span><span class="mi">5</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">:</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">contingency_flows_list</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">t_idx</span><span class="p">,)</span> <span class="o">+</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">report_entry</span><span class="p">[</span><span class="mi">1</span><span class="p">:]))</span>
-                    <span class="k">else</span><span class="p">:</span>
-                        <span class="k">pass</span>  <span class="c1"># the limit held without relaxation</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">pass</span>  <span class="c1"># the strict formulation has no contingency slacks to accumulate</span>
+            <span class="c1"># the snapshot LP always runs at its internal t = 0, so re-stamp every report</span>
+            <span class="c1"># entry with the time series step index before accumulating</span>
+            <span class="k">for</span> <span class="n">report_entry</span> <span class="ow">in</span> <span class="n">opf_vars</span><span class="o">.</span><span class="n">branch_vars</span><span class="o">.</span><span class="n">contingency_flow_data</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">contingency_flows_list</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">t_idx</span><span class="p">,)</span> <span class="o">+</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">report_entry</span><span class="p">[</span><span class="mi">1</span><span class="p">:]))</span>
 
             <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">hvdc_Pf</span><span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">opf_vars</span><span class="o">.</span><span class="n">hvdc_vars</span><span class="o">.</span><span class="n">flows</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:]</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">hvdc_loading</span><span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">opf_vars</span><span class="o">.</span><span class="n">hvdc_vars</span><span class="o">.</span><span class="n">loading</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:]</span>
@@ -317,37 +300,33 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">converged</span><span class="p">[</span><span class="n">t_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">opf_vars</span><span class="o">.</span><span class="n">acceptable_solution</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">inter_area_flows</span><span class="p">[</span><span class="n">t_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">opf_vars</span><span class="o">.</span><span class="n">inter_area_flows</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
-            <span class="c1"># The step results are copied, so release this step LP (several GB on national grids</span>
-            <span class="c1"># with N-1) now; otherwise it stays alive while the next step builds its own</span>
-            <span class="k">del</span> <span class="n">opf_vars</span><span class="p">,</span> <span class="n">model</span>
-
             <span class="c1"># update progress bar</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">report_progress2</span><span class="p">(</span><span class="n">t_idx</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">time_indices</span><span class="p">))</span>
 
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">progress_text</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s1">&#39;Optimal net transfer capacity at &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">time_profile</span><span class="p">[</span><span class="n">t</span><span class="p">]))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s1">'Optimal net transfer capacity at '</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">time_profile</span><span class="p">[</span><span class="n">t</span><span class="p">]))</span>
 
             <span class="k">else</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Optimal net transfer capacity at &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">time_profile</span><span class="p">[</span><span class="n">t</span><span class="p">]))</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">'Optimal net transfer capacity at '</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">time_profile</span><span class="p">[</span><span class="n">t</span><span class="p">]))</span>
 
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_cancel</span><span class="p">():</span>
                 <span class="k">return</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s1">&#39;Done!&#39;</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s1">'Done!'</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="OptimalNetTransferCapacityTimeSeriesDriver.run">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.NTC.html#VeraGridEngine.Simulations.NTC.ntc_ts_driver.OptimalNetTransferCapacityTimeSeriesDriver.run">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">tic</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s2">&quot;Compiling and configuring...&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s2">"Compiling and configuring..."</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">opf</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s1">&#39;Done!&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s1">'Done!'</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">toc</span><span class="p">()</span></div>
 </div>

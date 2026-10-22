@@ -1,0 +1,324 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Lookup1DConfigTab</class>
+ <widget class="QWidget" name="Lookup1DConfigTab">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>900</width>
+    <height>600</height>
+   </rect>
+  </property>
+  <layout class="QVBoxLayout" name="main_layout">
+   <property name="leftMargin">
+    <number>0</number>
+   </property>
+   <property name="topMargin">
+    <number>0</number>
+   </property>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
+    <number>0</number>
+   </property>
+   <item>
+    <widget class="QGroupBox" name="function_generator_group_box">
+     <property name="maximumSize">
+      <size>
+       <width>16777215</width>
+       <height>115</height>
+      </size>
+     </property>
+     <property name="title">
+      <string>Generate points from f(x)</string>
+     </property>
+     <layout class="QGridLayout" name="function_generator_layout">
+      <item row="0" column="0">
+       <widget class="QLabel" name="function_expression_label">
+        <property name="text">
+         <string>f(x) =</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1" colspan="5">
+       <widget class="QLineEdit" name="function_expression_line_edit">
+        <property name="toolTip">
+         <string>Expression using x, pi, e, and supported symbolic functions; for example sin(pi*x) or x**2</string>
+        </property>
+        <property name="text">
+         <string>x</string>
+        </property>
+        <property name="placeholderText">
+         <string>Example: sin(x)</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="6">
+       <widget class="QPushButton" name="generate_function_button">
+        <property name="toolTip">
+         <string>Replace the table with evenly spaced samples of f(x)</string>
+        </property>
+        <property name="text">
+         <string>Generate</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="function_x_minimum_label">
+        <property name="text">
+         <string>x min</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QDoubleSpinBox" name="function_x_minimum_spin_box">
+        <property name="decimals">
+         <number>12</number>
+        </property>
+        <property name="minimum">
+         <double>-1e+100</double>
+        </property>
+        <property name="maximum">
+         <double>1e+100</double>
+        </property>
+        <property name="keyboardTracking">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="2">
+       <widget class="QLabel" name="function_x_maximum_label">
+        <property name="text">
+         <string>x max</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="3">
+       <widget class="QDoubleSpinBox" name="function_x_maximum_spin_box">
+        <property name="decimals">
+         <number>12</number>
+        </property>
+        <property name="minimum">
+         <double>-1e+100</double>
+        </property>
+        <property name="maximum">
+         <double>1e+100</double>
+        </property>
+        <property name="value">
+         <double>1.000000000000000</double>
+        </property>
+        <property name="keyboardTracking">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="4">
+       <widget class="QLabel" name="function_point_count_label">
+        <property name="text">
+         <string>Points</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="5">
+       <widget class="QSpinBox" name="function_point_count_spin_box">
+        <property name="minimum">
+         <number>2</number>
+        </property>
+        <property name="maximum">
+         <number>10000</number>
+        </property>
+        <property name="value">
+         <number>21</number>
+        </property>
+        <property name="keyboardTracking">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="6">
+       <spacer name="function_generator_spacer">
+        <property name="orientation">
+         <enum>Qt::Orientation::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item row="2" column="0" colspan="7">
+       <widget class="QLabel" name="function_error_label">
+        <property name="text">
+         <string/>
+        </property>
+        <property name="wordWrap">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QSplitter" name="content_splitter">
+     <property name="orientation">
+      <enum>Qt::Orientation::Horizontal</enum>
+     </property>
+     <widget class="QFrame" name="table_frame">
+      <property name="minimumSize">
+       <size>
+        <width>280</width>
+        <height>0</height>
+       </size>
+      </property>
+      <layout class="QVBoxLayout" name="table_layout">
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
+       <item>
+        <widget class="QTableView" name="points_table">
+         <property name="alternatingRowColors">
+          <bool>true</bool>
+         </property>
+         <property name="selectionMode">
+          <enum>QAbstractItemView::SelectionMode::ExtendedSelection</enum>
+         </property>
+         <property name="selectionBehavior">
+          <enum>QAbstractItemView::SelectionBehavior::SelectItems</enum>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QFrame" name="table_buttons_frame">
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>40</height>
+          </size>
+         </property>
+         <layout class="QHBoxLayout" name="table_buttons_layout">
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
+           <number>0</number>
+          </property>
+          <item>
+           <widget class="QPushButton" name="add_row_button">
+            <property name="focusPolicy">
+             <enum>Qt::FocusPolicy::NoFocus</enum>
+            </property>
+            <property name="toolTip">
+             <string>Add point</string>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+            <property name="icon">
+             <iconset resource="../../../../Icons/icons.qrc">
+              <normaloff>:/Icons/icons/plus.png</normaloff>:/Icons/icons/plus.png</iconset>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="remove_rows_button">
+            <property name="focusPolicy">
+             <enum>Qt::FocusPolicy::NoFocus</enum>
+            </property>
+            <property name="toolTip">
+             <string>Remove selected points</string>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+            <property name="icon">
+             <iconset resource="../../../../Icons/icons.qrc">
+              <normaloff>:/Icons/icons/minus.png</normaloff>:/Icons/icons/minus.png</iconset>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="sort_button">
+            <property name="focusPolicy">
+             <enum>Qt::FocusPolicy::NoFocus</enum>
+            </property>
+            <property name="toolTip">
+             <string>Sort points by x</string>
+            </property>
+            <property name="text">
+             <string>Sort by x</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="table_buttons_spacer">
+            <property name="orientation">
+             <enum>Qt::Orientation::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QFrame" name="plot_frame">
+      <layout class="QVBoxLayout" name="plot_layout">
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
+       <item>
+        <widget class="GraphsWidget" name="plotter" native="true"/>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>GraphsWidget</class>
+   <extends>QWidget</extends>
+   <header>VeraGrid.Gui.PlotDialogue.qt_chart_widget</header>
+  </customwidget>
+ </customwidgets>
+ <resources>
+  <include location="../../../../Icons/icons.qrc"/>
+ </resources>
+ <connections/>
+</ui>

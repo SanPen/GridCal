@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Simulations.ContingencyAnalysis.contingency_analysis_options &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Simulations.ContingencyAnalysis.contingency_analysis_options &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/license.html">📜 License</a></li>
@@ -119,41 +120,41 @@
 <div class="viewcode-block" id="ContingencyAnalysisOptions">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.ContingencyAnalysis.html#VeraGridEngine.Simulations.ContingencyAnalysis.contingency_analysis_options.ContingencyAnalysisOptions">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">ContingencyAnalysisOptions</span><span class="p">(</span><span class="n">OptionsTemplate</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Contingency analysis options</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;use_provided_flows&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Pf&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;contingency_method&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;pf_options&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;lin_options&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;use_srap&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;srap_max_power&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;srap_top_n&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;srap_deadband&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;srap_rever_to_nominal_rating&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;srap_revert_to_nominal_rating&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;detailed_massive_report&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;contingency_deadband&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;contingency_groups&quot;</span><span class="p">,</span>
+        <span class="s2">"use_provided_flows"</span><span class="p">,</span>
+        <span class="s2">"Pf"</span><span class="p">,</span>
+        <span class="s2">"contingency_method"</span><span class="p">,</span>
+        <span class="s2">"pf_options"</span><span class="p">,</span>
+        <span class="s2">"lin_options"</span><span class="p">,</span>
+        <span class="s2">"use_srap"</span><span class="p">,</span>
+        <span class="s2">"srap_max_power"</span><span class="p">,</span>
+        <span class="s2">"srap_top_n"</span><span class="p">,</span>
+        <span class="s2">"srap_deadband"</span><span class="p">,</span>
+        <span class="s2">"srap_rever_to_nominal_rating"</span><span class="p">,</span>
+        <span class="s2">"srap_revert_to_nominal_rating"</span><span class="p">,</span>
+        <span class="s2">"detailed_massive_report"</span><span class="p">,</span>
+        <span class="s2">"contingency_deadband"</span><span class="p">,</span>
+        <span class="s2">"contingency_groups"</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="n">LOCAL_PROPERTY_DECLARATIONS</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">GCProp</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;use_provided_flows&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">bool</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Pf&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">SubObjectType</span><span class="o">.</span><span class="n">Array</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;contingency_method&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">ContingencyMethod</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;pf_options&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">DeviceType</span><span class="o">.</span><span class="n">SimulationOptionsDevice</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;lin_options&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">DeviceType</span><span class="o">.</span><span class="n">SimulationOptionsDevice</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;use_srap&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">bool</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;srap_max_power&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;srap_top_n&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;srap_deadband&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;srap_rever_to_nominal_rating&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">bool</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;detailed_massive_report&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">bool</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;contingency_deadband&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;contingency_groups&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">SubObjectType</span><span class="o">.</span><span class="n">ObjectsList</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"use_provided_flows"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">bool</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"Pf"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">SubObjectType</span><span class="o">.</span><span class="n">Array</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"contingency_method"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">ContingencyMethod</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"pf_options"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">DeviceType</span><span class="o">.</span><span class="n">SimulationOptionsDevice</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"lin_options"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">DeviceType</span><span class="o">.</span><span class="n">SimulationOptionsDevice</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"use_srap"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">bool</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"srap_max_power"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"srap_top_n"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"srap_deadband"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"srap_rever_to_nominal_rating"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">bool</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"detailed_massive_report"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">bool</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"contingency_deadband"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"contingency_groups"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">SubObjectType</span><span class="o">.</span><span class="n">ObjectsList</span><span class="p">),</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
@@ -168,7 +169,7 @@
                  <span class="n">contingency_deadband</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
                  <span class="n">contingency_method</span><span class="o">=</span><span class="n">ContingencyMethod</span><span class="o">.</span><span class="n">PowerFlow</span><span class="p">,</span>
                  <span class="n">contingency_groups</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">ContingencyGroup</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        ContingencyAnalysisOptions</span>
 <span class="sd">        :param pf_options: PowerFlowOptions</span>
 <span class="sd">        :param lin_options: LinearAnalysisOptions</span>
@@ -184,8 +185,8 @@
 <span class="sd">        :param contingency_deadband: Deadband to report contingencies</span>
 <span class="sd">        :param contingency_method: ContingencyEngine to use (PowerFlow, PTDF, ...)</span>
 <span class="sd">        :param contingency_groups: List of contingencies to use, if None all will be used</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">OptionsTemplate</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;ContingencyAnalysisOptions&quot;</span><span class="p">)</span>
+<span class="sd">        """</span>
+        <span class="n">OptionsTemplate</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"ContingencyAnalysisOptions"</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">contingency_method</span> <span class="o">=</span> <span class="n">contingency_method</span>
 

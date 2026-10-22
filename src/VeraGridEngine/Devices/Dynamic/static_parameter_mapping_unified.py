@@ -51,6 +51,7 @@ from VeraGridEngine.Devices.Branches.overhead_line_type import OverheadLineType
 from VeraGridEngine.Devices import MultiCircuit
 from VeraGridEngine.Devices.Branches.dc_line import DcLine
 from VeraGridEngine.Devices.Branches.transformer import Transformer2W
+from VeraGridEngine.Devices.Injections.load import Load
 from VeraGridEngine.Templates.Emt.line_matrix_conversion import build_physical_line_matrices_from_stored_admittances
 from VeraGridEngine.Utils.Symbolic.block import Block
 from VeraGridEngine.Utils.Symbolic.symbolic import Const, Expr, Var
@@ -1312,17 +1313,19 @@ def get_load_power_phase_values_pu_abc(load: Union[dev.Load|dev.StaticGenerator]
     :param grid: Static network model.
     :return: Pair ``(p_abc_pu, q_abc_pu)``.
     """
+    # Only Load balanced totals use the kW flag; explicit phases remain MW/MVAr.
+    unit_scale: float = 1000.0 if isinstance(load, Load) and load.use_kw else 1.0
     p_mw_abc: np.ndarray = _resolve_explicit_or_balanced_abc_values(
         phase_a=load.Pa,
         phase_b=load.Pb,
         phase_c=load.Pc,
-        total_value=load.P,
+        total_value=load.P / unit_scale,
     )
     q_mvar_abc: np.ndarray = _resolve_explicit_or_balanced_abc_values(
         phase_a=load.Qa,
         phase_b=load.Qb,
         phase_c=load.Qc,
-        total_value=load.Q,
+        total_value=load.Q / unit_scale,
     )
     p_pu_abc: np.ndarray = p_mw_abc / float(grid.Sbase)
     q_pu_abc: np.ndarray = q_mvar_abc / float(grid.Sbase)
@@ -1844,7 +1847,12 @@ def _resolve_direct_phase_power_value(
     if explicit_phase_is_meaningful:
         return _get_direct_phase_property_value(device=device, property_name=property_name) / float(grid.Sbase)
     else:
-        return (_get_direct_total_property_value(device=device, total_property_name=str(total_property_name)) / 3.0) / float(grid.Sbase)
+        # Preserve phase MW and other ZIP/device units; normalize only Load P/Q totals.
+        unit_scale: float = 1000.0 if (
+            isinstance(device, Load) and device.use_kw and total_property_name in ("P", "Q")
+        ) else 1.0
+        return _get_direct_total_property_value(
+            device=device, total_property_name=str(total_property_name)) / (3.0 * float(grid.Sbase) * unit_scale)
 
 
 def resolve_direct_dyn_ref_value(
@@ -3258,7 +3266,7 @@ def assign_common_branch_static_api_mapping(
         problem_mapping=problem_mapping,
     )
 
-
+#TODO Generalize unit settings for global
 def assign_load_static_api_mapping(
         grid: MultiCircuit,
         load: dev.Load,
@@ -3272,9 +3280,10 @@ def assign_load_static_api_mapping(
 
     :param grid: Static network model.
     :param load: Load device.
-    :param mdl: Load EMT block.
+    :param mdl: Load RMS/EMT block.
     :param problem_mapping: Dictionary that stores each parameter with their value.
     :param logger: Optional logger.
+    :param direct_assigned_keys: References already supplied by the dispatcher.
     :return: None.
     """
     device_name: str = str(load.name)
@@ -3306,12 +3315,21 @@ def assign_load_static_api_mapping(
         )
     else:
         omega_base: float = 2.0 * np.pi * float(grid.fBase)
+        # Balanced AC references represent generation-positive per-unit power.
+        # Normalize source units without changing the physical Load fields.
+        unit_scale: float = 1000.0 if load.use_kw else 1.0
+        if load.active:
+            ac_p_value: float = -float(load.P) / (sbase * unit_scale)
+            ac_q_value: float = -float(load.Q) / (sbase * unit_scale)
+        else:
+            # This is the initial runtime baseline, not a continuous clamp:
+            # later explicit events may replace these set-points.
+            ac_p_value = 0.0
+            ac_q_value = 0.0
         assign_api_mapping_value_if_present(
             mdl=mdl,
             key=ParamPowerFlowReferenceType.Pl0,
-            # RMS network injections use generation-positive signs, whereas
-            # the static Load API stores consumed P/Q as positive values.
-            value=-float(load.P) / sbase,
+            value=ac_p_value,
             logger=logger,
             device_name=device_name,
             problem_mapping=problem_mapping,
@@ -3319,7 +3337,7 @@ def assign_load_static_api_mapping(
         assign_api_mapping_value_if_present(
             mdl=mdl,
             key=ParamPowerFlowReferenceType.Ql0,
-            value=-float(load.Q) / sbase,
+            value=ac_q_value,
             logger=logger,
             device_name=device_name,
             problem_mapping=problem_mapping,
@@ -3813,6 +3831,91 @@ def assign_generator_static_api_mapping(
         device_name=device_name,
         problem_mapping=problem_mapping,
     )
+
+
+    # The source helper emits physical-model diagnostics through the driver's
+    # logger, while the mapping context owns only mapping-specific metadata.
+    source_mapping_logger: Logger | None
+    if isinstance(logger, StaticParameterMappingDiagnostics):
+        source_mapping_logger = logger.get_logger()
+    else:
+        source_mapping_logger = logger
+    assign_thevenin_source_static_api_mapping(generator, mdl, problem_mapping, source_mapping_logger)
+
+
+def assign_thevenin_source_static_api_mapping(
+        generator: dev.Generator,
+        mdl: Block,
+        problem_mapping: Dict[Var, Const],
+        logger: Logger | None,
+) -> None:
+    """Resolve the grounded reciprocal source impedance contract.
+
+    Only source-specific aliases receive effective zero impedance. Generic
+    machine aliases and the physical Generator remain unchanged. Exact joint
+    ``1e-20`` defaults mean absent Z0/Z2; known invalid or incompatible data
+    leaves the required aliases unresolved for ordinary parameter validation.
+
+    :param generator: Physical device owning the impedance and connection data.
+    :param mdl: Owner block exposing the source-specific derived aliases.
+    :param problem_mapping: Runtime constants, independent of persisted data.
+    :param logger: Existing diagnostic destination, when supplied.
+    :return: None.
+    """
+    if (ParamPowerFlowReferenceType.thevenin_source_r0_pu in mdl.api_obj_mapping
+            or ParamPowerFlowReferenceType.thevenin_source_x0_pu in mdl.api_obj_mapping):
+        r1: float = float(generator.R1)
+        x1: float = float(generator.X1)
+        r0: float = float(generator.R0)
+        x0: float = float(generator.X0)
+        r2: float = float(generator.R2)
+        x2: float = float(generator.X2)
+        missing_zero: bool = r0 == 1.0e-20 and x0 == 1.0e-20
+        missing_negative: bool = r2 == 1.0e-20 and x2 == 1.0e-20
+        reason: str = ""
+        # Gate the whole family before resolving either derived parameter.
+        if not np.isfinite(r1) or r1 < 0.0 or not np.isfinite(x1) or x1 <= 0.0:
+            reason = "Thevenin ABC source requires finite R1 >= 0 and X1 > 0"
+        elif generator.conn != ShuntConnectionType.GroundedStar:
+            reason = "Thevenin ABC source supports only GroundedStar connection"
+        elif (not missing_negative
+              and (not np.isfinite(r2) or not np.isfinite(x2)
+                   or abs(complex(r2, x2) - complex(r1, x1)) > 1.0e-12)):
+            reason = "Thevenin ABC reciprocal source requires Z2 = Z1; independent Z2 requires a machine model"
+        elif not missing_zero and (not np.isfinite(r0) or r0 < 0.0 or not np.isfinite(x0) or x0 <= 0.0):
+            reason = "Thevenin ABC source requires finite R0 >= 0 and X0 > 0"
+        else:
+            pass
+
+        if reason:
+            if logger is not None:
+                logger.add_error(reason, device=generator.name)
+            else:
+                pass
+        else:
+            if missing_zero:
+                r0 = r1
+                x0 = x1
+                if logger is not None:
+                    logger.add_warning("Thevenin ABC source: absent Z0 defaults; using runtime Z0 = Z1", device=generator.name)
+                else:
+                    pass
+            else:
+                pass
+            if missing_negative and logger is not None:
+                logger.add_warning("Thevenin ABC source: absent Z2 defaults; assuming reciprocal Z2 = Z1", device=generator.name)
+            else:
+                pass
+            assign_api_mapping_value_if_present(
+                mdl=mdl, key=ParamPowerFlowReferenceType.thevenin_source_r0_pu,
+                value=r0, logger=logger, device_name=generator.name, problem_mapping=problem_mapping,
+            )
+            assign_api_mapping_value_if_present(
+                mdl=mdl, key=ParamPowerFlowReferenceType.thevenin_source_x0_pu,
+                value=x0, logger=logger, device_name=generator.name, problem_mapping=problem_mapping,
+            )
+    else:
+        pass
 
 
 def assign_battery_static_api_mapping(
@@ -4514,6 +4617,20 @@ def assign_line_static_api_mapping(
     :return: None.
     """
     device_name: str = str(line.name)
+
+    # Resolve only declared tap slots through the existing device owner. Legacy
+    # Blocks without those slots retain their saved equations and parameters.
+    virtual_tap_from: float
+    virtual_tap_to: float
+    virtual_tap_from, virtual_tap_to = line.get_virtual_taps()
+    assign_api_mapping_value_if_present(
+        mdl=mdl, key=ParamPowerFlowReferenceType.vtap_f, value=virtual_tap_from,
+        logger=logger, device_name=device_name, problem_mapping=problem_mapping,
+    )
+    assign_api_mapping_value_if_present(
+        mdl=mdl, key=ParamPowerFlowReferenceType.vtap_t, value=virtual_tap_to,
+        logger=logger, device_name=device_name, problem_mapping=problem_mapping,
+    )
 
     assign_common_branch_static_api_mapping(
         device=line,

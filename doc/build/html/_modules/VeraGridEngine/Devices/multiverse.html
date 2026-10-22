@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Devices.multiverse &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Devices.multiverse &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/license.html">📜 License</a></li>
@@ -119,9 +120,9 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_copy_diagrams_for_circuit</span><span class="p">(</span><span class="n">diagrams</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Any</span><span class="p">],</span> <span class="n">circuit</span><span class="p">:</span> <span class="n">MultiCircuit</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Any</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Copy diagrams and rebind their API object pointers to a target circuit.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">obj_dict</span> <span class="o">=</span> <span class="n">circuit</span><span class="o">.</span><span class="n">get_all_elements_dict_by_type</span><span class="p">(</span><span class="n">add_locations</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">copy_diagrams</span><span class="p">(</span><span class="n">diagrams</span><span class="o">=</span><span class="n">diagrams</span><span class="p">,</span> <span class="n">obj_dict</span><span class="o">=</span><span class="n">obj_dict</span><span class="p">)</span>
 
@@ -130,12 +131,12 @@
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Devices.html#VeraGridEngine.Devices.multiverse.ScenarioNode">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">ScenarioNode</span><span class="p">:</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;node_id&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;circuit&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;diagrams&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;parent&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;children&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;drivers&quot;</span>
+        <span class="s2">"node_id"</span><span class="p">,</span>
+        <span class="s2">"circuit"</span><span class="p">,</span>
+        <span class="s2">"diagrams"</span><span class="p">,</span>
+        <span class="s2">"parent"</span><span class="p">,</span>
+        <span class="s2">"children"</span><span class="p">,</span>
+        <span class="s2">"drivers"</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
@@ -146,23 +147,23 @@
             <span class="n">parent</span><span class="p">:</span> <span class="n">ScenarioNode</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
             <span class="n">children</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">ScenarioNode</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Initializes a ScenarioNode with a unique identifier and its associated circuit data.</span>
 
-<span class="sd">        The meaning of *data* depends on the node&#39;s position in the tree:</span>
+<span class="sd">        The meaning of *data* depends on the node's position in the tree:</span>
 
 <span class="sd">        - **Root node** (``parent is None``): *data* holds the full authoritative</span>
 <span class="sd">          ``MultiCircuit``.  User edits are applied directly to this object.</span>
 <span class="sd">        - **Non-root node**: *data* holds the **delta** — a ``MultiCircuit`` produced</span>
 <span class="sd">          by ``differentiate_circuits()`` that captures only the changes relative to</span>
-<span class="sd">          the parent&#39;s composed circuit.  The full circuit for this node is always</span>
+<span class="sd">          the parent's composed circuit.  The full circuit for this node is always</span>
 <span class="sd">          reconstructed on demand via ``MultiVerse.checkout()`` and kept in</span>
 <span class="sd">          ``MultiVerse._current_model`` while this node is active.</span>
 
 <span class="sd">        :param node_id: A unique identifier for the tree node.</span>
 <span class="sd">        :param data: Full circuit (root) or delta circuit (non-root).</span>
 <span class="sd">        :param parent: Parent node, or ``None`` for root nodes.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">node_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">node_id</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">circuit</span><span class="p">:</span> <span class="n">MultiCircuit</span> <span class="o">=</span> <span class="n">data</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">diagrams</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="n">copy_diagrams</span><span class="p">(</span><span class="n">diagrams</span> <span class="k">if</span> <span class="n">diagrams</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">data</span><span class="o">.</span><span class="n">diagrams</span><span class="p">)</span>
@@ -187,11 +188,11 @@
 <div class="viewcode-block" id="ScenarioNode.append_child">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Devices.html#VeraGridEngine.Devices.multiverse.ScenarioNode.append_child">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">append_child</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">child</span><span class="p">:</span> <span class="n">ScenarioNode</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :param child:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">child</span><span class="o">.</span><span class="n">parent</span> <span class="o">=</span> <span class="bp">self</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">child</span><span class="p">)</span></div>
 
@@ -199,12 +200,12 @@
 <div class="viewcode-block" id="ScenarioNode.insert_child">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Devices.html#VeraGridEngine.Devices.multiverse.ScenarioNode.insert_child">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">insert_child</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">position</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">child</span><span class="p">:</span> <span class="n">ScenarioNode</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :param position:</span>
 <span class="sd">        :param child:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">child</span><span class="o">.</span><span class="n">parent</span> <span class="o">=</span> <span class="bp">self</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">position</span><span class="p">,</span> <span class="n">child</span><span class="p">)</span></div>
 
@@ -212,11 +213,11 @@
 <div class="viewcode-block" id="ScenarioNode.remove_child">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Devices.html#VeraGridEngine.Devices.multiverse.ScenarioNode.remove_child">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">remove_child</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">child</span><span class="p">:</span> <span class="n">ScenarioNode</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :param child:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
         <span class="n">child</span><span class="o">.</span><span class="n">parent</span> <span class="o">=</span> <span class="kc">None</span></div>
 
@@ -224,11 +225,11 @@
 <div class="viewcode-block" id="ScenarioNode.remove_child_at">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Devices.html#VeraGridEngine.Devices.multiverse.ScenarioNode.remove_child_at">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">remove_child_at</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">position</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ScenarioNode</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :param position:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">child</span><span class="p">:</span> <span class="n">ScenarioNode</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">position</span><span class="p">)</span>
         <span class="n">child</span><span class="o">.</span><span class="n">parent</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">return</span> <span class="n">child</span></div>
@@ -237,21 +238,21 @@
 <div class="viewcode-block" id="ScenarioNode.child">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Devices.html#VeraGridEngine.Devices.multiverse.ScenarioNode.child">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">child</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">row</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ScenarioNode</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :param row:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="p">[</span><span class="n">row</span><span class="p">]</span></div>
 
 
 <div class="viewcode-block" id="ScenarioNode.child_count">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Devices.html#VeraGridEngine.Devices.multiverse.ScenarioNode.child_count">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">child_count</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="p">)</span></div>
 
 
@@ -269,25 +270,25 @@
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Devices.html#VeraGridEngine.Devices.multiverse.MultiVerse">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">MultiVerse</span><span class="p">:</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;_root_nodes&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;_nodes_by_id&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;_next_id&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;_base_model&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;_current_model&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;_current_node&quot;</span><span class="p">,</span>
+        <span class="s2">"_root_nodes"</span><span class="p">,</span>
+        <span class="s2">"_nodes_by_id"</span><span class="p">,</span>
+        <span class="s2">"_next_id"</span><span class="p">,</span>
+        <span class="s2">"_base_model"</span><span class="p">,</span>
+        <span class="s2">"_current_model"</span><span class="p">,</span>
+        <span class="s2">"_current_node"</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">current_model</span><span class="p">:</span> <span class="n">MultiCircuit</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Initializes an instance of the class with the specified model and necessary</span>
 <span class="sd">        attributes for processing scenario nodes and model comparison.</span>
 
 <span class="sd">        Automatically creates a root scenario node from the current_model.</span>
-<span class="sd">        If the current_model has an empty name, it is set to &quot;Base Scenario&quot;.</span>
+<span class="sd">        If the current_model has an empty name, it is set to "Base Scenario".</span>
 
 <span class="sd">        :param current_model: The currently edited and used model. It is used as the currently edited model</span>
 <span class="sd">        :type current_model: MultiCircuit</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_root_nodes</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">ScenarioNode</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_nodes_by_id</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">ScenarioNode</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_next_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span>
@@ -303,8 +304,8 @@
 
         <span class="c1"># Set a default name if the current model has an empty name</span>
         <span class="k">if</span> <span class="n">current_model</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">current_model</span><span class="o">.</span><span class="n">name</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">current_model</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
-                <span class="n">current_model</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;Base Scenario&quot;</span>
+            <span class="k">if</span> <span class="n">current_model</span><span class="o">.</span><span class="n">name</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">current_model</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="o">==</span> <span class="s2">""</span><span class="p">:</span>
+                <span class="n">current_model</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s2">"Base Scenario"</span>
 
             <span class="c1"># Create the initial root scenario node from the current model</span>
             <span class="n">root_node</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_node</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">current_model</span><span class="p">,</span> <span class="n">parent_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
@@ -321,7 +322,7 @@
         <span class="k">elif</span> <span class="n">val</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_base_model</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Base model must be a MultiCircuit object&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Base model must be a MultiCircuit object"</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">current_model</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MultiCircuit</span><span class="p">:</span>
@@ -332,7 +333,7 @@
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">MultiCircuit</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_current_model</span><span class="p">:</span> <span class="n">MultiCircuit</span> <span class="o">=</span> <span class="n">val</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Current model must be a MultiCircuit object&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Current model must be a MultiCircuit object"</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">current_node</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ScenarioNode</span><span class="p">:</span>
@@ -351,17 +352,17 @@
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Devices.html#VeraGridEngine.Devices.multiverse.MultiVerse.checkout">[docs]</a>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">checkout</span><span class="p">(</span><span class="n">node</span><span class="p">:</span> <span class="n">ScenarioNode</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MultiCircuit</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Reconstruct the full MultiCircuit for *node* by replaying its delta chain from the root.</span>
 <span class="sd">        Always returns a **fresh copy** — safe to mutate without affecting stored data.</span>
 
 <span class="sd">        - Root nodes: returns ``root.data.copy()``.</span>
 <span class="sd">        - Non-root nodes: walks root → … → node, copies the root circuit, then applies each</span>
-<span class="sd">          ancestor&#39;s delta (``node.data``) in order via ``merge_circuit()``.</span>
+<span class="sd">          ancestor's delta (``node.data``) in order via ``merge_circuit()``.</span>
 
 <span class="sd">        :param node: Target ScenarioNode</span>
 <span class="sd">        :return: Fully composed MultiCircuit for that node</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">parent</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">composed</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">circuit</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
             <span class="n">composed</span><span class="o">.</span><span class="n">diagrams</span> <span class="o">=</span> <span class="n">_copy_diagrams_for_circuit</span><span class="p">(</span><span class="n">diagrams</span><span class="o">=</span><span class="n">node</span><span class="o">.</span><span class="n">diagrams</span><span class="p">,</span> <span class="n">circuit</span><span class="o">=</span><span class="n">composed</span><span class="p">)</span>
@@ -376,14 +377,14 @@
         <span class="n">root</span><span class="p">:</span> <span class="n">ScenarioNode</span> <span class="o">=</span> <span class="n">current</span>
         <span class="n">chain</span><span class="o">.</span><span class="n">reverse</span><span class="p">()</span>  <span class="c1"># root-child → … → node</span>
 
-        <span class="c1"># Start from a copy of the root&#39;s authoritative circuit</span>
+        <span class="c1"># Start from a copy of the root's authoritative circuit</span>
         <span class="n">composed</span><span class="p">:</span> <span class="n">MultiCircuit</span> <span class="o">=</span> <span class="n">root</span><span class="o">.</span><span class="n">circuit</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 
         <span class="c1"># Apply each delta going down the chain (node.data IS the delta for non-root nodes)</span>
         <span class="k">for</span> <span class="n">step</span> <span class="ow">in</span> <span class="n">chain</span><span class="p">:</span>
             <span class="n">composed</span><span class="o">.</span><span class="n">merge_circuit</span><span class="p">(</span><span class="n">new_grid</span><span class="o">=</span><span class="n">step</span><span class="o">.</span><span class="n">circuit</span><span class="p">)</span>
 
-        <span class="c1"># Preserve the target scenario&#39;s name (composed inherits root&#39;s name otherwise)</span>
+        <span class="c1"># Preserve the target scenario's name (composed inherits root's name otherwise)</span>
         <span class="n">composed</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">circuit</span><span class="o">.</span><span class="n">name</span>
         <span class="n">composed</span><span class="o">.</span><span class="n">diagrams</span> <span class="o">=</span> <span class="n">_copy_diagrams_for_circuit</span><span class="p">(</span><span class="n">diagrams</span><span class="o">=</span><span class="n">node</span><span class="o">.</span><span class="n">diagrams</span><span class="p">,</span> <span class="n">circuit</span><span class="o">=</span><span class="n">composed</span><span class="p">)</span>
 
@@ -391,25 +392,25 @@
 
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_compose_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="n">ScenarioNode</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MultiCircuit</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return the full scenario represented by *node*.</span>
 
 <span class="sd">        This is the single semantic rule for node composition:</span>
 <span class="sd">        - roots expose their authoritative circuit directly</span>
 <span class="sd">        - non-roots are reconstructed from their delta chain</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">parent</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">node</span><span class="o">.</span><span class="n">circuit</span><span class="o">.</span><span class="n">diagrams</span> <span class="o">=</span> <span class="n">_copy_diagrams_for_circuit</span><span class="p">(</span><span class="n">diagrams</span><span class="o">=</span><span class="n">node</span><span class="o">.</span><span class="n">diagrams</span><span class="p">,</span> <span class="n">circuit</span><span class="o">=</span><span class="n">node</span><span class="o">.</span><span class="n">circuit</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">node</span><span class="o">.</span><span class="n">circuit</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">checkout</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_build_delta_from_composed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="n">ScenarioNode</span><span class="p">,</span> <span class="n">composed</span><span class="p">:</span> <span class="n">MultiCircuit</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MultiCircuit</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Convert a fully composed scenario back into the storage representation of *node*.</span>
 
 <span class="sd">        Root nodes store the full authoritative circuit, while non-root nodes store only</span>
 <span class="sd">        the delta against their parent. Diagrams remain full scenario-owned copies in both cases.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">scenario_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">circuit</span><span class="o">.</span><span class="n">name</span>
         <span class="n">composed</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">scenario_name</span>
 
@@ -427,21 +428,21 @@
         <span class="k">return</span> <span class="n">delta</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_store_node_circuit_and_diagrams</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="n">ScenarioNode</span><span class="p">,</span> <span class="n">stored_circuit</span><span class="p">:</span> <span class="n">MultiCircuit</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Persist a node&#39;s storage payload and keep node-owned diagrams in sync with it.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Persist a node's storage payload and keep node-owned diagrams in sync with it.</span>
+<span class="sd">        """</span>
         <span class="n">node</span><span class="o">.</span><span class="n">circuit</span> <span class="o">=</span> <span class="n">stored_circuit</span>
         <span class="n">node</span><span class="o">.</span><span class="n">diagrams</span> <span class="o">=</span> <span class="n">copy_diagrams</span><span class="p">(</span><span class="n">stored_circuit</span><span class="o">.</span><span class="n">diagrams</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">circuit</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">node</span><span class="o">.</span><span class="n">circuit</span><span class="o">.</span><span class="n">diagrams</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">diagrams</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_store_composed_node_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="n">ScenarioNode</span><span class="p">,</span> <span class="n">composed</span><span class="p">:</span> <span class="n">MultiCircuit</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Persist a fully composed circuit back into the node storage model.</span>
 
 <span class="sd">        Root nodes keep the full authoritative circuit.</span>
 <span class="sd">        Non-root nodes store only the delta against their parent.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">stored_circuit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_delta_from_composed</span><span class="p">(</span><span class="n">node</span><span class="o">=</span><span class="n">node</span><span class="p">,</span> <span class="n">composed</span><span class="o">=</span><span class="n">composed</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_store_node_circuit_and_diagrams</span><span class="p">(</span><span class="n">node</span><span class="o">=</span><span class="n">node</span><span class="p">,</span> <span class="n">stored_circuit</span><span class="o">=</span><span class="n">stored_circuit</span><span class="p">)</span>
 
@@ -449,14 +450,14 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_base_model</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">circuit</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_set_active_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="n">ScenarioNode</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MultiCircuit</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Make *node* the active scenario and return the active circuit object.</span>
 
 <span class="sd">        The activation rule is centralized here so all code paths agree on:</span>
 <span class="sd">        - which object becomes ``current_model``</span>
 <span class="sd">        - when roots expose their authoritative circuit directly</span>
 <span class="sd">        - how scenario-owned diagrams are copied into the active circuit</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">composed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compose_node</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
         <span class="n">composed</span><span class="o">.</span><span class="n">diagrams</span> <span class="o">=</span> <span class="n">_copy_diagrams_for_circuit</span><span class="p">(</span><span class="n">diagrams</span><span class="o">=</span><span class="n">node</span><span class="o">.</span><span class="n">diagrams</span><span class="p">,</span> <span class="n">circuit</span><span class="o">=</span><span class="n">composed</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_current_node</span> <span class="o">=</span> <span class="n">node</span>
@@ -464,9 +465,9 @@
         <span class="k">return</span> <span class="n">composed</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_set_fallback_active_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fallback_node</span><span class="p">:</span> <span class="n">ScenarioNode</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Activate a fallback node or clear active state if the tree became empty.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="n">fallback_node</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_current_node</span> <span class="o">=</span> <span class="kc">None</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_current_model</span> <span class="o">=</span> <span class="kc">None</span>
@@ -480,7 +481,7 @@
 <div class="viewcode-block" id="MultiVerse.commit_current">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Devices.html#VeraGridEngine.Devices.multiverse.MultiVerse.commit_current">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">commit_current</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Persist edits made to the currently active scenario.</span>
 
 <span class="sd">        - **Root**: no structural delta is computed because ``root.data`` is authoritative</span>
@@ -488,7 +489,7 @@
 <span class="sd">        - **Non-root**: computes ``differentiate_circuits(current_model, parent_composed)``</span>
 <span class="sd">          and stores the result back into ``node.data``, replacing the previous delta.</span>
 <span class="sd">          The scenario name is preserved on the new delta.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_current_node</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span>
 
@@ -507,7 +508,7 @@
 <div class="viewcode-block" id="MultiVerse.merge_children_into_parent">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Devices.html#VeraGridEngine.Devices.multiverse.MultiVerse.merge_children_into_parent">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">merge_children_into_parent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ScenarioNode</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Merge all direct children into the specified parent node.</span>
 
 <span class="sd">        Child deltas are merged into the parent in the current sibling order.</span>
@@ -518,7 +519,7 @@
 
 <span class="sd">        If several children modify the same objects, later children win because they</span>
 <span class="sd">        are merged after earlier siblings.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">commit_current</span><span class="p">()</span>
 
         <span class="n">parent</span><span class="p">:</span> <span class="n">ScenarioNode</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_node</span><span class="p">(</span><span class="n">parent_id</span><span class="p">)</span>
@@ -574,11 +575,11 @@
 <div class="viewcode-block" id="MultiVerse.activate_scenario">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Devices.html#VeraGridEngine.Devices.multiverse.MultiVerse.activate_scenario">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">activate_scenario</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MultiCircuit</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Switch the active scenario to the node identified by *node_id*.</span>
 
-<span class="sd">        1. Commits the current node&#39;s unsaved edits (non-root only).</span>
-<span class="sd">        2. Composes the target node&#39;s full circuit via ``checkout()``.</span>
+<span class="sd">        1. Commits the current node's unsaved edits (non-root only).</span>
+<span class="sd">        2. Composes the target node's full circuit via ``checkout()``.</span>
 <span class="sd">        3. Updates ``current_model`` and ``current_node``.</span>
 
 <span class="sd">        Root nodes use ``root.data`` directly so in-place edits are reflected immediately.</span>
@@ -586,7 +587,7 @@
 
 <span class="sd">        :param node_id: ID of the node to activate</span>
 <span class="sd">        :return: The MultiCircuit that is now active</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">target</span><span class="p">:</span> <span class="n">ScenarioNode</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_node</span><span class="p">(</span><span class="n">node_id</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">commit_current</span><span class="p">()</span>
@@ -601,13 +602,13 @@
             <span class="n">parent_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
             <span class="n">position</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ScenarioNode</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :param data:</span>
 <span class="sd">        :param parent_id:</span>
 <span class="sd">        :param position:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">parent</span><span class="p">:</span> <span class="n">ScenarioNode</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="n">node_diagrams</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">if</span> <span class="n">parent_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -655,60 +656,60 @@
 <div class="viewcode-block" id="MultiVerse.get_node">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Devices.html#VeraGridEngine.Devices.multiverse.MultiVerse.get_node">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ScenarioNode</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :param node_id:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="n">node_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_nodes_by_id</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Node with id </span><span class="si">{</span><span class="n">node_id</span><span class="si">}</span><span class="s2"> does not exist&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Node with id </span><span class="si">{</span><span class="n">node_id</span><span class="si">}</span><span class="s2"> does not exist"</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_nodes_by_id</span><span class="p">[</span><span class="n">node_id</span><span class="p">]</span></div>
 
 
 <div class="viewcode-block" id="MultiVerse.set_node">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Devices.html#VeraGridEngine.Devices.multiverse.MultiVerse.set_node">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">set_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="n">ScenarioNode</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :param node_id:</span>
 <span class="sd">        :param node:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_nodes_by_id</span><span class="p">[</span><span class="n">node_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">node</span></div>
 
 
 <div class="viewcode-block" id="MultiVerse.insert_node">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Devices.html#VeraGridEngine.Devices.multiverse.MultiVerse.insert_node">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">insert_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">position</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="n">ScenarioNode</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :param position:</span>
 <span class="sd">        :param node:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_root_nodes</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">position</span><span class="p">,</span> <span class="n">node</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="MultiVerse.exists">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Devices.html#VeraGridEngine.Devices.multiverse.MultiVerse.exists">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">exists</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :param node_id:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">node_id</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_nodes_by_id</span></div>
 
 
 <div class="viewcode-block" id="MultiVerse.update_node_data">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Devices.html#VeraGridEngine.Devices.multiverse.MultiVerse.update_node_data">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">update_node_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">MultiCircuit</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ScenarioNode</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :param node_id:</span>
 <span class="sd">        :param data:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">node</span><span class="p">:</span> <span class="n">ScenarioNode</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_node</span><span class="p">(</span><span class="n">node_id</span><span class="p">)</span>
         <span class="n">node</span><span class="o">.</span><span class="n">circuit</span> <span class="o">=</span> <span class="n">data</span>
         <span class="k">return</span> <span class="n">node</span></div>
@@ -717,7 +718,7 @@
 <div class="viewcode-block" id="MultiVerse.delete_node">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Devices.html#VeraGridEngine.Devices.multiverse.MultiVerse.delete_node">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">delete_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ScenarioNode</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Delete a node and its entire subtree from the multiverse.</span>
 
 <span class="sd">        The non-obvious part of this operation is active-state repair. The GUI and the save</span>
@@ -733,12 +734,12 @@
 
 <span class="sd">        :param node_id:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">node</span><span class="p">:</span> <span class="n">ScenarioNode</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_node</span><span class="p">(</span><span class="n">node_id</span><span class="p">)</span>
         <span class="n">parent_fallback</span><span class="p">:</span> <span class="n">ScenarioNode</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">parent</span>
 
         <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">parent</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_root_nodes</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The last root scenario cannot be deleted&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"The last root scenario cannot be deleted"</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">parent</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_root_nodes</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
@@ -749,7 +750,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_delete_from_registry_recursive</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
 
         <span class="c1"># Deletion should always leave the multiverse focused on a surviving scenario.</span>
-        <span class="c1"># Prefer the deleted node&#39;s parent when it exists. If a root was deleted, fall back</span>
+        <span class="c1"># Prefer the deleted node's parent when it exists. If a root was deleted, fall back</span>
         <span class="c1"># to the first remaining root.</span>
         <span class="n">fallback_node</span><span class="p">:</span> <span class="n">ScenarioNode</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">parent_fallback</span>
         <span class="k">if</span> <span class="n">fallback_node</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_root_nodes</span><span class="p">:</span>
@@ -762,11 +763,11 @@
 
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_delete_from_registry_recursive</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="n">ScenarioNode</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :param node:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">node</span><span class="o">.</span><span class="n">children</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_delete_from_registry_recursive</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
 
@@ -782,25 +783,25 @@
             <span class="n">new_parent_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
             <span class="n">position</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ScenarioNode</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :param node_id:</span>
 <span class="sd">        :param new_parent_id:</span>
 <span class="sd">        :param position:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Scenario reparenting is disabled until delta rebasing is implemented&quot;</span><span class="p">)</span></div>
+<span class="sd">        """</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">"Scenario reparenting is disabled until delta rebasing is implemented"</span><span class="p">)</span></div>
 
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_is_descendant</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                        <span class="n">candidate_parent</span><span class="p">:</span> <span class="n">ScenarioNode</span><span class="p">,</span>
                        <span class="n">candidate_child</span><span class="p">:</span> <span class="n">ScenarioNode</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :param candidate_parent:</span>
 <span class="sd">        :param candidate_child:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">current</span><span class="p">:</span> <span class="n">ScenarioNode</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">candidate_child</span>
 
         <span class="k">while</span> <span class="n">current</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -813,10 +814,10 @@
 <div class="viewcode-block" id="MultiVerse.clear">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Devices.html#VeraGridEngine.Devices.multiverse.MultiVerse.clear">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_root_nodes</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_nodes_by_id</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_next_id</span> <span class="o">=</span> <span class="mi">1</span></div>
@@ -825,10 +826,10 @@
 <div class="viewcode-block" id="MultiVerse.iter_nodes_depth_first">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Devices.html#VeraGridEngine.Devices.multiverse.MultiVerse.iter_nodes_depth_first">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">iter_nodes_depth_first</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">ScenarioNode</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">result</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">ScenarioNode</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
 
         <span class="k">for</span> <span class="n">root</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_root_nodes</span><span class="p">:</span>
@@ -840,12 +841,12 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">_collect_subtree_depth_first</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                                      <span class="n">node</span><span class="p">:</span> <span class="n">ScenarioNode</span><span class="p">,</span>
                                      <span class="n">result</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">ScenarioNode</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :param node:</span>
 <span class="sd">        :param result:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
 
         <span class="n">child</span><span class="p">:</span> <span class="n">ScenarioNode</span>
@@ -855,10 +856,10 @@
 <div class="viewcode-block" id="MultiVerse.get_sorted_node_data">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Devices.html#VeraGridEngine.Devices.multiverse.MultiVerse.get_sorted_node_data">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_sorted_node_data</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">MultiCircuit</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Deterministic preorder traversal.</span>
 <span class="sd">        Good if you only want the MultiCircuit objects in a stable order.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">nodes</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">ScenarioNode</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">iter_nodes_depth_first</span><span class="p">()</span>
         <span class="k">return</span> <span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">circuit</span> <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">nodes</span><span class="p">]</span></div>
 
@@ -866,10 +867,10 @@
 <div class="viewcode-block" id="MultiVerse.to_record_list">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Devices.html#VeraGridEngine.Devices.multiverse.MultiVerse.to_record_list">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">to_record_list</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Export full tree structure as a flat ordered list.</span>
 <span class="sd">        This is the correct format for JSON if you want to rebuild the tree later.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">records</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
 
         <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">iter_nodes_depth_first</span><span class="p">():</span>
@@ -878,10 +879,10 @@
 
             <span class="n">records</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
                 <span class="p">{</span>
-                    <span class="s2">&quot;node_id&quot;</span><span class="p">:</span> <span class="n">node</span><span class="o">.</span><span class="n">node_id</span><span class="p">,</span>
-                    <span class="s2">&quot;parent_id&quot;</span><span class="p">:</span> <span class="n">parent_id</span><span class="p">,</span>
-                    <span class="s2">&quot;position&quot;</span><span class="p">:</span> <span class="n">position</span><span class="p">,</span>
-                    <span class="s2">&quot;idtag&quot;</span><span class="p">:</span> <span class="n">node</span><span class="o">.</span><span class="n">circuit</span><span class="o">.</span><span class="n">idtag</span><span class="p">,</span>  <span class="c1"># MultiCircuit Idtag</span>
+                    <span class="s2">"node_id"</span><span class="p">:</span> <span class="n">node</span><span class="o">.</span><span class="n">node_id</span><span class="p">,</span>
+                    <span class="s2">"parent_id"</span><span class="p">:</span> <span class="n">parent_id</span><span class="p">,</span>
+                    <span class="s2">"position"</span><span class="p">:</span> <span class="n">position</span><span class="p">,</span>
+                    <span class="s2">"idtag"</span><span class="p">:</span> <span class="n">node</span><span class="o">.</span><span class="n">circuit</span><span class="o">.</span><span class="n">idtag</span><span class="p">,</span>  <span class="c1"># MultiCircuit Idtag</span>
                 <span class="p">}</span>
             <span class="p">)</span>
 
@@ -893,21 +894,21 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">get_save_data</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]],</span>
                                      <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">MultiCircuit</span><span class="p">],</span>
                                      <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">DriverToSave</span><span class="p">]]]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">multiverse_node_data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
         <span class="n">multiverse_grid_data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">MultiCircuit</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
         <span class="n">multiverse_drivers_data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">DriverToSave</span><span class="p">]]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
 
         <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">iter_nodes_depth_first</span><span class="p">():</span>
             <span class="n">multiverse_node_data</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">node_id</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
-                <span class="s2">&quot;node_id&quot;</span><span class="p">:</span> <span class="n">node</span><span class="o">.</span><span class="n">node_id</span><span class="p">,</span>
-                <span class="s2">&quot;circuit_idtag&quot;</span><span class="p">:</span> <span class="n">node</span><span class="o">.</span><span class="n">circuit</span><span class="o">.</span><span class="n">idtag</span><span class="p">,</span>
-                <span class="s2">&quot;parent_id&quot;</span><span class="p">:</span> <span class="n">node</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">node_id</span> <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">parent</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
-                <span class="s2">&quot;position&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_root_nodes</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">node</span><span class="p">)</span> <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">parent</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">node</span><span class="o">.</span><span class="n">row</span><span class="p">(),</span>
-                <span class="s2">&quot;children&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">chl</span><span class="o">.</span><span class="n">node_id</span> <span class="k">for</span> <span class="n">chl</span> <span class="ow">in</span> <span class="n">node</span><span class="o">.</span><span class="n">children</span><span class="p">],</span>
+                <span class="s2">"node_id"</span><span class="p">:</span> <span class="n">node</span><span class="o">.</span><span class="n">node_id</span><span class="p">,</span>
+                <span class="s2">"circuit_idtag"</span><span class="p">:</span> <span class="n">node</span><span class="o">.</span><span class="n">circuit</span><span class="o">.</span><span class="n">idtag</span><span class="p">,</span>
+                <span class="s2">"parent_id"</span><span class="p">:</span> <span class="n">node</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">node_id</span> <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">parent</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+                <span class="s2">"position"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_root_nodes</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">node</span><span class="p">)</span> <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">parent</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">node</span><span class="o">.</span><span class="n">row</span><span class="p">(),</span>
+                <span class="s2">"children"</span><span class="p">:</span> <span class="p">[</span><span class="n">chl</span><span class="o">.</span><span class="n">node_id</span> <span class="k">for</span> <span class="n">chl</span> <span class="ow">in</span> <span class="n">node</span><span class="o">.</span><span class="n">children</span><span class="p">],</span>
             <span class="p">}</span>
 
             <span class="c1"># we want to store all those models that are not the root</span>
@@ -916,8 +917,8 @@
             <span class="n">multiverse_drivers_data</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">circuit</span><span class="o">.</span><span class="n">idtag</span><span class="p">]</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">get_drivers_to_save</span><span class="p">()</span>
 
         <span class="n">multiverse_meta_data</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s2">&quot;active_node_id&quot;</span><span class="p">:</span> <span class="kc">None</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_current_node</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">_current_node</span><span class="o">.</span><span class="n">node_id</span><span class="p">,</span>
-            <span class="s2">&quot;nodes&quot;</span><span class="p">:</span> <span class="n">multiverse_node_data</span><span class="p">,</span>
+            <span class="s2">"active_node_id"</span><span class="p">:</span> <span class="kc">None</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_current_node</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">_current_node</span><span class="o">.</span><span class="n">node_id</span><span class="p">,</span>
+            <span class="s2">"nodes"</span><span class="p">:</span> <span class="n">multiverse_node_data</span><span class="p">,</span>
         <span class="p">}</span>
 
         <span class="k">return</span> <span class="n">multiverse_meta_data</span><span class="p">,</span> <span class="n">multiverse_grid_data</span><span class="p">,</span> <span class="n">multiverse_drivers_data</span></div>
@@ -928,12 +929,12 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">parse_json</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                    <span class="n">diffs_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">MultiCircuit</span><span class="p">],</span>
                    <span class="n">metadata</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">         Parse the json metadata to fill this object</span>
 <span class="sd">        :param diffs_dict:</span>
 <span class="sd">        :param metadata: json file name or zip file pointer</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_base_model</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_current_model</span> <span class="o">=</span> <span class="kc">None</span>
@@ -943,8 +944,8 @@
         <span class="n">max_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
 
         <span class="c1"># Build nodes from parent links; metadata may be serialized as a dict with string keys.</span>
-        <span class="k">if</span> <span class="s2">&quot;nodes&quot;</span> <span class="ow">in</span> <span class="n">metadata</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;nodes&quot;</span><span class="p">],</span> <span class="nb">dict</span><span class="p">):</span>
-            <span class="n">node_metadata</span> <span class="o">=</span> <span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;nodes&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="s2">"nodes"</span> <span class="ow">in</span> <span class="n">metadata</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">metadata</span><span class="p">[</span><span class="s2">"nodes"</span><span class="p">],</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">node_metadata</span> <span class="o">=</span> <span class="n">metadata</span><span class="p">[</span><span class="s2">"nodes"</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">node_metadata</span> <span class="o">=</span> <span class="n">metadata</span>
 
@@ -958,16 +959,16 @@
             <span class="k">for</span> <span class="n">metadata_node_id</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">pending</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
                 <span class="n">record</span> <span class="o">=</span> <span class="n">pending</span><span class="p">[</span><span class="n">metadata_node_id</span><span class="p">]</span>
 
-                <span class="n">node_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">record</span><span class="p">[</span><span class="s2">&quot;node_id&quot;</span><span class="p">])</span>
-                <span class="n">circuit_idtag</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">record</span><span class="p">[</span><span class="s2">&quot;circuit_idtag&quot;</span><span class="p">])</span>
-                <span class="n">parent_id_raw</span> <span class="o">=</span> <span class="n">record</span><span class="p">[</span><span class="s2">&quot;parent_id&quot;</span><span class="p">]</span>
+                <span class="n">node_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">record</span><span class="p">[</span><span class="s2">"node_id"</span><span class="p">])</span>
+                <span class="n">circuit_idtag</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">record</span><span class="p">[</span><span class="s2">"circuit_idtag"</span><span class="p">])</span>
+                <span class="n">parent_id_raw</span> <span class="o">=</span> <span class="n">record</span><span class="p">[</span><span class="s2">"parent_id"</span><span class="p">]</span>
                 <span class="n">parent_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">parent_id_raw</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">int</span><span class="p">(</span><span class="n">parent_id_raw</span><span class="p">)</span>
 
                 <span class="k">if</span> <span class="n">parent_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">parent_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">built_nodes</span><span class="p">:</span>
                     <span class="k">continue</span>
 
                 <span class="n">parent</span><span class="p">:</span> <span class="n">ScenarioNode</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">parent_id</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">built_nodes</span><span class="p">[</span><span class="n">parent_id</span><span class="p">]</span>
-                <span class="n">position_raw</span> <span class="o">=</span> <span class="n">record</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;position&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+                <span class="n">position_raw</span> <span class="o">=</span> <span class="n">record</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"position"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
                 <span class="n">position</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">position_raw</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">int</span><span class="p">(</span><span class="n">position_raw</span><span class="p">)</span>
 
                 <span class="n">data</span> <span class="o">=</span> <span class="n">diffs_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">circuit_idtag</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
@@ -1002,13 +1003,13 @@
                     <span class="k">pass</span>
 
             <span class="k">if</span> <span class="ow">not</span> <span class="n">progressed</span><span class="p">:</span>
-                <span class="n">unresolved</span> <span class="o">=</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">node_id</span><span class="p">)</span> <span class="k">for</span> <span class="n">node_id</span> <span class="ow">in</span> <span class="n">pending</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Could not resolve multiverse metadata parent links for nodes: </span><span class="si">{</span><span class="n">unresolved</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">unresolved</span> <span class="o">=</span> <span class="s2">", "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">node_id</span><span class="p">)</span> <span class="k">for</span> <span class="n">node_id</span> <span class="ow">in</span> <span class="n">pending</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Could not resolve multiverse metadata parent links for nodes: </span><span class="si">{</span><span class="n">unresolved</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_next_id</span> <span class="o">=</span> <span class="n">max_id</span> <span class="o">+</span> <span class="mi">1</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_root_nodes</span><span class="p">:</span>
-            <span class="n">active_node_id_raw</span> <span class="o">=</span> <span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;active_node_id&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">metadata</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span>
+            <span class="n">active_node_id_raw</span> <span class="o">=</span> <span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"active_node_id"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">metadata</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span>
             <span class="k">if</span> <span class="n">active_node_id_raw</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">active_node</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_root_nodes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
             <span class="k">else</span><span class="p">:</span>

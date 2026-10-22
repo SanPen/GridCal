@@ -12,7 +12,7 @@ from PySide6.QtCore import Qt, QPoint
 from PySide6.QtGui import QCloseEvent
 
 from VeraGrid.Gui.PlotDialogue.plot_dialogue import PlotDialogue
-from VeraGrid.Gui.dialog_lifecycle import delete_dialog_safely
+from VeraGrid.Gui.dialog_lifecycle import delete_dialog_safely, is_dialog_available
 from VeraGridEngine.Devices.multi_circuit import MultiCircuit
 from VeraGridEngine.Simulations.Rms.rms_results import RmsResults
 import numpy as np
@@ -158,7 +158,7 @@ class RmsPlotDialog(QDialog):
 
         :return: None.
         """
-        if self._plot_dialogue is not None and len(self.selected_vars) > 0:
+        if is_dialog_available(self._plot_dialogue) and len(self.selected_vars) > 0:
             selected_col_idx: list[int] = [self.uid2idx[uid] for uid in self.selected_vars]
             series_names: list[str] = list()
             series_values: list[np.ndarray] = list()
@@ -173,7 +173,7 @@ class RmsPlotDialog(QDialog):
                 title=self.tr('RMS variables'),
                 y_axis_title='',
             )
-        elif self._plot_dialogue is not None:
+        elif is_dialog_available(self._plot_dialogue):
             self.close_plot_dialogue()
         else:
             pass
@@ -196,9 +196,9 @@ class RmsPlotDialog(QDialog):
 
         :return: None.
         """
-        if self._plot_dialogue is not None:
+        if is_dialog_available(self._plot_dialogue):
             self._plot_dialogue.reject()
             delete_dialog_safely(dialog=self._plot_dialogue)
-            self._plot_dialogue = None
         else:
             pass
+        self._plot_dialogue = None

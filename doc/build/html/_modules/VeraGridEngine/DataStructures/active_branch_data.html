@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.DataStructures.active_branch_data &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.DataStructures.active_branch_data &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/license.html">📜 License</a></li>
@@ -118,29 +119,29 @@
 <div class="viewcode-block" id="ActiveBranchData">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.active_branch_data.ActiveBranchData">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">ActiveBranchData</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    ControllableBranchData</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;nelm&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;nbus&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;is_controlled&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;m_taps&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;tau_taps&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;tap_module&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;tap_module_min&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;tap_module_max&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;tap_angle&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;tap_angle_min&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;tap_angle_max&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;tap_module_control_mode&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;tap_phase_control_mode&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;tap_controlled_buses&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Pset&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Qset&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;vset&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;_any_pf_control&quot;</span><span class="p">,</span>
+        <span class="s2">"nelm"</span><span class="p">,</span>
+        <span class="s2">"nbus"</span><span class="p">,</span>
+        <span class="s2">"is_controlled"</span><span class="p">,</span>
+        <span class="s2">"m_taps"</span><span class="p">,</span>
+        <span class="s2">"tau_taps"</span><span class="p">,</span>
+        <span class="s2">"tap_module"</span><span class="p">,</span>
+        <span class="s2">"tap_module_min"</span><span class="p">,</span>
+        <span class="s2">"tap_module_max"</span><span class="p">,</span>
+        <span class="s2">"tap_angle"</span><span class="p">,</span>
+        <span class="s2">"tap_angle_min"</span><span class="p">,</span>
+        <span class="s2">"tap_angle_max"</span><span class="p">,</span>
+        <span class="s2">"tap_module_control_mode"</span><span class="p">,</span>
+        <span class="s2">"tap_phase_control_mode"</span><span class="p">,</span>
+        <span class="s2">"tap_controlled_buses"</span><span class="p">,</span>
+        <span class="s2">"Pset"</span><span class="p">,</span>
+        <span class="s2">"Qset"</span><span class="p">,</span>
+        <span class="s2">"vset"</span><span class="p">,</span>
+        <span class="s2">"_any_pf_control"</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nelm</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">nbus</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
@@ -170,10 +171,10 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">any_pf_control</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_any_pf_control</span>
 
     <span class="nd">@any_pf_control</span><span class="o">.</span><span class="n">setter</span>
@@ -183,10 +184,10 @@
 <div class="viewcode-block" id="ActiveBranchData.size">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.active_branch_data.ActiveBranchData.size">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">size</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get size of the structure</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">nelm</span></div>
 
@@ -195,14 +196,14 @@
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.active_branch_data.ActiveBranchData.slice">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">slice</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">elm_idx</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">bus_idx</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span>
               <span class="n">bus_map</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ActiveBranchData</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Slice branch data by given indices</span>
 <span class="sd">        :param elm_idx: array of branch indices</span>
 <span class="sd">        :param bus_idx: array of bus indices</span>
 <span class="sd">        :param bus_map: array of bus indices to re index main to island indices</span>
 <span class="sd">        :param logger: Logger (optional)</span>
 <span class="sd">        :return: new BranchData instance</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="n">data</span> <span class="o">=</span> <span class="n">ActiveBranchData</span><span class="p">(</span><span class="n">nelm</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">elm_idx</span><span class="p">),</span> <span class="n">nbus</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">bus_idx</span><span class="p">))</span>
 
@@ -232,7 +233,7 @@
                 <span class="n">data</span><span class="o">.</span><span class="n">tap_controlled_buses</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">bus_map</span><span class="p">[</span><span class="n">data</span><span class="o">.</span><span class="n">tap_controlled_buses</span><span class="p">[</span><span class="n">k</span><span class="p">]]</span>
                 <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">tap_controlled_buses</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
                     <span class="k">if</span> <span class="n">logger</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                        <span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Branch </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">, is controlling a bus from another island &quot;</span><span class="p">,</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Branch </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">, is controlling a bus from another island "</span><span class="p">,</span>
                                          <span class="n">value</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">tap_controlled_buses</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
 
         <span class="k">return</span> <span class="n">data</span></div>
@@ -241,10 +242,10 @@
 <div class="viewcode-block" id="ActiveBranchData.copy">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.active_branch_data.ActiveBranchData.copy">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ActiveBranchData</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">data</span> <span class="o">=</span> <span class="n">ActiveBranchData</span><span class="p">(</span><span class="n">nelm</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nelm</span><span class="p">,</span> <span class="n">nbus</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nbus</span><span class="p">)</span>
 
         <span class="n">data</span><span class="o">.</span><span class="n">is_controlled</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_controlled</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
@@ -274,10 +275,10 @@
 <div class="viewcode-block" id="ActiveBranchData.remap">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.active_branch_data.ActiveBranchData.remap">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">remap</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bus_map_arr</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Remapping of the branch-controlled bus indices.</span>
 <span class="sd">        :param bus_map_arr: array of old-to-new buses</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nelm</span><span class="p">):</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_controlled</span><span class="p">[</span><span class="n">k</span><span class="p">]:</span>
                 <span class="n">bus_idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tap_controlled_buses</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
@@ -287,20 +288,20 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">tap</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CxVec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">tap_module</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mf">1.0</span><span class="n">j</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">tap_angle</span><span class="p">)</span>
 
 <div class="viewcode-block" id="ActiveBranchData.compare">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.active_branch_data.ActiveBranchData.compare">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">compare</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="s2">&quot;ActiveBranchData&quot;</span><span class="p">,</span> <span class="n">tol</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">compare</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="s2">"ActiveBranchData"</span><span class="p">,</span> <span class="n">tol</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Compare active-branch fields used by NumericalCircuit.compare().</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">compare_arr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tap_module</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">tap_module</span><span class="p">,</span> <span class="n">tol</span><span class="p">,</span> <span class="s1">&#39;BranchData&#39;</span><span class="p">,</span> <span class="s1">&#39;tap_module&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
-        <span class="n">compare_arr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tap_angle</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">tap_angle</span><span class="p">,</span> <span class="n">tol</span><span class="p">,</span> <span class="s1">&#39;BranchData&#39;</span><span class="p">,</span> <span class="s1">&#39;tap_angle&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span></div>
+<span class="sd">        """</span>
+        <span class="n">compare_arr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tap_module</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">tap_module</span><span class="p">,</span> <span class="n">tol</span><span class="p">,</span> <span class="s1">'BranchData'</span><span class="p">,</span> <span class="s1">'tap_module'</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
+        <span class="n">compare_arr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tap_angle</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">tap_angle</span><span class="p">,</span> <span class="n">tol</span><span class="p">,</span> <span class="s1">'BranchData'</span><span class="p">,</span> <span class="s1">'tap_angle'</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span></div>
 </div>
 
 </pre></div>

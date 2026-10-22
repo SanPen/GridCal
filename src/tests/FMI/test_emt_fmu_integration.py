@@ -5,6 +5,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
+from VeraGridEngine.Devices.Events.emt_event import EmtEvent
 from VeraGridEngine.Devices.Events.emt_events_group import EmtEventsGroup
 from VeraGridEngine.Devices.Injections.load import Load
 from VeraGridEngine.Devices.multi_circuit import MultiCircuit
@@ -19,6 +20,12 @@ from VeraGridEngine.IO.fmu.fmu_device_integration import (
     FmuReferenceValue,
     attach_fmu_to_device,
 )
+from VeraGridEngine.Utils.Symbolic.symbolic import Const
+from VeraGridEngine.Utils.Symbolic.templates_common_functions import set_emt_model
+from VeraGridEngine.Templates.Emt.load_RLC_emt_template import get_shunt_r_emt_template
+from VeraGridEngine.Simulations.SmallSignalStabilityEmt.small_signal_stability_emt_driver import SmallSignalStabilityEmtDriver
+from VeraGridEngine.Simulations.SmallSignalStabilityEmt.small_signal_stability_emt_options import SmallSignalStabilityEmtOptions
+from VeraGridEngine.Simulations.SmallSignalStabilityEmt.small_signal_stability_emt_results import SmallSignalStabilityEmtResults
 from VeraGridEngine.Simulations.EMT.emt_driver import EmtSimulationDriver
 from VeraGridEngine.Simulations.EMT.emt_options import EmtOptions
 from VeraGridEngine.Simulations.EMT.emt_results import EmtResults
@@ -28,6 +35,7 @@ from VeraGridEngine.enumerations import (
     EmtInitializationMethod,
     EmtSolverTypes,
     FmiVersion,
+    SmallSignalEmtBuildTypes,
     VarPowerFlowReferenceType,
 )
 from tests.FMI.fmi_test_support import (
@@ -454,3 +462,166 @@ def test_emt_driver_releases_native_runtime_after_failed_solve(tmp_path: Path) -
         assert not bool(emt_driver.results.converged[0])
     assert fmu_path.exists()
     assert tuple(tmp_path.glob("veragrid_fmu_stage_*")) == tuple()
+
+
+@pytest.mark.parametrize("solver_tpe", (EmtSolverTypes.Automatic, EmtSolverTypes.StructuralAD, EmtSolverTypes.StructuralCompiled))
+def test_emt_driver_preserves_partial_event_group_results(solver_tpe: EmtSolverTypes) -> None:
+    """Publish failed prefixes without damaging independent event groups.
+
+    :param solver_tpe: Implicit EMT backend selected through the public driver.
+    :return: None.
+    """
+    grid: MultiCircuit
+    load: Load
+    grid, load = build_test_emt_grid()
+    z: Var = grid.var_factory.add_var("failure_probe_z")
+    p: Var = grid.var_factory.add_var("failure_probe_p")
+    block: Block = get_shunt_r_emt_template(vf=grid.var_factory, phA=True, phB=True, phC=True).block
+    # Preserve the physical shunt and isolate failure in one algebraic equation.
+    block.algebraic_vars.append(z)
+    block.algebraic_eqs.append(z * z - p)
+    block.mode_dict[p] = Const(1.0)
+    block.init_eqs[z] = Const(1.0)
+    set_emt_model(device=load, model=block, var_factory=grid.var_factory)
+    assert load.emt_model is not None
+    # Resolve the event parameter from the assigned symbolic model.
+    parameter: Var | None = None
+    model_parameter: Var
+    for model_parameter in load.emt_model.mode_dict:
+        if model_parameter.name == "failure_probe_p":
+            parameter = model_parameter
+        else:
+            pass
+    assert parameter is not None
+    failed: EmtEventsGroup = EmtEventsGroup(name="partial_failure", idtag="probe-failed")
+    complete: EmtEventsGroup = EmtEventsGroup(name="complete", idtag="probe-complete")
+    inactive: EmtEventsGroup = EmtEventsGroup(name="inactive", idtag="probe-inactive", active=False)
+    grid.add_emt_events_group(failed)
+    grid.add_emt_events_group(complete)
+    grid.add_emt_events_group(inactive)
+    grid.add_emt_event(EmtEvent(device=load, parameter=parameter, time=1.5e-5, value=1e30, group=failed))
+    pf: PowerFlowDriver = PowerFlowDriver(grid=grid, options=build_test_power_flow_options())
+    pf.run()
+    assert pf.results.converged
+    driver: EmtSimulationDriver = EmtSimulationDriver(grid=grid, options=EmtOptions(
+        time_step=5e-6, simulation_time=3e-5, tolerance=1e-6, solver_type=solver_tpe,
+        integration_method=DynamicIntegrationMethod.DaeBackEuler,
+        initialization_method=EmtInitializationMethod.Explicit, init_newton_max_iter=5, verbose=0), pf_results=pf.results)
+    driver.run()
+    results: EmtResults = driver.results
+    assert results is not None
+    assert results.emt_events_group_names.tolist() == list(("partial_failure", "complete", "inactive"))
+    assert results.emt_events_group_idtags.tolist() == list(("probe-failed", "probe-complete", "probe-inactive"))
+    assert results.has_event_group_results.tolist() == list((True, True, False))
+    assert results.converged.tolist() == list((False, True, False))
+    assert results.well_initialized.tolist() == list((True, True, False))
+    assert results.values.shape[0] == results.diff_values.shape[0] == 7
+    np.testing.assert_allclose(np.asarray(results.time_array, dtype=np.int64) * 1e-9, np.arange(7) * 5e-6, rtol=0, atol=1e-12)
+    assert np.all(np.isfinite(results.values[:3, :, 0]))
+    assert np.all(np.isfinite(results.diff_values[:3, :, 0]))
+    assert np.all(np.isnan(results.values[3:, :, 0]))
+    assert np.all(np.isnan(results.diff_values[3:, :, 0]))
+    assert np.all(np.isfinite(results.values[:, :, 1]))
+    assert np.all(np.isfinite(results.diff_values[:, :, 1]))
+    assert driver.problem is not None
+    probe_var: Var | None = None
+    model_variable: Var
+    for model_variable in driver.problem.state_and_algebraic_vars():
+        if model_variable.name == "failure_probe_z":
+            probe_var = model_variable
+        else:
+            pass
+    assert probe_var is not None
+    probe_index: int = driver.problem.uid2idx_vars[probe_var.uid]
+    assert results.variables[probe_index].uid == probe_var.uid
+    np.testing.assert_allclose(results.values[:3, probe_index, 0], 1.0, rtol=0, atol=1e-12)
+    np.testing.assert_allclose(results.values[:, probe_index, 1], 1.0, rtol=0, atol=1e-12)
+
+
+@pytest.mark.parametrize("build_tpe", (SmallSignalEmtBuildTypes.Arnoldi, SmallSignalEmtBuildTypes.HybridArnoldi))
+@pytest.mark.parametrize("failed,short_period,nonfinite_seed", ((True, False, False), (False, True, False), (False, False, True), (False, False, False)))
+@pytest.mark.parametrize("prefer_ak", (False, True))
+def test_floquet_rejects_invalid_emt_capture(build_tpe: SmallSignalEmtBuildTypes, failed: bool,
+                                          short_period: bool, nonfinite_seed: bool, prefer_ak: bool) -> None:
+    """Guard both Floquet consumers while preserving the successful period slice.
+
+    :param build_tpe: Existing Floquet algorithm selection.
+    :param failed: Whether the real EMT event causes Newton rejection.
+    :param short_period: Whether the requested period exceeds the history.
+    :param nonfinite_seed: Whether the captured initial algebraic state is NaN.
+    :param prefer_ak: Whether the hybrid consumer requests its A-k operator.
+    :return: None.
+    """
+    grid: MultiCircuit
+    load: Load
+    grid, load = build_test_emt_grid()
+    z: Var = grid.var_factory.add_var("floquet_probe_z")
+    p: Var = grid.var_factory.add_var("floquet_probe_p")
+    block: Block = get_shunt_r_emt_template(vf=grid.var_factory, phA=True, phB=True, phC=True).block
+    block.algebraic_vars.append(z)
+    block.algebraic_eqs.append(z * z - p)
+    block.mode_dict[p] = Const(1.0)
+    block.init_eqs[z] = Const(float("nan") if nonfinite_seed else 1.0)
+    set_emt_model(device=load, model=block, var_factory=grid.var_factory)
+    assert load.emt_model is not None
+    # Resolve the event parameter from the assigned symbolic model.
+    parameter: Var | None = None
+    model_parameter: Var
+    for model_parameter in load.emt_model.mode_dict:
+        if model_parameter.name == "floquet_probe_p":
+            parameter = model_parameter
+        else:
+            pass
+    assert parameter is not None
+    group: EmtEventsGroup = EmtEventsGroup(name="floquet_probe_group")
+    grid.add_emt_events_group(group)
+    if failed:
+        grid.add_emt_event(EmtEvent(device=load, parameter=parameter, time=1.5e-5, value=1e30, group=group))
+    else:
+        pass
+    pf: PowerFlowDriver = PowerFlowDriver(grid=grid, options=build_test_power_flow_options())
+    pf.run()
+    assert pf.results.converged
+    options: SmallSignalStabilityEmtOptions = SmallSignalStabilityEmtOptions(
+        k=1, ss_assessment_time=3e-5, target_period=5e-5 if short_period else 2e-5, verbose=0, build_type=build_tpe, prefer_ak_operator=prefer_ak)
+    driver: SmallSignalStabilityEmtDriver = SmallSignalStabilityEmtDriver(grid=grid, emt_options=EmtOptions(
+        time_step=5e-6, simulation_time=3e-5, solver_type=EmtSolverTypes.StructuralAD,
+        integration_method=DynamicIntegrationMethod.DaeBackEuler,
+        initialization_method=EmtInitializationMethod.Explicit, verbose=0), sss_options=options, pf_results=pf.results)
+    driver.problem.set_events_group(emt_events_group=group)
+    capture: tuple[np.ndarray, np.ndarray, object, np.ndarray, int] = driver._capture_limit_cycle_and_evaluator(h=5e-6)
+    assert len(capture) == 5
+    trajectory: np.ndarray = capture[0]
+    times: np.ndarray = capture[1]
+    static_params: np.ndarray = capture[3]
+    event_count: int = capture[4]
+    assert trajectory.dtype == times.dtype == static_params.dtype == np.float64
+    assert event_count == driver.problem.get_variable_parameter_number()
+    assert int(options.target_period / 5e-6) == (10 if short_period else 4)
+    if failed or short_period or nonfinite_seed:
+        assert trajectory.shape == (0, driver.problem.get_all_vars_number())
+        assert times.shape == (0,)
+        assert capture[2] is None
+        assert driver.logger.error_count() == 1
+        # Seed real prior results to verify reuse cannot expose stale spectra.
+        driver.results = SmallSignalStabilityEmtResults(multipliers=np.ones(1, dtype=np.complex128),
+            right_vecs=np.ones((1, 1), dtype=np.complex128), left_vecs=np.ones((1, 1), dtype=np.complex128),
+            period=options.target_period, stat_vars=list((z,)))
+        driver.run()
+        assert driver.results is None
+        assert driver.logger.error_count() == 2
+    else:
+        assert trajectory.shape == (4, driver.problem.get_all_vars_number())
+        np.testing.assert_allclose(times, np.arange(3, 7) * 5e-6, rtol=0, atol=1e-12)
+        assert capture[2] is not None
+        assert np.all(np.isfinite(trajectory))
+        assert driver.logger.error_count() == 0
+        probe_var: Var | None = None
+        model_variable: Var
+        for model_variable in driver.problem.state_and_algebraic_vars():
+            if model_variable.name == "floquet_probe_z":
+                probe_var = model_variable
+            else:
+                pass
+        assert probe_var is not None
+        np.testing.assert_allclose(trajectory[:, driver.problem.uid2idx_vars[probe_var.uid]], 1.0, rtol=0, atol=1e-12)

@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Utils.MIP.pulp_interface &mdash; VeraGrid 6.7.13 documentation</title>
+  <title>VeraGridEngine.Utils.MIP.pulp_interface &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=16fbabd8"></script>
+      <script src="../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -108,11 +108,11 @@
 <span class="c1"># file, You can obtain one at https://mozilla.org/MPL/2.0/.</span>
 <span class="c1"># SPDX-License-Identifier: MPL-2.0</span>
 
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 <span class="sd">This module abstracts the synthax of PuLP out</span>
 <span class="sd">so that in the future it can be exchanged with some</span>
 <span class="sd">other solver interface easily</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">numbers</span><span class="w"> </span><span class="kn">import</span> <span class="n">Real</span>
@@ -138,19 +138,19 @@
 <div class="viewcode-block" id="make_highs_solver">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.MIP.html#VeraGridEngine.Utils.MIP.pulp_interface.make_highs_solver">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">make_highs_solver</span><span class="p">(</span><span class="n">mip</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">show_logs</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">HiGHS</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Build a PuLP HiGHS solver with conservative macOS settings.</span>
 
 <span class="sd">    The macOS highspy wheel can crash in HiGHS worker/IPM code paths under</span>
 <span class="sd">    Python 3.14. Linux keeps the default HiGHS settings.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">platform</span><span class="o">.</span><span class="n">system</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;Darwin&quot;</span><span class="p">:</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="n">platform</span><span class="o">.</span><span class="n">system</span><span class="p">()</span> <span class="o">==</span> <span class="s2">"Darwin"</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">HiGHS</span><span class="p">(</span>
             <span class="n">mip</span><span class="o">=</span><span class="n">mip</span><span class="p">,</span>
             <span class="n">msg</span><span class="o">=</span><span class="n">show_logs</span><span class="p">,</span>
             <span class="n">threads</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-            <span class="n">solver</span><span class="o">=</span><span class="s2">&quot;simplex&quot;</span><span class="p">,</span>
-            <span class="n">parallel</span><span class="o">=</span><span class="s2">&quot;off&quot;</span><span class="p">,</span>
+            <span class="n">solver</span><span class="o">=</span><span class="s2">"simplex"</span><span class="p">,</span>
+            <span class="n">parallel</span><span class="o">=</span><span class="s2">"off"</span><span class="p">,</span>
         <span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">HiGHS</span><span class="p">(</span><span class="n">mip</span><span class="o">=</span><span class="n">mip</span><span class="p">,</span> <span class="n">msg</span><span class="o">=</span><span class="n">show_logs</span><span class="p">)</span></div>
@@ -160,10 +160,10 @@
 <div class="viewcode-block" id="get_optimal_status">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.MIP.html#VeraGridEngine.Utils.MIP.pulp_interface.get_optimal_status">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_optimal_status</span><span class="p">():</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Return PuLP&#39;s optimal solve status for the installed API version.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">solve_status</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">pulp</span><span class="p">,</span> <span class="s2">&quot;LpSolveStatus&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Return PuLP's optimal solve status for the installed API version.</span>
+<span class="sd">    """</span>
+    <span class="n">solve_status</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">pulp</span><span class="p">,</span> <span class="s2">"LpSolveStatus"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">solve_status</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">solve_status</span><span class="o">.</span><span class="n">Optimal</span>
 
@@ -174,10 +174,10 @@
 <div class="viewcode-block" id="get_infeasible_status">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.MIP.html#VeraGridEngine.Utils.MIP.pulp_interface.get_infeasible_status">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_infeasible_status</span><span class="p">():</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Return PuLP&#39;s infeasible solve status for the installed API version.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">solve_status</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">pulp</span><span class="p">,</span> <span class="s2">&quot;LpSolveStatus&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Return PuLP's infeasible solve status for the installed API version.</span>
+<span class="sd">    """</span>
+    <span class="n">solve_status</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">pulp</span><span class="p">,</span> <span class="s2">"LpSolveStatus"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">solve_status</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">solve_status</span><span class="o">.</span><span class="n">Infeasible</span>
 
@@ -188,10 +188,10 @@
 <div class="viewcode-block" id="get_not_solved_status">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.MIP.html#VeraGridEngine.Utils.MIP.pulp_interface.get_not_solved_status">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_not_solved_status</span><span class="p">():</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Return PuLP&#39;s not-solved status for the installed API version.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">solve_status</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">pulp</span><span class="p">,</span> <span class="s2">&quot;LpSolveStatus&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Return PuLP's not-solved status for the installed API version.</span>
+<span class="sd">    """</span>
+    <span class="n">solve_status</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">pulp</span><span class="p">,</span> <span class="s2">"LpSolveStatus"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">solve_status</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">solve_status</span><span class="o">.</span><span class="n">NotSolved</span>
 
@@ -202,20 +202,20 @@
 <div class="viewcode-block" id="normalize_solve_status">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.MIP.html#VeraGridEngine.Utils.MIP.pulp_interface.normalize_solve_status">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">normalize_solve_status</span><span class="p">(</span><span class="n">result</span><span class="p">:</span> <span class="n">Any</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Convert PuLP 4 LpSolveStats results to their status enum.</span>
 <span class="sd">    PuLP 3 already returns the integer status directly.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="s2">&quot;status&quot;</span><span class="p">,</span> <span class="n">result</span><span class="p">)</span></div>
+<span class="sd">    """</span>
+    <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="s2">"status"</span><span class="p">,</span> <span class="n">result</span><span class="p">)</span></div>
 
 
 
 <div class="viewcode-block" id="get_model_constraint_items">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.MIP.html#VeraGridEngine.Utils.MIP.pulp_interface.get_model_constraint_items">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_model_constraint_items</span><span class="p">(</span><span class="n">model</span><span class="p">:</span> <span class="n">pulp</span><span class="o">.</span><span class="n">LpProblem</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">LpCst</span><span class="p">]]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Return named constraints for both PuLP 3 and PuLP 4.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">constraints</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">constraints</span>
     <span class="k">if</span> <span class="nb">callable</span><span class="p">(</span><span class="n">constraints</span><span class="p">):</span>
         <span class="k">return</span> <span class="p">[(</span><span class="n">cst</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">cst</span><span class="p">)</span> <span class="k">for</span> <span class="n">cst</span> <span class="ow">in</span> <span class="n">constraints</span><span class="p">()]</span>
@@ -227,10 +227,10 @@
 <div class="viewcode-block" id="get_model_constraint_by_name">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.MIP.html#VeraGridEngine.Utils.MIP.pulp_interface.get_model_constraint_by_name">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_model_constraint_by_name</span><span class="p">(</span><span class="n">model</span><span class="p">:</span> <span class="n">pulp</span><span class="o">.</span><span class="n">LpProblem</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">LpCst</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Return a constraint by name for both PuLP 3 and PuLP 4.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="s2">&quot;get_constraint_by_name&quot;</span><span class="p">):</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="s2">"get_constraint_by_name"</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">model</span><span class="o">.</span><span class="n">get_constraint_by_name</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">model</span><span class="o">.</span><span class="n">constraints</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">)</span></div>
@@ -240,11 +240,11 @@
 <div class="viewcode-block" id="make_pulp_expression">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.MIP.html#VeraGridEngine.Utils.MIP.pulp_interface.make_pulp_expression">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">make_pulp_expression</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="n">LpExp</span> <span class="o">|</span> <span class="n">Real</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">LpExp</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Build an affine expression using the API supported by the installed PuLP.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">Real</span><span class="p">):</span>
-        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">pulp</span><span class="o">.</span><span class="n">LpAffineExpression</span><span class="p">,</span> <span class="s2">&quot;from_constant&quot;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">pulp</span><span class="o">.</span><span class="n">LpAffineExpression</span><span class="p">,</span> <span class="s2">"from_constant"</span><span class="p">):</span>
             <span class="k">return</span> <span class="n">pulp</span><span class="o">.</span><span class="n">LpAffineExpression</span><span class="o">.</span><span class="n">from_constant</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">pulp</span><span class="o">.</span><span class="n">LpAffineExpression</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
@@ -256,11 +256,11 @@
 <div class="viewcode-block" id="get_lp_var_value">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.MIP.html#VeraGridEngine.Utils.MIP.pulp_interface.get_lp_var_value">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_lp_var_value</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">LpVar</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Get the value of a variable stored in a numpy array of objects</span>
 <span class="sd">    :param x: soe object (it may be a LP var or a number)</span>
 <span class="sd">    :return: result or previous numeric value</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">LpVar</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">x</span><span class="o">.</span><span class="n">value</span><span class="p">()</span>
     <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">LpExp</span><span class="p">):</span>
@@ -275,32 +275,32 @@
 <div class="viewcode-block" id="get_pulp_available_mip_solvers">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.MIP.html#VeraGridEngine.Utils.MIP.pulp_interface.get_pulp_available_mip_solvers">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_pulp_available_mip_solvers</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Get a list of candidate solvers</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">solvers</span> <span class="o">=</span> <span class="n">pulp</span><span class="o">.</span><span class="n">listSolvers</span><span class="p">(</span><span class="n">onlyAvailable</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
     <span class="n">solvers2</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
     <span class="k">for</span> <span class="n">slv</span> <span class="ow">in</span> <span class="n">solvers</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">slv</span> <span class="o">==</span> <span class="s1">&#39;SCIP_CMD&#39;</span> <span class="ow">or</span> <span class="n">slv</span> <span class="o">==</span> <span class="s1">&#39;SCIP_PY&#39;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">slv</span> <span class="o">==</span> <span class="s1">'SCIP_CMD'</span> <span class="ow">or</span> <span class="n">slv</span> <span class="o">==</span> <span class="s1">'SCIP_PY'</span><span class="p">:</span>
             <span class="n">solvers2</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">MIPSolvers</span><span class="o">.</span><span class="n">SCIP</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">slv</span> <span class="o">==</span> <span class="s1">&#39;CPLEX_CMD&#39;</span> <span class="ow">or</span> <span class="n">slv</span> <span class="o">==</span> <span class="s2">&quot;CPLEX_PY&quot;</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="n">slv</span> <span class="o">==</span> <span class="s1">'CPLEX_CMD'</span> <span class="ow">or</span> <span class="n">slv</span> <span class="o">==</span> <span class="s2">"CPLEX_PY"</span><span class="p">:</span>
             <span class="n">solvers2</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">MIPSolvers</span><span class="o">.</span><span class="n">CPLEX</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">slv</span> <span class="o">==</span> <span class="s1">&#39;GUROBI_CMD&#39;</span> <span class="ow">or</span> <span class="n">slv</span> <span class="o">==</span> <span class="s1">&#39;GUROBI&#39;</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="n">slv</span> <span class="o">==</span> <span class="s1">'GUROBI_CMD'</span> <span class="ow">or</span> <span class="n">slv</span> <span class="o">==</span> <span class="s1">'GUROBI'</span><span class="p">:</span>
             <span class="n">solvers2</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">MIPSolvers</span><span class="o">.</span><span class="n">GUROBI</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">slv</span> <span class="o">==</span> <span class="s1">&#39;XPRESS&#39;</span> <span class="ow">or</span> <span class="n">slv</span> <span class="o">==</span> <span class="s2">&quot;XPRESS_PY&quot;</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="n">slv</span> <span class="o">==</span> <span class="s1">'XPRESS'</span> <span class="ow">or</span> <span class="n">slv</span> <span class="o">==</span> <span class="s2">"XPRESS_PY"</span><span class="p">:</span>
             <span class="n">solvers2</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">MIPSolvers</span><span class="o">.</span><span class="n">XPRESS</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">slv</span> <span class="o">==</span> <span class="s1">&#39;HiGHS&#39;</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="n">slv</span> <span class="o">==</span> <span class="s1">'HiGHS'</span><span class="p">:</span>
             <span class="n">solvers2</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">MIPSolvers</span><span class="o">.</span><span class="n">HIGHS</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">slv</span> <span class="o">==</span> <span class="s1">&#39;PULP_CBC_CMD&#39;</span> <span class="ow">or</span> <span class="n">slv</span> <span class="o">==</span> <span class="s1">&#39;COIN_CMD&#39;</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="n">slv</span> <span class="o">==</span> <span class="s1">'PULP_CBC_CMD'</span> <span class="ow">or</span> <span class="n">slv</span> <span class="o">==</span> <span class="s1">'COIN_CMD'</span><span class="p">:</span>
             <span class="n">solvers2</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">MIPSolvers</span><span class="o">.</span><span class="n">CBC</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">slv</span> <span class="o">==</span> <span class="s1">&#39;CUOPT&#39;</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="n">slv</span> <span class="o">==</span> <span class="s1">'CUOPT'</span><span class="p">:</span>
             <span class="n">solvers2</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">MIPSolvers</span><span class="o">.</span><span class="n">CUOPT</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">slv</span> <span class="o">==</span> <span class="s1">&#39;COPT_CMD&#39;</span> <span class="ow">or</span> <span class="n">slv</span> <span class="o">==</span> <span class="s1">&#39;COPT&#39;</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="n">slv</span> <span class="o">==</span> <span class="s1">'COPT_CMD'</span> <span class="ow">or</span> <span class="n">slv</span> <span class="o">==</span> <span class="s1">'COPT'</span><span class="p">:</span>
             <span class="n">solvers2</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">MIPSolvers</span><span class="o">.</span><span class="n">COPT</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;PuLP solver not recognized </span><span class="si">{</span><span class="n">slv</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"PuLP solver not recognized </span><span class="si">{</span><span class="n">slv</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">solvers2</span></div>
 
@@ -315,7 +315,7 @@
         <span class="n">up_bound</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">category</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">LpVar</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Add one PuLP variable using the newest model-owned API when available.</span>
 
 <span class="sd">    :param model: PuLP problem that owns the variable.</span>
@@ -324,7 +324,7 @@
 <span class="sd">    :param up_bound: Upper variable bound.</span>
 <span class="sd">    :param category: PuLP variable category.</span>
 <span class="sd">    :return: Created PuLP variable.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="c1"># PuLP 4 owns variable creation from the problem object, avoiding the</span>
         <span class="c1"># deprecated detached-variable constructor path.</span>
@@ -342,10 +342,10 @@
 <div class="viewcode-block" id="PulpLpModel">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.MIP.html#VeraGridEngine.Utils.MIP.pulp_interface.PulpLpModel">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">PulpLpModel</span><span class="p">(</span><span class="n">AbstractLpModel</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    LPModel implementation for PuLP</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;model&quot;</span><span class="p">,)</span>
+<span class="sd">    """</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"model"</span><span class="p">,)</span>
 
     <span class="n">OPTIMAL</span> <span class="o">=</span> <span class="n">get_optimal_status</span><span class="p">()</span>
     <span class="n">INFEASIBLE</span> <span class="o">=</span> <span class="n">get_infeasible_status</span><span class="p">()</span>
@@ -353,33 +353,33 @@
     <span class="n">INFINITY</span> <span class="o">=</span> <span class="mf">1e20</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">solver_type</span><span class="p">:</span> <span class="n">MIPSolvers</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :param solver_type:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">solver_type</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;PuLP&quot;</span><span class="p">)</span>
+<span class="sd">        """</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">solver_type</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"PuLP"</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">solver_type</span><span class="p">:</span> <span class="n">MIPSolvers</span> <span class="o">=</span> <span class="n">solver_type</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">pulp</span><span class="o">.</span><span class="n">LpProblem</span><span class="p">(</span><span class="s2">&quot;myProblem&quot;</span><span class="p">,</span> <span class="n">pulp</span><span class="o">.</span><span class="n">LpMinimize</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">pulp</span><span class="o">.</span><span class="n">LpProblem</span><span class="p">(</span><span class="s2">"myProblem"</span><span class="p">,</span> <span class="n">pulp</span><span class="o">.</span><span class="n">LpMinimize</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">relaxed_slacks</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">Logger</span><span class="p">()</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> is not present&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">solver_type</span><span class="o">.</span><span class="n">value</span><span class="p">))</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">"</span><span class="si">{}</span><span class="s2"> is not present"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">solver_type</span><span class="o">.</span><span class="n">value</span><span class="p">))</span>
 
 <div class="viewcode-block" id="PulpLpModel.set_var_bounds">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.MIP.html#VeraGridEngine.Utils.MIP.pulp_interface.PulpLpModel.set_var_bounds">[docs]</a>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">set_var_bounds</span><span class="p">(</span><span class="n">var</span><span class="p">:</span> <span class="n">LpVar</span><span class="p">,</span> <span class="n">lb</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">ub</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Modify the bounds of a variable</span>
 <span class="sd">        :param var: LpVar instance to modify</span>
 <span class="sd">        :param lb: lower bound value</span>
 <span class="sd">        :param ub: upper bound value</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">LpVar</span><span class="p">):</span>
             <span class="n">var</span><span class="o">.</span><span class="n">upBound</span> <span class="o">=</span> <span class="n">ub</span>
             <span class="n">var</span><span class="o">.</span><span class="n">lowBound</span> <span class="o">=</span> <span class="n">lb</span></div>
@@ -387,74 +387,74 @@
 
 <div class="viewcode-block" id="PulpLpModel.save_model">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.MIP.html#VeraGridEngine.Utils.MIP.pulp_interface.PulpLpModel.save_model">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">save_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;ntc_opf_problem.lp&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">save_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"ntc_opf_problem.lp"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Save problem in LP format</span>
 <span class="sd">        :param file_name: name of the file (.lp or .mps supported)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># save the problem in LP format to debug</span>
-        <span class="k">if</span> <span class="n">file_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.lp&#39;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">file_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">'.lp'</span><span class="p">):</span>
             <span class="n">lp_content</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">writeLP</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="n">file_name</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="mi">10000</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">file_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.mps&#39;</span><span class="p">):</span>
+        <span class="k">elif</span> <span class="n">file_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">'.mps'</span><span class="p">):</span>
             <span class="n">lp_content</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">writeMPS</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="n">file_name</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Unsupported file format&#39;</span><span class="p">)</span></div>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">'Unsupported file format'</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="PulpLpModel.add_int">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.MIP.html#VeraGridEngine.Utils.MIP.pulp_interface.PulpLpModel.add_int">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">add_int</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lb</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">ub</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">LpVar</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_int</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lb</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">ub</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">LpVar</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Make integer LP var</span>
 <span class="sd">        :param lb: lower bound</span>
 <span class="sd">        :param ub: upper bound</span>
 <span class="sd">        :param name: name (optional)</span>
 <span class="sd">        :return: LpVar</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">var</span> <span class="o">=</span> <span class="n">add_pulp_variable</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">low_bound</span><span class="o">=</span><span class="n">lb</span><span class="p">,</span> <span class="n">up_bound</span><span class="o">=</span><span class="n">ub</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="n">pulp</span><span class="o">.</span><span class="n">LpInteger</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">var</span></div>
 
 
 <div class="viewcode-block" id="PulpLpModel.add_bin">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.MIP.html#VeraGridEngine.Utils.MIP.pulp_interface.PulpLpModel.add_bin">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">add_bin</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">LpVar</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_bin</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">LpVar</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Make integer LP var</span>
 <span class="sd">        :param name: name (optional)</span>
 <span class="sd">        :return: LpVar</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">var</span> <span class="o">=</span> <span class="n">add_pulp_variable</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">low_bound</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">up_bound</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="n">pulp</span><span class="o">.</span><span class="n">LpInteger</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">var</span></div>
 
 
 <div class="viewcode-block" id="PulpLpModel.add_var">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.MIP.html#VeraGridEngine.Utils.MIP.pulp_interface.PulpLpModel.add_var">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">add_var</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lb</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">ub</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">LpVar</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_var</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lb</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">ub</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">LpVar</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Make floating point LP var</span>
 <span class="sd">        :param lb: lower bound</span>
 <span class="sd">        :param ub: upper bound</span>
 <span class="sd">        :param name: name (optional)</span>
 <span class="sd">        :return: LpVar</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">var</span> <span class="o">=</span> <span class="n">add_pulp_variable</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">low_bound</span><span class="o">=</span><span class="n">lb</span><span class="p">,</span> <span class="n">up_bound</span><span class="o">=</span><span class="n">ub</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="n">pulp</span><span class="o">.</span><span class="n">LpContinuous</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">var</span></div>
 
 
 <div class="viewcode-block" id="PulpLpModel.add_cst">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.MIP.html#VeraGridEngine.Utils.MIP.pulp_interface.PulpLpModel.add_cst">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">add_cst</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cst</span><span class="p">:</span> <span class="n">LpCst</span> <span class="o">|</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">LpCst</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_cst</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cst</span><span class="p">:</span> <span class="n">LpCst</span> <span class="o">|</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">LpCst</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Add constraint to the model</span>
 <span class="sd">        :param cst: constraint object (or general expression)</span>
 <span class="sd">        :param name: name of the constraint (optional)</span>
 <span class="sd">        :return: Constraint object</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cst</span><span class="p">,</span> <span class="nb">bool</span><span class="p">):</span>
             <span class="k">return</span> <span class="mi">0</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">addConstraint</span><span class="p">(</span><span class="n">constraint</span><span class="o">=</span><span class="n">cst</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
-            <span class="n">cst_name</span> <span class="o">=</span> <span class="n">name</span> <span class="ow">or</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">cst</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+            <span class="n">cst_name</span> <span class="o">=</span> <span class="n">name</span> <span class="ow">or</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">cst</span><span class="p">,</span> <span class="s2">"name"</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span>
             <span class="n">added_cst</span> <span class="o">=</span> <span class="n">get_model_constraint_by_name</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">cst_name</span><span class="p">)</span> <span class="k">if</span> <span class="n">cst_name</span> <span class="k">else</span> <span class="kc">None</span>
             <span class="k">return</span> <span class="n">added_cst</span> <span class="k">if</span> <span class="n">added_cst</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">cst</span></div>
 
@@ -463,33 +463,33 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.MIP.html#VeraGridEngine.Utils.MIP.pulp_interface.PulpLpModel.sum">[docs]</a>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">sum</span><span class="p">(</span><span class="n">cst</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">LpExp</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Add sum of the constraints to the model</span>
 <span class="sd">        :param cst: constraint object (or general expression)</span>
 <span class="sd">        :return: Constraint object</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">pulp</span><span class="o">.</span><span class="n">lpSum</span><span class="p">(</span><span class="n">cst</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="PulpLpModel.minimize">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.MIP.html#VeraGridEngine.Utils.MIP.pulp_interface.PulpLpModel.minimize">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">minimize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj_function</span><span class="p">:</span> <span class="n">LpExp</span> <span class="o">|</span> <span class="n">Real</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Set the objective function with minimization sense</span>
 <span class="sd">        :param obj_function: expression to minimize</span>
 <span class="sd">        :return: None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">setObjective</span><span class="p">(</span><span class="n">obj</span><span class="o">=</span><span class="n">make_pulp_expression</span><span class="p">(</span><span class="n">obj_function</span><span class="p">))</span></div>
 
 
 <div class="viewcode-block" id="PulpLpModel.get_solver">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.MIP.html#VeraGridEngine.Utils.MIP.pulp_interface.PulpLpModel.get_solver">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_solver</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">show_logs</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :param show_logs:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">solver_type</span> <span class="o">==</span> <span class="n">MIPSolvers</span><span class="o">.</span><span class="n">HIGHS</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">make_highs_solver</span><span class="p">(</span><span class="n">mip</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">isMIP</span><span class="p">(),</span> <span class="n">show_logs</span><span class="o">=</span><span class="n">show_logs</span><span class="p">)</span>
 
@@ -499,12 +499,12 @@
             <span class="k">if</span> <span class="n">solver</span><span class="o">.</span><span class="n">available</span><span class="p">()</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">True</span><span class="p">:</span>
                 <span class="n">solver</span> <span class="o">=</span> <span class="n">SCIP_PY</span><span class="p">(</span><span class="n">mip</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">isMIP</span><span class="p">(),</span> <span class="n">msg</span><span class="o">=</span><span class="n">show_logs</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="s2">&quot;No version of SCIP (cmd or python package was available)&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="s2">"No version of SCIP (cmd or python package was available)"</span><span class="p">)</span>
                 <span class="n">solver</span> <span class="o">=</span> <span class="n">make_highs_solver</span><span class="p">(</span><span class="n">mip</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">isMIP</span><span class="p">(),</span> <span class="n">show_logs</span><span class="o">=</span><span class="n">show_logs</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">solver</span>
 
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">solver_type</span> <span class="o">==</span> <span class="n">MIPSolvers</span><span class="o">.</span><span class="n">CBC</span><span class="p">:</span>
-            <span class="n">bundled_cbc</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">pulp</span><span class="p">,</span> <span class="s2">&quot;PULP_CBC_CMD&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="n">bundled_cbc</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">pulp</span><span class="p">,</span> <span class="s2">"PULP_CBC_CMD"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">bundled_cbc</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">solver</span> <span class="o">=</span> <span class="n">bundled_cbc</span><span class="p">(</span><span class="n">mip</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">isMIP</span><span class="p">(),</span> <span class="n">msg</span><span class="o">=</span><span class="n">show_logs</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">solver</span><span class="o">.</span><span class="n">available</span><span class="p">()</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -516,7 +516,7 @@
             <span class="k">if</span> <span class="n">solver</span><span class="o">.</span><span class="n">available</span><span class="p">()</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">return</span> <span class="n">solver</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="n">pulp</span><span class="o">.</span><span class="n">PulpSolverError</span><span class="p">(</span><span class="s2">&quot;CBC was selected, but no CBC executable is available&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="n">pulp</span><span class="o">.</span><span class="n">PulpSolverError</span><span class="p">(</span><span class="s2">"CBC was selected, but no CBC executable is available"</span><span class="p">)</span>
 
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">solver_type</span> <span class="o">==</span> <span class="n">MIPSolvers</span><span class="o">.</span><span class="n">CUOPT</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">CUOPT</span><span class="p">(</span><span class="n">mip</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">isMIP</span><span class="p">(),</span> <span class="n">msg</span><span class="o">=</span><span class="n">show_logs</span><span class="p">)</span>
@@ -526,7 +526,7 @@
             <span class="k">if</span> <span class="n">solver</span><span class="o">.</span><span class="n">available</span><span class="p">()</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">True</span><span class="p">:</span>
                 <span class="n">solver</span> <span class="o">=</span> <span class="n">CPLEX_PY</span><span class="p">(</span><span class="n">mip</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">isMIP</span><span class="p">(),</span> <span class="n">msg</span><span class="o">=</span><span class="n">show_logs</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="s2">&quot;No version of Cplex (cmd or python package was available)&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="s2">"No version of Cplex (cmd or python package was available)"</span><span class="p">)</span>
                 <span class="n">solver</span> <span class="o">=</span> <span class="n">make_highs_solver</span><span class="p">(</span><span class="n">mip</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">isMIP</span><span class="p">(),</span> <span class="n">show_logs</span><span class="o">=</span><span class="n">show_logs</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">solver</span>
 
@@ -535,7 +535,7 @@
             <span class="k">if</span> <span class="n">solver</span><span class="o">.</span><span class="n">available</span><span class="p">()</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">True</span><span class="p">:</span>
                 <span class="n">solver</span> <span class="o">=</span> <span class="n">GUROBI_CMD</span><span class="p">(</span><span class="n">mip</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">isMIP</span><span class="p">(),</span> <span class="n">msg</span><span class="o">=</span><span class="n">show_logs</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="s2">&quot;No version of Gurobi (cmd or python package was available)&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="s2">"No version of Gurobi (cmd or python package was available)"</span><span class="p">)</span>
                 <span class="n">solver</span> <span class="o">=</span> <span class="n">make_highs_solver</span><span class="p">(</span><span class="n">mip</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">isMIP</span><span class="p">(),</span> <span class="n">show_logs</span><span class="o">=</span><span class="n">show_logs</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">solver</span>
 
@@ -544,7 +544,7 @@
             <span class="k">if</span> <span class="n">solver</span><span class="o">.</span><span class="n">available</span><span class="p">()</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">True</span><span class="p">:</span>
                 <span class="n">solver</span> <span class="o">=</span> <span class="n">XPRESS_PY</span><span class="p">(</span><span class="n">mip</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">isMIP</span><span class="p">(),</span> <span class="n">msg</span><span class="o">=</span><span class="n">show_logs</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="s2">&quot;No version of Xpress (cmd or python package was available)&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="s2">"No version of Xpress (cmd or python package was available)"</span><span class="p">)</span>
                 <span class="n">solver</span> <span class="o">=</span> <span class="n">make_highs_solver</span><span class="p">(</span><span class="n">mip</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">isMIP</span><span class="p">(),</span> <span class="n">show_logs</span><span class="o">=</span><span class="n">show_logs</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">solver</span>
 
@@ -553,32 +553,32 @@
             <span class="k">if</span> <span class="n">solver</span><span class="o">.</span><span class="n">available</span><span class="p">()</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">True</span><span class="p">:</span>
                 <span class="n">solver</span> <span class="o">=</span> <span class="n">COPT</span><span class="p">(</span><span class="n">mip</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">isMIP</span><span class="p">(),</span> <span class="n">msg</span><span class="o">=</span><span class="n">show_logs</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="s2">&quot;No version of Copt (cmd or python package was available)&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="s2">"No version of Copt (cmd or python package was available)"</span><span class="p">)</span>
                 <span class="n">solver</span> <span class="o">=</span> <span class="n">make_highs_solver</span><span class="p">(</span><span class="n">mip</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">isMIP</span><span class="p">(),</span> <span class="n">show_logs</span><span class="o">=</span><span class="n">show_logs</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">solver</span>
 
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;PuLP Unsupported MIP solver &#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">solver_type</span><span class="o">.</span><span class="n">value</span><span class="p">)</span></div>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">'PuLP Unsupported MIP solver '</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">solver_type</span><span class="o">.</span><span class="n">value</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="PulpLpModel.solve">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.MIP.html#VeraGridEngine.Utils.MIP.pulp_interface.PulpLpModel.solve">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">solve</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">robust</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">show_logs</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
               <span class="n">progress_text</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Solve the model</span>
 <span class="sd">        :param robust: In this interface, this is useless</span>
 <span class="sd">        :param show_logs: In this interface, this is useless</span>
 <span class="sd">        :param progress_text: progress function pointer</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="n">progress_text</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">progress_text</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Solving model with </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">solver_type</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">...&quot;</span><span class="p">)</span>
+            <span class="n">progress_text</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Solving model with </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">solver_type</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">..."</span><span class="p">)</span>
 
         <span class="c1"># solve the model</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">solver</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_solver</span><span class="p">(</span><span class="n">show_logs</span><span class="o">=</span><span class="n">show_logs</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">&quot;PuLP solver&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">solver</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">"PuLP solver"</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">solver</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
             <span class="n">status</span> <span class="o">=</span> <span class="n">normalize_solve_status</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">solver</span><span class="o">=</span><span class="n">solver</span><span class="p">))</span>
         <span class="k">except</span> <span class="n">pulp</span><span class="o">.</span><span class="n">PulpSolverError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">),</span> <span class="p">)</span>
@@ -588,7 +588,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">),</span> <span class="p">)</span>
             <span class="n">status</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">NOT_SOLVED</span>
         <span class="k">except</span> <span class="ne">IndexError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Index error:&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">"Index error:"</span><span class="p">)</span>
             <span class="nb">print</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
             <span class="n">status</span> <span class="o">=</span> <span class="mi">1</span>
 
@@ -596,20 +596,20 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">originally_infeasible</span> <span class="o">=</span> <span class="kc">True</span>
 
             <span class="k">if</span> <span class="n">robust</span><span class="p">:</span>
-<span class="w">                </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">                </span><span class="sd">"""</span>
 <span class="sd">                We are going to create a deep clone of the model,</span>
 <span class="sd">                add a slack variable to each constraint and minimize</span>
 <span class="sd">                the sum of the newly added slack vars.</span>
 <span class="sd">                This LP model will be always optimal.</span>
 <span class="sd">                After the solution, we inspect the slack vars added</span>
 <span class="sd">                if any of those is &gt; 0, then the constraint where it</span>
-<span class="sd">                was added needs &quot;slacking&quot;, therefore we add that slack</span>
+<span class="sd">                was added needs "slacking", therefore we add that slack</span>
 <span class="sd">                to the original model, and add the slack to the original </span>
 <span class="sd">                objective function. This way we relax the model while</span>
 <span class="sd">                bringing it to optimality.</span>
-<span class="sd">                &quot;&quot;&quot;</span>
+<span class="sd">                """</span>
 
-                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">&quot;Base problem could not be solved&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">status2string</span><span class="p">(</span><span class="n">status</span><span class="p">))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">"Base problem could not be solved"</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">status2string</span><span class="p">(</span><span class="n">status</span><span class="p">))</span>
 
                 <span class="c1"># deep copy of the original model</span>
                 <span class="n">debug_model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">()</span>
@@ -621,7 +621,7 @@
                     <span class="c1"># create a new slack var in the problem</span>
                     <span class="n">sl</span> <span class="o">=</span> <span class="n">add_pulp_variable</span><span class="p">(</span>
                         <span class="n">model</span><span class="o">=</span><span class="n">debug_model</span><span class="p">,</span>
-                        <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;Relax_</span><span class="si">{</span><span class="n">cst_name</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
+                        <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s1">'Relax_</span><span class="si">{</span><span class="n">cst_name</span><span class="si">}</span><span class="s1">'</span><span class="p">,</span>
                         <span class="n">low_bound</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
                         <span class="n">up_bound</span><span class="o">=</span><span class="mf">1e20</span><span class="p">,</span>
                         <span class="n">category</span><span class="o">=</span><span class="n">pulp</span><span class="o">.</span><span class="n">LpContinuous</span><span class="p">,</span>
@@ -645,7 +645,7 @@
                 <span class="n">debug_model</span><span class="o">.</span><span class="n">setObjective</span><span class="p">(</span><span class="n">debugging_f_obj</span><span class="p">)</span>
 
                 <span class="k">if</span> <span class="n">progress_text</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="n">progress_text</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Solving debug model with </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">solver_type</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">...&quot;</span><span class="p">)</span>
+                    <span class="n">progress_text</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Solving debug model with </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">solver_type</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">..."</span><span class="p">)</span>
 
                 <span class="c1"># solve the debug model</span>
                 <span class="n">status_d</span> <span class="o">=</span> <span class="n">normalize_solve_status</span><span class="p">(</span><span class="n">debug_model</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">solver</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">get_solver</span><span class="p">(</span><span class="n">show_logs</span><span class="o">=</span><span class="n">show_logs</span><span class="p">)))</span>
@@ -666,7 +666,7 @@
                             <span class="c1"># add the slack in the main model</span>
                             <span class="n">sl2</span> <span class="o">=</span> <span class="n">add_pulp_variable</span><span class="p">(</span>
                                 <span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span>
-                                <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;Relax_final_</span><span class="si">{</span><span class="n">cst_name</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
+                                <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s1">'Relax_final_</span><span class="si">{</span><span class="n">cst_name</span><span class="si">}</span><span class="s1">'</span><span class="p">,</span>
                                 <span class="n">low_bound</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
                                 <span class="n">up_bound</span><span class="o">=</span><span class="mf">1e20</span><span class="p">,</span>
                                 <span class="n">category</span><span class="o">=</span><span class="n">pulp</span><span class="o">.</span><span class="n">LpContinuous</span><span class="p">,</span>
@@ -691,7 +691,7 @@
                     <span class="k">del</span> <span class="n">debug_model</span>
 
                     <span class="k">if</span> <span class="n">progress_text</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                        <span class="n">progress_text</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Solving relaxed model with </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">solver_type</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">...&quot;</span><span class="p">)</span>
+                        <span class="n">progress_text</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Solving relaxed model with </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">solver_type</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">..."</span><span class="p">)</span>
 
                     <span class="c1"># solve the modified (original) model</span>
                     <span class="n">status</span> <span class="o">=</span> <span class="n">normalize_solve_status</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">solver</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">get_solver</span><span class="p">(</span><span class="n">show_logs</span><span class="o">=</span><span class="n">show_logs</span><span class="p">)))</span>
@@ -707,16 +707,16 @@
                             <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">val</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">1e-10</span><span class="p">:</span>
                                 <span class="n">relaxed_cst</span> <span class="o">=</span> <span class="n">get_model_constraint_by_name</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">cst_slack_map</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
                                 <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span>
-                                    <span class="n">msg</span><span class="o">=</span><span class="s2">&quot;Relaxed problem&quot;</span><span class="p">,</span>
+                                    <span class="n">msg</span><span class="o">=</span><span class="s2">"Relaxed problem"</span><span class="p">,</span>
                                     <span class="n">device</span><span class="o">=</span><span class="n">relaxed_cst</span><span class="o">.</span><span class="n">name</span> <span class="k">if</span> <span class="n">relaxed_cst</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">cst_slack_map</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
                                     <span class="n">value</span><span class="o">=</span><span class="n">val</span>
                                 <span class="p">)</span>
 
                     <span class="k">else</span><span class="p">:</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">&quot;Relaxed probrem is not optimal :(&quot;</span><span class="p">)</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">"Relaxed probrem is not optimal :("</span><span class="p">)</span>
 
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s2">&quot;Unable to relax the model, the debug model failed :(&quot;</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s2">"Unable to relax the model, the debug model failed :("</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">status</span></div>
 
@@ -724,20 +724,20 @@
 <div class="viewcode-block" id="PulpLpModel.fobj_value">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.MIP.html#VeraGridEngine.Utils.MIP.pulp_interface.PulpLpModel.fobj_value">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">fobj_value</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the objective function value</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">objective</span><span class="o">.</span><span class="n">value</span><span class="p">()</span></div>
 
 
 <div class="viewcode-block" id="PulpLpModel.is_mip">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.MIP.html#VeraGridEngine.Utils.MIP.pulp_interface.PulpLpModel.is_mip">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">is_mip</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Is this odel a MIP?</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">isMIP</span><span class="p">()</span></div>
 
 
@@ -745,11 +745,11 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.MIP.html#VeraGridEngine.Utils.MIP.pulp_interface.PulpLpModel.get_value">[docs]</a>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_value</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="n">LpVar</span><span class="p">,</span> <span class="n">LpExp</span><span class="p">,</span> <span class="n">LpCst</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the value of a variable stored in a numpy array of objects</span>
 <span class="sd">        :param x: solver object (it may be a LP var or a number)</span>
 <span class="sd">        :return: result or zero</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">LpVar</span><span class="p">):</span>
             <span class="n">val</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">value</span><span class="p">()</span>
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">LpExp</span><span class="p">):</span>
@@ -759,7 +759,7 @@
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
             <span class="k">return</span> <span class="n">x</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Unrecognized type </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">"Unrecognized type </span><span class="si">{}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
 
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
             <span class="k">return</span> <span class="n">val</span>
@@ -771,11 +771,11 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.MIP.html#VeraGridEngine.Utils.MIP.pulp_interface.PulpLpModel.get_dual_value">[docs]</a>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_dual_value</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">LpCst</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the dual value of a variable stored in a numpy array of objects</span>
 <span class="sd">        :param x: constraint</span>
 <span class="sd">        :return: result or zero</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="n">x</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="mf">0.0</span>
 
@@ -791,19 +791,19 @@
 <div class="viewcode-block" id="PulpLpModel.status2string">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.MIP.html#VeraGridEngine.Utils.MIP.pulp_interface.PulpLpModel.status2string">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">status2string</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stat</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Convert the PuLP status to a string</span>
 <span class="sd">        :param stat:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">stat</span><span class="p">,</span> <span class="s2">&quot;status_str&quot;</span><span class="p">):</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">stat</span><span class="p">,</span> <span class="s2">"status_str"</span><span class="p">):</span>
             <span class="k">return</span> <span class="n">stat</span><span class="o">.</span><span class="n">status_str</span>
 
         <span class="n">stat</span> <span class="o">=</span> <span class="n">normalize_solve_status</span><span class="p">(</span><span class="n">stat</span><span class="p">)</span>
-        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">stat</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">stat</span><span class="p">,</span> <span class="s2">"name"</span><span class="p">):</span>
             <span class="k">return</span> <span class="n">stat</span><span class="o">.</span><span class="n">name</span>
 
-        <span class="n">lp_status</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">pulp</span><span class="p">,</span> <span class="s2">&quot;LpStatus&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">lp_status</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">pulp</span><span class="p">,</span> <span class="s2">"LpStatus"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">lp_status</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">lp_status</span><span class="p">[</span><span class="n">stat</span><span class="p">]</span>
 
@@ -813,28 +813,28 @@
 <div class="viewcode-block" id="PulpLpModel.model_as_string">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.MIP.html#VeraGridEngine.Utils.MIP.pulp_interface.PulpLpModel.model_as_string">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">model_as_string</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return the LP representation</span>
 <span class="sd">        :return: string</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">lp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span>
         <span class="n">max_length</span> <span class="o">=</span> <span class="mi">1000000</span>
         <span class="n">mip</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="n">writeSOS</span> <span class="o">=</span> <span class="kc">True</span>
 
-        <span class="n">f</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
-        <span class="n">f</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\\</span><span class="s2">* &quot;</span> <span class="o">+</span> <span class="n">lp</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s2">&quot; *</span><span class="se">\\\n</span><span class="s2">&quot;</span>
+        <span class="n">f</span> <span class="o">=</span> <span class="s2">""</span>
+        <span class="n">f</span> <span class="o">+=</span> <span class="s2">"</span><span class="se">\\</span><span class="s2">* "</span> <span class="o">+</span> <span class="n">lp</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s2">" *</span><span class="se">\\\n</span><span class="s2">"</span>
         <span class="k">if</span> <span class="n">lp</span><span class="o">.</span><span class="n">sense</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="n">f</span> <span class="o">+=</span> <span class="s2">&quot;Minimize</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="n">f</span> <span class="o">+=</span> <span class="s2">"Minimize</span><span class="se">\n</span><span class="s2">"</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">f</span> <span class="o">+=</span> <span class="s2">&quot;Maximize</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="n">f</span> <span class="o">+=</span> <span class="s2">"Maximize</span><span class="se">\n</span><span class="s2">"</span>
         <span class="n">wasNone</span><span class="p">,</span> <span class="n">objectiveDummyVar</span> <span class="o">=</span> <span class="n">lp</span><span class="o">.</span><span class="n">fixObjective</span><span class="p">()</span>
         <span class="k">assert</span> <span class="n">lp</span><span class="o">.</span><span class="n">objective</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
         <span class="n">objName</span> <span class="o">=</span> <span class="n">lp</span><span class="o">.</span><span class="n">objective</span><span class="o">.</span><span class="n">name</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">objName</span><span class="p">:</span>
-            <span class="n">objName</span> <span class="o">=</span> <span class="s2">&quot;OBJ&quot;</span>
+            <span class="n">objName</span> <span class="o">=</span> <span class="s2">"OBJ"</span>
         <span class="n">f</span> <span class="o">+=</span> <span class="n">lp</span><span class="o">.</span><span class="n">objective</span><span class="o">.</span><span class="n">asCplexLpAffineExpression</span><span class="p">(</span><span class="n">objName</span><span class="p">,</span> <span class="n">include_constant</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-        <span class="n">f</span> <span class="o">+=</span> <span class="s2">&quot;Subject To</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="n">f</span> <span class="o">+=</span> <span class="s2">"Subject To</span><span class="se">\n</span><span class="s2">"</span>
         <span class="n">constraints</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">get_model_constraint_items</span><span class="p">(</span><span class="n">lp</span><span class="p">))</span>
         <span class="n">ks</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">constraints</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
         <span class="n">dummyWritten</span> <span class="o">=</span> <span class="kc">False</span>
@@ -846,7 +846,7 @@
                 <span class="n">constraint</span> <span class="o">+=</span> <span class="n">dummyVar</span>
                 <span class="c1"># set this dummyvar to zero so infeasible problems are not made feasible</span>
                 <span class="k">if</span> <span class="ow">not</span> <span class="n">dummyWritten</span><span class="p">:</span>
-                    <span class="n">f</span> <span class="o">+=</span> <span class="p">(</span><span class="n">dummyVar</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">)</span><span class="o">.</span><span class="n">asCplexLpConstraint</span><span class="p">(</span><span class="s2">&quot;_dummy&quot;</span><span class="p">)</span>
+                    <span class="n">f</span> <span class="o">+=</span> <span class="p">(</span><span class="n">dummyVar</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">)</span><span class="o">.</span><span class="n">asCplexLpConstraint</span><span class="p">(</span><span class="s2">"_dummy"</span><span class="p">)</span>
                     <span class="n">dummyWritten</span> <span class="o">=</span> <span class="kc">True</span>
             <span class="n">f</span> <span class="o">+=</span> <span class="n">constraint</span><span class="o">.</span><span class="n">asCplexLpConstraint</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
         <span class="c1"># check if any names are longer than 100 characters</span>
@@ -854,7 +854,7 @@
         <span class="n">vs</span> <span class="o">=</span> <span class="n">lp</span><span class="o">.</span><span class="n">variables</span><span class="p">()</span>
         <span class="c1"># check for repeated names</span>
         <span class="n">lp</span><span class="o">.</span><span class="n">checkDuplicateVars</span><span class="p">()</span>
-        <span class="c1"># Bounds on non-&quot;positive&quot; variables</span>
+        <span class="c1"># Bounds on non-"positive" variables</span>
         <span class="c1"># Note: XPRESS and CPLEX do not interpret integer variables without</span>
         <span class="c1"># explicit bounds</span>
         <span class="k">if</span> <span class="n">mip</span><span class="p">:</span>
@@ -866,38 +866,38 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">vg</span> <span class="o">=</span> <span class="p">[</span><span class="n">v</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">vs</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">v</span><span class="o">.</span><span class="n">isPositive</span><span class="p">()]</span>
         <span class="k">if</span> <span class="n">vg</span><span class="p">:</span>
-            <span class="n">f</span> <span class="o">+=</span> <span class="s2">&quot;Bounds</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="n">f</span> <span class="o">+=</span> <span class="s2">"Bounds</span><span class="se">\n</span><span class="s2">"</span>
             <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">vg</span><span class="p">:</span>
-                <span class="n">f</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot; </span><span class="si">{</span><span class="n">v</span><span class="o">.</span><span class="n">asCplexLpVariable</span><span class="p">()</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="n">f</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">" </span><span class="si">{</span><span class="n">v</span><span class="o">.</span><span class="n">asCplexLpVariable</span><span class="p">()</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span>
         <span class="c1"># Integer non-binary variables</span>
         <span class="k">if</span> <span class="n">mip</span><span class="p">:</span>
             <span class="n">vg</span> <span class="o">=</span> <span class="p">[</span><span class="n">v</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">vs</span> <span class="k">if</span> <span class="n">v</span><span class="o">.</span><span class="n">cat</span> <span class="o">==</span> <span class="n">LpInteger</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">v</span><span class="o">.</span><span class="n">isBinary</span><span class="p">()]</span>
             <span class="k">if</span> <span class="n">vg</span><span class="p">:</span>
-                <span class="n">f</span> <span class="o">+=</span> <span class="s2">&quot;Generals</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="n">f</span> <span class="o">+=</span> <span class="s2">"Generals</span><span class="se">\n</span><span class="s2">"</span>
                 <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">vg</span><span class="p">:</span>
-                    <span class="n">f</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">v</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+                    <span class="n">f</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">v</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span>
             <span class="c1"># Binary variables</span>
             <span class="n">vg</span> <span class="o">=</span> <span class="p">[</span><span class="n">v</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">vs</span> <span class="k">if</span> <span class="n">v</span><span class="o">.</span><span class="n">isBinary</span><span class="p">()]</span>
             <span class="k">if</span> <span class="n">vg</span><span class="p">:</span>
-                <span class="n">f</span> <span class="o">+=</span> <span class="s2">&quot;Binaries</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="n">f</span> <span class="o">+=</span> <span class="s2">"Binaries</span><span class="se">\n</span><span class="s2">"</span>
                 <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">vg</span><span class="p">:</span>
-                    <span class="n">f</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">v</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+                    <span class="n">f</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">v</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span>
         <span class="c1"># Special Ordered Sets</span>
-        <span class="n">sos1</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">lp</span><span class="p">,</span> <span class="s2">&quot;sos1&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-        <span class="n">sos2</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">lp</span><span class="p">,</span> <span class="s2">&quot;sos2&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">sos1</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">lp</span><span class="p">,</span> <span class="s2">"sos1"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">sos2</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">lp</span><span class="p">,</span> <span class="s2">"sos2"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">writeSOS</span> <span class="ow">and</span> <span class="p">(</span><span class="n">sos1</span> <span class="ow">or</span> <span class="n">sos2</span><span class="p">):</span>
-            <span class="n">f</span> <span class="o">+=</span> <span class="s2">&quot;SOS</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="n">f</span> <span class="o">+=</span> <span class="s2">"SOS</span><span class="se">\n</span><span class="s2">"</span>
             <span class="k">if</span> <span class="n">sos1</span><span class="p">:</span>
                 <span class="k">for</span> <span class="n">sos</span> <span class="ow">in</span> <span class="n">sos1</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
-                    <span class="n">f</span> <span class="o">+=</span> <span class="s2">&quot;S1:: </span><span class="se">\n</span><span class="s2">&quot;</span>
+                    <span class="n">f</span> <span class="o">+=</span> <span class="s2">"S1:: </span><span class="se">\n</span><span class="s2">"</span>
                     <span class="k">for</span> <span class="n">v</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">sos</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                        <span class="n">f</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot; </span><span class="si">{</span><span class="n">v</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">val</span><span class="si">:</span><span class="s2">.12g</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+                        <span class="n">f</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">" </span><span class="si">{</span><span class="n">v</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">val</span><span class="si">:</span><span class="s2">.12g</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span>
             <span class="k">if</span> <span class="n">sos2</span><span class="p">:</span>
                 <span class="k">for</span> <span class="n">sos</span> <span class="ow">in</span> <span class="n">sos2</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
-                    <span class="n">f</span> <span class="o">+=</span> <span class="s2">&quot;S2:: </span><span class="se">\n</span><span class="s2">&quot;</span>
+                    <span class="n">f</span> <span class="o">+=</span> <span class="s2">"S2:: </span><span class="se">\n</span><span class="s2">"</span>
                     <span class="k">for</span> <span class="n">v</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">sos</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                        <span class="n">f</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot; </span><span class="si">{</span><span class="n">v</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">val</span><span class="si">:</span><span class="s2">.12g</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
-        <span class="n">f</span> <span class="o">+=</span> <span class="s2">&quot;End</span><span class="se">\n</span><span class="s2">&quot;</span>
+                        <span class="n">f</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">" </span><span class="si">{</span><span class="n">v</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">val</span><span class="si">:</span><span class="s2">.12g</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span>
+        <span class="n">f</span> <span class="o">+=</span> <span class="s2">"End</span><span class="se">\n</span><span class="s2">"</span>
         <span class="n">lp</span><span class="o">.</span><span class="n">restoreObjective</span><span class="p">(</span><span class="n">wasNone</span><span class="p">,</span> <span class="n">objectiveDummyVar</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">f</span></div>

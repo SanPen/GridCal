@@ -36,8 +36,10 @@ from VeraGridEngine.Utils.Symbolic.templates_common_functions import set_rms_mod
 from VeraGridEngine.enumerations import DynamicIntegrationMethod
 from VeraGridEngine.enumerations import EmtSolverTypes
 from VeraGridEngine.enumerations import RmsInitializationMethod
+from VeraGridEngine.enumerations import RmsProblemTypes
 from VeraGridEngine.enumerations import SimulationTypes
 from VeraGridEngine.enumerations import ShuntConnectionType
+from VeraGridEngine.enumerations import SparseSolver
 
 
 def _find_name_in_block(name: str, block: Block) -> Var | None:
@@ -128,10 +130,17 @@ def _build_3ph_pf_options() -> vg.PowerFlowOptions:
     )
 
 
-def _build_rms_driver() -> RmsSimulationDriver:
+def _build_rms_driver(sparse_solver: SparseSolver = SparseSolver.SuperLU,
+                      integration_method: DynamicIntegrationMethod = DynamicIntegrationMethod.DaeBackEuler,
+                      problem_type: RmsProblemTypes = RmsProblemTypes.PowerBalance) -> RmsSimulationDriver:
     """
     Build and run one RMS driver for save/load roundtrip testing.
 
+    The defaults reproduce the original roundtrip driver exactly.
+
+    :param sparse_solver: Sparse LU selected through the RMS options.
+    :param integration_method: Integration method selected through the RMS options.
+    :param problem_type: RMS problem formulation selected through the RMS options.
     :return: Finished RMS simulation driver.
     """
     grid: vg.MultiCircuit = vg.MultiCircuit(Sbase=100.0, fbase=50.0)
@@ -202,11 +211,13 @@ def _build_rms_driver() -> RmsSimulationDriver:
             time_step=1.0e-3,
             simulation_time=0.2,
             tolerance=1.0e-6,
-            integration_method=DynamicIntegrationMethod.DaeBackEuler,
+            integration_method=integration_method,
             initialization_method=RmsInitializationMethod.Explicit,
+            problem_type=problem_type,
             use_init_values=False,
             max_iter=1000,
             verbose=0,
+            sparse_solver=sparse_solver,
         ),
         pf_results=pf_results,
     )

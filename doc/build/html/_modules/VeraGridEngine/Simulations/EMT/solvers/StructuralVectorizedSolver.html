@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Simulations.EMT.solvers.StructuralVectorizedSolver &mdash; VeraGrid 6.7.13 documentation</title>
+  <title>VeraGridEngine.Simulations.EMT.solvers.StructuralVectorizedSolver &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../../_static/documentation_options.js?v=16fbabd8"></script>
+      <script src="../../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../../_static/js/theme.js"></script>
@@ -160,7 +160,7 @@
         <span class="n">n_cols</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">group_keys</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Return a deterministic cache token for backend-generated kernels.</span>
 
 <span class="sd">    :param method: Integration method used by the backend.</span>
@@ -173,15 +173,15 @@
 <span class="sd">    :type group_keys: List[str]</span>
 <span class="sd">    :return: Stable cache token.</span>
 <span class="sd">    :rtype: str</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">payload</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;|&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">method</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">n_rows</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">n_cols</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">group_keys</span><span class="p">))])</span>
-    <span class="k">return</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">sha256</span><span class="p">(</span><span class="n">payload</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()[:</span><span class="mi">16</span><span class="p">]</span>
+<span class="sd">    """</span>
+    <span class="n">payload</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"|"</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">method</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">n_rows</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">n_cols</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">group_keys</span><span class="p">))])</span>
+    <span class="k">return</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">sha256</span><span class="p">(</span><span class="n">payload</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">"utf-8"</span><span class="p">))</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()[:</span><span class="mi">16</span><span class="p">]</span>
 
 
 <div class="viewcode-block" id="fill_full_parameter_buffer">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.solvers.html#VeraGridEngine.Simulations.EMT.solvers.StructuralVectorizedSolver.fill_full_parameter_buffer">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">fill_full_parameter_buffer</span><span class="p">(</span><span class="n">runtime_params</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">static_params</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">full_params_out</span><span class="p">:</span> <span class="n">Vec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Write runtime and static parameters into one preallocated full buffer.</span>
 
 <span class="sd">    :param runtime_params: Runtime parameter slice.</span>
@@ -192,7 +192,7 @@
 <span class="sd">    :type full_params_out: Vec</span>
 <span class="sd">    :return: None.</span>
 <span class="sd">    :rtype: None</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">n_runtime</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">runtime_params</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">n_static</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">static_params</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
@@ -218,7 +218,7 @@
         <span class="n">history2</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
         <span class="n">residual_out</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Evaluate the fused vectorized residual into a caller-owned buffer.</span>
 
 <span class="sd">    :param residual_evaluator: Fixed-signature residual evaluator.</span>
@@ -239,93 +239,93 @@
 <span class="sd">    :type residual_out: Vec</span>
 <span class="sd">    :return: Residual infinity norm.</span>
 <span class="sd">    :rtype: float</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">residual_evaluator</span><span class="p">(</span><span class="n">states</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">history</span><span class="p">,</span> <span class="n">d_history</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">history2</span><span class="p">,</span> <span class="n">residual_out</span><span class="p">)</span>
     <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">residual_out</span><span class="p">)))</span></div>
 
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_dense_lu_bundle_solve</span><span class="p">(</span><span class="n">bundle</span><span class="p">:</span> <span class="n">DenseSolveBundle</span><span class="p">,</span> <span class="n">rhs</span><span class="p">:</span> <span class="n">Vec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Solve one dense LU system.</span>
 
 <span class="sd">    :param bundle: Dense LU bundle ``(factorization, matrix)``.</span>
 <span class="sd">    :param rhs: Right-hand side vector.</span>
 <span class="sd">    :return: Solution vector.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="n">lu_solve</span><span class="p">(</span><span class="n">bundle</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">rhs</span><span class="p">)</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_dense_lu_bundle_fallback</span><span class="p">(</span><span class="n">bundle</span><span class="p">:</span> <span class="n">DenseSolveBundle</span><span class="p">,</span> <span class="n">rhs</span><span class="p">:</span> <span class="n">Vec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Solve one dense fallback least-squares system.</span>
 
 <span class="sd">    :param bundle: Dense LU bundle ``(factorization, matrix)``.</span>
 <span class="sd">    :param rhs: Right-hand side vector.</span>
 <span class="sd">    :return: Fallback solution vector.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="n">dense_lstsq_fallback</span><span class="p">(</span><span class="n">bundle</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">rhs</span><span class="p">)</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_dense_lu_bundle_matrix</span><span class="p">(</span><span class="n">bundle</span><span class="p">:</span> <span class="n">DenseSolveBundle</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Return the dense Jacobian matrix stored in one LU bundle.</span>
 
 <span class="sd">    :param bundle: Dense LU bundle ``(factorization, matrix)``.</span>
 <span class="sd">    :return: Dense Jacobian matrix.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="n">bundle</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_sparse_factor_manager_solve</span><span class="p">(</span><span class="n">manager</span><span class="p">:</span> <span class="n">StructuralCompiledSparseFactorizationManager</span><span class="p">,</span> <span class="n">rhs</span><span class="p">:</span> <span class="n">Vec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Solve one sparse linear system through the factor manager.</span>
 
 <span class="sd">    :param manager: Sparse factorization manager.</span>
 <span class="sd">    :param rhs: Right-hand side vector.</span>
 <span class="sd">    :return: Solution vector.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="n">manager</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">rhs</span><span class="p">)</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_sparse_factor_manager_fallback</span><span class="p">(</span><span class="n">manager</span><span class="p">:</span> <span class="n">StructuralCompiledSparseFactorizationManager</span><span class="p">,</span> <span class="n">rhs</span><span class="p">:</span> <span class="n">Vec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Solve one sparse fallback least-squares system.</span>
 
 <span class="sd">    :param manager: Sparse factorization manager.</span>
 <span class="sd">    :param rhs: Right-hand side vector.</span>
 <span class="sd">    :return: Fallback solution vector.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="n">sparse_lsqr_fallback</span><span class="p">(</span><span class="n">manager</span><span class="o">.</span><span class="n">get_active_matrix</span><span class="p">(),</span> <span class="n">rhs</span><span class="p">)</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_sparse_factor_manager_matrix</span><span class="p">(</span><span class="n">manager</span><span class="p">:</span> <span class="n">StructuralCompiledSparseFactorizationManager</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">csc_matrix</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Return the active sparse Jacobian matrix held by one factor manager.</span>
 
 <span class="sd">    :param manager: Sparse factorization manager.</span>
 <span class="sd">    :return: Active sparse Jacobian matrix.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="n">manager</span><span class="o">.</span><span class="n">get_active_matrix</span><span class="p">()</span>
 
 
 <div class="viewcode-block" id="LegacyResidualEvaluatorAdapter">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.solvers.html#VeraGridEngine.Simulations.EMT.solvers.StructuralVectorizedSolver.LegacyResidualEvaluatorAdapter">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">LegacyResidualEvaluatorAdapter</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Adapt one legacy 8-argument residual callable to the fixed 7-argument solver interface.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
-    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;_residual_callable&quot;</span><span class="p">,</span> <span class="s2">&quot;_vec_flat_args&quot;</span><span class="p">]</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"_residual_callable"</span><span class="p">,</span> <span class="s2">"_vec_flat_args"</span><span class="p">]</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">residual_callable</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">vec_flat_args</span><span class="p">:</span> <span class="n">Vec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Build one legacy residual adapter.</span>
 
 <span class="sd">        :param residual_callable: Legacy residual callable.</span>
 <span class="sd">        :param vec_flat_args: Legacy flat vectorized arguments.</span>
 <span class="sd">        :return: None.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_residual_callable</span> <span class="o">=</span> <span class="n">residual_callable</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_vec_flat_args</span> <span class="o">=</span> <span class="n">vec_flat_args</span>
 
@@ -339,7 +339,7 @@
             <span class="n">history2</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
             <span class="n">out</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Evaluate the wrapped legacy residual callable.</span>
 
 <span class="sd">        :param states: Current Newton iterate.</span>
@@ -350,7 +350,7 @@
 <span class="sd">        :param history2: Secondary state history.</span>
 <span class="sd">        :param out: Residual output buffer.</span>
 <span class="sd">        :return: None.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_residual_callable</span><span class="p">(</span><span class="n">states</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">history</span><span class="p">,</span> <span class="n">d_history</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_vec_flat_args</span><span class="p">,</span> <span class="n">out</span><span class="p">,</span> <span class="n">history2</span><span class="p">)</span></div>
 
 
@@ -361,7 +361,7 @@
         <span class="n">residual_dispatcher</span><span class="p">:</span> <span class="n">FusedResidualDispatcher</span> <span class="o">|</span> <span class="n">DirectResidualDispatcher</span><span class="p">,</span>
         <span class="n">vec_flat_args</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Vec</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Vec</span><span class="p">,</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">Vec</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">Vec</span><span class="p">],</span> <span class="kc">None</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Build one fixed-signature residual evaluator for the current dispatcher.</span>
 
 <span class="sd">    The fused and direct dispatchers expose the same ``evaluate()`` API, so the</span>
@@ -375,7 +375,7 @@
 <span class="sd">    :return: Residual evaluator with signature ``(states, params, history,</span>
 <span class="sd">        d_history, h, history2, out)``.</span>
 <span class="sd">    :rtype: Callable[[Vec, Vec, Vec, Vec, float, Vec, Vec], None]</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">residual_dispatcher</span><span class="p">,</span> <span class="p">(</span><span class="n">FusedResidualDispatcher</span><span class="p">,</span> <span class="n">DirectResidualDispatcher</span><span class="p">)):</span>
         <span class="k">return</span> <span class="n">residual_dispatcher</span><span class="o">.</span><span class="n">evaluate</span>
     <span class="k">else</span><span class="p">:</span>
@@ -391,7 +391,7 @@
 
         <span class="k">return</span> <span class="n">LegacyResidualEvaluatorAdapter</span><span class="p">(</span><span class="n">residual_dispatcher</span><span class="p">,</span> <span class="n">legacy_vec_flat_args</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Unsupported residual dispatcher type&quot;</span><span class="p">)</span></div>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">"Unsupported residual dispatcher type"</span><span class="p">)</span></div>
 
 
 
@@ -401,8 +401,8 @@
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_safe_njit</span><span class="p">(</span><span class="n">py_func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">fastmath</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">cache</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">signature</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> \
 <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Safely wraps a python function with Numba&#39;s njit compiler.</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Safely wraps a python function with Numba's njit compiler.</span>
 <span class="sd">    The caller must explicitly pass cache=False if the function is generated via strings.</span>
 
 <span class="sd">    :param py_func: The python function to compile.</span>
@@ -415,7 +415,7 @@
 <span class="sd">    :type signature: Any</span>
 <span class="sd">    :return: The Numba JIT compiled function.</span>
 <span class="sd">    :rtype: Callable[..., Any]</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">signature</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">signature</span><span class="p">,</span> <span class="n">fastmath</span><span class="o">=</span><span class="n">fastmath</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="n">cache</span><span class="p">)(</span><span class="n">py_func</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
@@ -429,7 +429,7 @@
         <span class="n">runtime_uids</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
         <span class="n">param_uids</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">Var</span><span class="p">]]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Return the shared structural signature and first-occurrence runtime gathers.</span>
 
 <span class="sd">    :param expr: Symbolic expression whose literal values must remain exact.</span>
@@ -437,11 +437,11 @@
 <span class="sd">    :param param_uids: UIDs belonging to the shared parameter vector.</span>
 <span class="sd">    :return: Structural fingerprint and one gathered variable per runtime UID.</span>
 <span class="sd">    :raises RuntimeError: If a supported variable has no runtime/parameter classification.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># Bind structural roles only for this expression. The existing compiler walk</span>
     <span class="c1"># preserves exact constants; its code-generation maps are unused in this context.</span>
     <span class="n">context</span><span class="p">:</span> <span class="n">_StructuralExpressionContext</span> <span class="o">=</span> <span class="n">_StructuralExpressionContext</span><span class="p">(</span><span class="n">runtime_uids</span><span class="p">,</span> <span class="n">param_uids</span><span class="p">)</span>
-    <span class="n">signature</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">_fingerprint_codegen_expr</span><span class="p">(</span><span class="n">expr</span><span class="p">,</span> <span class="nb">dict</span><span class="p">(),</span> <span class="nb">dict</span><span class="p">(),</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span>
+    <span class="n">signature</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">_fingerprint_codegen_expr</span><span class="p">(</span><span class="n">expr</span><span class="p">,</span> <span class="nb">dict</span><span class="p">(),</span> <span class="nb">dict</span><span class="p">(),</span> <span class="s2">""</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">signature</span><span class="p">,</span> <span class="n">context</span><span class="o">.</span><span class="n">runtime_variables</span></div>
 
 
@@ -449,14 +449,14 @@
 <div class="viewcode-block" id="VectorizedKernelSpec">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.solvers.html#VeraGridEngine.Simulations.EMT.solvers.StructuralVectorizedSolver.VectorizedKernelSpec">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">VectorizedKernelSpec</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Typed container for one vectorized residual kernel.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
-    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;_kernel&quot;</span><span class="p">,</span> <span class="s2">&quot;_indices&quot;</span><span class="p">,</span> <span class="s2">&quot;_target_rows&quot;</span><span class="p">,</span> <span class="s2">&quot;_row_count&quot;</span><span class="p">]</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"_kernel"</span><span class="p">,</span> <span class="s2">"_indices"</span><span class="p">,</span> <span class="s2">"_target_rows"</span><span class="p">,</span> <span class="s2">"_row_count"</span><span class="p">]</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kernel</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">indices</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">target_rows</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Build one vectorized residual-kernel specification.</span>
 
 <span class="sd">        :param kernel: Compiled eager kernel.</span>
@@ -467,7 +467,7 @@
 <span class="sd">        :type target_rows: np.ndarray</span>
 <span class="sd">        :return: None.</span>
 <span class="sd">        :rtype: None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_kernel</span> <span class="o">=</span> <span class="n">kernel</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_indices</span> <span class="o">=</span> <span class="n">indices</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_target_rows</span> <span class="o">=</span> <span class="n">target_rows</span>
@@ -476,48 +476,48 @@
 <div class="viewcode-block" id="VectorizedKernelSpec.get_kernel">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.solvers.html#VeraGridEngine.Simulations.EMT.solvers.StructuralVectorizedSolver.VectorizedKernelSpec.get_kernel">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_kernel</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return the compiled kernel.</span>
 
 <span class="sd">        :return: Compiled kernel.</span>
 <span class="sd">        :rtype: Callable[..., Any]</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_kernel</span></div>
 
 
 <div class="viewcode-block" id="VectorizedKernelSpec.get_indices">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.solvers.html#VeraGridEngine.Simulations.EMT.solvers.StructuralVectorizedSolver.VectorizedKernelSpec.get_indices">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_indices</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return the runtime gather matrix.</span>
 
 <span class="sd">        :return: Runtime gather matrix.</span>
 <span class="sd">        :rtype: np.ndarray</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_indices</span></div>
 
 
 <div class="viewcode-block" id="VectorizedKernelSpec.get_target_rows">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.solvers.html#VeraGridEngine.Simulations.EMT.solvers.StructuralVectorizedSolver.VectorizedKernelSpec.get_target_rows">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_target_rows</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return the residual target rows.</span>
 
 <span class="sd">        :return: Residual target rows.</span>
 <span class="sd">        :rtype: np.ndarray</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_target_rows</span></div>
 
 
 <div class="viewcode-block" id="VectorizedKernelSpec.get_row_count">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.solvers.html#VeraGridEngine.Simulations.EMT.solvers.StructuralVectorizedSolver.VectorizedKernelSpec.get_row_count">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_row_count</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return the number of rows emitted by the kernel.</span>
 
 <span class="sd">        :return: Number of grouped rows.</span>
 <span class="sd">        :rtype: int</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_row_count</span></div>
 </div>
 
@@ -526,25 +526,25 @@
 <div class="viewcode-block" id="FusedResidualDispatcher">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.solvers.html#VeraGridEngine.Simulations.EMT.solvers.StructuralVectorizedSolver.FusedResidualDispatcher">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">FusedResidualDispatcher</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Dispatcher that applies all vectorized residual kernels in order.</span>
 
 <span class="sd">    The structural group kernels are already eagerly compiled with Numba. The</span>
 <span class="sd">    dispatcher keeps one reusable work row per group so the hot loop does not</span>
 <span class="sd">    allocate temporary residual blocks.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
-    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;_kernel_specs&quot;</span><span class="p">,</span> <span class="s2">&quot;_work_buffer&quot;</span><span class="p">]</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"_kernel_specs"</span><span class="p">,</span> <span class="s2">"_work_buffer"</span><span class="p">]</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kernel_specs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">VectorizedKernelSpec</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Build the fused residual dispatcher.</span>
 
 <span class="sd">        :param kernel_specs: Vectorized residual-kernel specifications.</span>
 <span class="sd">        :type kernel_specs: List[VectorizedKernelSpec]</span>
 <span class="sd">        :return: None.</span>
 <span class="sd">        :rtype: None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">max_kernel_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="n">kernel_spec</span><span class="p">:</span> <span class="n">VectorizedKernelSpec</span>
 
@@ -572,7 +572,7 @@
             <span class="n">history2</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
             <span class="n">out</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Evaluate the grouped residual system in place.</span>
 
 <span class="sd">        :param states: Current Newton iterate.</span>
@@ -591,7 +591,7 @@
 <span class="sd">        :type out: Vec</span>
 <span class="sd">        :return: None.</span>
 <span class="sd">        :rtype: None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">out</span><span class="p">[:]</span> <span class="o">=</span> <span class="mf">0.0</span>
 
         <span class="n">kernel_index</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
@@ -616,7 +616,7 @@
 
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Evaluate the grouped residual system in place.</span>
 
 <span class="sd">        :param states: Current Newton iterate.</span>
@@ -635,13 +635,13 @@
 <span class="sd">        :type out: Vec</span>
 <span class="sd">        :return: None.</span>
 <span class="sd">        :rtype: None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">==</span> <span class="mi">7</span><span class="p">:</span>
             <span class="n">states</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">history</span><span class="p">,</span> <span class="n">d_history</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">history2</span><span class="p">,</span> <span class="n">out</span> <span class="o">=</span> <span class="n">args</span>
         <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">==</span> <span class="mi">8</span><span class="p">:</span>
             <span class="n">states</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">history</span><span class="p">,</span> <span class="n">d_history</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">_vec_flat_args</span><span class="p">,</span> <span class="n">out</span><span class="p">,</span> <span class="n">history2</span> <span class="o">=</span> <span class="n">args</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unsupported fused residual signature with </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span><span class="si">}</span><span class="s2"> arguments&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unsupported fused residual signature with </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span><span class="si">}</span><span class="s2"> arguments"</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">states</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">history</span><span class="p">,</span> <span class="n">d_history</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">history2</span><span class="p">,</span> <span class="n">out</span><span class="p">)</span></div>
 
@@ -650,19 +650,19 @@
 <div class="viewcode-block" id="VectorizedResidualTrialEvaluator">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.solvers.html#VeraGridEngine.Simulations.EMT.solvers.StructuralVectorizedSolver.VectorizedResidualTrialEvaluator">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">VectorizedResidualTrialEvaluator</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Callable helper that evaluates vectorized residuals during backtracking.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
-    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;_residual_evaluator&quot;</span><span class="p">,</span> <span class="s2">&quot;_full_params&quot;</span><span class="p">,</span> <span class="s2">&quot;_x_prev&quot;</span><span class="p">,</span> <span class="s2">&quot;_dx_prev&quot;</span><span class="p">,</span> <span class="s2">&quot;_h_eff&quot;</span><span class="p">,</span> <span class="s2">&quot;_x_prev2&quot;</span><span class="p">]</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"_residual_evaluator"</span><span class="p">,</span> <span class="s2">"_full_params"</span><span class="p">,</span> <span class="s2">"_x_prev"</span><span class="p">,</span> <span class="s2">"_dx_prev"</span><span class="p">,</span> <span class="s2">"_h_eff"</span><span class="p">,</span> <span class="s2">"_x_prev2"</span><span class="p">]</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Build one empty trial-residual evaluator.</span>
 
 <span class="sd">        :return: None.</span>
 <span class="sd">        :rtype: None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_residual_evaluator</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_full_params</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_x_prev</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
@@ -681,7 +681,7 @@
             <span class="n">h_eff</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
             <span class="n">x_prev2</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Store the residual-evaluation context of the current Newton step.</span>
 
 <span class="sd">        :param residual_evaluator: Fixed-signature residual evaluator.</span>
@@ -698,7 +698,7 @@
 <span class="sd">        :type x_prev2: Vec</span>
 <span class="sd">        :return: None.</span>
 <span class="sd">        :rtype: None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_residual_evaluator</span> <span class="o">=</span> <span class="n">residual_evaluator</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_full_params</span> <span class="o">=</span> <span class="n">full_params</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_x_prev</span> <span class="o">=</span> <span class="n">x_prev</span>
@@ -708,7 +708,7 @@
 
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">trial_x</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">out_res</span><span class="p">:</span> <span class="n">Vec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Evaluate one trial Newton iterate during backtracking.</span>
 
 <span class="sd">        :param trial_x: Trial iterate.</span>
@@ -717,7 +717,7 @@
 <span class="sd">        :type out_res: Vec</span>
 <span class="sd">        :return: Residual infinity norm.</span>
 <span class="sd">        :rtype: float</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_residual_evaluator</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
         <span class="k">else</span><span class="p">:</span>
@@ -744,21 +744,21 @@
 <div class="viewcode-block" id="DirectResidualDispatcher">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.solvers.html#VeraGridEngine.Simulations.EMT.solvers.StructuralVectorizedSolver.DirectResidualDispatcher">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">DirectResidualDispatcher</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Residual dispatcher backed by one monolithic in-place kernel.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
-    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;_kernel&quot;</span><span class="p">]</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"_kernel"</span><span class="p">]</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kernel</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Build the direct residual dispatcher.</span>
 
 <span class="sd">        :param kernel: Monolithic in-place residual kernel.</span>
 <span class="sd">        :type kernel: Callable[..., Any]</span>
 <span class="sd">        :return: None.</span>
 <span class="sd">        :rtype: None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_kernel</span> <span class="o">=</span> <span class="n">kernel</span>
 
 <div class="viewcode-block" id="DirectResidualDispatcher.evaluate">
@@ -773,7 +773,7 @@
             <span class="n">history2</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
             <span class="n">out</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Evaluate the full residual system in place.</span>
 
 <span class="sd">        :param states: Current Newton iterate.</span>
@@ -792,12 +792,12 @@
 <span class="sd">        :type out: Vec</span>
 <span class="sd">        :return: None.</span>
 <span class="sd">        :rtype: None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_kernel</span><span class="p">(</span><span class="n">states</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">history</span><span class="p">,</span> <span class="n">d_history</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">out</span><span class="p">,</span> <span class="n">history2</span><span class="p">)</span></div>
 
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Evaluate the full residual system in place.</span>
 
 <span class="sd">        :param states: Current Newton iterate.</span>
@@ -816,13 +816,13 @@
 <span class="sd">        :type out: Vec</span>
 <span class="sd">        :return: None.</span>
 <span class="sd">        :rtype: None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">==</span> <span class="mi">7</span><span class="p">:</span>
             <span class="n">states</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">history</span><span class="p">,</span> <span class="n">d_history</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">history2</span><span class="p">,</span> <span class="n">out</span> <span class="o">=</span> <span class="n">args</span>
         <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">==</span> <span class="mi">8</span><span class="p">:</span>
             <span class="n">states</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">history</span><span class="p">,</span> <span class="n">d_history</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">_vec_flat_args</span><span class="p">,</span> <span class="n">out</span><span class="p">,</span> <span class="n">history2</span> <span class="o">=</span> <span class="n">args</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unsupported direct residual signature with </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span><span class="si">}</span><span class="s2"> arguments&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unsupported direct residual signature with </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span><span class="si">}</span><span class="s2"> arguments"</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">states</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">history</span><span class="p">,</span> <span class="n">d_history</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">history2</span><span class="p">,</span> <span class="n">out</span><span class="p">)</span></div>
 
@@ -841,7 +841,7 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_compile_master_jacobian_kernel</span><span class="p">(</span><span class="n">ad_kernel</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">n_colors</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Build the eager sparse Jacobian dispatcher.</span>
 
 <span class="sd">    :param ad_kernel: Generic AD kernel reused across colors.</span>
@@ -850,27 +850,27 @@
 <span class="sd">    :type n_colors: int</span>
 <span class="sd">    :return: Jacobian dispatcher.</span>
 <span class="sd">    :rtype: Callable[..., Any]</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="n">StructuralVectorizedMasterJacobianDispatcher</span><span class="p">(</span><span class="n">ad_kernel</span><span class="o">=</span><span class="n">ad_kernel</span><span class="p">,</span> <span class="n">n_colors</span><span class="o">=</span><span class="n">n_colors</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="StructuralVectorizedMasterJacobianDispatcher">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.solvers.html#VeraGridEngine.Simulations.EMT.solvers.StructuralVectorizedSolver.StructuralVectorizedMasterJacobianDispatcher">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">StructuralVectorizedMasterJacobianDispatcher</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Callable dispatcher that evaluates one generic AD kernel across all colors.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
-    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;_ad_kernel&quot;</span><span class="p">,</span> <span class="s2">&quot;_n_colors&quot;</span><span class="p">)</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"_ad_kernel"</span><span class="p">,</span> <span class="s2">"_n_colors"</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ad_kernel</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">n_colors</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Store the generic AD kernel and the number of graph colors.</span>
 
 <span class="sd">        :param ad_kernel: Generic AD kernel reused across graph colors.</span>
 <span class="sd">        :param n_colors: Number of graph colors.</span>
 <span class="sd">        :return: None.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_ad_kernel</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="n">ad_kernel</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_n_colors</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">n_colors</span>
 
@@ -888,7 +888,7 @@
                  <span class="n">row_idx</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
                  <span class="n">data_idx</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
                  <span class="n">work_jvp</span><span class="p">:</span> <span class="n">Mat</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Evaluate all color JVPs and scatter them into CSC storage.</span>
 
 <span class="sd">        :param states: Current Newton iterate.</span>
@@ -905,7 +905,7 @@
 <span class="sd">        :param data_idx: CSC data positions used by the scatter map.</span>
 <span class="sd">        :param work_jvp: Reusable JVP work buffer.</span>
 <span class="sd">        :return: None.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">color_index</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
 
         <span class="k">while</span> <span class="n">color_index</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_colors</span><span class="p">:</span>
@@ -919,10 +919,10 @@
 <div class="viewcode-block" id="Predictor">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.solvers.html#VeraGridEngine.Simulations.EMT.solvers.StructuralVectorizedSolver.Predictor">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">Predictor</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Computes an explicit predictor for the Newton initial guess x_iter.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;n_states&#39;</span><span class="p">,</span> <span class="s1">&#39;algebraic_derivative_by_index&#39;</span><span class="p">]</span>
+<span class="sd">    """</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'n_states'</span><span class="p">,</span> <span class="s1">'algebraic_derivative_by_index'</span><span class="p">]</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                  <span class="n">n_states</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
@@ -938,7 +938,7 @@
                 <span class="n">dx_prev</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
                 <span class="n">h</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
                 <span class="n">pred_method</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">DynamicIntegrationMethod</span><span class="o">|</span><span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="n">DynamicIntegrationMethod</span><span class="o">.</span><span class="n">DaeBackEuler</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Apply predictor in-place and return x_iter.</span>
 <span class="sd">        :param x_iter: Array to be written with the predictor guess (in-place).</span>
 <span class="sd">        :param x_prev: Previous full variable vector at time n.</span>
@@ -946,7 +946,7 @@
 <span class="sd">        :param h: Time step.</span>
 <span class="sd">        :param pred_method: Integration method enum/value at the prediction step</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="c1"># Default: no-op predictor</span>
         <span class="n">x_iter</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">x_prev</span>
@@ -955,7 +955,7 @@
         <span class="k">if</span> <span class="n">pred_method</span> <span class="o">==</span> <span class="n">DynamicIntegrationMethod</span><span class="o">.</span><span class="n">OdeEuler</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_predict_euler_state</span><span class="p">(</span><span class="n">x_iter</span><span class="p">,</span> <span class="n">x_prev</span><span class="p">,</span> <span class="n">dx_prev</span><span class="p">,</span> <span class="n">h</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">pred_method</span> <span class="o">==</span> <span class="n">DynamicIntegrationMethod</span><span class="o">.</span><span class="n">DaeBDF2</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;predictor method </span><span class="si">{</span><span class="n">pred_method</span><span class="si">}</span><span class="s2"> &quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"predictor method </span><span class="si">{</span><span class="n">pred_method</span><span class="si">}</span><span class="s2"> "</span><span class="p">)</span>
 
         <span class="c1"># Otherwise keep default x_iter = x_prev</span>
         <span class="k">return</span> <span class="n">x_iter</span></div>
@@ -969,11 +969,11 @@
                              <span class="n">x_prev</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
                              <span class="n">dx_prev</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
                              <span class="n">h</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Explicit Euler predictor for the *state* subset:</span>
 <span class="sd">            x_{n+1}^0 = x_n + h * dx_n   (states only)</span>
 <span class="sd">        Algebraics remain at x_prev by default (already set in caller).</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">ns</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_states</span>
         <span class="n">x_iter</span><span class="p">[:</span><span class="n">ns</span><span class="p">]</span> <span class="o">=</span> <span class="n">x_prev</span><span class="p">[:</span><span class="n">ns</span><span class="p">]</span> <span class="o">+</span> <span class="n">h</span> <span class="o">*</span> <span class="n">dx_prev</span><span class="p">[:</span><span class="n">ns</span><span class="p">]</span>
         <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">derivative</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">algebraic_derivative_by_index</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
@@ -984,11 +984,11 @@
 <div class="viewcode-block" id="EquationGroup">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.solvers.html#VeraGridEngine.Simulations.EMT.solvers.StructuralVectorizedSolver.EquationGroup">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">EquationGroup</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Data structure to hold clustered equations for auto-vectorization.</span>
 <span class="sd">    Replaces the generic dictionary for strict type hinting and safety.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;_idx_matrix&#39;</span><span class="p">,</span> <span class="s1">&#39;_row_indices&#39;</span><span class="p">,</span> <span class="s1">&#39;_template_eq&#39;</span><span class="p">,</span> <span class="s1">&#39;_template_vars&#39;</span><span class="p">]</span>
+<span class="sd">    """</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'_idx_matrix'</span><span class="p">,</span> <span class="s1">'_row_indices'</span><span class="p">,</span> <span class="s1">'_template_eq'</span><span class="p">,</span> <span class="s1">'_template_vars'</span><span class="p">]</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_idx_matrix</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
@@ -999,7 +999,7 @@
 <div class="viewcode-block" id="EquationGroup.add_indices">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.solvers.html#VeraGridEngine.Simulations.EMT.solvers.StructuralVectorizedSolver.EquationGroup.add_indices">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">add_indices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var_indices</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">row_index</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Adds matrix indices and row index to the cluster.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Adds matrix indices and row index to the cluster."""</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_idx_matrix</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">var_indices</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_row_indices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row_index</span><span class="p">)</span></div>
 
@@ -1007,7 +1007,7 @@
 <div class="viewcode-block" id="EquationGroup.set_template">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.solvers.html#VeraGridEngine.Simulations.EMT.solvers.StructuralVectorizedSolver.EquationGroup.set_template">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">set_template</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">template_eq</span><span class="p">:</span> <span class="n">Expr</span><span class="p">,</span> <span class="n">template_vars</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Var</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Sets the structural template for this group.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Sets the structural template for this group."""</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_template_eq</span> <span class="o">=</span> <span class="n">template_eq</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_template_vars</span> <span class="o">=</span> <span class="n">template_vars</span></div>
 
@@ -1015,28 +1015,28 @@
 <div class="viewcode-block" id="EquationGroup.get_idx_matrix">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.solvers.html#VeraGridEngine.Simulations.EMT.solvers.StructuralVectorizedSolver.EquationGroup.get_idx_matrix">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_idx_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the index matrix.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Returns the index matrix."""</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_idx_matrix</span></div>
 
 
 <div class="viewcode-block" id="EquationGroup.get_row_indices">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.solvers.html#VeraGridEngine.Simulations.EMT.solvers.StructuralVectorizedSolver.EquationGroup.get_row_indices">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_row_indices</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the row indices.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Returns the row indices."""</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_row_indices</span></div>
 
 
 <div class="viewcode-block" id="EquationGroup.get_template_eq">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.solvers.html#VeraGridEngine.Simulations.EMT.solvers.StructuralVectorizedSolver.EquationGroup.get_template_eq">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_template_eq</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Expr</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the template equation.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Returns the template equation."""</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_template_eq</span></div>
 
 
 <div class="viewcode-block" id="EquationGroup.get_template_vars">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.solvers.html#VeraGridEngine.Simulations.EMT.solvers.StructuralVectorizedSolver.EquationGroup.get_template_vars">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_template_vars</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Var</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the template variables.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Returns the template variables."""</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_template_vars</span></div>
 </div>
 
@@ -1050,10 +1050,10 @@
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.solvers.html#VeraGridEngine.Simulations.EMT.solvers.StructuralVectorizedSolver.SparseADJacobian">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">SparseADJacobian</span><span class="p">:</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span>
-        <span class="s1">&#39;verbose&#39;</span><span class="p">,</span> <span class="s1">&#39;equations&#39;</span><span class="p">,</span> <span class="s1">&#39;variables&#39;</span><span class="p">,</span> <span class="s1">&#39;parameters&#39;</span><span class="p">,</span> <span class="s1">&#39;diff_vars&#39;</span><span class="p">,</span> <span class="s1">&#39;method&#39;</span><span class="p">,</span> <span class="s1">&#39;dtype&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;n_rows&#39;</span><span class="p">,</span> <span class="s1">&#39;n_cols&#39;</span><span class="p">,</span> <span class="s1">&#39;var_map&#39;</span><span class="p">,</span> <span class="s1">&#39;col_rows&#39;</span><span class="p">,</span> <span class="s1">&#39;J&#39;</span><span class="p">,</span> <span class="s1">&#39;colors&#39;</span><span class="p">,</span> <span class="s1">&#39;n_colors&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;color_groups&#39;</span><span class="p">,</span> <span class="s1">&#39;color_ptr&#39;</span><span class="p">,</span> <span class="s1">&#39;color_cols&#39;</span><span class="p">,</span> <span class="s1">&#39;col_ptr&#39;</span><span class="p">,</span> <span class="s1">&#39;row_idx&#39;</span><span class="p">,</span> <span class="s1">&#39;data_idx&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_compiler&#39;</span><span class="p">,</span> <span class="s1">&#39;_ad_kernel&#39;</span><span class="p">,</span> <span class="s1">&#39;_master_dispatcher&#39;</span><span class="p">,</span> <span class="s1">&#39;_seed_matrix&#39;</span><span class="p">,</span> <span class="s1">&#39;_jvp_work_buffer&#39;</span><span class="p">,</span> <span class="s1">&#39;_data_buffer&#39;</span>
+        <span class="s1">'verbose'</span><span class="p">,</span> <span class="s1">'equations'</span><span class="p">,</span> <span class="s1">'variables'</span><span class="p">,</span> <span class="s1">'parameters'</span><span class="p">,</span> <span class="s1">'diff_vars'</span><span class="p">,</span> <span class="s1">'method'</span><span class="p">,</span> <span class="s1">'dtype'</span><span class="p">,</span>
+        <span class="s1">'n_rows'</span><span class="p">,</span> <span class="s1">'n_cols'</span><span class="p">,</span> <span class="s1">'var_map'</span><span class="p">,</span> <span class="s1">'col_rows'</span><span class="p">,</span> <span class="s1">'J'</span><span class="p">,</span> <span class="s1">'colors'</span><span class="p">,</span> <span class="s1">'n_colors'</span><span class="p">,</span>
+        <span class="s1">'color_groups'</span><span class="p">,</span> <span class="s1">'color_ptr'</span><span class="p">,</span> <span class="s1">'color_cols'</span><span class="p">,</span> <span class="s1">'col_ptr'</span><span class="p">,</span> <span class="s1">'row_idx'</span><span class="p">,</span> <span class="s1">'data_idx'</span><span class="p">,</span>
+        <span class="s1">'_compiler'</span><span class="p">,</span> <span class="s1">'_ad_kernel'</span><span class="p">,</span> <span class="s1">'_master_dispatcher'</span><span class="p">,</span> <span class="s1">'_seed_matrix'</span><span class="p">,</span> <span class="s1">'_jvp_work_buffer'</span><span class="p">,</span> <span class="s1">'_data_buffer'</span>
     <span class="p">]</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
@@ -1179,7 +1179,7 @@
 
         <span class="c1"># Compile the generic eager AD kernel once and reuse it across graph colors.</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_compiler</span> <span class="o">=</span> <span class="n">EagerEquationCompiler</span><span class="p">(</span><span class="n">variables</span><span class="o">=</span><span class="n">variables</span><span class="p">,</span> <span class="n">parameters</span><span class="o">=</span><span class="n">parameters</span><span class="p">,</span> <span class="n">diff_vars</span><span class="o">=</span><span class="n">diff_vars</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">)</span>
-        <span class="n">k_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;advec_step_generic_</span><span class="si">{</span><span class="n">method</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">n_rows</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">n_cols</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="n">k_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"advec_step_generic_</span><span class="si">{</span><span class="n">method</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">n_rows</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">n_cols</span><span class="si">}</span><span class="s2">"</span>
         <span class="n">py_ad</span><span class="p">,</span> <span class="n">signature_tpe</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compiler</span><span class="o">.</span><span class="n">compile_ad_kernel</span><span class="p">(</span>
             <span class="n">equations</span><span class="p">,</span>
             <span class="n">func_name</span><span class="o">=</span><span class="n">k_name</span><span class="p">,</span>
@@ -1216,7 +1216,7 @@
                         <span class="k">pass</span>
 
         <span class="n">degrees</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">adj</span><span class="p">[</span><span class="n">j</span><span class="p">])</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_cols</span><span class="p">)],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
-        <span class="n">order</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="o">-</span><span class="n">degrees</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s2">&quot;stable&quot;</span><span class="p">))</span>
+        <span class="n">order</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="o">-</span><span class="n">degrees</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s2">"stable"</span><span class="p">))</span>
         <span class="n">colors</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">n_cols</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
         <span class="n">max_color</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
         <span class="n">used</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_cols</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">)</span>
@@ -1268,24 +1268,24 @@
 <div class="viewcode-block" id="SparseADJacobian.get_matrix">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.solvers.html#VeraGridEngine.Simulations.EMT.solvers.StructuralVectorizedSolver.SparseADJacobian.get_matrix">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">csc_matrix</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return the reusable CSC Jacobian shell.</span>
 
 <span class="sd">        :return: CSC Jacobian shell.</span>
 <span class="sd">        :rtype: csc_matrix</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">J</span></div>
 
 
 <div class="viewcode-block" id="SparseADJacobian.get_data_buffer">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.solvers.html#VeraGridEngine.Simulations.EMT.solvers.StructuralVectorizedSolver.SparseADJacobian.get_data_buffer">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_data_buffer</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return the reusable CSC numeric buffer.</span>
 
 <span class="sd">        :return: CSC numeric buffer.</span>
 <span class="sd">        :rtype: Vec</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_buffer</span></div>
 </div>
 
@@ -1297,17 +1297,17 @@
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.solvers.html#VeraGridEngine.Simulations.EMT.solvers.StructuralVectorizedSolver.StructuralVectorizedSolver">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">StructuralVectorizedSolver</span><span class="p">:</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span>
-        <span class="s1">&#39;problem&#39;</span><span class="p">,</span> <span class="s1">&#39;t0&#39;</span><span class="p">,</span> <span class="s1">&#39;t_end&#39;</span><span class="p">,</span> <span class="s1">&#39;h&#39;</span><span class="p">,</span> <span class="s1">&#39;method&#39;</span><span class="p">,</span> <span class="s1">&#39;pred_method&#39;</span><span class="p">,</span> <span class="s1">&#39;dense_threshold&#39;</span><span class="p">,</span> <span class="s1">&#39;verbose&#39;</span><span class="p">,</span> <span class="s1">&#39;newton_max_iter&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_newton_tolerance&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;vec_jacobian&#39;</span><span class="p">,</span> <span class="s1">&#39;vec_flat_args&#39;</span><span class="p">,</span> <span class="s1">&#39;fused_residual&#39;</span><span class="p">,</span> <span class="s1">&#39;vec_kernels&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_state_vars&#39;</span><span class="p">,</span> <span class="s1">&#39;_algebraic_vars&#39;</span><span class="p">,</span> <span class="s1">&#39;_diff_vars&#39;</span><span class="p">,</span> <span class="s1">&#39;_state_eqs&#39;</span><span class="p">,</span> <span class="s1">&#39;_algebraic_eqs&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;sorted_vars&#39;</span><span class="p">,</span> <span class="s1">&#39;_n_state&#39;</span><span class="p">,</span> <span class="s1">&#39;_n_vars&#39;</span><span class="p">,</span> <span class="s1">&#39;_n_diff&#39;</span><span class="p">,</span> <span class="s1">&#39;uid2idx_vars&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_event_parameters&#39;</span><span class="p">,</span> <span class="s1">&#39;_parameters&#39;</span><span class="p">,</span> <span class="s1">&#39;_parameters_values&#39;</span><span class="p">,</span> <span class="s1">&#39;_event_params_fn&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;jit_jacobians_ad&#39;</span><span class="p">,</span> <span class="s1">&#39;vectorized_ready&#39;</span><span class="p">,</span> <span class="s1">&#39;_last_sim_loop_time&#39;</span><span class="p">,</span> <span class="s1">&#39;_newton_diag_config&#39;</span><span class="p">,</span> <span class="s1">&#39;_vectorized_warmup_done&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_predictor&#39;</span><span class="p">,</span> <span class="s1">&#39;_runtime_param_count&#39;</span><span class="p">,</span> <span class="s1">&#39;_static_parameter_buffer&#39;</span><span class="p">,</span> <span class="s1">&#39;_full_parameter_buffer&#39;</span><span class="p">,</span> <span class="s1">&#39;_residual_buffer&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_trial_state_buffer&#39;</span><span class="p">,</span> <span class="s1">&#39;_trial_residual_buffer&#39;</span><span class="p">,</span> <span class="s1">&#39;_trial_residual_evaluator&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_backend_build_stats&#39;</span><span class="p">,</span> <span class="s1">&#39;_last_runtime_stats&#39;</span><span class="p">,</span> <span class="s1">&#39;_sparse_solver_backend_provider&#39;</span><span class="p">,</span> <span class="s1">&#39;_sparse_factorization_manager&#39;</span><span class="p">,</span> <span class="s1">&#39;_cancel_checker&#39;</span><span class="p">,</span> <span class="s1">&#39;_progress_signal&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_diff_base_var_indices&#39;</span>
+        <span class="s1">'problem'</span><span class="p">,</span> <span class="s1">'t0'</span><span class="p">,</span> <span class="s1">'t_end'</span><span class="p">,</span> <span class="s1">'h'</span><span class="p">,</span> <span class="s1">'method'</span><span class="p">,</span> <span class="s1">'pred_method'</span><span class="p">,</span> <span class="s1">'dense_threshold'</span><span class="p">,</span> <span class="s1">'verbose'</span><span class="p">,</span> <span class="s1">'newton_max_iter'</span><span class="p">,</span>
+        <span class="s1">'_newton_tolerance'</span><span class="p">,</span>
+        <span class="s1">'vec_jacobian'</span><span class="p">,</span> <span class="s1">'vec_flat_args'</span><span class="p">,</span> <span class="s1">'fused_residual'</span><span class="p">,</span> <span class="s1">'vec_kernels'</span><span class="p">,</span>
+        <span class="s1">'_state_vars'</span><span class="p">,</span> <span class="s1">'_algebraic_vars'</span><span class="p">,</span> <span class="s1">'_diff_vars'</span><span class="p">,</span> <span class="s1">'_state_eqs'</span><span class="p">,</span> <span class="s1">'_algebraic_eqs'</span><span class="p">,</span>
+        <span class="s1">'sorted_vars'</span><span class="p">,</span> <span class="s1">'_n_state'</span><span class="p">,</span> <span class="s1">'_n_vars'</span><span class="p">,</span> <span class="s1">'_n_diff'</span><span class="p">,</span> <span class="s1">'uid2idx_vars'</span><span class="p">,</span>
+        <span class="s1">'_event_parameters'</span><span class="p">,</span> <span class="s1">'_parameters'</span><span class="p">,</span> <span class="s1">'_parameters_values'</span><span class="p">,</span> <span class="s1">'_event_params_fn'</span><span class="p">,</span>
+        <span class="s1">'jit_jacobians_ad'</span><span class="p">,</span> <span class="s1">'vectorized_ready'</span><span class="p">,</span> <span class="s1">'_last_sim_loop_time'</span><span class="p">,</span> <span class="s1">'_newton_diag_config'</span><span class="p">,</span> <span class="s1">'_vectorized_warmup_done'</span><span class="p">,</span>
+        <span class="s1">'_predictor'</span><span class="p">,</span> <span class="s1">'_runtime_param_count'</span><span class="p">,</span> <span class="s1">'_static_parameter_buffer'</span><span class="p">,</span> <span class="s1">'_full_parameter_buffer'</span><span class="p">,</span> <span class="s1">'_residual_buffer'</span><span class="p">,</span>
+        <span class="s1">'_trial_state_buffer'</span><span class="p">,</span> <span class="s1">'_trial_residual_buffer'</span><span class="p">,</span> <span class="s1">'_trial_residual_evaluator'</span><span class="p">,</span>
+        <span class="s1">'_backend_build_stats'</span><span class="p">,</span> <span class="s1">'_last_runtime_stats'</span><span class="p">,</span> <span class="s1">'_sparse_solver_backend_provider'</span><span class="p">,</span> <span class="s1">'_sparse_factorization_manager'</span><span class="p">,</span> <span class="s1">'_cancel_checker'</span><span class="p">,</span> <span class="s1">'_progress_signal'</span><span class="p">,</span>
+        <span class="s1">'_diff_base_var_indices'</span>
     <span class="p">]</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
@@ -1326,7 +1326,7 @@
                  <span class="n">progress_signal</span><span class="p">:</span> <span class="n">DummySignal</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">cancel_checker</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="nb">bool</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">newton_tolerance</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0e-6</span><span class="p">)</span><span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        :param problem: The DAE problem definition.</span>
 <span class="sd">        :param t0: Initial time.</span>
 <span class="sd">        :param t_end: End time.</span>
@@ -1341,7 +1341,7 @@
 <span class="sd">        :type sparse_solver_backend_provider: SparseLinearSolverBackendProvider | None</span>
 <span class="sd">        :param progress_signal: Optional progress signal updated during the simulation loop.</span>
 <span class="sd">        :type progress_signal: DummySignal | None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">problem</span> <span class="o">=</span> <span class="n">problem</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">t0</span> <span class="o">=</span> <span class="n">t0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">t_end</span> <span class="o">=</span> <span class="n">t_end</span>
@@ -1353,7 +1353,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">newton_max_iter</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">newton_max_iter</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_newton_tolerance</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">newton_tolerance</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_newton_tolerance</span><span class="p">)</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_newton_tolerance</span> <span class="o">&lt;=</span> <span class="mf">0.0</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;newton_tolerance must be finite and greater than zero.&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"newton_tolerance must be finite and greater than zero."</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_newton_diag_config</span> <span class="o">=</span> <span class="n">newton_diag_config</span> <span class="ow">or</span> <span class="n">NewtonDiagnosticsConfig</span><span class="p">(</span>
             <span class="n">compute_dense_cond</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
             <span class="n">enable_fallback</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
@@ -1383,7 +1383,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">uid2idx_vars</span> <span class="o">=</span> <span class="p">{</span><span class="n">v</span><span class="o">.</span><span class="n">uid</span><span class="p">:</span> <span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sorted_vars</span><span class="p">)}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_diff_base_var_indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_n_diff</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">diff_idx</span><span class="p">,</span> <span class="n">diff_var</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_diff_vars</span><span class="p">):</span>
-            <span class="n">base_var</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">diff_var</span><span class="p">,</span> <span class="s2">&quot;base_var&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="n">base_var</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">diff_var</span><span class="p">,</span> <span class="s2">"base_var"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">base_var</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_diff_base_var_indices</span><span class="p">[</span><span class="n">diff_idx</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">uid2idx_vars</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">base_var</span><span class="o">.</span><span class="n">uid</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
 
@@ -1395,7 +1395,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">vectorized_ready</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_last_sim_loop_time</span> <span class="o">=</span> <span class="mf">0.0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_vectorized_warmup_done</span> <span class="o">=</span> <span class="kc">False</span>
-        <span class="n">algebraic_predictor_derivatives</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">problem</span><span class="p">,</span> <span class="s2">&quot;algebraic_predictor_derivatives&quot;</span><span class="p">,</span> <span class="p">{})</span>
+        <span class="n">algebraic_predictor_derivatives</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">problem</span><span class="p">,</span> <span class="s2">"algebraic_predictor_derivatives"</span><span class="p">,</span> <span class="p">{})</span>
         <span class="n">algebraic_derivative_by_index</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">for</span> <span class="n">var_uid</span><span class="p">,</span> <span class="n">derivative</span> <span class="ow">in</span> <span class="n">algebraic_predictor_derivatives</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="n">var_idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">uid2idx_vars</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">var_uid</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
@@ -1431,15 +1431,15 @@
 <div class="viewcode-block" id="StructuralVectorizedSolver.auto_detect_vectorization">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.solvers.html#VeraGridEngine.Simulations.EMT.solvers.StructuralVectorizedSolver.StructuralVectorizedSolver.auto_detect_vectorization">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">auto_detect_vectorization</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">method</span><span class="p">:</span> <span class="n">DynamicIntegrationMethod</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Infers the algebraic structure of the DAE system (clustering) and compiles</span>
 <span class="sd">        the vectorized matrix kernels.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="n">method</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">method</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;--- [AUTO-VEC] Inferring Algebraic Structure (Clustering) ---&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">"--- [AUTO-VEC] Inferring Algebraic Structure (Clustering) ---"</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">pass</span>
         <span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
@@ -1455,7 +1455,7 @@
         <span class="c1">#   algebraic eqs    -&gt; g(x, y, p) = 0</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">rhs_eq</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_state_eqs</span><span class="p">):</span>
             <span class="n">sv</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state_vars</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
-            <span class="n">d_term</span> <span class="o">=</span> <span class="n">Var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;d_</span><span class="si">{</span><span class="n">sv</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">base_var</span><span class="o">=</span><span class="n">sv</span><span class="p">)</span>
+            <span class="n">d_term</span> <span class="o">=</span> <span class="n">Var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">"d_</span><span class="si">{</span><span class="n">sv</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">base_var</span><span class="o">=</span><span class="n">sv</span><span class="p">)</span>
             <span class="n">full_eq_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">d_term</span> <span class="o">-</span> <span class="n">rhs_eq</span>
 
         <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">alg_eq</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_algebraic_eqs</span><span class="p">):</span>
@@ -1484,7 +1484,7 @@
             <span class="p">)</span>
 
             <span class="c1"># Cluster by structural signature</span>
-            <span class="n">eq_hash</span> <span class="o">=</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">sha256</span><span class="p">(</span><span class="n">sig_str</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()</span>
+            <span class="n">eq_hash</span> <span class="o">=</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">sha256</span><span class="p">(</span><span class="n">sig_str</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">"utf-8"</span><span class="p">))</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()</span>
 
             <span class="k">if</span> <span class="n">eq_hash</span> <span class="ow">in</span> <span class="n">groups</span><span class="p">:</span>
                 <span class="n">group</span> <span class="o">=</span> <span class="n">groups</span><span class="p">[</span><span class="n">eq_hash</span><span class="p">]</span>
@@ -1499,8 +1499,8 @@
 
                 <span class="k">if</span> <span class="n">idx</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                     <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-                        <span class="sa">f</span><span class="s2">&quot;Runtime variable missing in uid2idx_vars. &quot;</span>
-                        <span class="sa">f</span><span class="s2">&quot;eq=</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">, var=</span><span class="si">{</span><span class="n">v</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">, target_uid=</span><span class="si">{</span><span class="n">target_uid</span><span class="si">}</span><span class="s2">&quot;</span>
+                        <span class="sa">f</span><span class="s2">"Runtime variable missing in uid2idx_vars. "</span>
+                        <span class="sa">f</span><span class="s2">"eq=</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">, var=</span><span class="si">{</span><span class="n">v</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">, target_uid=</span><span class="si">{</span><span class="n">target_uid</span><span class="si">}</span><span class="s2">"</span>
                     <span class="p">)</span>
 
                 <span class="n">var_indices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
@@ -1510,18 +1510,18 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">template_vars</span> <span class="o">=</span> <span class="n">group</span><span class="o">.</span><span class="n">get_template_vars</span><span class="p">()</span>
                 <span class="k">if</span> <span class="n">template_vars</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Internal error: template_vars is None for group </span><span class="si">{</span><span class="n">eq_hash</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Internal error: template_vars is None for group </span><span class="si">{</span><span class="n">eq_hash</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
                 <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">var_indices</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">template_vars</span><span class="p">):</span>
                     <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-                        <span class="sa">f</span><span class="s2">&quot;Inconsistent clustered runtime var count for group </span><span class="si">{</span><span class="n">eq_hash</span><span class="si">}</span><span class="s2">. &quot;</span>
-                        <span class="sa">f</span><span class="s2">&quot;eq=</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">, got=</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">var_indices</span><span class="p">)</span><span class="si">}</span><span class="s2">, expected=</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">template_vars</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+                        <span class="sa">f</span><span class="s2">"Inconsistent clustered runtime var count for group </span><span class="si">{</span><span class="n">eq_hash</span><span class="si">}</span><span class="s2">. "</span>
+                        <span class="sa">f</span><span class="s2">"eq=</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">, got=</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">var_indices</span><span class="p">)</span><span class="si">}</span><span class="s2">, expected=</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">template_vars</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span>
                     <span class="p">)</span>
 
             <span class="n">group</span><span class="o">.</span><span class="n">add_indices</span><span class="p">(</span><span class="n">var_indices</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;   [AUTO-VEC] Detected </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">groups</span><span class="p">)</span><span class="si">}</span><span class="s2"> patterns in </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">full_eq_list</span><span class="p">)</span><span class="si">}</span><span class="s2"> total equations.&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"   [AUTO-VEC] Detected </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">groups</span><span class="p">)</span><span class="si">}</span><span class="s2"> patterns in </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">full_eq_list</span><span class="p">)</span><span class="si">}</span><span class="s2"> total equations."</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">pass</span>
         <span class="n">grouping_s</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span> <span class="o">-</span> <span class="n">grouping_t0</span>
@@ -1544,7 +1544,7 @@
         <span class="n">residual_compile_t0</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
 
         <span class="k">if</span> <span class="n">use_direct_residual</span><span class="p">:</span>
-            <span class="n">direct_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;structural_vectorized_residual_</span><span class="si">{</span><span class="n">backend_cache_token</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="n">direct_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"structural_vectorized_residual_</span><span class="si">{</span><span class="n">backend_cache_token</span><span class="si">}</span><span class="s2">"</span>
             <span class="n">py_func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>
             <span class="n">signature_tpe</span><span class="p">:</span> <span class="n">Any</span>
             <span class="n">py_func</span><span class="p">,</span> <span class="n">signature_tpe</span> <span class="o">=</span> <span class="n">vec_compiler</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span>
@@ -1561,7 +1561,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">group_key_index</span><span class="p">,</span> <span class="n">signature</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">group_keys</span><span class="p">):</span>
                 <span class="n">group_data</span> <span class="o">=</span> <span class="n">groups</span><span class="p">[</span><span class="n">signature</span><span class="p">]</span>
-                <span class="n">k_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;vec_kernel_</span><span class="si">{</span><span class="n">method</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">group_key_index</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="n">k_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"vec_kernel_</span><span class="si">{</span><span class="n">method</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">group_key_index</span><span class="si">}</span><span class="s2">"</span>
 
                 <span class="n">py_func</span><span class="p">,</span> <span class="n">signature_tpe</span> <span class="o">=</span> <span class="n">vec_compiler</span><span class="o">.</span><span class="n">compile_matrix_kernel</span><span class="p">(</span>
                     <span class="n">group_data</span><span class="o">.</span><span class="n">get_template_eq</span><span class="p">(),</span>
@@ -1623,7 +1623,7 @@
         <span class="p">)</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;   [AUTO-VEC] Setup finished in </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_backend_build_stats</span><span class="p">[</span><span class="s1">&#39;total_s&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">s&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"   [AUTO-VEC] Setup finished in </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_backend_build_stats</span><span class="p">[</span><span class="s1">'total_s'</span><span class="p">]</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">s"</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">pass</span></div>
 
@@ -1637,7 +1637,7 @@
                  <span class="n">params0</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Vec</span><span class="o">|</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">boundary_updater</span><span class="p">:</span> <span class="n">EmtBoundaryUpdateProtocol</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Vec</span><span class="p">,</span> <span class="n">Mat</span><span class="p">,</span> <span class="n">Mat</span><span class="p">,</span> <span class="nb">bool</span><span class="p">,</span> <span class="nb">bool</span><span class="p">]:</span>
 
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Run the vectorized DAE time-domain simulation.</span>
 
 <span class="sd">        :param x0: Initial state vector.</span>
@@ -1645,7 +1645,7 @@
 <span class="sd">        :param params0: Initial event parameters.</span>
 <span class="sd">        :param boundary_updater: Optional override for the problem boundary updater.</span>
 <span class="sd">        :return: Time vector and state trajectory matrix.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="k">if</span> <span class="n">x0</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">x0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">problem</span><span class="o">.</span><span class="n">get_x0</span><span class="p">()</span>
@@ -1736,7 +1736,7 @@
                 <span class="n">fallback_solve</span><span class="o">=</span><span class="n">_dense_lu_bundle_fallback</span><span class="p">,</span>
                 <span class="n">collector</span><span class="o">=</span><span class="n">trace_collector</span><span class="p">,</span>
                 <span class="n">config</span><span class="o">=</span><span class="n">diag_cfg</span><span class="p">,</span>
-                <span class="n">solver_name</span><span class="o">=</span><span class="s2">&quot;dense_lu&quot;</span><span class="p">,</span>
+                <span class="n">solver_name</span><span class="o">=</span><span class="s2">"dense_lu"</span><span class="p">,</span>
                 <span class="n">matrix_getter</span><span class="o">=</span><span class="n">_dense_lu_bundle_matrix</span><span class="p">,</span>
             <span class="p">)</span>
             <span class="n">sparse_solve</span> <span class="o">=</span> <span class="n">with_newton_diagnostics</span><span class="p">(</span>
@@ -1744,14 +1744,14 @@
                 <span class="n">fallback_solve</span><span class="o">=</span><span class="n">_sparse_factor_manager_fallback</span><span class="p">,</span>
                 <span class="n">collector</span><span class="o">=</span><span class="n">trace_collector</span><span class="p">,</span>
                 <span class="n">config</span><span class="o">=</span><span class="n">diag_cfg</span><span class="p">,</span>
-                <span class="n">solver_name</span><span class="o">=</span><span class="s2">&quot;emt_sparse_backend&quot;</span><span class="p">,</span>
+                <span class="n">solver_name</span><span class="o">=</span><span class="s2">"emt_sparse_backend"</span><span class="p">,</span>
                 <span class="n">matrix_getter</span><span class="o">=</span><span class="n">_sparse_factor_manager_matrix</span><span class="p">,</span>
             <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">pass</span>
 
         <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;-&gt; JIT Warmup.&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">"-&gt; JIT Warmup."</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">pass</span>
 
@@ -1781,7 +1781,7 @@
         <span class="n">sparse_factor_manager</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sparse_factorization_manager</span>
 
         <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;-&gt; Starting VECTORIZED Simulation (Integration loop)...&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"-&gt; Starting VECTORIZED Simulation (Integration loop)..."</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">pass</span>
 
@@ -1828,7 +1828,7 @@
 
                 <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="n">DynamicIntegrationMethod</span><span class="o">.</span><span class="n">DaeBDF2</span> <span class="ow">and</span> <span class="n">is_aligned_substep</span><span class="p">:</span>
                     <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-                        <span class="s2">&quot;force_step_alignment is not implemented for DaeBDF2 in StructuralVectorizedSolver.&quot;</span>
+                        <span class="s2">"force_step_alignment is not implemented for DaeBDF2 in StructuralVectorizedSolver."</span>
                     <span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="k">pass</span>
@@ -1909,7 +1909,7 @@
                             <span class="n">t</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">t_curr</span><span class="p">),</span>
                             <span class="n">step_idx</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">i</span><span class="p">),</span>
                             <span class="n">newton_iter</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">k</span><span class="p">),</span>
-                            <span class="n">phase</span><span class="o">=</span><span class="s2">&quot;jit_vec&quot;</span><span class="p">,</span>
+                            <span class="n">phase</span><span class="o">=</span><span class="s2">"jit_vec"</span><span class="p">,</span>
                             <span class="n">method</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">method</span><span class="p">),</span>
                         <span class="p">)</span>
                         <span class="n">ctx</span><span class="o">.</span><span class="n">res_norm_inf</span> <span class="o">=</span> <span class="n">res_norm</span>
@@ -1946,7 +1946,7 @@
                                 <span class="k">pass</span>
 
                             <span class="k">if</span> <span class="n">sparse_factor_manager</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;StructuralVectorizedSolver sparse factorization manager is not initialized&quot;</span><span class="p">)</span>
+                                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">"StructuralVectorizedSolver sparse factorization manager is not initialized"</span><span class="p">)</span>
                             <span class="k">else</span><span class="p">:</span>
                                 <span class="n">sparse_factor_manager</span><span class="o">.</span><span class="n">factorize</span><span class="p">()</span>
                             <span class="n">cached_lu_dense</span> <span class="o">=</span> <span class="kc">None</span>
@@ -1970,7 +1970,7 @@
                             <span class="k">assert</span> <span class="n">sparse_factor_manager</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
                             <span class="n">delta</span> <span class="o">=</span> <span class="n">sparse_factor_manager</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="o">-</span><span class="n">res_global</span><span class="p">)</span>
 
-                    <span class="n">max_step_inf</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">diag_cfg</span><span class="p">,</span> <span class="s2">&quot;max_newton_step_inf&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+                    <span class="n">max_step_inf</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">diag_cfg</span><span class="p">,</span> <span class="s2">"max_newton_step_inf"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
                     <span class="k">if</span> <span class="n">max_step_inf</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">max_step_inf</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">:</span>
                         <span class="n">step_inf</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">delta</span><span class="p">)))</span> <span class="k">if</span> <span class="n">delta</span><span class="o">.</span><span class="n">size</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="mf">0.0</span>
                         <span class="k">if</span> <span class="n">step_inf</span> <span class="o">&gt;</span> <span class="n">max_step_inf</span><span class="p">:</span>
@@ -2074,7 +2074,7 @@
         <span class="p">)</span>
 
         <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;VECTORIZED INTEGRATION LOOP Finished: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_last_sim_loop_time</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">s&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"VECTORIZED INTEGRATION LOOP Finished: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_last_sim_loop_time</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">s"</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">pass</span>
 
@@ -2083,36 +2083,36 @@
 <div class="viewcode-block" id="StructuralVectorizedSolver.get_backend_build_stats">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.solvers.html#VeraGridEngine.Simulations.EMT.solvers.StructuralVectorizedSolver.StructuralVectorizedSolver.get_backend_build_stats">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_backend_build_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return setup timings collected during backend compilation.</span>
 
 <span class="sd">        :return: Backend build statistics.</span>
 <span class="sd">        :rtype: Dict[str, float]</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_backend_build_stats</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="StructuralVectorizedSolver.get_last_runtime_stats">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.solvers.html#VeraGridEngine.Simulations.EMT.solvers.StructuralVectorizedSolver.StructuralVectorizedSolver.get_last_runtime_stats">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_last_runtime_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return runtime statistics collected during the latest simulation.</span>
 
 <span class="sd">        :return: Runtime statistics.</span>
 <span class="sd">        :rtype: Dict[str, float]</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_last_runtime_stats</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="StructuralVectorizedSolver.get_last_sim_loop_time">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.solvers.html#VeraGridEngine.Simulations.EMT.solvers.StructuralVectorizedSolver.StructuralVectorizedSolver.get_last_sim_loop_time">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_last_sim_loop_time</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return the latest integration-loop wall time.</span>
 
 <span class="sd">        :return: Latest loop time in seconds.</span>
 <span class="sd">        :rtype: float</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_last_sim_loop_time</span></div>
 </div>
 

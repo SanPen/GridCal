@@ -1,501 +1,175 @@
-# This Source Code Form is subject to the terms of the Mozilla Public
-# License, v. 2.0. If a copy of the MPL was not distributed with this
-# file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
-
-"""
-Maintainable international-standard module for 'St4b'.
-
-This is the runtime implementation shipped by VeraGrid.
-It exposes the imported public interface, explicit symbolic equations, and
-"""
-
+"""Compound-source excitation with cascaded bounded voltage and field regulators."""
 from __future__ import annotations
 
+import math
 from VeraGridEngine.Devices.Dynamic.rms_template import RmsModelTemplate
 from VeraGridEngine.Devices.Dynamic.var_factory import VarFactory
-from VeraGridEngine.Utils.Symbolic.block import Block
+from VeraGridEngine.Templates.Rms.control_realization import ControlRealization
+from VeraGridEngine.Templates.Rms.genrou_exc_gov_rms_template import _esst3a_fex
+from VeraGridEngine.Utils.Symbolic.symbolic import Const, Expr, Var
 import VeraGridEngine.Utils.Symbolic.symbolic as sym
-from VeraGridEngine.enumerations import DeviceType
-from VeraGridEngine.Utils.Symbolic.symbolic import Var
-from VeraGridEngine.Utils.Symbolic.symbolic import Expr
-from VeraGridEngine.Utils.Symbolic.symbolic import Const
-from VeraGridEngine.Utils.Symbolic.symbolic import BinOp
 
-def build_st4b_template(vf: VarFactory, name: str | None = None) -> RmsModelTemplate:
-    """
-    Materialize the international-standard EMT template.
 
-    :param vf: Variable factory used to allocate the symbolic surface.
-    :param name: Optional explicit runtime template name.
-    :returns: Materialized EMT template.
+class CompoundPiExciterParameters:
+    """Physical sensing, cascaded PI, bridge and transformer coefficients."""
+    __slots__ = ('tr','kpr','kir','vrmax','vrmin','ta','kpm','kim','vmmax','vmmin','kg','kp','ki','vbmax','kc','xl','thetap')
+
+    def __init__(self, tr: float = .02, kpr: float = 2., kir: float = 1.,
+                 vrmax: float = 5., vrmin: float = -5., ta: float = .05,
+                 kpm: float = 1., kim: float = 1., vmmax: float = 1., vmmin: float = 0.,
+                 kg: float = 1., kp: float = 2., ki: float = .1, vbmax: float = 5.,
+                 kc: float = .1, xl: float = .1, thetap: float = 0.) -> None:
+        """Store coefficients in compatible per-unit field bases.
+
+        :param tr: Nonnegative compensated-voltage sensing time, seconds.
+        :param kpr: Nonnegative voltage-loop proportional gain.
+        :param kir: Nonnegative voltage-loop integral gain, inverse seconds.
+        :param vrmax: Upper total voltage-regulator capability.
+        :param vrmin: Lower total voltage-regulator capability.
+        :param ta: Nonnegative regulator output lag, seconds.
+        :param kpm: Nonnegative inner field-loop proportional gain.
+        :param kim: Nonnegative inner field-loop integral gain, inverse seconds.
+        :param vmmax: Upper total bridge-control capability.
+        :param vmmin: Lower total bridge-control capability.
+        :param kg: Nonnegative delivered-field feedback gain.
+        :param kp: Nonnegative potential-transformer ratio.
+        :param ki: Nonnegative current-compounding ratio.
+        :param vbmax: Positive rectified-supply capability.
+        :param kc: Nonnegative commutation loading coefficient.
+        :param xl: Nonnegative transformer leakage reactance.
+        :param thetap: Potential-transformer phase angle, degrees.
+        """
+        self.tr: float = tr
+        self.kpr: float = kpr
+        self.kir: float = kir
+        self.vrmax: float = vrmax
+        self.vrmin: float = vrmin
+        self.ta: float = ta
+        self.kpm: float = kpm
+        self.kim: float = kim
+        self.vmmax: float = vmmax
+        self.vmmin: float = vmmin
+        self.kg: float = kg
+        self.kp: float = kp
+        self.ki: float = ki
+        self.vbmax: float = vbmax
+        self.kc: float = kc
+        self.xl: float = xl
+        self.thetap: float = thetap
+
+
+def build_st4b_template(vf: VarFactory, name: str | None = None,
+                       parameters: CompoundPiExciterParameters | None = None) -> RmsModelTemplate:
+    """Build cascaded PI excitation fed by a loaded compound-transformer source.
+
+    Compensated-voltage sensing feeds a bounded parallel PI regulator followed
+    by an optional output lag. Its output opposes KG times delivered field
+    voltage in a second bounded PI loop. Each integral memory stops only when
+    its derivative would drive total proportional-plus-integral demand farther
+    outside its capability; inward recovery remains active. A final low-value
+    excitation gate follows the inner PI. Delivered field is bridge demand
+    multiplied by the actual loaded and capped transformer supply.
+
+    The complex source is KP*exp(j*THETAP)*(V+j*XL*I)+j*KI*I. Its magnitude,
+    live field current and the piecewise diode commutation law determine supply
+    before VBMAX clipping. The inner proportional feedback is solved explicitly
+    through a positive denominator 1+KPM*KG*VB, preserving both PI bounds and the
+    final low gate without an iterative algebraic feedback approximation.
+    Collapsed supply therefore gives zero delivered field and finite dynamics.
+
+    Ten inputs are sensed voltage, reference, stabilizer, real/imaginary terminal
+    voltage, real/imaginary outgoing stator current, field current, additive
+    minimum-excitation signal and low-gate maximum-excitation demand. Outputs
+    are delivered field and bounded inner demand before the maximum gate.
+    An absent maximum limiter connects to that exact preceding demand. Voltages
+    and currents use compatible per-unit bases; times are seconds and transformer
+    phase is degrees.
+
+    With active integrals and positive lags there are four states. Zero integral
+    gain removes its memory and initializes a proportional bias; zero sensing
+    or output lag reduces algebraically. Initialization balances actual field
+    voltage and loaded supply, then determines both regulator demands and the
+    matching voltage reference including auxiliary biases. A nonzero initial
+    field requires a positive initial rectified supply and feasible capabilities.
+
+    :param vf: Shared native symbolic factory.
+    :param name: Optional unique controller label.
+    :param parameters: Physical coefficients and capability settings.
+    :return: Native cascaded-PI compound-source excitation controller.
+    :raises ValueError: Invalid physical gains, times or capability ordering.
     """
-    template_name: str
-    if name is None:
-        template_name: str = 'St4b'
+    p: CompoundPiExciterParameters = CompoundPiExciterParameters() if parameters is None else parameters
+    if min(p.tr,p.kpr,p.kir,p.ta,p.kpm,p.kim,p.kg,p.kp,p.ki,p.kc,p.xl) < 0 or p.vbmax <= 0:
+        raise ValueError('Compound PI excitation coefficients have invalid physical domains')
+    elif p.kp+p.ki == 0:
+        raise ValueError('Compound excitation requires a potential or current source')
+    elif p.kpr+p.kir == 0 or p.kpm+p.kim == 0:
+        raise ValueError('Each compound regulator requires proportional or integral action')
+    elif p.vrmax <= p.vrmin or p.vmmax <= p.vmmin:
+        raise ValueError('Compound PI regulator capabilities must be ordered')
     else:
-        template_name: str = name
-
-    # Allocate the template container before building the symbolic surface.
-    template: RmsModelTemplate = RmsModelTemplate()
-    template.tpe = DeviceType.GeneratorDevice
-    template.name = template_name
-
-    # Declare every variable explicitly before the equations reference it.
-    # Declare the runtime parameter variables used by the template.
-    avr_Efd0Pu: Var = vf.add_var('avr.Efd0Pu_' + template_name)
-    avr_Ir0Pu: Var = vf.add_var('avr.Ir0Pu_' + template_name)
-    avr_Kc: Var = vf.add_var('avr.Kc_' + template_name)
-    avr_Kg: Var = vf.add_var('avr.Kg_' + template_name)
-    avr_Ki: Var = vf.add_var('avr.Ki_' + template_name)
-    avr_Kim: Var = vf.add_var('avr.Kim_' + template_name)
-    avr_Kir: Var = vf.add_var('avr.Kir_' + template_name)
-    avr_Kp: Var = vf.add_var('avr.Kp_' + template_name)
-    avr_Kpm: Var = vf.add_var('avr.Kpm_' + template_name)
-    avr_Kpr: Var = vf.add_var('avr.Kpr_' + template_name)
-    avr_Thetap: Var = vf.add_var('avr.Thetap_' + template_name)
-    avr_UOel0Pu: Var = vf.add_var('avr.UOel0Pu_' + template_name)
-    avr_UUel0Pu: Var = vf.add_var('avr.UUel0Pu_' + template_name)
-    avr_Us0Pu: Var = vf.add_var('avr.Us0Pu_' + template_name)
-    avr_VaMaxPu: Var = vf.add_var('avr.VaMaxPu_' + template_name)
-    avr_VaMinPu: Var = vf.add_var('avr.VaMinPu_' + template_name)
-    avr_Vb0Pu: Var = vf.add_var('avr.Vb0Pu_' + template_name)
-    avr_VbMaxPu: Var = vf.add_var('avr.VbMaxPu_' + template_name)
-    avr_VmMaxPu: Var = vf.add_var('avr.VmMaxPu_' + template_name)
-    avr_VmMinPu: Var = vf.add_var('avr.VmMinPu_' + template_name)
-    avr_VrMaxPu: Var = vf.add_var('avr.VrMaxPu_' + template_name)
-    avr_VrMinPu: Var = vf.add_var('avr.VrMinPu_' + template_name)
-    avr_XlPu: Var = vf.add_var('avr.XlPu_' + template_name)
-    avr_add_k1: Var = vf.add_var('avr.add.k1_' + template_name)
-    avr_add_k2: Var = vf.add_var('avr.add.k2_' + template_name)
-    avr_const_k: Var = vf.add_var('avr.const.k_' + template_name)
-    avr_firstOrder_T: Var = vf.add_var('avr.firstOrder.T_' + template_name)
-    avr_firstOrder_initType: Var = vf.add_var('avr.firstOrder.initType_' + template_name)
-    avr_firstOrder_k: Var = vf.add_var('avr.firstOrder.k_' + template_name)
-    avr_firstOrder_y_start: Var = vf.add_var('avr.firstOrder.y_start_' + template_name)
-    avr_firstOrder1_T: Var = vf.add_var('avr.firstOrder1.T_' + template_name)
-    avr_firstOrder1_initType: Var = vf.add_var('avr.firstOrder1.initType_' + template_name)
-    avr_firstOrder1_k: Var = vf.add_var('avr.firstOrder1.k_' + template_name)
-    avr_firstOrder1_y_start: Var = vf.add_var('avr.firstOrder1.y_start_' + template_name)
-    avr_gain_k: Var = vf.add_var('avr.gain.k_' + template_name)
-    avr_gain1_k: Var = vf.add_var('avr.gain1.k_' + template_name)
-    avr_it0Pu_im: Var = vf.add_var('avr.it0Pu.im_' + template_name)
-    avr_it0Pu_re: Var = vf.add_var('avr.it0Pu.re_' + template_name)
-    avr_limPI1_Ki: Var = vf.add_var('avr.limPI1.Ki_' + template_name)
-    avr_limPI1_Kp: Var = vf.add_var('avr.limPI1.Kp_' + template_name)
-    avr_limPI1_Tol: Var = vf.add_var('avr.limPI1.Tol_' + template_name)
-    avr_limPI1_Y0: Var = vf.add_var('avr.limPI1.Y0_' + template_name)
-    avr_limPI1_YMax: Var = vf.add_var('avr.limPI1.YMax_' + template_name)
-    avr_limPI1_YMin: Var = vf.add_var('avr.limPI1.YMin_' + template_name)
-    avr_limPI1_add_k1: Var = vf.add_var('avr.limPI1.add.k1_' + template_name)
-    avr_limPI1_add_k2: Var = vf.add_var('avr.limPI1.add.k2_' + template_name)
-    avr_limPI1_const_k: Var = vf.add_var('avr.limPI1.const.k_' + template_name)
-    avr_limPI1_hysteresisMax_pre_y_start: Var = vf.add_var('avr.limPI1.hysteresisMax.pre_y_start_' + template_name)
-    avr_limPI1_hysteresisMax_uHigh: Var = vf.add_var('avr.limPI1.hysteresisMax.uHigh_' + template_name)
-    avr_limPI1_hysteresisMax_uLow: Var = vf.add_var('avr.limPI1.hysteresisMax.uLow_' + template_name)
-    avr_limPI1_hysteresisMin_pre_y_start: Var = vf.add_var('avr.limPI1.hysteresisMin.pre_y_start_' + template_name)
-    avr_limPI1_hysteresisMin_uHigh: Var = vf.add_var('avr.limPI1.hysteresisMin.uHigh_' + template_name)
-    avr_limPI1_hysteresisMin_uLow: Var = vf.add_var('avr.limPI1.hysteresisMin.uLow_' + template_name)
-    avr_limPI1_integrator_initType: Var = vf.add_var('avr.limPI1.integrator.initType_' + template_name)
-    avr_limPI1_integrator_k: Var = vf.add_var('avr.limPI1.integrator.k_' + template_name)
-    avr_limPI1_integrator_use_reset: Var = vf.add_var('avr.limPI1.integrator.use_reset_' + template_name)
-    avr_limPI1_integrator_use_set: Var = vf.add_var('avr.limPI1.integrator.use_set_' + template_name)
-    avr_limPI1_integrator_y_start: Var = vf.add_var('avr.limPI1.integrator.y_start_' + template_name)
-    avr_limPI1_limiter1_homotopyType: Var = vf.add_var('avr.limPI1.limiter1.homotopyType_' + template_name)
-    avr_limPI1_limiter1_limitsAtInit: Var = vf.add_var('avr.limPI1.limiter1.limitsAtInit_' + template_name)
-    avr_limPI1_limiter1_strict: Var = vf.add_var('avr.limPI1.limiter1.strict_' + template_name)
-    avr_limPI1_limiter1_uMax: Var = vf.add_var('avr.limPI1.limiter1.uMax_' + template_name)
-    avr_limPI1_limiter1_uMin: Var = vf.add_var('avr.limPI1.limiter1.uMin_' + template_name)
-    avr_limPI2_Ki: Var = vf.add_var('avr.limPI2.Ki_' + template_name)
-    avr_limPI2_Kp: Var = vf.add_var('avr.limPI2.Kp_' + template_name)
-    avr_limPI2_Tol: Var = vf.add_var('avr.limPI2.Tol_' + template_name)
-    avr_limPI2_Y0: Var = vf.add_var('avr.limPI2.Y0_' + template_name)
-    avr_limPI2_YMax: Var = vf.add_var('avr.limPI2.YMax_' + template_name)
-    avr_limPI2_YMin: Var = vf.add_var('avr.limPI2.YMin_' + template_name)
-    avr_limPI2_add_k1: Var = vf.add_var('avr.limPI2.add.k1_' + template_name)
-    avr_limPI2_add_k2: Var = vf.add_var('avr.limPI2.add.k2_' + template_name)
-    avr_limPI2_const_k: Var = vf.add_var('avr.limPI2.const.k_' + template_name)
-    avr_limPI2_hysteresisMax_pre_y_start: Var = vf.add_var('avr.limPI2.hysteresisMax.pre_y_start_' + template_name)
-    avr_limPI2_hysteresisMax_uHigh: Var = vf.add_var('avr.limPI2.hysteresisMax.uHigh_' + template_name)
-    avr_limPI2_hysteresisMax_uLow: Var = vf.add_var('avr.limPI2.hysteresisMax.uLow_' + template_name)
-    avr_limPI2_hysteresisMin_pre_y_start: Var = vf.add_var('avr.limPI2.hysteresisMin.pre_y_start_' + template_name)
-    avr_limPI2_hysteresisMin_uHigh: Var = vf.add_var('avr.limPI2.hysteresisMin.uHigh_' + template_name)
-    avr_limPI2_hysteresisMin_uLow: Var = vf.add_var('avr.limPI2.hysteresisMin.uLow_' + template_name)
-    avr_limPI2_integrator_initType: Var = vf.add_var('avr.limPI2.integrator.initType_' + template_name)
-    avr_limPI2_integrator_k: Var = vf.add_var('avr.limPI2.integrator.k_' + template_name)
-    avr_limPI2_integrator_use_reset: Var = vf.add_var('avr.limPI2.integrator.use_reset_' + template_name)
-    avr_limPI2_integrator_use_set: Var = vf.add_var('avr.limPI2.integrator.use_set_' + template_name)
-    avr_limPI2_integrator_y_start: Var = vf.add_var('avr.limPI2.integrator.y_start_' + template_name)
-    avr_limPI2_limiter1_homotopyType: Var = vf.add_var('avr.limPI2.limiter1.homotopyType_' + template_name)
-    avr_limPI2_limiter1_limitsAtInit: Var = vf.add_var('avr.limPI2.limiter1.limitsAtInit_' + template_name)
-    avr_limPI2_limiter1_strict: Var = vf.add_var('avr.limPI2.limiter1.strict_' + template_name)
-    avr_limPI2_limiter1_uMax: Var = vf.add_var('avr.limPI2.limiter1.uMax_' + template_name)
-    avr_limPI2_limiter1_uMin: Var = vf.add_var('avr.limPI2.limiter1.uMin_' + template_name)
-    avr_max1_nu: Var = vf.add_var('avr.max1.nu_' + template_name)
-    avr_max2_nu: Var = vf.add_var('avr.max2.nu_' + template_name)
-    avr_min2_nu: Var = vf.add_var('avr.min2.nu_' + template_name)
-    avr_potentialCircuit_Ki: Var = vf.add_var('avr.potentialCircuit.Ki_' + template_name)
-    avr_potentialCircuit_Kp: Var = vf.add_var('avr.potentialCircuit.Kp_' + template_name)
-    avr_potentialCircuit_Theta: Var = vf.add_var('avr.potentialCircuit.Theta_' + template_name)
-    avr_potentialCircuit_X: Var = vf.add_var('avr.potentialCircuit.X_' + template_name)
-    avr_potentialCircuit_j_im: Var = vf.add_var('avr.potentialCircuit.j.im_' + template_name)
-    avr_potentialCircuit_j_re: Var = vf.add_var('avr.potentialCircuit.j.re_' + template_name)
-    avr_rectifierRegulationCharacteristic_A1: Var = vf.add_var('avr.rectifierRegulationCharacteristic.A1_' + template_name)
-    avr_rectifierRegulationCharacteristic_A2: Var = vf.add_var('avr.rectifierRegulationCharacteristic.A2_' + template_name)
-    avr_rectifierRegulationCharacteristic_UHigh: Var = vf.add_var('avr.rectifierRegulationCharacteristic.UHigh_' + template_name)
-    avr_rectifierRegulationCharacteristic_ULow: Var = vf.add_var('avr.rectifierRegulationCharacteristic.ULow_' + template_name)
-    avr_sum1_k_1: Var = vf.add_var('avr.sum1.k[1]_' + template_name)
-    avr_sum1_k_2: Var = vf.add_var('avr.sum1.k[2]_' + template_name)
-    avr_sum1_k_3: Var = vf.add_var('avr.sum1.k[3]_' + template_name)
-    avr_sum1_k_4: Var = vf.add_var('avr.sum1.k[4]_' + template_name)
-    avr_sum1_k_5: Var = vf.add_var('avr.sum1.k[5]_' + template_name)
-    avr_sum1_nin: Var = vf.add_var('avr.sum1.nin_' + template_name)
-    avr_tA: Var = vf.add_var('avr.tA_' + template_name)
-    avr_tR: Var = vf.add_var('avr.tR_' + template_name)
-    avr_ut0Pu_im: Var = vf.add_var('avr.ut0Pu.im_' + template_name)
-    avr_ut0Pu_re: Var = vf.add_var('avr.ut0Pu.re_' + template_name)
-    # Declare the state variables used by the template.
-    avr_firstOrder_y: Var = vf.add_var('avr.firstOrder.y_' + template_name)
-    avr_firstOrder1_y: Var = vf.add_var('avr.firstOrder1.y_' + template_name)
-    avr_limPI1_integrator_y: Var = vf.add_var('avr.limPI1.integrator.y_' + template_name)
-    avr_limPI2_integrator_y: Var = vf.add_var('avr.limPI2.integrator.y_' + template_name)
-    # Declare the algebraic/shared variables used by the template.
-    PRE_avr_limPI1_hysteresisMax_y: Var = vf.add_var('$PRE.avr.limPI1.hysteresisMax.y_' + template_name)
-    PRE_avr_limPI1_hysteresisMin_y: Var = vf.add_var('$PRE.avr.limPI1.hysteresisMin.y_' + template_name)
-    PRE_avr_limPI2_hysteresisMax_y: Var = vf.add_var('$PRE.avr.limPI2.hysteresisMax.y_' + template_name)
-    PRE_avr_limPI2_hysteresisMin_y: Var = vf.add_var('$PRE.avr.limPI2.hysteresisMin.y_' + template_name)
-    START_avr_firstOrder_y: Var = vf.add_var('$START.avr.firstOrder.y_' + template_name)
-    START_avr_firstOrder1_y: Var = vf.add_var('$START.avr.firstOrder1.y_' + template_name)
-    avr_EfdPu: Var = vf.add_var('avr.EfdPu_' + template_name)
-    avr_IrPu: Var = vf.add_var('avr.IrPu_' + template_name)
-    avr_UOelPu: Var = vf.add_var('avr.UOelPu_' + template_name)
-    avr_UPssPu: Var = vf.add_var('avr.UPssPu_' + template_name)
-    avr_UUelPu: Var = vf.add_var('avr.UUelPu_' + template_name)
-    avr_UsPu: Var = vf.add_var('avr.UsPu_' + template_name)
-    avr_UsRefPu: Var = vf.add_var('avr.UsRefPu_' + template_name)
-    avr_add_u2: Var = vf.add_var('avr.add.u2_' + template_name)
-    avr_add_y: Var = vf.add_var('avr.add.y_' + template_name)
-    avr_division_y: Var = vf.add_var('avr.division.y_' + template_name)
-    avr_feedback_y: Var = vf.add_var('avr.feedback.y_' + template_name)
-    avr_gain_y: Var = vf.add_var('avr.gain.y_' + template_name)
-    avr_itPu_im: Var = vf.add_var('avr.itPu.im_' + template_name)
-    avr_itPu_re: Var = vf.add_var('avr.itPu.re_' + template_name)
-    avr_limPI1_add_y: Var = vf.add_var('avr.limPI1.add.y_' + template_name)
-    avr_limPI1_hysteresisMax_y: Var = vf.add_var('avr.limPI1.hysteresisMax.y_' + template_name)
-    avr_limPI1_hysteresisMin_y: Var = vf.add_var('avr.limPI1.hysteresisMin.y_' + template_name)
-    avr_limPI1_integrator_local_reset: Var = vf.add_var('avr.limPI1.integrator.local_reset_' + template_name)
-    avr_limPI1_integrator_local_set: Var = vf.add_var('avr.limPI1.integrator.local_set_' + template_name)
-    avr_limPI1_limiter1_simplifiedExpr: Var = vf.add_var('avr.limPI1.limiter1.simplifiedExpr_' + template_name)
-    avr_limPI1_switch1_u2: Var = vf.add_var('avr.limPI1.switch1.u2_' + template_name)
-    avr_limPI1_switch1_y: Var = vf.add_var('avr.limPI1.switch1.y_' + template_name)
-    avr_limPI1_y: Var = vf.add_var('avr.limPI1.y_' + template_name)
-    avr_limPI2_add_y: Var = vf.add_var('avr.limPI2.add.y_' + template_name)
-    avr_limPI2_hysteresisMax_y: Var = vf.add_var('avr.limPI2.hysteresisMax.y_' + template_name)
-    avr_limPI2_hysteresisMin_y: Var = vf.add_var('avr.limPI2.hysteresisMin.y_' + template_name)
-    avr_limPI2_integrator_local_reset: Var = vf.add_var('avr.limPI2.integrator.local_reset_' + template_name)
-    avr_limPI2_integrator_local_set: Var = vf.add_var('avr.limPI2.integrator.local_set_' + template_name)
-    avr_limPI2_limiter1_simplifiedExpr: Var = vf.add_var('avr.limPI2.limiter1.simplifiedExpr_' + template_name)
-    avr_limPI2_switch1_u2: Var = vf.add_var('avr.limPI2.switch1.u2_' + template_name)
-    avr_limPI2_switch1_y: Var = vf.add_var('avr.limPI2.switch1.y_' + template_name)
-    avr_max1_u_1: Var = vf.add_var('avr.max1.u[1]_' + template_name)
-    avr_max2_u_1: Var = vf.add_var('avr.max2.u[1]_' + template_name)
-    avr_min2_yMax: Var = vf.add_var('avr.min2.yMax_' + template_name)
-    avr_min2_yMin: Var = vf.add_var('avr.min2.yMin_' + template_name)
-    avr_min3_y: Var = vf.add_var('avr.min3.y_' + template_name)
-    avr_potentialCircuit_v1_im: Var = vf.add_var('avr.potentialCircuit.v1.im_' + template_name)
-    avr_potentialCircuit_v1_re: Var = vf.add_var('avr.potentialCircuit.v1.re_' + template_name)
-    avr_potentialCircuit_v2_im: Var = vf.add_var('avr.potentialCircuit.v2.im_' + template_name)
-    avr_potentialCircuit_v2_re: Var = vf.add_var('avr.potentialCircuit.v2.re_' + template_name)
-    avr_potentialCircuit_vE: Var = vf.add_var('avr.potentialCircuit.vE_' + template_name)
-    avr_product1_y: Var = vf.add_var('avr.product1.y_' + template_name)
-    avr_rectifierRegulationCharacteristic_y: Var = vf.add_var('avr.rectifierRegulationCharacteristic.y_' + template_name)
-    avr_sum1_u_4: Var = vf.add_var('avr.sum1.u[4]_' + template_name)
-    avr_utPu_im: Var = vf.add_var('avr.utPu.im_' + template_name)
-    avr_utPu_re: Var = vf.add_var('avr.utPu.re_' + template_name)
-    # Declare the differential variables used by the template.
-    d_avr_firstOrder_y: Var = vf.add_diff_var('d_avr.firstOrder.y_' + template_name, base_var=avr_firstOrder_y)
-    d_avr_firstOrder1_y: Var = vf.add_diff_var('d_avr.firstOrder1.y_' + template_name, base_var=avr_firstOrder1_y)
-    d_avr_limPI1_integrator_y: Var = vf.add_diff_var('d_avr.limPI1.integrator.y_' + template_name, base_var=avr_limPI1_integrator_y)
-    d_avr_limPI2_integrator_y: Var = vf.add_diff_var('d_avr.limPI2.integrator.y_' + template_name, base_var=avr_limPI2_integrator_y)
-
-    # Build explicit typed collections so the symbolic surface is easy to inspect.
-    state_equations: list[Expr] = list()
-    state_equations.append((avr_limPI2_integrator_k * avr_limPI2_switch1_y))
-    state_equations.append((((avr_firstOrder_k * avr_UsPu) - avr_firstOrder_y) / avr_firstOrder_T))
-    state_equations.append((((avr_firstOrder1_k * avr_limPI1_y) - avr_firstOrder1_y) / avr_firstOrder1_T))
-    state_equations.append((avr_limPI1_integrator_k * avr_limPI1_switch1_y))
-    state_variables: list[Var] = list()
-    state_variables.append(avr_limPI2_integrator_y)
-    state_variables.append(avr_firstOrder_y)
-    state_variables.append(avr_firstOrder1_y)
-    state_variables.append(avr_limPI1_integrator_y)
-    algebraic_equations: list[Expr] = list()
-    algebraic_equations.append((avr_division_y - (avr_gain1_k / avr_potentialCircuit_vE)))
-    algebraic_equations.append((avr_rectifierRegulationCharacteristic_y - ((sym.heaviside(((sym.Const(0.0) - avr_division_y) + sym.Const(1e-06))) * sym.Const(1.0)) + ((sym.Const(1.0) - sym.heaviside(((sym.Const(0.0) - avr_division_y) + sym.Const(1e-06)))) * ((((sym.heaviside(((avr_division_y - sym.Const(0.0)) - sym.Const(1e-06))) * sym.heaviside(((avr_division_y - sym.Const(0.0)) - sym.Const(1e-06)))) * sym.heaviside(((avr_rectifierRegulationCharacteristic_ULow - avr_division_y) + sym.Const(1e-06)))) * (sym.Const(1.0) - (avr_rectifierRegulationCharacteristic_A1 * avr_division_y))) + ((sym.Const(1.0) - ((sym.heaviside(((avr_division_y - sym.Const(0.0)) - sym.Const(1e-06))) * sym.heaviside(((avr_division_y - sym.Const(0.0)) - sym.Const(1e-06)))) * sym.heaviside(((avr_rectifierRegulationCharacteristic_ULow - avr_division_y) + sym.Const(1e-06))))) * ((((sym.heaviside(((avr_division_y - avr_rectifierRegulationCharacteristic_ULow) - sym.Const(1e-06))) * sym.heaviside(((avr_division_y - avr_rectifierRegulationCharacteristic_ULow) - sym.Const(1e-06)))) * sym.heaviside(((avr_rectifierRegulationCharacteristic_UHigh - avr_division_y) - sym.Const(1e-06)))) * sym.sqrt((avr_rectifierRegulationCharacteristic_UHigh - (avr_division_y ** sym.Const(2.0))))) + ((sym.Const(1.0) - ((sym.heaviside(((avr_division_y - avr_rectifierRegulationCharacteristic_ULow) - sym.Const(1e-06))) * sym.heaviside(((avr_division_y - avr_rectifierRegulationCharacteristic_ULow) - sym.Const(1e-06)))) * sym.heaviside(((avr_rectifierRegulationCharacteristic_UHigh - avr_division_y) - sym.Const(1e-06))))) * ((((sym.heaviside(((avr_division_y - avr_rectifierRegulationCharacteristic_UHigh) + sym.Const(1e-06))) * sym.heaviside(((avr_division_y - avr_rectifierRegulationCharacteristic_UHigh) + sym.Const(1e-06)))) * sym.heaviside(((sym.Const(1.0) - avr_division_y) + sym.Const(1e-06)))) * (avr_rectifierRegulationCharacteristic_A2 * (sym.Const(1.0) - avr_division_y))) + ((sym.Const(1.0) - ((sym.heaviside(((avr_division_y - avr_rectifierRegulationCharacteristic_UHigh) + sym.Const(1e-06))) * sym.heaviside(((avr_division_y - avr_rectifierRegulationCharacteristic_UHigh) + sym.Const(1e-06)))) * sym.heaviside(((sym.Const(1.0) - avr_division_y) + sym.Const(1e-06))))) * sym.Const(0.0)))))))))))
-    algebraic_equations.append((avr_product1_y - (avr_rectifierRegulationCharacteristic_y * avr_potentialCircuit_vE)))
-    algebraic_equations.append((avr_min3_y - ((avr_const_k * sym.heaviside((avr_product1_y - avr_const_k))) + (avr_product1_y * (sym.Const(1) - sym.heaviside((avr_product1_y - avr_const_k)))))))
-    algebraic_equations.append((avr_max2_u_1 - ((sym.heaviside(((avr_limPI2_add_y - avr_limPI2_limiter1_uMax) - sym.Const(1e-06))) * avr_limPI2_limiter1_uMax) + ((sym.Const(1.0) - sym.heaviside(((avr_limPI2_add_y - avr_limPI2_limiter1_uMax) - sym.Const(1e-06)))) * ((sym.heaviside(((avr_limPI2_limiter1_uMin - avr_limPI2_add_y) - sym.Const(1e-06))) * avr_limPI2_limiter1_uMin) + ((sym.Const(1.0) - sym.heaviside(((avr_limPI2_limiter1_uMin - avr_limPI2_add_y) - sym.Const(1e-06)))) * avr_limPI2_add_y))))))
-    algebraic_equations.append((avr_min2_yMin - ((avr_max2_u_1 * sym.heaviside((sym.Const(0.0) - avr_max2_u_1))) + (sym.Const(0.0) * (sym.Const(1) - sym.heaviside((sym.Const(0.0) - avr_max2_u_1)))))))
-    algebraic_equations.append((avr_EfdPu - (avr_min2_yMin * avr_min3_y)))
-    algebraic_equations.append((avr_gain_y - (avr_gain_k * avr_EfdPu)))
-    algebraic_equations.append((avr_feedback_y - ((avr_limPI2_add_y - (avr_limPI2_add_k2 * avr_limPI2_integrator_y)) / avr_limPI2_add_k1)))
-    algebraic_equations.append((avr_min2_yMax - ((avr_max2_u_1 * sym.heaviside((avr_max2_u_1 - sym.Const(0.0)))) + (sym.Const(0.0) * (sym.Const(1) - sym.heaviside((avr_max2_u_1 - sym.Const(0.0))))))))
-    algebraic_equations.append((avr_limPI2_hysteresisMax_y - (sym.heaviside(((avr_limPI2_add_y - avr_limPI2_hysteresisMax_uHigh) - sym.Const(1e-06))) + (PRE_avr_limPI2_hysteresisMax_y * (sym.Const(1.0) - sym.heaviside(((avr_limPI2_add_y - avr_limPI2_hysteresisMax_uHigh) - sym.Const(1e-06)))) * (sym.Const(1.0) - sym.heaviside(((avr_limPI2_hysteresisMax_uLow - avr_limPI2_add_y) + sym.Const(1e-06))))))))
-    algebraic_equations.append((avr_limPI2_hysteresisMin_y - (sym.heaviside(((avr_limPI2_add_y - avr_limPI2_hysteresisMin_uHigh) - sym.Const(1e-06))) + (PRE_avr_limPI2_hysteresisMin_y * (sym.Const(1.0) - sym.heaviside(((avr_limPI2_add_y - avr_limPI2_hysteresisMin_uHigh) - sym.Const(1e-06)))) * (sym.Const(1.0) - sym.heaviside(((avr_limPI2_hysteresisMin_uLow - avr_limPI2_add_y) + sym.Const(1e-06))))))))
-    algebraic_equations.append((avr_limPI2_switch1_u2 - (sym.Const(1.0) - ((sym.Const(1.0) - avr_limPI2_hysteresisMax_y) * (sym.Const(1.0) - (sym.Const(1.0) - avr_limPI2_hysteresisMin_y))))))
-    algebraic_equations.append((avr_limPI2_switch1_y - ((avr_limPI2_switch1_u2 * avr_limPI2_const_k) + ((sym.Const(1.0) - avr_limPI2_switch1_u2) * avr_feedback_y))))
-    algebraic_equations.append((avr_max1_u_1 - (((((avr_sum1_k_1 * avr_firstOrder_y) + (avr_sum1_k_2 * avr_UsRefPu)) + (avr_sum1_k_3 * avr_UOelPu)) + (avr_sum1_k_4 * avr_UPssPu)) + (avr_sum1_k_5 * avr_UUelPu))))
-    algebraic_equations.append((avr_add_y - (avr_add_k1 * avr_max1_u_1)))
-    algebraic_equations.append((avr_limPI1_add_y - ((avr_limPI1_add_k1 * avr_add_y) + (avr_limPI1_add_k2 * avr_limPI1_integrator_y))))
-    algebraic_equations.append((avr_limPI1_hysteresisMax_y - (sym.heaviside(((avr_limPI1_add_y - avr_limPI1_hysteresisMax_uHigh) - sym.Const(1e-06))) + (PRE_avr_limPI1_hysteresisMax_y * (sym.Const(1.0) - sym.heaviside(((avr_limPI1_add_y - avr_limPI1_hysteresisMax_uHigh) - sym.Const(1e-06)))) * (sym.Const(1.0) - sym.heaviside(((avr_limPI1_hysteresisMax_uLow - avr_limPI1_add_y) + sym.Const(1e-06))))))))
-    algebraic_equations.append((avr_limPI1_hysteresisMin_y - (sym.heaviside(((avr_limPI1_add_y - avr_limPI1_hysteresisMin_uHigh) - sym.Const(1e-06))) + (PRE_avr_limPI1_hysteresisMin_y * (sym.Const(1.0) - sym.heaviside(((avr_limPI1_add_y - avr_limPI1_hysteresisMin_uHigh) - sym.Const(1e-06)))) * (sym.Const(1.0) - sym.heaviside(((avr_limPI1_hysteresisMin_uLow - avr_limPI1_add_y) + sym.Const(1e-06))))))))
-    algebraic_equations.append((avr_limPI1_switch1_u2 - (sym.Const(1.0) - ((sym.Const(1.0) - avr_limPI1_hysteresisMax_y) * (sym.Const(1.0) - (sym.Const(1.0) - avr_limPI1_hysteresisMin_y))))))
-    algebraic_equations.append((avr_limPI1_y - ((sym.heaviside(((avr_limPI1_add_y - avr_limPI1_limiter1_uMax) - sym.Const(1e-06))) * avr_limPI1_limiter1_uMax) + ((sym.Const(1.0) - sym.heaviside(((avr_limPI1_add_y - avr_limPI1_limiter1_uMax) - sym.Const(1e-06)))) * ((sym.heaviside(((avr_limPI1_limiter1_uMin - avr_limPI1_add_y) - sym.Const(1e-06))) * avr_limPI1_limiter1_uMin) + ((sym.Const(1.0) - sym.heaviside(((avr_limPI1_limiter1_uMin - avr_limPI1_add_y) - sym.Const(1e-06)))) * avr_limPI1_add_y))))))
-    algebraic_equations.append((avr_limPI1_switch1_y - ((avr_limPI1_switch1_u2 * avr_limPI1_const_k) + ((sym.Const(1.0) - avr_limPI1_switch1_u2) * avr_add_y))))
-    algebraic_variables: list[Var] = list()
-    algebraic_variables.append(avr_division_y)
-    algebraic_variables.append(avr_rectifierRegulationCharacteristic_y)
-    algebraic_variables.append(avr_product1_y)
-    algebraic_variables.append(avr_min3_y)
-    algebraic_variables.append(avr_max2_u_1)
-    algebraic_variables.append(avr_min2_yMin)
-    algebraic_variables.append(avr_EfdPu)
-    algebraic_variables.append(avr_gain_y)
-    algebraic_variables.append(avr_feedback_y)
-    algebraic_variables.append(avr_min2_yMax)
-    algebraic_variables.append(avr_limPI2_hysteresisMax_y)
-    algebraic_variables.append(avr_limPI2_hysteresisMin_y)
-    algebraic_variables.append(avr_limPI2_switch1_u2)
-    algebraic_variables.append(avr_limPI2_switch1_y)
-    algebraic_variables.append(avr_max1_u_1)
-    algebraic_variables.append(avr_add_y)
-    algebraic_variables.append(avr_limPI1_add_y)
-    algebraic_variables.append(avr_limPI1_hysteresisMax_y)
-    algebraic_variables.append(avr_limPI1_hysteresisMin_y)
-    algebraic_variables.append(avr_limPI1_switch1_u2)
-    algebraic_variables.append(avr_limPI1_y)
-    algebraic_variables.append(avr_limPI1_switch1_y)
-    algebraic_variables.append(avr_potentialCircuit_vE)
-    algebraic_variables.append(avr_limPI2_add_y)
-    algebraic_variables.append(avr_IrPu)
-    algebraic_variables.append(avr_UOelPu)
-    algebraic_variables.append(avr_UPssPu)
-    algebraic_variables.append(avr_UUelPu)
-    algebraic_variables.append(avr_UsPu)
-    algebraic_variables.append(avr_UsRefPu)
-    algebraic_variables.append(avr_itPu_im)
-    algebraic_variables.append(avr_itPu_re)
-    algebraic_variables.append(avr_utPu_im)
-    algebraic_variables.append(avr_utPu_re)
-    algebraic_variables.append(avr_limPI1_limiter1_simplifiedExpr)
-    algebraic_variables.append(avr_limPI1_integrator_local_reset)
-    algebraic_variables.append(avr_limPI1_integrator_local_set)
-    algebraic_variables.append(avr_limPI2_limiter1_simplifiedExpr)
-    algebraic_variables.append(avr_limPI2_integrator_local_reset)
-    algebraic_variables.append(avr_limPI2_integrator_local_set)
-    algebraic_variables.append(START_avr_firstOrder_y)
-    algebraic_variables.append(START_avr_firstOrder1_y)
-    algebraic_variables.append(avr_potentialCircuit_v2_re)
-    algebraic_variables.append(avr_potentialCircuit_v2_im)
-    algebraic_variables.append(avr_potentialCircuit_v1_re)
-    algebraic_variables.append(avr_potentialCircuit_v1_im)
-    algebraic_variables.append(PRE_avr_limPI2_hysteresisMin_y)
-    algebraic_variables.append(PRE_avr_limPI2_hysteresisMax_y)
-    algebraic_variables.append(PRE_avr_limPI1_hysteresisMin_y)
-    algebraic_variables.append(PRE_avr_limPI1_hysteresisMax_y)
-    algebraic_variables.append(avr_add_u2)
-    algebraic_variables.append(avr_sum1_u_4)
-    differential_variables: list[Var] = list()
-    differential_variables.append(d_avr_limPI2_integrator_y)
-    differential_variables.append(d_avr_firstOrder_y)
-    differential_variables.append(d_avr_firstOrder1_y)
-    differential_variables.append(d_avr_limPI1_integrator_y)
-    input_variables: list[Var] = list()
-    input_variables.append(avr_IrPu)
-    input_variables.append(avr_UOelPu)
-    input_variables.append(avr_UPssPu)
-    input_variables.append(avr_UsPu)
-    input_variables.append(avr_UsRefPu)
-    input_variables.append(avr_UUelPu)
-    output_variables: list[Var] = list()
-    output_variables.append(avr_EfdPu)
-    event_parameters: dict[Var, Expr | Const] = dict()
-    event_parameters[avr_Efd0Pu] = vf.add_const(1.0, name='')
-    event_parameters[avr_Ir0Pu] = vf.add_const(1.0, name='')
-    event_parameters[avr_Kc] = vf.add_const(0.0, name='')
-    event_parameters[avr_Kg] = vf.add_const(1.0, name='')
-    event_parameters[avr_Ki] = vf.add_const(0.0, name='')
-    event_parameters[avr_Kim] = vf.add_const(10.0, name='')
-    event_parameters[avr_Kir] = vf.add_const(10.0, name='')
-    event_parameters[avr_Kp] = vf.add_const(1.0, name='')
-    event_parameters[avr_Kpm] = vf.add_const(1.0, name='')
-    event_parameters[avr_Kpr] = vf.add_const(1.0, name='')
-    event_parameters[avr_Thetap] = vf.add_const(0.0, name='')
-    event_parameters[avr_UOel0Pu] = vf.add_const(0.0, name='')
-    event_parameters[avr_UUel0Pu] = vf.add_const(0.0, name='')
-    event_parameters[avr_Us0Pu] = vf.add_const(1.0, name='')
-    event_parameters[avr_VaMaxPu] = vf.add_const(5.0, name='')
-    event_parameters[avr_VaMinPu] = vf.add_const(-5.0, name='')
-    event_parameters[avr_Vb0Pu] = vf.add_const(1.0, name='')
-    event_parameters[avr_VbMaxPu] = vf.add_const(5.0, name='')
-    event_parameters[avr_VmMaxPu] = vf.add_const(5.0, name='')
-    event_parameters[avr_VmMinPu] = vf.add_const(-5.0, name='')
-    event_parameters[avr_VrMaxPu] = vf.add_const(5.0, name='')
-    event_parameters[avr_VrMinPu] = vf.add_const(-5.0, name='')
-    event_parameters[avr_XlPu] = vf.add_const(0.0, name='')
-    event_parameters[avr_add_k1] = vf.add_const(1.0, name='')
-    event_parameters[avr_add_k2] = vf.add_const(1.0, name='')
-    event_parameters[avr_const_k] = avr_VbMaxPu
-    event_parameters[avr_firstOrder_T] = avr_tR
-    event_parameters[avr_firstOrder_k] = vf.add_const(1.0, name='')
-    event_parameters[avr_firstOrder_y_start] = avr_Us0Pu
-    event_parameters[avr_firstOrder1_T] = avr_tA
-    event_parameters[avr_firstOrder1_k] = vf.add_const(1.0, name='')
-    event_parameters[avr_firstOrder1_y_start] = (avr_Kg * avr_Efd0Pu)
-    event_parameters[avr_gain_k] = avr_Kg
-    event_parameters[avr_gain1_k] = avr_Kc
-    event_parameters[avr_it0Pu_im] = vf.add_const(0.0, name='')
-    event_parameters[avr_it0Pu_re] = vf.add_const(0.8, name='')
-    event_parameters[avr_limPI1_Ki] = avr_Kir
-    event_parameters[avr_limPI1_Kp] = avr_Kpr
-    event_parameters[avr_limPI1_Tol] = vf.add_const(1e-05, name='')
-    event_parameters[avr_limPI1_Y0] = (avr_Kg * avr_Efd0Pu)
-    event_parameters[avr_limPI1_YMax] = avr_VrMaxPu
-    event_parameters[avr_limPI1_YMin] = avr_VrMinPu
-    event_parameters[avr_limPI1_add_k1] = avr_limPI1_Kp
-    event_parameters[avr_limPI1_add_k2] = vf.add_const(1.0, name='')
-    event_parameters[avr_limPI1_const_k] = vf.add_const(0.0, name='')
-    event_parameters[avr_limPI1_hysteresisMax_uHigh] = avr_limPI1_YMax
-    event_parameters[avr_limPI1_hysteresisMax_uLow] = (avr_limPI1_YMax + (avr_limPI1_Tol * (avr_limPI1_YMin - avr_limPI1_YMax)))
-    event_parameters[avr_limPI1_hysteresisMin_uHigh] = (avr_limPI1_YMin + (avr_limPI1_Tol * (avr_limPI1_YMax - avr_limPI1_YMin)))
-    event_parameters[avr_limPI1_hysteresisMin_uLow] = avr_limPI1_YMin
-    event_parameters[avr_limPI1_integrator_k] = avr_limPI1_Ki
-    event_parameters[avr_limPI1_integrator_y_start] = avr_limPI1_Y0
-    event_parameters[avr_limPI1_limiter1_uMax] = avr_limPI1_YMax
-    event_parameters[avr_limPI1_limiter1_uMin] = avr_limPI1_YMin
-    event_parameters[avr_limPI2_Ki] = avr_Kim
-    event_parameters[avr_limPI2_Kp] = avr_Kpm
-    event_parameters[avr_limPI2_Tol] = vf.add_const(1e-05, name='')
-    event_parameters[avr_limPI2_Y0] = (avr_Efd0Pu / avr_Vb0Pu)
-    event_parameters[avr_limPI2_YMax] = avr_VmMaxPu
-    event_parameters[avr_limPI2_YMin] = avr_VmMinPu
-    event_parameters[avr_limPI2_add_k1] = avr_limPI2_Kp
-    event_parameters[avr_limPI2_add_k2] = vf.add_const(1.0, name='')
-    event_parameters[avr_limPI2_const_k] = vf.add_const(0.0, name='')
-    event_parameters[avr_limPI2_hysteresisMax_uHigh] = avr_limPI2_YMax
-    event_parameters[avr_limPI2_hysteresisMax_uLow] = (avr_limPI2_YMax + (avr_limPI2_Tol * (avr_limPI2_YMin - avr_limPI2_YMax)))
-    event_parameters[avr_limPI2_hysteresisMin_uHigh] = (avr_limPI2_YMin + (avr_limPI2_Tol * (avr_limPI2_YMax - avr_limPI2_YMin)))
-    event_parameters[avr_limPI2_hysteresisMin_uLow] = avr_limPI2_YMin
-    event_parameters[avr_limPI2_integrator_k] = avr_limPI2_Ki
-    event_parameters[avr_limPI2_integrator_y_start] = avr_limPI2_Y0
-    event_parameters[avr_limPI2_limiter1_uMax] = avr_limPI2_YMax
-    event_parameters[avr_limPI2_limiter1_uMin] = avr_limPI2_YMin
-    event_parameters[avr_potentialCircuit_Ki] = avr_Ki
-    event_parameters[avr_potentialCircuit_Kp] = avr_Kp
-    event_parameters[avr_potentialCircuit_Theta] = avr_Thetap
-    event_parameters[avr_potentialCircuit_X] = avr_XlPu
-    event_parameters[avr_rectifierRegulationCharacteristic_A1] = (((sym.heaviside(((avr_rectifierRegulationCharacteristic_ULow - sym.Const(0.0)) + sym.Const(1e-06))) * sym.heaviside(((sym.Const(0.0) - avr_rectifierRegulationCharacteristic_ULow) + sym.Const(1e-06)))) * sym.Const(0.0)) + ((sym.Const(1.0) - (sym.heaviside(((avr_rectifierRegulationCharacteristic_ULow - sym.Const(0.0)) + sym.Const(1e-06))) * sym.heaviside(((sym.Const(0.0) - avr_rectifierRegulationCharacteristic_ULow) + sym.Const(1e-06))))) * ((sym.Const(1.0) - sym.sqrt((avr_rectifierRegulationCharacteristic_UHigh - (avr_rectifierRegulationCharacteristic_ULow ** sym.Const(2.0))))) / avr_rectifierRegulationCharacteristic_ULow)))
-    event_parameters[avr_rectifierRegulationCharacteristic_A2] = (((sym.heaviside(((avr_rectifierRegulationCharacteristic_UHigh - sym.Const(1.0)) + sym.Const(1e-06))) * sym.heaviside(((sym.Const(1.0) - avr_rectifierRegulationCharacteristic_UHigh) + sym.Const(1e-06)))) * sym.Const(0.0)) + ((sym.Const(1.0) - (sym.heaviside(((avr_rectifierRegulationCharacteristic_UHigh - sym.Const(1.0)) + sym.Const(1e-06))) * sym.heaviside(((sym.Const(1.0) - avr_rectifierRegulationCharacteristic_UHigh) + sym.Const(1e-06))))) * sym.sqrt((avr_rectifierRegulationCharacteristic_UHigh / (sym.Const(1.0) - avr_rectifierRegulationCharacteristic_UHigh)))))
-    event_parameters[avr_rectifierRegulationCharacteristic_UHigh] = vf.add_const(0.75, name='')
-    event_parameters[avr_rectifierRegulationCharacteristic_ULow] = vf.add_const(0.4330127018922193, name='')
-    event_parameters[avr_sum1_k_1] = vf.add_const(-1.0, name='')
-    event_parameters[avr_sum1_k_2] = vf.add_const(1.0, name='')
-    event_parameters[avr_sum1_k_3] = vf.add_const(1.0, name='')
-    event_parameters[avr_sum1_k_4] = vf.add_const(1.0, name='')
-    event_parameters[avr_sum1_k_5] = vf.add_const(1.0, name='')
-    event_parameters[avr_tA] = vf.add_const(0.02, name='')
-    event_parameters[avr_tR] = vf.add_const(0.02, name='')
-    event_parameters[avr_ut0Pu_im] = vf.add_const(0.0, name='')
-    event_parameters[avr_ut0Pu_re] = vf.add_const(1.0, name='')
-    event_parameters[avr_firstOrder_initType] = vf.add_const(1.0, name='')
-    event_parameters[avr_firstOrder1_initType] = vf.add_const(1.0, name='')
-    event_parameters[avr_limPI1_integrator_initType] = vf.add_const(3.0, name='')
-    event_parameters[avr_limPI1_limiter1_homotopyType] = vf.add_const(1.0, name='')
-    event_parameters[avr_limPI2_integrator_initType] = vf.add_const(3.0, name='')
-    event_parameters[avr_limPI2_limiter1_homotopyType] = vf.add_const(1.0, name='')
-    event_parameters[avr_max1_nu] = vf.add_const(1.0, name='')
-    event_parameters[avr_max2_nu] = vf.add_const(1.0, name='')
-    event_parameters[avr_min2_nu] = vf.add_const(2.0, name='')
-    event_parameters[avr_sum1_nin] = vf.add_const(5.0, name='')
-    event_parameters[avr_limPI1_hysteresisMax_pre_y_start] = vf.add_const(0.0, name='')
-    event_parameters[avr_limPI1_hysteresisMin_pre_y_start] = vf.add_const(1.0, name='')
-    event_parameters[avr_limPI1_integrator_use_reset] = vf.add_const(0.0, name='')
-    event_parameters[avr_limPI1_integrator_use_set] = vf.add_const(0.0, name='')
-    event_parameters[avr_limPI1_limiter1_limitsAtInit] = vf.add_const(1.0, name='')
-    event_parameters[avr_limPI1_limiter1_strict] = vf.add_const(0.0, name='')
-    event_parameters[avr_limPI2_hysteresisMax_pre_y_start] = vf.add_const(0.0, name='')
-    event_parameters[avr_limPI2_hysteresisMin_pre_y_start] = vf.add_const(1.0, name='')
-    event_parameters[avr_limPI2_integrator_use_reset] = vf.add_const(0.0, name='')
-    event_parameters[avr_limPI2_integrator_use_set] = vf.add_const(0.0, name='')
-    event_parameters[avr_limPI2_limiter1_limitsAtInit] = vf.add_const(1.0, name='')
-    event_parameters[avr_limPI2_limiter1_strict] = vf.add_const(0.0, name='')
-    event_parameters[avr_potentialCircuit_j_im] = vf.add_const(1.0, name='')
-    event_parameters[avr_potentialCircuit_j_re] = vf.add_const(0.0, name='')
-    mode_parameters: dict[Var, Expr | Const] = dict()
-    initial_equations: dict[Var, Expr | Const] = dict()
-    initial_equations[avr_firstOrder_y] = (avr_firstOrder_k * avr_UsPu)
-    initial_equations[avr_firstOrder1_y] = avr_firstOrder1_y_start
-    initial_equations[avr_limPI1_integrator_y] = avr_limPI1_integrator_y_start
-    initial_equations[avr_limPI2_integrator_y] = avr_limPI2_integrator_y_start
-    initial_equations[avr_EfdPu] = (avr_min2_yMin * avr_min3_y)
-    initial_equations[avr_IrPu] = vf.add_const(1.0, name='')
-    initial_equations[avr_UOelPu] = vf.add_const(0.0, name='')
-    initial_equations[avr_UPssPu] = vf.add_const(0.0, name='')
-    initial_equations[avr_UUelPu] = vf.add_const(0.0, name='')
-    initial_equations[avr_UsPu] = vf.add_const(1.0, name='')
-    initial_equations[avr_UsRefPu] = vf.add_const(1.0, name='')
-    initial_equations[avr_division_y] = vf.add_const(0.0, name='')
-    initial_equations[avr_gain_y] = (avr_gain_k * avr_EfdPu)
-    initial_equations[avr_itPu_im] = vf.add_const(0.0, name='')
-    initial_equations[avr_itPu_re] = vf.add_const(0.8, name='')
-    initial_equations[avr_limPI1_y] = avr_limPI1_Y0
-    initial_equations[avr_max2_u_1] = avr_limPI2_Y0
-    initial_equations[avr_utPu_im] = vf.add_const(0.0, name='')
-    initial_equations[avr_utPu_re] = vf.add_const(1.0, name='')
-    initial_equations[avr_limPI1_hysteresisMin_y] = (sym.heaviside(((avr_limPI1_add_y - avr_limPI1_hysteresisMin_uHigh) - sym.Const(1e-06))) + (PRE_avr_limPI1_hysteresisMin_y * (sym.Const(1.0) - sym.heaviside(((avr_limPI1_add_y - avr_limPI1_hysteresisMin_uHigh) - sym.Const(1e-06)))) * (sym.Const(1.0) - sym.heaviside(((avr_limPI1_hysteresisMin_uLow - avr_limPI1_add_y) + sym.Const(1e-06))))))
-    initial_equations[avr_limPI2_hysteresisMin_y] = (sym.heaviside(((avr_limPI2_add_y - avr_limPI2_hysteresisMin_uHigh) - sym.Const(1e-06))) + (PRE_avr_limPI2_hysteresisMin_y * (sym.Const(1.0) - sym.heaviside(((avr_limPI2_add_y - avr_limPI2_hysteresisMin_uHigh) - sym.Const(1e-06)))) * (sym.Const(1.0) - sym.heaviside(((avr_limPI2_hysteresisMin_uLow - avr_limPI2_add_y) + sym.Const(1e-06))))))
-    initial_equations[avr_limPI1_limiter1_simplifiedExpr] = vf.add_const(0.0, name='')
-    initial_equations[avr_limPI1_integrator_local_reset] = vf.add_const(0.0, name='')
-    initial_equations[avr_limPI1_integrator_local_set] = vf.add_const(0.0, name='')
-    initial_equations[avr_limPI2_limiter1_simplifiedExpr] = vf.add_const(0.0, name='')
-    initial_equations[avr_limPI2_integrator_local_reset] = vf.add_const(0.0, name='')
-    initial_equations[avr_limPI2_integrator_local_set] = vf.add_const(0.0, name='')
-    initial_equations[avr_potentialCircuit_v2_re] = (sym.Const(0.8) * (avr_potentialCircuit_Ki + (avr_potentialCircuit_X * (avr_potentialCircuit_Kp * sym.cos(avr_potentialCircuit_Theta)))))
-    initial_equations[avr_potentialCircuit_v2_im] = (sym.Const(0.8) * (avr_potentialCircuit_X * (avr_potentialCircuit_Kp * sym.sin(avr_potentialCircuit_Theta))))
-    initial_equations[avr_potentialCircuit_v1_re] = (avr_potentialCircuit_Kp * sym.cos(avr_potentialCircuit_Theta))
-    initial_equations[avr_potentialCircuit_v1_im] = (avr_potentialCircuit_Kp * sym.sin(avr_potentialCircuit_Theta))
-    initial_equations[avr_potentialCircuit_vE] = ((((avr_potentialCircuit_v1_re - avr_potentialCircuit_v2_im) ** sym.Const(2.0)) + ((avr_potentialCircuit_v1_im + avr_potentialCircuit_v2_re) ** sym.Const(2.0))) ** sym.Const(0.5))
-    initial_equations[PRE_avr_limPI2_hysteresisMin_y] = avr_limPI2_hysteresisMin_pre_y_start
-    initial_equations[PRE_avr_limPI2_hysteresisMax_y] = avr_limPI2_hysteresisMax_pre_y_start
-    initial_equations[avr_min2_yMin] = ((avr_max2_u_1 * sym.heaviside((sym.Const(0.0) - avr_max2_u_1))) + (sym.Const(0.0) * (sym.Const(1) - sym.heaviside((sym.Const(0.0) - avr_max2_u_1)))))
-    initial_equations[avr_feedback_y] = (avr_firstOrder1_y - avr_gain_y)
-    initial_equations[avr_limPI2_add_y] = ((avr_limPI2_add_k1 * avr_feedback_y) + (avr_limPI2_add_k2 * avr_limPI2_integrator_y))
-    initial_equations[avr_limPI2_hysteresisMax_y] = (sym.heaviside(((avr_limPI2_add_y - avr_limPI2_hysteresisMax_uHigh) - sym.Const(1e-06))) + (PRE_avr_limPI2_hysteresisMax_y * (sym.Const(1.0) - sym.heaviside(((avr_limPI2_add_y - avr_limPI2_hysteresisMax_uHigh) - sym.Const(1e-06)))) * (sym.Const(1.0) - sym.heaviside(((avr_limPI2_hysteresisMax_uLow - avr_limPI2_add_y) + sym.Const(1e-06))))))
-    initial_equations[PRE_avr_limPI1_hysteresisMin_y] = avr_limPI1_hysteresisMin_pre_y_start
-    initial_equations[PRE_avr_limPI1_hysteresisMax_y] = avr_limPI1_hysteresisMax_pre_y_start
-    initial_equations[avr_limPI1_hysteresisMax_y] = (sym.heaviside(((avr_limPI1_add_y - avr_limPI1_hysteresisMax_uHigh) - sym.Const(1e-06))) + (PRE_avr_limPI1_hysteresisMax_y * (sym.Const(1.0) - sym.heaviside(((avr_limPI1_add_y - avr_limPI1_hysteresisMax_uHigh) - sym.Const(1e-06)))) * (sym.Const(1.0) - sym.heaviside(((avr_limPI1_hysteresisMax_uLow - avr_limPI1_add_y) + sym.Const(1e-06))))))
-    initial_equations[avr_add_u2] = vf.add_const(0.0, name='')
-    initial_equations[avr_sum1_u_4] = vf.add_const(0.0, name='')
-    initial_equations[avr_max1_u_1] = (((((avr_sum1_k_1 * avr_firstOrder_y) + (avr_sum1_k_2 * avr_UsRefPu)) + (avr_sum1_k_3 * avr_UOelPu)) + (avr_sum1_k_4 * avr_UPssPu)) + (avr_sum1_k_5 * avr_UUelPu))
-    differential_initial_equations: dict[Var, Expr | Const] = dict()
-    procedural_logic_entries: list[object] = list()
-
-    # Assemble the final block from the explicit typed collections above.
-    template.block = Block(
-        state_vars=state_variables,
-        state_eqs=state_equations,
-        algebraic_vars=algebraic_variables,
-        algebraic_eqs=algebraic_equations,
-        diff_vars=differential_variables,
-        init_eqs=initial_equations,
-        diff_init_eqs=differential_initial_equations,
-        in_vars=input_variables,
-        out_vars=output_variables,
-        event_dict=event_parameters,
-        mode_dict=mode_parameters,
-        procedural_logic=procedural_logic_entries,
-        name=template_name,
-    )
-
-    template.comment = 'Generator AVR/exciter IEEE ST4B'
-    return template
+        pass
+    c: ControlRealization = ControlRealization(vf,'ST4B' if name is None else name)
+    tr: Var = c.parameter('TR',p.tr)
+    kpr: Var = c.parameter('KPR',p.kpr)
+    kir: Var = c.parameter('KIR',p.kir)
+    vrmax: Var = c.parameter('VRMAX',p.vrmax)
+    vrmin: Var = c.parameter('VRMIN',p.vrmin)
+    ta: Var = c.parameter('TA',p.ta)
+    kpm: Var = c.parameter('KPM',p.kpm)
+    kim: Var = c.parameter('KIM',p.kim)
+    vmmax: Var = c.parameter('VMMAX',p.vmmax)
+    vmmin: Var = c.parameter('VMMIN',p.vmmin)
+    kg: Var = c.parameter('KG',p.kg)
+    kp: Var = c.parameter('KP',p.kp)
+    ki: Var = c.parameter('KI',p.ki)
+    vbmax: Var = c.parameter('VBMAX',p.vbmax)
+    kc: Var = c.parameter('KC',p.kc)
+    xl: Var = c.parameter('XL',p.xl)
+    theta: Var = c.parameter('THETAP',p.thetap)
+    field0: Var = c.parameter('Efd0Pu',1.)
+    voltage0: Var = c.parameter('Us0Pu',1.)
+    supplement0: Var = c.parameter('Vs0Pu',0.)
+    minimum0: Var = c.parameter('Uel0Pu',0.)
+    sensed: Var = c.input('UsPu',voltage0)
+    reference: Var = c.input('UsRefPu',voltage0)
+    supplement: Var = c.input('VsPu',supplement0)
+    vr: Var = c.input('VrPu',Const(1.))
+    vi: Var = c.input('ViPu',Const(0.))
+    ir: Var = c.input('IrPu',Const(.5))
+    ii: Var = c.input('IiPu',Const(0.))
+    current: Var = c.input('IfdPu',Const(1.))
+    minimum: Var = c.input('UelPu',minimum0)
+    maximum: Var = c.input('OelPu',Const(1.))
+    cosine: Expr = sym.cos(theta*Const(math.pi/180.))
+    sine: Expr = sym.sin(theta*Const(math.pi/180.))
+    source_real: Expr = kp*(cosine*(vr-xl*ii)-sine*(vi+xl*ir))-ki*ii
+    source_imag: Expr = kp*(sine*(vr-xl*ii)+cosine*(vi+xl*ir))+ki*ir
+    potential: Var = c.algebraic('PotentialPu',sym.sqrt(source_real**2+source_imag**2),sym.sqrt(source_real**2+source_imag**2))
+    loading: Expr = sym.safe_divide(kc*current,potential,1.)
+    supply: Var = c.algebraic('SupplyPu',sym.min(vbmax,potential*_esst3a_fex(loading)),sym.min(vbmax,potential*_esst3a_fex(loading)))
+    inner0: Expr = field0/supply
+    inner_error0: Expr = Const(0.) if p.kim > 0 else inner0/kpm
+    regulator0: Expr = kg*field0+inner_error0
+    error0: Expr = Const(0.) if p.kir > 0 else regulator0/kpr
+    c.block.init_eqs[reference] = voltage0+error0-supplement0-minimum0
+    c.block.init_eqs[maximum] = inner0
+    field: Var = vf.add_var('EfdPu_'+c.name)
+    measured: Var = c.lag('MeasuredPu',sensed,tr,p.tr,voltage0)
+    error: Expr = reference+supplement+minimum-measured
+    integral: Var = c.differential(vf.add_var('VoltageIntegralPu_'+c.name),kir*error,regulator0,
+        vrmin-kpr*error,vrmax-kpr*error) if p.kir > 0 else c.algebraic('VoltageIntegralPu',Const(0.),Const(0.))
+    demand: Var = c.algebraic('VoltageDemandPu',sym.hard_sat(kpr*error+integral,vrmin,vrmax),regulator0)
+    regulator: Var = c.lag('RegulatorPu',demand,ta,p.ta,regulator0)
+    inner_error: Expr = regulator-kg*field
+    inner_integral: Var = c.differential(vf.add_var('FieldIntegralPu_'+c.name),kim*inner_error,inner0,
+        vmmin-kpm*inner_error,vmmax-kpm*inner_error) if p.kim > 0 else c.algebraic('FieldIntegralPu',Const(0.),Const(0.))
+    pre_maximum: Var = c.algebraic('PreMaximumPu',sym.hard_sat(kpm*inner_error+inner_integral,vmmin,vmmax),inner0)
+    # Solve the monotone inner feedback before clipping, avoiding iterative proportional feedback.
+    unconstrained: Expr = (kpm*regulator+inner_integral)/(Const(1.)+kpm*kg*supply)
+    delivered: Expr = supply*sym.min(sym.hard_sat(unconstrained,vmmin,vmmax),maximum)
+    c.block.algebraic_vars.append(field)
+    c.block.algebraic_eqs.append(field-delivered)
+    c.block.init_eqs[field] = field0
+    return c.finish((field,pre_maximum),'Cascaded bounded PI excitation with loaded compound-transformer supply')

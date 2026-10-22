@@ -12,6 +12,7 @@ parser for the generic BaseProblem layer. It translates electrical components
 from __future__ import annotations
 
 import time
+from copy import copy
 import numpy as np
 import pandas as pd
 import scipy.sparse as sp
@@ -20,14 +21,17 @@ import numpy.linalg as la
 from typing import Dict, List, Any, Set, Optional, Tuple
 
 from VeraGridEngine.Devices import MultiCircuit
+from VeraGridEngine.Devices.Branches.line import Line
 from VeraGridEngine.Devices.Parents.branch_parent import BranchParent
 from VeraGridEngine.Devices.Parents.injection_parent import InjectionParent
+from VeraGridEngine.Devices.Injections.generator import Generator
+from VeraGridEngine.Devices.Injections.load import Load
 from VeraGridEngine.Devices.Substation.bus import Bus
 from VeraGridEngine.Simulations.driver_template import DummySignal
 from VeraGridEngine.Devices.Events.emt_events_group import EmtEventsGroup
 from VeraGridEngine.Devices.types import ALL_DEV_TYPES, INJECTION_DEVICE_TYPES
 from VeraGridEngine.Utils.Symbolic.symbolic import Var, Expr, piecewise, Const, hard_sat, heaviside
-from VeraGridEngine.Utils.Symbolic.block import Block, has_emt_internal_grounding_link
+from VeraGridEngine.Utils.Symbolic.block import Block, has_emt_internal_grounding_link, validate_dynamic_model_contract
 from VeraGridEngine.enumerations import (
     VarPowerFlowReferenceType,
     ParamPowerFlowReferenceType,
@@ -37,6 +41,9 @@ from VeraGridEngine.enumerations import (
     EmtInitializationMethod,
     EmtInitializationStatus,
     EmtLineTypes,
+    GeneratorControlMode,
+    ShuntConnectionType,
+    TheveninSourceVoltageMode,
 )
 from VeraGridEngine.basic_structures import Logger, CxVec
 from VeraGridEngine.Simulations.EMT.emt_options import EmtOptions
@@ -44,9 +51,10 @@ from VeraGridEngine.Templates.Emt.bergeron_line_emt_template import BergeronHist
 from VeraGridEngine.Simulations.EMT.JMARTI_Sim.jmarti_runtime import JMartiHistoryRuntime
 from VeraGridEngine.Simulations.PowerFlow3ph.power_flow_results_3ph import PowerFlowResults3Ph
 from VeraGridEngine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
+from VeraGridEngine.Simulations.PowerFlow.NumericalMethods.common_functions import split_reactive_power_between_generators_and_batteries
 from VeraGridEngine.Simulations.EMT.injection_operating_point import (
     EmtInjectionOperatingPoint,
-    build_balanced_emt_injection_operating_point,
+    get_balanced_device_power_pu,
 )
 from VeraGridEngine.Simulations.PowerFlow.NumericalMethods.common_functions import (
     split_slack_bus_quantity_between_generators_and_batteries,
@@ -60,7 +68,7 @@ from VeraGridEngine.Utils.Symbolic.explicit_initialization_symbolic import (
 from VeraGridEngine.Utils.Symbolic.compiled_functions import get_compiled_functions_cache_stats
 from VeraGridEngine.Utils.Symbolic.bus_emt_template import get_bus_emt_algebraic_vars
 from VeraGridEngine.Utils.Symbolic.bus_emt_template import BusEmtTemplate, get_bus_mask
-from VeraGridEngine.Utils.procedural_logic import build_boundary_updater_from_block
+from VeraGridEngine.Utils.procedural_logic import build_boundary_updater_from_block, ProceduralExpressionMode
 from VeraGridEngine.Utils.procedural_logic_contract import ManufacturerNativeRuntimeSessionProtocol
 from VeraGridEngine.IO.fmu import (
     finalize_emt_fmu_cs_devices,
@@ -86,10 +94,56 @@ from VeraGridEngine.Devices.Dynamic.static_parameter_mapping_unified import (
     get_line_g_keys,
     get_current_injection_phase_values_pu_abc,
     get_load_power_phase_values_pu_abc,
+    get_load_impedance_phase_values_pu_abc,
+    get_load_current_phase_values_pu_abc,
     get_shunt_phase_values_pu_abc,
     resolve_constant_parameter_initial_value,
     resolve_runtime_parameter_initial_expression,
 )
+
+
+def _balanced_pf_line_matrix_mismatch(line: Any) -> float:
+    """Return the positive-sequence mismatch between PF and EMT line data."""
+    if line.ys is None or line.ysh is None:
+        return 0.0
+    if not (line.ys.phA and line.ys.phB and line.ys.phC) or line.ys.phN:
+        return 0.0
+    positive_sequence_impedance: complex = complex(float(line.R), float(line.X))
+    if abs(positive_sequence_impedance) <= 1.0e-15:
+        return 0.0
+
+    # Transform between ABC phases and zero, positive, negative sequences.
+    phase_rotation: complex = np.exp(2j * np.pi / 3.0)
+    sequence_to_phase: np.ndarray = np.array(
+        [[1.0, 1.0, 1.0],
+         [1.0, phase_rotation ** 2, phase_rotation],
+         [1.0, phase_rotation, phase_rotation ** 2]],
+        dtype=np.complex128,
+    )
+    phase_to_sequence: np.ndarray = np.linalg.inv(sequence_to_phase)
+    balanced_phase_voltages: np.ndarray = sequence_to_phase[:, 1]
+
+    # Apply balanced voltage to each phase matrix and inspect the current sequences.
+    series_admittance_abc: np.ndarray = np.asarray(line.ys.values[1:4, 1:4])
+    shunt_admittance_abc: np.ndarray = np.asarray(line.ysh.values[1:4, 1:4])
+    series_current_sequences: np.ndarray = phase_to_sequence @ series_admittance_abc @ balanced_phase_voltages
+    shunt_current_sequences: np.ndarray = phase_to_sequence @ shunt_admittance_abc @ balanced_phase_voltages
+
+    expected_series_admittance: complex = 1.0 / positive_sequence_impedance
+    # Compare in the stored shunt units; PF3 reverses this factor of 1e6.
+    expected_shunt_admittance: complex = 1.0e6 * complex(line.G, line.B)
+
+    # Check both the positive-sequence value and coupling into the other sequences.
+    series_positive_error: float = abs(series_current_sequences[1] - expected_series_admittance)
+    series_coupling_error: float = max(abs(series_current_sequences[0]), abs(series_current_sequences[2]))
+    shunt_positive_error: float = abs(shunt_current_sequences[1] - expected_shunt_admittance)
+    shunt_coupling_error: float = max(abs(shunt_current_sequences[0]), abs(shunt_current_sequences[2]))
+
+    series_scale: float = max(1.0, abs(expected_series_admittance))
+    shunt_scale: float = max(1.0, abs(expected_shunt_admittance))
+    series_error: float = max(series_positive_error, series_coupling_error) / series_scale
+    shunt_error: float = max(shunt_positive_error, shunt_coupling_error) / shunt_scale
+    return float(max(series_error, shunt_error))
 
 
 def _tic() -> float:
@@ -177,17 +231,6 @@ def _xfmr_phase_permutation_matrix(clock: int) -> np.ndarray:
                 [1.0, 0.0, 0.0],
                 [0.0, 1.0, 0.0],
             ], dtype=float)
-
-def find_name_in_block(name: str, block: Block):
-    for var in block.algebraic_vars + block.state_vars + list(block.event_dict.keys()) + block.diff_vars:
-        if name == var.name:
-            return var
-
-    for mdl in block.children:
-        res = find_name_in_block(name, mdl)
-        if res is not None:
-            return res
-
 
 class EmtTopologyError(Exception):
     """
@@ -706,150 +749,7 @@ def _get_bus_balanced_injection_power(pf_results: PowerFlowResults, bus_index: i
         return 0.0 + 0.0j
 
 
-def _get_internal_runtime_default(mdl: Block, var_name: str, default_value: float) -> float:
-    """
-    Return one runtime-parameter default by internal variable name.
 
-    :param mdl: Root model block.
-    :param var_name: Runtime-parameter variable name.
-    :param default_value: Fallback value if the variable is not found.
-    :return: Runtime-parameter default.
-    """
-    internal_var: Optional[Var]
-    owner_block: Optional[Block]
-    expression: Any
-
-    internal_var, owner_block = _find_internal_runtime_var_owner(mdl, var_name)
-
-    if internal_var is None or owner_block is None:
-        return float(default_value)
-    else:
-        pass
-
-    expression = owner_block.event_dict.get(internal_var, None)
-    if expression is None:
-        return float(default_value)
-    else:
-        pass
-
-    if isinstance(expression, Const):
-        return float(expression.value)
-    else:
-        return float(default_value)
-
-
-def _get_internal_runtime_default_local(problem: Any, mdl: Block, var_name: str, default_value: float) -> float:
-    """
-    Return one runtime-parameter default from the problem-local EMT runtime store.
-
-    :param problem: EMT problem instance.
-    :param mdl: Root model block.
-    :param var_name: Runtime-parameter variable name.
-    :param default_value: Fallback value if the variable is not found.
-    :return: Runtime-parameter default.
-    """
-    internal_var: Optional[Var]
-    owner_block: Optional[Block]
-    runtime_idx: Optional[int]
-    runtime_exprs: Any
-    expression: Any
-
-    internal_var, owner_block = _find_internal_runtime_var_owner(mdl, var_name)
-
-    if internal_var is None or owner_block is None:
-        return float(default_value)
-    else:
-        pass
-
-    runtime_idx = problem.uid2idx_event_params.get(internal_var.uid, None)
-    if runtime_idx is None:
-        return _get_internal_runtime_default(mdl=mdl, var_name=var_name, default_value=default_value)
-    else:
-        pass
-
-    runtime_exprs = problem._event_parameters_eqs
-    if isinstance(runtime_exprs, list) and 0 <= runtime_idx < len(runtime_exprs):
-        expression = runtime_exprs[runtime_idx]
-    else:
-        expression = owner_block.event_dict.get(internal_var, None)
-
-    if isinstance(expression, Const):
-        return float(expression.value)
-    else:
-        return float(default_value)
-
-
-def _get_internal_mode_default(mdl: Block, var_name: str, default_value: float) -> float:
-    """
-    Return one retained runtime-mode default by internal variable name.
-
-    :param mdl: Root model block.
-    :param var_name: Retained mode variable name.
-    :param default_value: Fallback value if the variable is not found.
-    :return: Runtime-mode default.
-    """
-    internal_var: Optional[Var]
-    owner_block: Optional[Block]
-    expression: Any
-
-    internal_var, owner_block = _find_mode_var_owner(mdl, var_name)
-
-    if internal_var is None or owner_block is None:
-        return float(default_value)
-    else:
-        pass
-
-    expression = owner_block.mode_dict.get(internal_var, None)
-    if expression is None:
-        return float(default_value)
-    else:
-        pass
-
-    if isinstance(expression, Const):
-        return float(expression.value)
-    else:
-        return float(default_value)
-
-
-def _get_internal_mode_default_local(problem: Any, mdl: Block, var_name: str, default_value: float) -> float:
-    """
-    Return one retained runtime-mode default from the problem-local EMT runtime store.
-
-    :param problem: EMT problem instance.
-    :param mdl: Root model block.
-    :param var_name: Retained mode variable name.
-    :param default_value: Fallback value if the variable is not found.
-    :return: Runtime-mode default.
-    """
-    internal_var: Optional[Var]
-    owner_block: Optional[Block]
-    runtime_idx: Optional[int]
-    runtime_exprs: Any
-    expression: Any
-
-    internal_var, owner_block = _find_mode_var_owner(mdl, var_name)
-
-    if internal_var is None or owner_block is None:
-        return float(default_value)
-    else:
-        pass
-
-    runtime_idx = problem.uid2idx_event_params.get(internal_var.uid, None)
-    if runtime_idx is None:
-        return _get_internal_mode_default(mdl=mdl, var_name=var_name, default_value=default_value)
-    else:
-        pass
-
-    runtime_exprs = problem._event_parameters_eqs
-    if isinstance(runtime_exprs, list) and 0 <= runtime_idx < len(runtime_exprs):
-        expression = runtime_exprs[runtime_idx]
-    else:
-        expression = owner_block.mode_dict.get(internal_var, None)
-
-    if isinstance(expression, Const):
-        return float(expression.value)
-    else:
-        return float(default_value)
 
 
 def _resolve_converter_control_reference_values(control1_code: float,
@@ -1106,317 +1006,6 @@ def _get_balanced_vsc_ac_power(pf_results: PowerFlowResults, vsc_index: int) -> 
         return -_get_balanced_vsc_dc_power(pf_results, vsc_index)
 
 
-def _get_balanced_vsc_ac_power_for_positive_sequence_seed(
-        pf_results: PowerFlowResults,
-        vsc_index: int,
-) -> complex:
-    """
-    Return the AC-side converter-export power used by positive-sequence EMT seeds.
-
-    The positive-sequence GFM EMT templates expect the AC-side converter-export
-    operating point. The balanced PF ``St_vsc`` value already follows that export
-    convention for the EMT seed path, so preserve its sign when it is populated.
-    When the AC-side flow is absent, fall back to the DC-side transfer with the
-    opposite sign to recover the same export convention.
-
-    :param pf_results: Balanced power-flow results.
-    :param vsc_index: VSC index.
-    :return: Converter-export AC power in system-base units.
-    """
-    st_value: Optional[Any] = _get_array_entry_if_in_range(pf_results.St_vsc, vsc_index)
-    st_complex: complex
-
-    if st_value is None:
-        return -_get_balanced_vsc_dc_power(pf_results, vsc_index)
-    else:
-        st_complex = complex(st_value)
-
-    if abs(st_complex) > 1.0e-12:
-        return st_complex
-    else:
-        return -_get_balanced_vsc_dc_power(pf_results, vsc_index)
-
-
-def _find_mode_var_by_name(block: Block, var_name: str) -> Optional[Var]:
-    """
-    Return one retained mode variable from a block hierarchy by name.
-
-    :param block: Root block to inspect.
-    :param var_name: Retained mode variable name.
-    :return: Matching retained mode variable or ``None``.
-    """
-    mode_var: Var
-    child_block: Block
-    nested_mode_var: Optional[Var]
-
-    for mode_var in block.mode_dict.keys():
-        if mode_var.name == var_name:
-            return mode_var
-        else:
-            pass
-
-    for child_block in block.children:
-        nested_mode_var = _find_mode_var_by_name(child_block, var_name)
-        if nested_mode_var is not None:
-            return nested_mode_var
-        else:
-            pass
-
-    return None
-
-
-def _find_internal_var_for_init(block: Block, var_name: str) -> Optional[Var]:
-    """
-    Return one internal state/algebraic/differential variable by name.
-
-    This helper intentionally ignores ``in_vars`` and ``out_vars`` aliases so
-    initialization values are written against the actual solver-owned variables.
-
-    :param block: Root block to inspect.
-    :param var_name: Variable name.
-    :return: Matching solver-owned variable or ``None``.
-    """
-    variable: Var
-    child_block: Block
-    nested_variable: Optional[Var]
-
-    for variable_list in [block.state_vars, block.algebraic_vars, block.diff_vars]:
-        for variable in variable_list:
-            if variable.name == var_name:
-                return variable
-            else:
-                pass
-
-    for child_block in block.children:
-        nested_variable = _find_internal_var_for_init(child_block, var_name)
-        if nested_variable is not None:
-            return nested_variable
-        else:
-            pass
-
-    shared_reference_fallbacks: Dict[str, str] = dict([
-        ("Vf", "v_f_reference"),
-        ("V_pss", "V_pss_reference"),
-        ("Tm", "Tm_reference"),
-        ("Te", "Te_reference"),
-        ("IRPu", "IRPu_reference"),
-        ("omega", "omega_reference"),
-    ])
-    shared_reference_suffix: str | None = None
-    fallback_var: Optional[Var] = None
-
-    if var_name in shared_reference_fallbacks:
-        shared_reference_suffix = shared_reference_fallbacks[var_name]
-    else:
-        shared_reference_suffix = None
-
-    if shared_reference_suffix is None:
-        pass
-    else:
-        fallback_var = _find_internal_var_by_shared_reference(block, shared_reference_suffix)
-
-    return fallback_var
-
-
-def _find_internal_var_by_prefix(block: Block, name_prefix: str) -> Optional[Var]:
-    """
-    Return one internal state/algebraic/differential variable by name prefix.
-
-    This helper is used for templates whose cloned working blocks may not keep an
-    easily reconstructable root-block name, while their internal variable prefixes
-    remain stable.
-
-    :param block: Root block to inspect.
-    :param name_prefix: Variable-name prefix.
-    :return: Matching solver-owned variable or ``None``.
-    """
-    variable: Var
-    child_block: Block
-    nested_variable: Optional[Var]
-
-    for variable_list in [block.state_vars, block.algebraic_vars, block.diff_vars]:
-        for variable in variable_list:
-            if variable.name.startswith(name_prefix):
-                return variable
-            else:
-                pass
-
-    for child_block in block.children:
-        nested_variable = _find_internal_var_by_prefix(child_block, name_prefix)
-        if nested_variable is not None:
-            return nested_variable
-        else:
-            pass
-
-    return None
-
-
-def _find_internal_var_by_shared_reference(block: Block, shared_reference: str) -> Optional[Var]:
-    """
-    Return one internal variable by its semantic shared reference.
-
-    :param block: Root block to inspect.
-    :param shared_reference: Shared-reference tag assigned by the template.
-    :return: Matching solver-owned variable or ``None``.
-    """
-    variable: Var
-    child_block: Block
-    nested_variable: Optional[Var]
-
-    for variable_list in [block.state_vars, block.algebraic_vars, block.diff_vars]:
-        for variable in variable_list:
-            if variable.shared_ref == shared_reference:
-                return variable
-            else:
-                pass
-
-    for child_block in block.children:
-        nested_variable = _find_internal_var_by_shared_reference(child_block, shared_reference)
-        if nested_variable is not None:
-            return nested_variable
-        else:
-            pass
-
-    return None
-
-
-def _find_internal_vars_by_name(block: Block, var_name: str) -> List[Var]:
-    """
-    Return all internal state/algebraic/differential variables with one given name.
-
-    :param block: Root block to inspect.
-    :param var_name: Variable name.
-    :return: Matching solver-owned variables.
-    """
-    matches: List[Var] = list()
-    variable: Var
-    child_block: Block
-
-    for variable_list in [block.state_vars, block.algebraic_vars, block.diff_vars]:
-        for variable in variable_list:
-            if variable.name == var_name:
-                matches.append(variable)
-            else:
-                pass
-
-    for child_block in block.children:
-        matches.extend(_find_internal_vars_by_name(child_block, var_name))
-
-    if len(matches) > 0:
-        pass
-    else:
-        shared_reference_fallbacks: Dict[str, str] = dict([
-            ("Vf", "v_f_reference"),
-            ("V_pss", "V_pss_reference"),
-            ("Tm", "Tm_reference"),
-            ("Te", "Te_reference"),
-            ("IRPu", "IRPu_reference"),
-            ("omega", "omega_reference"),
-        ])
-        shared_reference_suffix: str | None = shared_reference_fallbacks.get(var_name, None)
-        if shared_reference_suffix is None:
-            pass
-        else:
-            fallback_var: Optional[Var] = _find_internal_var_by_shared_reference(block, shared_reference_suffix)
-            if fallback_var is None:
-                pass
-            else:
-                matches.append(fallback_var)
-
-    return matches
-
-
-def _find_internal_runtime_var_owner_with_fallback(block: Block, var_name: str) -> Tuple[Optional[Var], Optional[Block]]:
-    """
-    Return one internal runtime variable owner using shared-reference fallback.
-
-    :param block: Root block to inspect.
-    :param var_name: Runtime parameter variable name.
-    :return: Tuple ``(variable, owner_block)`` or ``(None, None)``.
-    """
-    internal_var: Optional[Var]
-    owner_block: Optional[Block]
-    internal_var, owner_block = _find_internal_runtime_var_owner(block, var_name)
-    if internal_var is None or owner_block is None:
-        shared_reference_fallbacks: Dict[str, str] = dict([
-            ("Vf", "v_f_reference"),
-            ("V_pss", "V_pss_reference"),
-            ("Tm", "Tm_reference"),
-            ("Te", "Te_reference"),
-            ("IRPu", "IRPu_reference"),
-            ("omega", "omega_reference"),
-        ])
-        shared_reference_name: str | None = shared_reference_fallbacks.get(var_name, None)
-        if shared_reference_name is None:
-            pass
-        else:
-            internal_var = _find_internal_var_by_shared_reference(block, shared_reference_name)
-            if internal_var is None:
-                pass
-            else:
-                owner_block = block.get_root_block_of_variable(internal_var)
-    else:
-        pass
-    return internal_var, owner_block
-
-def _find_mode_var_owner(block: Block, var_name: str) -> Tuple[Optional[Var], Optional[Block]]:
-    """
-    Return one retained mode variable together with the block that owns it.
-
-    :param block: Root block to inspect.
-    :param var_name: Retained mode variable name.
-    :return: Tuple ``(variable, owner_block)`` or ``(None, None)``.
-    """
-    mode_var: Var
-    child_block: Block
-    nested_var: Optional[Var]
-    nested_owner: Optional[Block]
-
-    for mode_var in block.mode_dict.keys():
-        if mode_var.name == var_name:
-            return mode_var, block
-        else:
-            pass
-
-    for child_block in block.children:
-        nested_var, nested_owner = _find_mode_var_owner(child_block, var_name)
-        if nested_var is not None and nested_owner is not None:
-            return nested_var, nested_owner
-        else:
-            pass
-
-    return None, None
-
-
-def _find_internal_runtime_var_owner(block: Block, var_name: str) -> Tuple[Optional[Var], Optional[Block]]:
-    """
-    Return one runtime parameter variable together with the block that owns it.
-
-    :param block: Root block to inspect.
-    :param var_name: Runtime parameter variable name.
-    :return: Tuple ``(variable, owner_block)`` or ``(None, None)``.
-    """
-    variable: Var
-    child_block: Block
-    nested_var: Optional[Var]
-    nested_owner: Optional[Block]
-
-    for variable in block.event_dict.keys():
-        if variable.name == var_name:
-            return variable, block
-        else:
-            pass
-
-    for child_block in block.children:
-        nested_var, nested_owner = _find_internal_runtime_var_owner(child_block, var_name)
-        if nested_var is not None and nested_owner is not None:
-            return nested_var, nested_owner
-        else:
-            pass
-
-    return None, None
-
-
 def _find_event_var_owner(block: Block, target_var: Var) -> Optional[Block]:
     """
     Return the block that owns one runtime event parameter variable.
@@ -1445,12 +1034,14 @@ def _find_event_var_owner(block: Block, target_var: Var) -> Optional[Block]:
     return None
 
 
-def _get_expected_pi_line_terminal_refs(ph_mask: List[bool]) -> List[VarPowerFlowReferenceType]:
+def get_branch_terminal_voltage_refs(
+        phase_mask: List[bool],
+) -> Tuple[List[VarPowerFlowReferenceType], List[VarPowerFlowReferenceType]]:
     """
-    Build the ordered terminal-voltage references for the active pi-line phases.
+    Build terminal-voltage references for an AC branch with matching end phases.
 
-    :param ph_mask: Physical line phase mask in NABC order.
-    :return: Ordered ``vf_*`` and ``vt_*`` references for the active phases only.
+    :param phase_mask: Active phases in NABC order, shared by both ends.
+    :return: From-side and to-side reference lists, each in active NABC order.
     """
     vf_refs: List[VarPowerFlowReferenceType] = list([
         VarPowerFlowReferenceType.vf_N,
@@ -1465,21 +1056,16 @@ def _get_expected_pi_line_terminal_refs(ph_mask: List[bool]) -> List[VarPowerFlo
         VarPowerFlowReferenceType.vt_C,
     ])
 
-    ordered_refs: List[VarPowerFlowReferenceType] = list()
-
-    for idx, is_active in enumerate(ph_mask):
+    from_refs: List[VarPowerFlowReferenceType] = list()
+    to_refs: List[VarPowerFlowReferenceType] = list()
+    for phase_index, is_active in enumerate(phase_mask):
         if is_active:
-            ordered_refs.append(vf_refs[idx])
+            from_refs.append(vf_refs[phase_index])
+            to_refs.append(vt_refs[phase_index])
         else:
             pass
 
-    for idx, is_active in enumerate(ph_mask):
-        if is_active:
-            ordered_refs.append(vt_refs[idx])
-        else:
-            pass
-
-    return ordered_refs
+    return from_refs, to_refs
 
 
 def validate_line_phase_layout(
@@ -1515,23 +1101,16 @@ def validate_line_phase_layout(
         bool(branch.ys.phC),
     ])
 
-    expected_refs: List[VarPowerFlowReferenceType] = _get_expected_pi_line_terminal_refs(ph_mask)
+    from_refs, to_refs = get_branch_terminal_voltage_refs(ph_mask)
+    expected_refs: List[VarPowerFlowReferenceType] = from_refs + to_refs
 
     # The external-mapping keys declare the semantic branch interface. Their
     # target variables can already have been connected to bus variables, whose
     # references are ``v_*`` rather than the original ``vf_*`` and ``vt_*``.
     # Inspecting the targets or ``in_vars`` would consequently reject a valid
     # loaded model merely because its terminal connections were restored.
-    terminal_refs: List[VarPowerFlowReferenceType] = list((
-        VarPowerFlowReferenceType.vf_N,
-        VarPowerFlowReferenceType.vf_A,
-        VarPowerFlowReferenceType.vf_B,
-        VarPowerFlowReferenceType.vf_C,
-        VarPowerFlowReferenceType.vt_N,
-        VarPowerFlowReferenceType.vt_A,
-        VarPowerFlowReferenceType.vt_B,
-        VarPowerFlowReferenceType.vt_C,
-    ))
+    all_from_refs, all_to_refs = get_branch_terminal_voltage_refs([True, True, True, True])
+    terminal_refs: List[VarPowerFlowReferenceType] = all_from_refs + all_to_refs
 
     external_refs: List[VarPowerFlowReferenceType] = list()
     legacy_refs: List[VarPowerFlowReferenceType] = list()
@@ -1674,6 +1253,28 @@ def _zero_ac_power_vector() -> np.ndarray:
     return np.zeros(4, dtype=np.complex128)
 
 
+def get_currents_from_power(
+        voltages: np.ndarray, phase_powers: np.ndarray, current_scale: float,
+) -> np.ndarray:
+    """Return RMS phase currents, preserving the supplied power-flow direction.
+
+    Inputs have matching phase order. Use current_scale=3 for phase powers
+    on total three-phase Sbase and currents on Sbase/(sqrt(3)*Vbase_LL).
+    Use current_scale=1 when power and voltage bases directly give the
+    desired current base. Neutral handling belongs to the caller.
+    Missing phasors and voltages too small to divide by produce zero current.
+    """
+    if voltages.shape != phase_powers.shape:
+        raise ValueError("Voltage and phase-power vectors must have matching shapes")
+    currents = np.zeros(voltages.shape, dtype=np.complex128)
+    for index, voltage in enumerate(voltages):
+        power = phase_powers[index]
+        phasors_available = not np.isnan(voltage) and not np.isnan(power)
+        if phasors_available and abs(voltage) > 1e-12:
+            currents[index] = current_scale * np.conj(power / voltage)
+    return currents
+
+
 def _phase_sequence_shift(phase_index: int) -> complex:
     """
     Return the phase shift used to reconstruct balanced phase phasors.
@@ -1766,9 +1367,9 @@ class EmtProblemDae(EmtProblemTemplate):
         :param progress_text: progress_text
         :param logger: Optional logger owned by the simulation driver.
         """
-        # The EMT driver owns the logger. Direct problem construction remains
-        # valid and silent when no logger is supplied.
-        self.logger: Logger | None = logger
+        # Structural collection can emit diagnostics before the base problem is
+        # constructed. Keep the supplied owner or create one for default callers.
+        self.logger: Logger = Logger() if logger is None else logger
         self._static_parameter_mapping_diagnostics: StaticParameterMappingDiagnostics = (
             StaticParameterMappingDiagnostics(
                 logger=self.logger,
@@ -1848,6 +1449,7 @@ class EmtProblemDae(EmtProblemTemplate):
         t_phase_start = _tic()
 
         self._validate_dynamic_emt_interfaces()
+        self._validate_balanced_pf_line_compatibility()
         validate_interfaces_s: float = _toc(t_phase_start)
         t_phase_start = _tic()
 
@@ -1919,7 +1521,10 @@ class EmtProblemDae(EmtProblemTemplate):
         finalize_emt_fmu_cs_devices(self)
         finalize_emt_fmu_me_devices(self)
 
-        self._block_boundary_updater = build_boundary_updater_from_block(self)
+        self._block_boundary_updater = build_boundary_updater_from_block(
+            problem=self,
+            expression_mode=ProceduralExpressionMode.Compiled,
+        )
 
         if len(self._runtime_mode_parameters) > 0:
             self._initialize_mode_event_state()
@@ -1971,7 +1576,8 @@ class EmtProblemDae(EmtProblemTemplate):
         # 2) Initialization stage selection.
         # PseudoTransient must work for models without initialization equations.
         # Its only starting data is the PF operating point and runtime constants.
-        if self.options.initialization_method != EmtInitializationMethod.PseudoTransient:
+        if (self.options.initialization_method != EmtInitializationMethod.PseudoTransient
+                or self.options.init_periodic_samples):
             self._run_explicit_initialization()
         else:
             pass
@@ -1989,7 +1595,11 @@ class EmtProblemDae(EmtProblemTemplate):
         # 3) Native initialization stage selection.
         # The native stage builds the reduced consistency system for Newton and
         # Auto. PseudoTransient solves complete devices and their references.
-        if self.options.initialization_method == EmtInitializationMethod.Explicit:
+        if self.options.init_periodic_samples:
+            self.initialization_report = run_emt_native_initialization(problem=self, options=self.options)
+            if self.initialization_report.status == EmtInitializationStatus.FAILED:
+                raise ValueError(self.initialization_report.message)
+        elif self.options.initialization_method == EmtInitializationMethod.Explicit:
             self.initialization_report = EmtInitializationReport(method_requested=EmtInitializationMethod.Explicit)
             self.initialization_report.status = EmtInitializationStatus.RESOLVED
             self.initialization_report.method_used = EmtInitializationMethod.Explicit
@@ -2005,6 +1615,44 @@ class EmtProblemDae(EmtProblemTemplate):
             )
             if self.initialization_report.status == EmtInitializationStatus.FAILED:
                 raise ValueError(self.initialization_report.message)
+        elif self.options.initialization_method == EmtInitializationMethod.Auto:
+            incomplete_blocks: List[Block] = [
+                block for block in self._device_models_for_ptc
+                if not self._device_has_complete_explicit_seed(block)
+            ]
+            device_report: EmtInitializationReport | None = None
+            if incomplete_blocks:
+                device_report = run_emt_device_pseudo_transient_initialization(
+                    problem=self,
+                    blocks=incomplete_blocks,
+                    options=self.options,
+                    check_kcl=False,
+                    require_full_coverage=False,
+                )
+                if device_report.status == EmtInitializationStatus.FAILED:
+                    device_report = None
+            if device_report is not None:
+                device_report.method_requested = EmtInitializationMethod.Auto
+                self.initialization_report = validate_emt_periodic_initialization(
+                    problem=self,
+                    blocks=self._device_models_for_ptc,
+                    options=self.options,
+                    report=device_report,
+                )
+                if self.initialization_report.status == EmtInitializationStatus.FAILED:
+                    raise ValueError(self.initialization_report.message)
+                self.initialization_report.message = (
+                    "Auto used device-local periodic pseudo-transient initialization "
+                    "for incomplete devices and verified the assembled periodic DAE."
+                )
+            else:
+                auto_options: EmtOptions = copy(self.options)
+                auto_options.initialization_method = EmtInitializationMethod.Auto
+                self.initialization_report = run_emt_native_initialization(
+                    problem=self,
+                    options=auto_options,
+                )
+                self.initialization_report.method_requested = EmtInitializationMethod.Auto
         else:
             self.initialization_report = run_emt_native_initialization(problem=self, options=self.options)
         self._reapply_vsc_pf_seeds_after_native_initialization()
@@ -2156,6 +1804,26 @@ class EmtProblemDae(EmtProblemTemplate):
         else:
             pass
         _drop_nonfinite_initialization_entries(self)
+        if self.options.initialization_method == EmtInitializationMethod.Explicit:
+            # Explicit initialization only evaluates device seeds. Record the
+            # assembled network error instead of reporting the default zero.
+            algebraic_residual = max(
+                (abs(float(equation.eval_uid(final_bindings)))
+                 for equation in self.get_algebraic_eqs()),
+                default=0.0,
+            )
+            self.initialization_report.initial_residual_inf = algebraic_residual
+            self.initialization_report.final_residual_inf = algebraic_residual
+            self.initialization_report.message = (
+                f"Explicit device initialization completed with algebraic residual "
+                f"{algebraic_residual:.3e}; periodic steady state was not verified."
+            )
+            if algebraic_residual > self.options.tolerance and self.logger is not None:
+                self.logger.add_warning(
+                    msg="EMT explicit initialization exceeds algebraic tolerance.",
+                    value=f"{algebraic_residual:.3e}",
+                    expected_value=f"<= {self.options.tolerance:.3e}",
+                )
         if self.options.initialization_method == EmtInitializationMethod.PseudoTransient:
             self.initialization_report = validate_emt_periodic_initialization(
                 problem=self,
@@ -2294,6 +1962,33 @@ class EmtProblemDae(EmtProblemTemplate):
                 return True
             else:
                 return False
+
+    def _device_has_complete_explicit_seed(self, mdl: Block) -> bool:
+        """Return whether explicit initialization supplied every owned EMT value."""
+        has_explicit_equations = any(
+            block.init_eqs or block.diff_init_eqs
+            for block in mdl.get_all_blocks()
+        )
+        if not has_explicit_equations:
+            return False
+        for block in mdl.get_all_blocks():
+            for variable in list(block.state_vars) + list(block.algebraic_vars):
+                if variable.uid in self.uid2idx_vars:
+                    value = self.init_guess.get(variable.uid, None)
+                    if value is None or not np.isfinite(float(value)):
+                        return False
+            for differential in block.diff_vars:
+                if differential.uid in self.uid2idx_diff:
+                    value = self.diff_init_guess.get(differential.uid, None)
+                    if value is None or not np.isfinite(float(value)):
+                        return False
+            for event_var, event_expr in block.event_dict.items():
+                if (isinstance(event_var, Var)
+                        and isinstance(event_expr, Const)
+                        and event_expr.value is None
+                        and event_var.uid not in self.event_params_init_dict):
+                    return False
+        return True
 
     def _register_init_model(self, mdl: Block) -> None:
         """
@@ -2566,31 +2261,33 @@ class EmtProblemDae(EmtProblemTemplate):
                     # final ``get_x0()`` reflects the explicit-init solution
                     # instead of the rough pre-init PF seed.
                     block_var: Var
-                    for block_var in mdl.state_vars:
-                        if block_var.uid in self.init_guess:
-                            self._temp_post_init_guess[block_var.uid] = float(self.init_guess[block_var.uid])
-                        else:
-                            pass
+                    init_owner: Block
+                    for init_owner in mdl.get_all_blocks():
+                        for block_var in init_owner.state_vars:
+                            if block_var.uid in self.init_guess:
+                                self._temp_post_init_guess[block_var.uid] = float(self.init_guess[block_var.uid])
+                            else:
+                                pass
 
-                    for block_var in mdl.algebraic_vars:
-                        if block_var.uid in self.init_guess:
-                            self._temp_post_init_guess[block_var.uid] = float(self.init_guess[block_var.uid])
-                        else:
-                            pass
+                        for block_var in init_owner.algebraic_vars:
+                            if block_var.uid in self.init_guess:
+                                self._temp_post_init_guess[block_var.uid] = float(self.init_guess[block_var.uid])
+                            else:
+                                pass
 
-                    for block_var in mdl.diff_vars:
-                        if block_var.uid in self.diff_init_guess:
-                            self._temp_post_diff_init_guess[block_var.uid] = float(self.diff_init_guess[block_var.uid])
-                        else:
-                            pass
+                        for block_var in init_owner.diff_vars:
+                            if block_var.uid in self.diff_init_guess:
+                                self._temp_post_diff_init_guess[block_var.uid] = float(self.diff_init_guess[block_var.uid])
+                            else:
+                                pass
 
-                    for event_var in mdl.event_dict.keys():
-                        event_idx: int | None = self.uid2idx_event_params.get(event_var.uid, None)
+                        for event_var in init_owner.event_dict.keys():
+                            event_idx: int | None = self.uid2idx_event_params.get(event_var.uid, None)
 
-                        if event_idx is None:
-                            pass
-                        else:
-                            self._runtime_parameter_eqs0[event_idx] = self._event_parameters_eqs[event_idx]
+                            if event_idx is None:
+                                pass
+                            else:
+                                self._runtime_parameter_eqs0[event_idx] = self._event_parameters_eqs[event_idx]
                 except Exception as e:
                     block_name: str = _get_block_name(mdl)
                     error_detail: str = f"{type(e).__name__}: {str(e)}"
@@ -2650,6 +2347,10 @@ class EmtProblemDae(EmtProblemTemplate):
                     value=float(runtime_value),
                 )
 
+        # Runtime promotion changes canonical source equations. Rebuild the
+        # continuous/mode partition before buffer evaluation so native Newton
+        # consumes the promoted PF references instead of stale placeholders.
+        self._rebuild_runtime_parameter_partition()
         self._build_runtime_param_vectors()
 
     def _validate_dynamic_emt_interfaces(self) -> None:
@@ -2680,6 +2381,28 @@ class EmtProblemDae(EmtProblemTemplate):
             raise EmtInterfaceValidationError(error_msg)
         else:
             pass
+
+    def _validate_balanced_pf_line_compatibility(self) -> None:
+        """Require PF3 when a PI line's phase matrices exceed the PF model."""
+        if self.power_flow_results_3ph is not None or self.power_flow_results is None:
+            return
+        for line in self.grid.lines:
+            model = line.emt_model
+            if model is not None:
+                # Line templates declare their runtime kind on the root block.
+                # Internal state names are independent of that declaration.
+                line_type: EmtLineTypes | None
+                try:
+                    line_type = EmtLineTypes(model.name)
+                except (ValueError, TypeError):
+                    line_type = None
+                is_pi_line: bool = line_type == EmtLineTypes.PI
+                if is_pi_line and _balanced_pf_line_matrix_mismatch(line) > 1.0e-6:
+                    raise ValueError(
+                        f"EMT PI line '{line.name}' has phase matrices incompatible with "
+                        "balanced power flow. Run three-phase power flow and pass "
+                        "its results as pf_results_3ph."
+                    )
 
     def _validate_bus_emt_models_ready(self) -> None:
         """
@@ -3767,6 +3490,9 @@ class EmtProblemDae(EmtProblemTemplate):
                     has_registered_injection_mapping: bool = (
                         inj_emt_model.uid in self._local_external_mapping_by_block_uid
                     )
+                    # Registration turns legacy hierarchy inputs referenced v_N into
+                    # the neutral terminal; unregistered fixtures mirror that here.
+                    injection_exposes_neutral_input: bool = False
                     if has_registered_injection_mapping:
                         pass
                     else:
@@ -3780,8 +3506,19 @@ class EmtProblemDae(EmtProblemTemplate):
                                     )
                                 else:
                                     pass
+                                if injection_in_var.ref == VarPowerFlowReferenceType.v_N:
+                                    injection_exposes_neutral_input = True
+                                else:
+                                    pass
 
-                    if has_emt_internal_grounding_link(block=inj_emt_model):
+                    # An internal star-point ground does not connect the bus
+                    # neutral. Only a neutral terminal (the external voltage
+                    # mapping, or a legacy v_N input of an unregistered model)
+                    # can declare that conductor connected to this injection.
+                    if (has_emt_internal_grounding_link(block=inj_emt_model)
+                            and ((injection_external_mapping is not None
+                                  and injection_external_mapping.get(VarPowerFlowReferenceType.v_N, None) is not None)
+                                 or injection_exposes_neutral_input)):
                         bus_phase_connections[(inj_bus, VarPowerFlowReferenceType.v_N)].add(
                             f"internal_ground:{inj.idtag}"
                         )
@@ -4408,15 +4145,42 @@ class EmtProblemDae(EmtProblemTemplate):
                     value=value,
                 )
 
+        # Instantaneous line waves belong to this problem, so their declarations
+        # must exist before canonical registration discovers variables and seeds.
+        is_bergeron: bool
+        is_jmarti: bool
+        is_bergeron, is_jmarti = _is_history_runtime_line_block_name(br_working_mdl.name)
+        jmarti_runtime: JMartiHistoryRuntime | None = None
+        if isinstance(branch, Line) and is_jmarti:
+            jmarti_runtime = JMartiHistoryRuntime(line=branch, line_block=br_working_mdl, h=h)
+            jmarti_runtime.bind_terminals(
+                _get_bus_v_list(bus_block=bus_working_models[branch.bus_from], ph_v_keys=ph_v_keys),
+                _get_bus_v_list(bus_block=bus_working_models[branch.bus_to], ph_v_keys=ph_v_keys),
+            )
+        else:
+            pass
+
         mdl: Block = self._process_device_model(
             dev=branch,
             mdl=br_working_mdl,
             sys_block=sys_block,
             static_parameter_values_mapping=static_parameter_values_mapping,
         )
-        is_bergeron: bool
-        is_jmarti: bool
-        is_bergeron, is_jmarti = _is_history_runtime_line_block_name(mdl.name)
+        if jmarti_runtime is None:
+            pass
+        else:
+            companion: Block | None = jmarti_runtime.coupling_block
+            if companion is None:
+                pass
+            else:
+                # Register through the same device owner without attaching the
+                # companion to the saved line model or the source VarFactory.
+                self._process_device_model(
+                    dev=branch,
+                    mdl=companion,
+                    sys_block=sys_block,
+                    static_parameter_values_mapping=static_parameter_values_mapping,
+                )
         is_vsc: bool = branch.device_type == DeviceType.VscDevice
         uses_branch_pf_slot: bool = branch.device_type not in {DeviceType.VscDevice, DeviceType.HVDCLineDevice}
         current_pf_branch_index: int = pf_branch_index
@@ -4451,6 +4215,7 @@ class EmtProblemDae(EmtProblemTemplate):
             is_bergeron=is_bergeron,
             is_jmarti=is_jmarti,
             static_parameter_values_mapping=static_parameter_values_mapping,
+            jmarti_runtime=jmarti_runtime,
         )
 
         if branch_index >= 0:
@@ -4483,7 +4248,8 @@ class EmtProblemDae(EmtProblemTemplate):
                                      fbase: float,
                                      is_bergeron: bool,
                                      is_jmarti: bool,
-                                     static_parameter_values_mapping: Dict[Var, Const]) -> None:
+                                     static_parameter_values_mapping: Dict[Var, Const],
+                                     jmarti_runtime: JMartiHistoryRuntime | None) -> None:
         """
         Dispatch one branch build to the explicit ``DeviceType`` implementation.
 
@@ -4510,6 +4276,8 @@ class EmtProblemDae(EmtProblemTemplate):
         :param is_bergeron: Whether the line model is Bergeron.
         :param is_jmarti: Whether the line model is JMarti.
         :param static_parameter_values_mapping: Owner-resolved static constants for PF seeding.
+        :param jmarti_runtime: The line runtime already registered before indexing,
+            or ``None`` for other branch implementations.
         :return: None.
         """
         if branch.device_type == DeviceType.LineDevice:
@@ -4528,6 +4296,7 @@ class EmtProblemDae(EmtProblemTemplate):
                     sbase=sbase,
                     fbase=fbase,
                     is_bergeron=is_bergeron,
+                    jmarti_runtime=jmarti_runtime,
                 )
             else:
                 self._build_generic_branch_device(
@@ -4717,7 +4486,8 @@ class EmtProblemDae(EmtProblemTemplate):
                                      h: float,
                                      sbase: float,
                                      fbase: float,
-                                     is_bergeron: bool) -> None:
+                                     is_bergeron: bool,
+                                     jmarti_runtime: JMartiHistoryRuntime | None) -> None:
         """
         Build one history-based line branch device.
 
@@ -4734,6 +4504,7 @@ class EmtProblemDae(EmtProblemTemplate):
         :param sbase: System base power.
         :param fbase: System base frequency.
         :param is_bergeron: ``True`` for Bergeron, ``False`` for JMarti.
+        :param jmarti_runtime: The pre-index JMARTI runtime; Bergeron does not use it.
         :return: None.
         """
         v_f_vars: List[Any] = _get_bus_v_list(bus_block=bus_working_models[branch.bus_from], ph_v_keys=ph_v_keys)
@@ -4742,35 +4513,89 @@ class EmtProblemDae(EmtProblemTemplate):
 
         if is_bergeron:
             rt = BergeronHistoryRuntime(line=branch, line_block=mdl, h=h, sbase=sbase, fbase=fbase)
+            rt.bind_terminals(v_f_vars, v_t_vars)
+        elif jmarti_runtime is None:
+            raise ValueError("JMARTI runtime must be registered before building its network currents.")
         else:
-            rt = JMartiHistoryRuntime(line=branch, line_block=mdl, h=h)
+            rt = jmarti_runtime
 
-        rt.bind_terminals(v_f_vars, v_t_vars)
-
-        if self.power_flow_results_3ph is not None:
+        if self.power_flow_results_3ph is not None or self.power_flow_results is not None:
+            if self.power_flow_results_3ph is None and self.options.verbose:
+                model_name = "Bergeron" if is_bergeron else "JMARTI"
+                print(f"Initializing {model_name} line variables assuming a balanced power flow")
             if is_bergeron:
-                self._try_set_bergeron_pf_init(mdl=mdl, rt=rt, branch_index=current_pf_branch_index, f_bus_idx=f, t_bus_idx=t, sbase=grid.Sbase)
+                self._try_set_bergeron_pf_init(rt=rt, branch_index=current_pf_branch_index, f_bus_idx=f, t_bus_idx=t, sbase=grid.Sbase)
             else:
-                self._try_set_jmarti_pf_init(mdl=mdl, rt=rt, branch_index=current_pf_branch_index, f_bus_idx=f, t_bus_idx=t, sbase=grid.Sbase)
-        else:
-            if self.power_flow_results is not None:
-                if self.options.verbose:
-                    if is_bergeron:
-                        print("Initializing bergeron line variables assuming a balanced power flow")
-                    else:
-                        print("Initializing JMARTI line variables assuming a balanced power flow")
-                else:
-                    pass
+                self._try_set_jmarti_pf_init(rt=rt, branch_index=current_pf_branch_index, f_bus_idx=f, t_bus_idx=t, sbase=grid.Sbase)
+        elif self.options.verbose:
+            print("No Power Flow results given.")
 
-                if is_bergeron:
-                    self._try_set_bergeron_pf_init_balanced(mdl=mdl, rt=rt, branch_index=current_pf_branch_index, f_bus_idx=f, t_bus_idx=t, sbase=grid.Sbase)
-                else:
-                    self._try_set_jmarti_pf_init_balanced(mdl=mdl, rt=rt, branch_index=current_pf_branch_index, f_bus_idx=f, t_bus_idx=t, sbase=grid.Sbase)
+        if isinstance(rt, JMartiHistoryRuntime) and rt.coupling_block is not None:
+            # Both PF providers have now initialized the same physical runtime.
+            # Seed the problem-owned waves and offsets once in this common path.
+            if rt.initial_source_available:
+                pass
+            elif self.logger is None:
+                pass
             else:
-                if self.options.verbose:
-                    print("No Power Flow results given.")
-                else:
-                    pass
+                self.logger.add_warning(
+                    msg="JMARTI phase initialization source is incomplete; using zero numerical history.",
+                    device=branch.name,
+                    value="Missing PF/PF3 phase voltages or terminal powers",
+                    expected_value="Complete voltage/current source; zero history is a runtime fallback",
+                )
+            wave_groups: tuple[List[Var], ...] = (
+                rt.outgoing_wave_f_re, rt.outgoing_wave_t_re,
+                rt.outgoing_wave_f_im, rt.outgoing_wave_t_im,
+            )
+            offset_groups: tuple[List[Var], ...] = (
+                rt.incoming_voltage_f_re, rt.incoming_voltage_t_re,
+                rt.incoming_voltage_f_im, rt.incoming_voltage_t_im,
+            )
+            group_index: int
+            group_vars: List[Var]
+            phase_index: int
+            wave_var: Var
+            wave_value: complex
+            offset_value: complex
+            wave_seed: float
+            offset_seed: float
+            if rt.initial_source_available:
+                pass
+            else:
+                # The cold-history fallback must pass through the same retained
+                # parameter stores as a PF seed, before native initialization.
+                # It remains numerical runtime state, without a physical cache.
+                for phase_index in range(rt.m):
+                    self._set_runtime_parameter_seed_by_uid(
+                        uid=rt.Ih_f[phase_index].uid,
+                        value=0.0,
+                        persist_after_native_init=True,
+                    )
+                    self._set_runtime_parameter_seed_by_uid(
+                        uid=rt.Ih_t[phase_index].uid,
+                        value=0.0,
+                        persist_after_native_init=True,
+                    )
+            for group_index, group_vars in enumerate(wave_groups):
+                for phase_index, wave_var in enumerate(group_vars):
+                    wave_value = complex(rt.initial_phase_waves[group_index % 2, phase_index])
+                    offset_value = complex(rt.initial_voltage_offsets[group_index % 2, phase_index])
+                    if group_index < 2:
+                        wave_seed = float(wave_value.real)
+                        offset_seed = float(offset_value.real)
+                    else:
+                        wave_seed = float(wave_value.imag)
+                        offset_seed = float(offset_value.imag)
+                    self._temp_init_guess[wave_var.uid] = wave_seed
+                    self._temp_post_init_guess[wave_var.uid] = wave_seed
+                    self._set_runtime_parameter_seed_by_uid(
+                        uid=offset_groups[group_index][phase_index].uid,
+                        value=offset_seed,
+                        persist_after_native_init=True,
+                    )
+        else:
+            pass
 
         i_f_exprs: List[Any]
         i_t_exprs: List[Any]
@@ -4857,27 +4682,19 @@ class EmtProblemDae(EmtProblemTemplate):
             br_vt_keys=br_vt_keys,
         )
 
-        if self.power_flow_results_3ph is not None:
+        if self.power_flow_results_3ph is not None or self.power_flow_results is not None:
+            if self.power_flow_results_3ph is None and self.options.verbose:
+                print("Initializing branch variables assuming a balanced power flow")
             if is_vsc and vsc_index >= 0:
                 self._try_set_vsc_branch_pf_init(mdl=mdl, f_bus_idx=f, t_bus_idx=t, sbase=sbase, vsc_index=vsc_index)
             else:
-                self._try_set_branch_pf_init(mdl=mdl, branch_index=current_pf_branch_index, f_bus_idx=f, t_bus_idx=t, sbase=grid.Sbase, is_vsc=is_vsc, vsc_index=vsc_index)
-        else:
-            if self.power_flow_results is not None:
-                if self.options.verbose:
-                    print("Initializing branch variables assuming a balanced power flow")
-                else:
-                    pass
-
-                if is_vsc and vsc_index >= 0:
-                    self._try_set_vsc_branch_pf_init_balanced(mdl=mdl, f_bus_idx=f, t_bus_idx=t, sbase=sbase, vsc_index=vsc_index)
-                else:
-                    self._try_set_branch_pf_init_balanced(mdl=mdl, branch_index=current_pf_branch_index, f_bus_idx=f, t_bus_idx=t, sbase=grid.Sbase, static_parameter_values_mapping=static_parameter_values_mapping, is_vsc=is_vsc, vsc_index=vsc_index)
-            else:
-                if self.options.verbose:
-                    print("No Power Flow results given.")
-                else:
-                    pass
+                self._try_set_branch_pf_init(
+                    mdl=mdl, branch=branch, branch_index=current_pf_branch_index,
+                    f_bus_idx=f, t_bus_idx=t, sbase=grid.Sbase,
+                    static_parameter_values_mapping=static_parameter_values_mapping,
+                )
+        elif self.options.verbose:
+            print("No Power Flow results given.")
 
     def _connect_branch_terminal_voltages(self,
                                           branch: Any,
@@ -5287,21 +5104,12 @@ class EmtProblemDae(EmtProblemTemplate):
             static_parameter_values_mapping=static_parameter_values_mapping,
         )
 
-        if self.power_flow_results_3ph is not None:
+        if self.power_flow_results_3ph is not None or self.power_flow_results is not None:
+            if self.power_flow_results_3ph is None and self.options.verbose:
+                print("Initializing bus variables assuming a balanced power flow")
             self._try_set_bus_pf_init(bus=bus, mdl=mdl, bus_index=bus_index)
-        else:
-            if self.power_flow_results is not None:
-                if self.options.verbose:
-                    print("Initializing bus variables assuming a balanced power flow")
-                else:
-                    pass
-
-                self._try_set_bus_pf_init_balanced(bus=bus, mdl=mdl, bus_index=bus_index)
-            else:
-                if self.options.verbose:
-                    print("No Power Flow results given.")
-                else:
-                    pass
+        elif self.options.verbose:
+            print("No Power Flow results given.")
 
 
     # ---------------------------------------------------------------------
@@ -5360,18 +5168,8 @@ class EmtProblemDae(EmtProblemTemplate):
             VarPowerFlowReferenceType.it_B,
             VarPowerFlowReferenceType.it_C,
         ])
-        br_vf_keys: List[VarPowerFlowReferenceType] = list([
-            VarPowerFlowReferenceType.vf_N,
-            VarPowerFlowReferenceType.vf_A,
-            VarPowerFlowReferenceType.vf_B,
-            VarPowerFlowReferenceType.vf_C,
-        ])
-        br_vt_keys: List[VarPowerFlowReferenceType] = list([
-            VarPowerFlowReferenceType.vt_N,
-            VarPowerFlowReferenceType.vt_A,
-            VarPowerFlowReferenceType.vt_B,
-            VarPowerFlowReferenceType.vt_C,
-        ])
+        # Keep all NABC positions here: the connector indexes by physical phase.
+        br_vf_keys, br_vt_keys = get_branch_terminal_voltage_refs([True, True, True, True])
 
         c0: Any = Const(0.0)
 
@@ -5439,25 +5237,31 @@ class EmtProblemDae(EmtProblemTemplate):
                 fbase=fbase,
             )
 
-        # seed store to save the different injections in a bus
-        seed_store: Optional[EmtInjectionOperatingPoint]
-
-        if self.power_flow_results_3ph is not None:
-            seed_store = self._build_injection_seed_store_3ph(
-                grid=grid,
-                bus_dict=bus_dict,
-                injection_devices=injection_devices,
-                sbase=grid.Sbase,
-            )
-        else:
-            if self.power_flow_results is not None:
-                seed_store = self._build_injection_seed_store_balanced(
+        # Map the same structural injections once, after branch construction.
+        # Source capability and effective sequence impedances must be available
+        # before allocating per-device PF3 seeds, including nested source blocks.
+        mapped_injection: InjectionParent
+        for mapped_injection in injection_devices:
+            if self._get_device_emt_disposition(mapped_injection.device_type) == EmtDeviceDisposition.INJECTION_STRUCTURAL:
+                assign_static_api_object_mapping_for_device(
                     grid=grid,
-                    bus_dict=bus_dict,
-                    injection_devices=injection_devices,
+                    device=mapped_injection,
+                    mdl=mapped_injection.emt_model,
+                    problem_mapping=static_parameter_values_mapping,
+                    logger=self.logger,
                 )
             else:
-                seed_store = None
+                pass
+
+        # Only PF3 needs reconstructed per-device phase powers. Balanced PF
+        # powers are read directly when applying each device initialization.
+        seed_store: Optional[EmtInjectionOperatingPoint] = self._build_injection_seed_store(
+            grid=grid,
+            bus_dict=bus_dict,
+            injection_devices=injection_devices,
+            sbase=grid.Sbase,
+            static_parameter_values_mapping=static_parameter_values_mapping,
+        )
 
         for injection_index, inj in enumerate(injection_devices):
             self._build_emt_injection_device(
@@ -5878,6 +5682,12 @@ class EmtProblemDae(EmtProblemTemplate):
             active_runtime_eqs[self._runtime_mode_slice]
         )
 
+        # The compiled kernel still belongs to the previous group. Disable and drop
+        # it before the initial runtime values of this group are evaluated below,
+        # so they come from this group's equations; it is rebuilt at the end.
+        self._runtime_parameter_kernel = None
+        self._runtime_parameter_kernel_enabled = False
+
         # Rebuild the unified event-equation vector without concatenating lists,
         # preserving the continuous-then-mode ordering expected by the solver.
         self._event_parameters_eqs = list(self._runtime_continuous_eqs)
@@ -5916,6 +5726,13 @@ class EmtProblemDae(EmtProblemTemplate):
                 0,
                 dtype=np.float64,
             )
+
+        # Continuous event expressions are now final for the selected group.
+        # Replace the previously generated kernel while keeping the compiled
+        # path disabled until problem initialization has fully completed.
+        self._runtime_parameter_kernel = None
+        self._runtime_parameter_kernel_enabled = False
+        self._build_runtime_parameter_kernel()
 
     # ---------------------------------------------------------------------
     # MAPPINGS
@@ -6004,6 +5821,12 @@ class EmtProblemDae(EmtProblemTemplate):
     # ---------------------------------------------------------------------
     # PF INIT
     # ---------------------------------------------------------------------
+    def _get_bus_voltage_vector(self, bus_index: int) -> np.ndarray:
+        """Return NABC bus phasors from three-phase PF, or balanced PF otherwise."""
+        if self.power_flow_results_3ph is not None:
+            return self._get_bus_voltage_vector_3ph(bus_index)
+        return self._get_bus_voltage_vector_balanced(bus_index)
+
     def _get_bus_voltage_vector_3ph(self, bus_index: int) -> np.ndarray:
         """
         Return the bus phase-voltage phasors from the three-phase PF result.
@@ -6045,131 +5868,397 @@ class EmtProblemDae(EmtProblemTemplate):
 
         return voltage_vector
 
-    def _get_load_fixed_power_vector_3ph(self, load: Any) -> np.ndarray:
+    def _get_load_fixed_power_vector(self, load: Any, bus_index: int) -> np.ndarray:
+        """Return NABC ZIP load power at the solved bus voltage.
+
+        PF3 uses explicit phase data with balanced-total fallback. Balanced PF
+        uses totals split equally across ABC. Consumption is negative injection.
         """
-        Return the fixed per-phase complex power seed of a three-phase load.
+        if self.power_flow_results_3ph is not None:
+            active_power, reactive_power = get_load_power_phase_values_pu_abc(load, self.grid)
+            current_real, current_imag = get_load_current_phase_values_pu_abc(load, self.grid)
+            conductance, susceptance = get_load_impedance_phase_values_pu_abc(load, self.grid)
+            constant_power = active_power + 1j * reactive_power
+            current_coefficient = current_real - 1j * current_imag
+            impedance_coefficient = conductance - 1j * susceptance
+        else:
+            phase_base = 3.0 * self.grid.Sbase
+            constant_power = np.full(3, complex(load.P, load.Q) / phase_base)
+            current_coefficient = np.full(3, complex(load.Ir, -load.Ii) / phase_base)
+            impedance_coefficient = np.full(3, complex(load.G, -load.B) / phase_base)
 
-        The EMT sign convention used here is injection-oriented, hence loads are
-        represented as negative power injections.
-
-        :param load: Load device.
-        :return: Complex power vector in NABC order.
-        """
-        phase_p_pu_abc: np.ndarray
-        phase_q_pu_abc: np.ndarray
-        phase_p_pu_nabc: np.ndarray
-        phase_q_pu_nabc: np.ndarray
-        power_vector: np.ndarray = _zero_ac_power_vector()
-
-        # Three-phase PF seeds must still tolerate balanced static-device data.
-        # Reuse the same explicit-or-balanced resolution as the generic static
-        # parameter mapper so seeded per-phase powers stay consistent.
-        phase_p_pu_abc, phase_q_pu_abc = get_load_power_phase_values_pu_abc(load=load, grid=self.grid)
-        phase_p_pu_nabc = abc_to_nabc(phase_values_abc=phase_p_pu_abc)
-        phase_q_pu_nabc = abc_to_nabc(phase_values_abc=phase_q_pu_abc)
-
-        power_vector[0] = 0.0 + 0.0j
-        power_vector[1] = complex(-float(phase_p_pu_nabc[1]), -float(phase_q_pu_nabc[1]))
-        power_vector[2] = complex(-float(phase_p_pu_nabc[2]), -float(phase_q_pu_nabc[2]))
-        power_vector[3] = complex(-float(phase_p_pu_nabc[3]), -float(phase_q_pu_nabc[3]))
-
+        voltages = self._get_bus_voltage_vector(bus_index)
+        power_vector = _zero_ac_power_vector()
+        for phase in range(3):
+            voltage_magnitude = abs(voltages[phase + 1])
+            current_power = current_coefficient[phase] * voltage_magnitude
+            impedance_power = impedance_coefficient[phase] * voltage_magnitude ** 2
+            power_vector[phase + 1] = -(constant_power[phase] + current_power + impedance_power)
         return power_vector
 
-    def _get_shunt_fixed_power_vector_3ph(
+    def _get_shunt_fixed_power_vector(self, shunt: Any, bus_index: int) -> np.ndarray:
+        """Return the shunt power injected into the bus in NABC order.
+
+        PF3 preserves phase data with balanced-total fallback. Balanced PF uses
+        the total admittance split equally across ABC, including kW conversion.
+        Positive conductance consumes P; positive capacitive susceptance supplies Q.
+
+        :param shunt: Static shunt supplying conductance and susceptance.
+        :param bus_index: Bus position in the power-flow results.
+        :return: Phase powers on the system power base, with zero neutral power.
+        """
+        conductance: np.ndarray
+        susceptance: np.ndarray
+        if self.power_flow_results_3ph is not None:
+            conductance, susceptance = get_shunt_phase_values_pu_abc(shunt, self.grid)
+        else:
+            unit_scale: float = 1000.0 if shunt.use_kw else 1.0
+            phase_base: float = 3.0 * self.grid.Sbase * unit_scale
+            conductance = np.full(3, float(shunt.G) / phase_base)
+            susceptance = np.full(3, float(shunt.B) / phase_base)
+
+        voltages: np.ndarray = self._get_bus_voltage_vector(bus_index)
+        power_vector: np.ndarray = _zero_ac_power_vector()
+        for phase in range(3):
+            voltage_square: float = float(abs(voltages[phase + 1]) ** 2)
+            active_power: float = -conductance[phase] * voltage_square
+            reactive_power: float = susceptance[phase] * voltage_square
+            power_vector[phase + 1] = complex(active_power, reactive_power)
+        return power_vector
+
+    def _try_seed_colocated_balanced_pv_sources(
             self,
-            shunt: Any,
+            grid: MultiCircuit,
             bus_index: int,
-    ) -> np.ndarray:
+            injection_devices: List[InjectionParent],
+            source_indices: np.ndarray,
+            residual_power: np.ndarray,
+            sbase: float,
+            static_parameter_values_mapping: Dict[Var, Const],
+            device_phase_power: np.ndarray,
+    ) -> bool:
+        """Reconstruct one complete group of declared reciprocal Balanced PV sources.
+
+        A nodal PF3 solution does not identify individual source phase currents.
+        Reuse the PF reactive-sharing policy, retain each scheduled active power,
+        and recover passive zero/negative sequences from the mapped source law.
+        Unsupported groups leave the existing residual allocator authoritative.
+
+        :param grid: Canonical network supplying static generator snapshots.
+        :param bus_index: AC bus position in the PF3 result.
+        :param injection_devices: Devices in the same row order as the phase-power array.
+        :param source_indices: Positions of the source-like devices at this bus.
+        :param residual_power: Unassigned per-unit NABC power on the system base.
+        :param sbase: System three-phase power base in MVA.
+        :param static_parameter_values_mapping: Effective mapped constant values.
+        :param device_phase_power: Temporary NABC power array, updated only after whole-group checks.
+        :return: True if every group seed was committed; False leaves it untouched.
         """
-        Return the fixed per-phase complex power seed of a shunt.
+        bus: Bus = grid.buses[bus_index]
+        source_count: int = len(source_indices)
+        if source_count > 1 and not bus.is_dc and not bus.is_slack and self.power_flow_results_3ph is not None:
+            pass
+        else:
+            return False
 
-        Explicit per-phase ``G`` and ``B`` values are preserved when available.
-        When the static device only defines balanced totals, the shared phase-value
-        resolver distributes those totals consistently with the static mapper.
-        Returned values follow the EMT injection convention: conductance consumes
-        active power and positive capacitive susceptance injects reactive power.
+        # Qfixed=0 is valid only for a bus consisting entirely of these online,
+        # local voltage controllers. Exclude fixed/ZIP/shunt/mixed participants.
+        injection: InjectionParent
+        bus_device_count: int = 0
+        for injection in injection_devices:
+            if injection.bus is bus:
+                if isinstance(injection, Generator) and injection.device_type == DeviceType.GeneratorDevice:
+                    bus_device_count += 1
+                else:
+                    return False
+            else:
+                pass
+        if bus_device_count == source_count:
+            pass
+        else:
+            return False
 
-        :param shunt: Shunt device.
-        :param bus_index: Bus index.
-        :return: Complex power vector in NABC order.
-        """
-        voltage_vector: np.ndarray = self._get_bus_voltage_vector_3ph(bus_index)
-        power_vector: np.ndarray = _zero_ac_power_vector()
-        g_phase_abc_pu: np.ndarray
-        b_phase_abc_pu: np.ndarray
-        g_phase_nabc_pu: np.ndarray
-        b_phase_nabc_pu: np.ndarray
-        phase_index: int = 1
+        # Allocate the bounded group workspaces; no second network or retained
+        # source representation is introduced into MultiCircuit or the devices.
+        scheduled_p: np.ndarray = np.zeros(source_count, dtype=np.float64)
+        qmin: np.ndarray = np.zeros(source_count, dtype=np.float64)
+        qmax: np.ndarray = np.zeros(source_count, dtype=np.float64)
+        vset: np.ndarray = np.zeros(source_count, dtype=np.float64)
+        sequence_impedance: np.ndarray = np.zeros((source_count, 2), dtype=np.complex128)
+        required_refs: tuple[VarPowerFlowReferenceType, ...] = (
+            VarPowerFlowReferenceType.v_A, VarPowerFlowReferenceType.v_B, VarPowerFlowReferenceType.v_C,
+            VarPowerFlowReferenceType.i_A, VarPowerFlowReferenceType.i_B, VarPowerFlowReferenceType.i_C,
+            VarPowerFlowReferenceType.phi_v, VarPowerFlowReferenceType.phi,
+            VarPowerFlowReferenceType.Vpk, VarPowerFlowReferenceType.Ipk,
+            VarPowerFlowReferenceType.UR_A, VarPowerFlowReferenceType.UR_B, VarPowerFlowReferenceType.UR_C,
+            VarPowerFlowReferenceType.UI_A, VarPowerFlowReferenceType.UI_B, VarPowerFlowReferenceType.UI_C,
+            VarPowerFlowReferenceType.IR_A, VarPowerFlowReferenceType.IR_B, VarPowerFlowReferenceType.IR_C,
+            VarPowerFlowReferenceType.II_A, VarPowerFlowReferenceType.II_B, VarPowerFlowReferenceType.II_C,
+        )
+        extra_terminals: tuple[VarPowerFlowReferenceType, ...] = (
+            VarPowerFlowReferenceType.i_N, VarPowerFlowReferenceType.Idc,
+            VarPowerFlowReferenceType.If_dc, VarPowerFlowReferenceType.It_dc,
+            VarPowerFlowReferenceType.if_N, VarPowerFlowReferenceType.if_A,
+            VarPowerFlowReferenceType.if_B, VarPowerFlowReferenceType.if_C,
+            VarPowerFlowReferenceType.it_N, VarPowerFlowReferenceType.it_A,
+            VarPowerFlowReferenceType.it_B, VarPowerFlowReferenceType.it_C,
+        )
+        impedance_refs: tuple[ParamPowerFlowReferenceType, ...] = (
+            ParamPowerFlowReferenceType.R1, ParamPowerFlowReferenceType.X1,
+            ParamPowerFlowReferenceType.thevenin_source_r0_pu,
+            ParamPowerFlowReferenceType.thevenin_source_x0_pu,
+        )
+        row: int
+        for row in range(source_count):
+            injection = injection_devices[int(source_indices[row])]
+            if isinstance(injection, Generator):
+                generator: Generator = injection
+            else:
+                return False
+            if (
+                    generator.get_active_at(None)
+                    and generator.get_control_mode_prof_at(None) == GeneratorControlMode.V
+                    and (generator.control_bus is None or generator.control_bus is bus)
+                    and generator.conn == ShuntConnectionType.GroundedStar
+                    and not generator.use_reactive_power_curve and not generator.use_kw
+            ):
+                pass
+            else:
+                return False
+            scheduled_p[row] = generator.get_P_at(None)
+            qmin[row] = generator.get_Qmin_at(None)
+            qmax[row] = generator.get_Qmax_at(None)
+            vset[row] = generator.get_Vset_at(None)
+            if (
+                    np.isfinite(scheduled_p[row]) and np.isfinite(qmin[row])
+                    and np.isfinite(qmax[row]) and qmin[row] <= qmax[row]
+                    and np.isfinite(vset[row]) and abs(vset[row] - vset[0]) <= 1.0e-8
+            ):
+                pass
+            else:
+                return False
 
-        # Three-phase PF seeds must preserve explicit per-phase shunt data when it
-        # exists, but they must also derive phase values from balanced totals when
-        # the static device only carries positive-sequence quantities.
-        g_phase_abc_pu, b_phase_abc_pu = get_shunt_phase_values_pu_abc(shunt=shunt, grid=self.grid)
-        g_phase_nabc_pu = abc_to_nabc(phase_values_abc=g_phase_abc_pu)
-        b_phase_nabc_pu = abc_to_nabc(phase_values_abc=b_phase_abc_pu)
+            # Resolve only an explicit canonical declaration, never a name or
+            # inferred equation family. Validate both tree aliases and local owner.
+            root: Block = generator.emt_model
+            blocks: List[Block] = root.get_all_blocks()
+            source: Block | None = None
+            block: Block
+            for block in blocks:
+                if block.dynamic_model_contract.emt_finite_reciprocal_source_mode_var_uid is not None:
+                    if source is None:
+                        source = block
+                    else:
+                        return False
+                else:
+                    pass
+            if source is None:
+                return False
+            else:
+                validate_dynamic_model_contract(root)
+                validate_dynamic_model_contract(source)
 
-        power_vector[0] = 0.0 + 0.0j
+            # An empty wrapper may expose the same UID interface. A different
+            # root alias or additional runtime owner cannot share this source law.
+            consumed_refs: Dict[VarPowerFlowReferenceType, Var] = _collect_external_mapping_from_block(root)
+            variable: Var
+            input_uids: Set[int] = set(variable.uid for variable in source.in_vars)
+            current_uids: Set[int] = set(variable.uid for variable in source.state_vars)
+            current_uids.update(variable.uid for variable in source.out_vars)
+            event_uids: Set[int] = set(variable.uid for variable in source.event_dict)
+            ref_index: int
+            reference: VarPowerFlowReferenceType
+            for ref_index, reference in enumerate(required_refs):
+                local_ref: Var | None = source.external_mapping.get(reference, None)
+                consumed_ref: Var | None = consumed_refs.get(reference, None)
+                if local_ref is not None and consumed_ref is not None and local_ref.uid == consumed_ref.uid:
+                    if ref_index < 3:
+                        owned_uids: Set[int] = input_uids
+                    elif ref_index < 6:
+                        owned_uids = current_uids
+                    else:
+                        owned_uids = event_uids
+                    if local_ref.uid in owned_uids:
+                        pass
+                    else:
+                        return False
+                else:
+                    return False
+                for block in blocks:
+                    exposed_ref: Var | None = block.external_mapping.get(reference, None)
+                    if exposed_ref is None or exposed_ref.uid == local_ref.uid:
+                        pass
+                    else:
+                        return False
+            for block in blocks:
+                if len(block.dynamic_model_contract.emt_terminal_current_contributions) > 0:
+                    return False
+                else:
+                    pass
+                for reference in extra_terminals:
+                    if block.external_mapping.get(reference, None) is None:
+                        pass
+                    else:
+                        return False
+                if block is source:
+                    pass
+                elif (
+                        len(block.state_eqs) > 0 or len(block.algebraic_eqs) > 0
+                        or len(block.differential_eqs) > 0 or len(block.diff_vars) > 0
+                        or len(block.event_dict) > 0 or len(block.mode_dict) > 0
+                ):
+                    return False
+                else:
+                    pass
 
-        while phase_index < 4:
-            phase_voltage: complex = complex(voltage_vector[phase_index])
-            voltage_square: float = float(np.abs(phase_voltage) ** 2)
+            # Use the same UID-based effective constant resolution as normal
+            # device construction, including mapped mode and optional Z0 fallback.
+            mode_parameter: Var | None = None
+            parameter: Var
+            for parameter in source.parameters:
+                if parameter.uid == source.dynamic_model_contract.emt_finite_reciprocal_source_mode_var_uid:
+                    mode_parameter = parameter
+                else:
+                    pass
+            if mode_parameter is None:
+                return False
+            else:
+                mode_value: Const = resolve_constant_parameter_initial_value(
+                    generator, DynamicSimulationMode.EMT, root, source, mode_parameter, source.parameters[mode_parameter],
+                    static_parameter_values_mapping,
+                )
+            source_mode: TheveninSourceVoltageMode
+            if isinstance(mode_value.value, (int, float)) and not isinstance(mode_value.value, bool):
+                pass
+            else:
+                return False
+            if mode_value.value == 0:
+                source_mode = TheveninSourceVoltageMode.Balanced
+            elif mode_value.value == 1:
+                source_mode = TheveninSourceVoltageMode.Phase
+            else:
+                return False
+            if source_mode == TheveninSourceVoltageMode.Balanced:
+                pass
+            else:
+                return False
+            effective_impedances: np.ndarray = np.zeros(4, dtype=np.float64)
+            impedance_ref: ParamPowerFlowReferenceType
+            for ref_index, impedance_ref in enumerate(impedance_refs):
+                parameter = source.api_obj_mapping[impedance_ref]
+                resolved: Const = resolve_constant_parameter_initial_value(
+                    generator, DynamicSimulationMode.EMT, root, source, parameter, source.parameters[parameter],
+                    static_parameter_values_mapping,
+                )
+                effective_impedances[ref_index] = float(resolved.value)
+            sequence_impedance[row, 0] = complex(effective_impedances[0], effective_impedances[1])
+            sequence_impedance[row, 1] = complex(effective_impedances[2], effective_impedances[3])
 
-            # Static G+jB describes the admittance that absorbs branch power.
-            # The EMT operating-point store is injection-oriented, therefore a
-            # positive G consumes P while a positive capacitive B injects Q.
-            power_vector[phase_index] = complex(
-                -float(g_phase_nabc_pu[phase_index]) * voltage_square,
-                float(b_phase_nabc_pu[phase_index]) * voltage_square,
+        # Treat solved voltage/setpoint compatibility as applicability, without
+        # inventing a physical setpoint or mutating the input PF3 snapshot.
+        voltage: np.ndarray = np.array((self.power_flow_results_3ph.voltage_A[bus_index],
+            self.power_flow_results_3ph.voltage_B[bus_index], self.power_flow_results_3ph.voltage_C[bus_index]),
+            dtype=np.complex128)
+        rotation: np.ndarray = np.exp(-2j * np.pi * np.arange(3) / 3.0)
+        v0: complex = complex(np.mean(voltage))
+        v1: complex = complex(np.mean(voltage / rotation))
+        v2: complex = complex(np.mean(voltage * rotation))
+        applicable: bool = bool(
+            np.all(np.isfinite(voltage)) and np.all(np.isfinite(residual_power))
+            and np.isfinite(sbase) and sbase > 0.0 and abs(v1) > 1.0e-12
+            and np.min(np.abs(voltage)) > 1.0e-12 and abs(abs(v1) - vset[0]) <= 1.0e-6
+            and abs(residual_power[0]) <= 1.0e-6
+        )
+        phase_power: np.ndarray = np.zeros((source_count, 4), dtype=np.complex128)
+        if applicable:
+            # Flat native snapshot limits use exactly the shared PF Q policy.
+            # No extra clipping is applied to the already solved bus injection.
+            q_allocated: np.ndarray
+            q_batteries: np.ndarray
+            q_allocated, q_batteries = split_reactive_power_between_generators_and_batteries(
+                Qbus=np.array((np.sum(residual_power[1:]).imag * sbase,)),
+                Qfixed_bus=np.zeros(1), gen_bus_idx=np.zeros(source_count, dtype=np.int64),
+                Qmin_gen=qmin, Qmax_gen=qmax, gen_status=np.ones(source_count, dtype=bool),
+                control_mode_int_gen=np.full(source_count, GeneratorControlMode.V.idx(), dtype=np.int64),
+                Q0_gen=np.zeros(source_count), Vset_gen=vset, k_droop_gen=np.zeros(source_count),
+                dead_band_gen=np.zeros(source_count), batt_bus_idx=np.zeros(0, dtype=np.int64),
+                Qmin_batt=np.zeros(0), Qmax_batt=np.zeros(0), batt_status=np.zeros(0, dtype=bool),
+                control_mode_int_batt=np.zeros(0, dtype=np.int64), Q0_batt=np.zeros(0),
+                v_ctrl_val_gen=GeneratorControlMode.V.idx(), qv_droop_val_gen=GeneratorControlMode.QVDroop.idx(),
+                Vm=np.array((abs(v1),)), enforce_q_limits=False,
             )
-            phase_index += 1
+            group_current: np.ndarray = np.zeros(3, dtype=np.complex128)
+            for row in range(source_count):
+                passive_current: np.ndarray = -v0 / sequence_impedance[row, 1] - v2 / sequence_impedance[row, 0] * rotation.conj()
+                passive_power: complex = complex(np.mean(voltage * passive_current.conj()))
+                i1: complex = complex(np.conj((complex(scheduled_p[row], q_allocated[row]) / sbase - passive_power) / v1))
+                current: np.ndarray = passive_current + i1 * rotation
+                group_current += current
+                phase_power[row, 1:] = voltage * current.conj() / 3.0
+            applicable = bool(
+                np.all(np.isfinite(phase_power)) and np.all(np.isfinite(group_current))
+                and np.max(np.abs(group_current - 3.0 * np.conj(residual_power[1:] / voltage))) <= 1.0e-6
+                and np.max(np.abs(np.sum(phase_power, axis=0) - residual_power)) <= 1.0e-6
+            )
+        else:
+            pass
+        if applicable:
+            # Commit atomically after all electrical and interface gates pass.
+            for row in range(source_count):
+                device_phase_power[int(source_indices[row]), :] = phase_power[row]
+            return True
+        else:
+            if self.logger is not None:
+                self.logger.add_warning(msg="Colocated Balanced PV PF3 seed is incompatible; using existing residual allocation.",
+                    device=bus.name, device_class="EMT", device_property="injection_seed_store_3ph",
+                    value="Solved voltage or aggregate current/power mismatch", expected_value="Compatible complete PV snapshot")
+            else:
+                pass
+            return False
 
-        return power_vector
-
-    def _build_injection_seed_store_3ph(
+    def _build_injection_seed_store(
             self,
             grid: MultiCircuit,
             bus_dict: Dict[Bus, int],
             injection_devices: List[INJECTION_DEVICE_TYPES],
             sbase: float,
-    ) -> EmtInjectionOperatingPoint:
-        """Build per-device EMT seeds without extending the PF3 result contract.
+            static_parameter_values_mapping: Dict[Var, Const],
+    ) -> Optional[EmtInjectionOperatingPoint]:
+        """Build a common per-device power representation for balanced PF or PF3.
 
-        PF3 provides solved phase powers at bus level but does not expose active
-        power per generator. EMT therefore evaluates every fixed injection at
-        the solved phase voltages and applies the same limit-based slack split
-        already used by balanced PF to the remaining per-phase residual.
+        Balanced device dispatch is consumed directly. PF3 phase powers require
+        allocation among sources before both paths use the same seed application.
 
         :param grid: Static network model.
-        :param bus_dict: Mapping from static buses to result positions.
-        :param injection_devices: Fixed-order injection-device collection.
-        :param sbase: System three-phase power base.
-        :return: Fixed-size EMT per-device operating point.
+        :param bus_dict: Bus positions in the PF results.
+        :param injection_devices: Fixed device ordering for the returned store.
+        :param sbase: System power base.
+        :param static_parameter_values_mapping: Mapped constants for PV reconstruction.
+        :return: Per-device powers, or None when neither PF result is supplied.
         """
+        use_3ph: bool = self.power_flow_results_3ph is not None
+        if not use_3ph and self.power_flow_results is None:
+            return None
+        else:
+            pass
         n_buses: int = len(grid.buses)
         n_injections: int = len(injection_devices)
         generators: List[INJECTION_DEVICE_TYPES] = list(grid.get_generators())
         batteries: List[INJECTION_DEVICE_TYPES] = list(grid.get_batteries())
         n_generators: int = len(generators)
         n_batteries: int = len(batteries)
-        operating_point: EmtInjectionOperatingPoint = EmtInjectionOperatingPoint(n_injections)
-        balanced_operating_point: Optional[EmtInjectionOperatingPoint]
 
-        if self.power_flow_results is None:
-            balanced_operating_point = None
-        else:
-            balanced_operating_point = build_balanced_emt_injection_operating_point(
-                grid=grid,
-                power_flow_results=self.power_flow_results,
-                bus_dict=bus_dict,
-                injection_devices=injection_devices,
-            )
+        operating_point: EmtInjectionOperatingPoint = EmtInjectionOperatingPoint(n_injections)
 
         # PF3 exposes only bus phase powers. Preserve them as the authoritative
         # phase targets and accumulate all non-participating device powers.
         target_bus_power: np.ndarray = np.zeros((n_buses, 4), dtype=np.complex128)
-        target_bus_power[:, 1] = self.power_flow_results_3ph.Sbus_A / sbase
-        target_bus_power[:, 2] = self.power_flow_results_3ph.Sbus_B / sbase
-        target_bus_power[:, 3] = self.power_flow_results_3ph.Sbus_C / sbase
+        if use_3ph:
+            target_bus_power[:, 1] = self.power_flow_results_3ph.Sbus_A / sbase
+            target_bus_power[:, 2] = self.power_flow_results_3ph.Sbus_B / sbase
+            target_bus_power[:, 3] = self.power_flow_results_3ph.Sbus_C / sbase
+        else:
+            pass
         fixed_bus_power: np.ndarray = np.zeros((n_buses, 4), dtype=np.complex128)
         device_phase_power: np.ndarray = np.zeros((n_injections, 4), dtype=np.complex128)
         generator_injection_indices: np.ndarray = np.full(n_generators, -1, dtype=np.int64)
@@ -6194,10 +6283,8 @@ class EmtProblemDae(EmtProblemTemplate):
             else:
                 pass
 
-            if injection.bus.is_dc:
-                # PF3 does not solve DC terminals. A simultaneous balanced PF is
-                # the only source that can provide a per-device DC dispatch.
-                if balanced_operating_point is None:
+            if not use_3ph or injection.bus.is_dc:
+                if self.power_flow_results is None:
                     if self.logger is not None:
                         self.logger.add_error(
                             msg="Three-phase EMT initialization requires balanced PF results for DC injections.",
@@ -6208,10 +6295,17 @@ class EmtProblemDae(EmtProblemTemplate):
                     else:
                         pass
                 else:
-                    operating_point.set_dc_seed(
-                        injection_index=injection_index,
-                        power_value=balanced_operating_point.get_dc_seed(injection_index),
+                    device_power: complex = get_balanced_device_power_pu(
+                        grid=grid, power_flow_results=self.power_flow_results,
+                        injection=injection, bus_dict=bus_dict,
+                        generator_index=generator_index, battery_index=battery_index,
                     )
+                    if injection.bus.is_dc:
+                        operating_point.set_dc_seed(injection_index, float(device_power.real))
+                    else:
+                        phase_power: np.ndarray = np.zeros(4, dtype=np.complex128)
+                        phase_power[1:4] = device_power / 3.0
+                        operating_point.set_ac_seed(injection_index, phase_power)
             else:
                 phase_power: np.ndarray = np.zeros(4, dtype=np.complex128)
 
@@ -6223,7 +6317,10 @@ class EmtProblemDae(EmtProblemTemplate):
                     elif injection.device_type == DeviceType.BatteryDevice:
                         pass
                     elif injection.device_type == DeviceType.LoadDevice:
-                        phase_power = self._get_load_fixed_power_vector_3ph(load=injection)
+                        phase_power = self._get_load_fixed_power_vector(
+                            load=injection,
+                            bus_index=bus_index,
+                        )
                     elif injection.device_type == DeviceType.StaticGeneratorDevice:
                         phase_p_abc: np.ndarray
                         phase_q_abc: np.ndarray
@@ -6239,12 +6336,12 @@ class EmtProblemDae(EmtProblemTemplate):
                         )
                         phase_power[1:4] = -(phase_p_abc + 1.0j * phase_q_abc)
                     elif injection.device_type == DeviceType.ShuntDevice:
-                        phase_power = self._get_shunt_fixed_power_vector_3ph(
+                        phase_power = self._get_shunt_fixed_power_vector(
                             shunt=injection,
                             bus_index=bus_index,
                         )
                     elif injection.device_type == DeviceType.ControllableShuntDevice:
-                        phase_power = self._get_shunt_fixed_power_vector_3ph(
+                        phase_power = self._get_shunt_fixed_power_vector(
                             shunt=injection,
                             bus_index=bus_index,
                         )
@@ -6255,7 +6352,7 @@ class EmtProblemDae(EmtProblemTemplate):
                             current_injection=injection,
                             grid=grid,
                         )
-                        voltage_vector: np.ndarray = self._get_bus_voltage_vector_3ph(bus_index)
+                        voltage_vector: np.ndarray = self._get_bus_voltage_vector(bus_index)
                         phase_index: int = 1
                         while phase_index < 4:
                             specified_current: complex = complex(
@@ -6287,6 +6384,11 @@ class EmtProblemDae(EmtProblemTemplate):
             else:
                 pass
             injection_index += 1
+
+        if not use_3ph:
+            return operating_point
+        else:
+            pass
 
         # Compile the source arrays required by the existing balanced slack
         # allocator. Baselines come from balanced PF when present, so non-slack
@@ -6420,74 +6522,147 @@ class EmtProblemDae(EmtProblemTemplate):
                 battery_index += 1
             phase_index += 1
 
-        # Convert every AC power seed to the NABC current coordinates expected
-        # by EMT. The neutral current closes the conductor-current sum.
-        injection_index = 0
-        while injection_index < n_injections:
-            injection = injection_devices[injection_index]
-            if injection.bus.is_dc:
-                pass
-            else:
-                phase_power = device_phase_power[injection_index, :]
-                operating_point.set_ac_seed(
-                    injection_index=injection_index,
-                    phase_power=phase_power,
-                )
-                bus_index = int(bus_dict[injection.bus])
-                voltage_vector: np.ndarray = self._get_bus_voltage_vector_3ph(bus_index)
-                phase_current: np.ndarray = np.zeros(4, dtype=np.complex128)
-                phase_index = 1
-                while phase_index < 4:
-                    if abs(voltage_vector[phase_index]) > 1.0e-12:
-                        phase_current[phase_index] = 3.0 * np.conj(
-                            phase_power[phase_index] / voltage_vector[phase_index]
-                        )
-                    else:
-                        phase_current[phase_index] = 0.0 + 0.0j
-                    phase_index += 1
-                phase_current[0] = -(phase_current[1] + phase_current[2] + phase_current[3])
-                operating_point.set_ac_current_seed(
-                    injection_index=injection_index,
-                    phase_current=phase_current,
-                    authoritative=False,
-                )
-            injection_index += 1
-
-        return operating_point
-
-    def _build_injection_seed_store_balanced(
-            self,
-            grid: MultiCircuit,
-            bus_dict: Dict[Bus, int],
-            injection_devices: List[INJECTION_DEVICE_TYPES],
-    ) -> EmtInjectionOperatingPoint:
-        """Build the EMT per-device operating point from balanced PF results.
-
-        The balanced power-flow worker already owns the slack-bus dispatch in
-        its per-device generator and battery result arrays. EMT must consume
-        that dispatch directly instead of constructing a second Snom-weighted
-        allocation from aggregate bus power.
-
-        :param grid: Static network model.
-        :param bus_dict: Mapping from static buses to power-flow result positions.
-        :param injection_devices: Fixed-order injection-device collection.
-        :return: EMT per-device operating point.
-        """
-        operating_point: EmtInjectionOperatingPoint
-
-        if self.power_flow_results is None:
-            # The caller normally omits the store when no PF result exists. Keep
-            # this state explicit so the helper remains safe in isolation.
-            operating_point = EmtInjectionOperatingPoint(len(injection_devices))
-        else:
-            operating_point = build_balanced_emt_injection_operating_point(
-                grid=grid,
-                power_flow_results=self.power_flow_results,
-                bus_dict=bus_dict,
-                injection_devices=injection_devices,
+        # Preserve the existing reciprocal PV reconstruction only for complete
+        # compatible groups. All other devices retain the upstream PF dispatch.
+        source_indices: np.ndarray = np.empty(n_generators, dtype=np.int64)
+        for bus_index in range(n_buses):
+            source_count: int = 0
+            for generator_index in range(n_generators):
+                if int(bus_dict[generators[generator_index].bus]) == bus_index:
+                    source_indices[source_count] = generator_injection_indices[generator_index]
+                    source_count += 1
+                else:
+                    pass
+            self._try_seed_colocated_balanced_pv_sources(
+                    grid=grid,
+                    bus_index=bus_index,
+                    injection_devices=injection_devices,
+                    source_indices=source_indices[:source_count],
+                    residual_power=target_bus_power[bus_index, :] - fixed_bus_power[bus_index, :],
+                    sbase=sbase,
+                    static_parameter_values_mapping=static_parameter_values_mapping,
+                    device_phase_power=device_phase_power,
             )
 
+        # Store powers only. Current conversion belongs to seed application.
+        for injection_index, injection in enumerate(injection_devices):
+            if not injection.bus.is_dc:
+                operating_point.set_ac_seed(injection_index, device_phase_power[injection_index])
+            else:
+                pass
         return operating_point
+
+
+    def _warn_balanced_thevenin_operating_point(
+            self, generator: Any, mdl: Block,
+            voltages: np.ndarray, currents: np.ndarray,
+    ) -> None:
+        """Warn when a balanced internal source cannot sustain the PF phasors."""
+        balanced_source: bool = False
+        for block in mdl.get_all_blocks():
+            mode_uid: int | None = block.dynamic_model_contract.emt_finite_reciprocal_source_mode_var_uid
+            for parameter, value in block.parameters.items():
+                if parameter.uid == mode_uid:
+                    balanced_source = value.value == 0.0
+        # The declared source mode determines capability; both modes share theta.
+        if balanced_source and self.logger is not None:
+            impedance = complex(generator.R1, generator.X1)
+            required_emf = voltages[1:] + impedance * currents[1:]
+            rotation = np.exp(2j * np.pi / 3.0)
+            positive_sequence = np.dot([1.0, rotation, rotation ** 2], required_emf) / 3.0
+            balanced_emf = positive_sequence * np.array([1.0, rotation ** 2, rotation])
+            mismatch = float(np.max(np.abs(required_emf - balanced_emf)))
+            tolerance = 1e-6 * max(1.0, float(np.max(np.abs(required_emf))))
+            if mismatch > tolerance:
+                self.logger.add_warning(
+                    msg=("Balanced EMT Thevenin source cannot maintain the provided PF operating point: "
+                         "V + (R + jX)I requires unbalanced internal phase EMFs. "
+                         "A startup transient is expected."),
+                    device=generator.name,
+                    value=mismatch,
+                    expected_value=f"Internal EMF departure from balance <= {tolerance:.3g} pu (RMS)",
+                )
+
+    def _warn_unsupported_load_power(
+            self,
+            injection: Any,
+            mdl: Block,
+            phase_power: np.ndarray,
+    ) -> None:
+        """Warn when a declared R/L/C load lacks a required component.
+
+        Models without physical component references are left unclassified.
+        This checks component presence, not sizing or steady-state accuracy.
+        """
+        if injection.device_type != DeviceType.LoadDevice or self.logger is None:
+            return
+
+        phase_references = (
+            ("A", VarPowerFlowReferenceType.R_A, VarPowerFlowReferenceType.L_A, VarPowerFlowReferenceType.C_A),
+            ("B", VarPowerFlowReferenceType.R_B, VarPowerFlowReferenceType.L_B, VarPowerFlowReferenceType.C_B),
+            ("C", VarPowerFlowReferenceType.R_C, VarPowerFlowReferenceType.L_C, VarPowerFlowReferenceType.C_C),
+        )
+        physical_references = set()
+        for phase, resistance_ref, inductance_ref, capacitance_ref in phase_references:
+            physical_references.update((resistance_ref, inductance_ref, capacitance_ref))
+
+        available_components = set()
+        for block in mdl.get_all_blocks():
+            for reference, parameter in block.external_mapping.items():
+                if reference in physical_references and parameter is not None:
+                    available_components.add(reference)
+
+        if not available_components:
+            return
+
+        power_tolerance_pu = 1.0e-9
+        for phase_index, references in enumerate(phase_references, start=1):
+            phase, resistance_ref, inductance_ref, capacitance_ref = references
+
+            # Seeds use injection signs: negate them to obtain load consumption.
+            active_power_pu = -float(np.real(phase_power[phase_index]))
+            reactive_power_pu = -float(np.imag(phase_power[phase_index]))
+
+            requires_active_power = abs(active_power_pu) > power_tolerance_pu
+            requires_inductive_power = reactive_power_pu > power_tolerance_pu
+            requires_capacitive_power = reactive_power_pu < -power_tolerance_pu
+
+            if requires_active_power and resistance_ref not in available_components:
+                self._log_unsupported_load_power(
+                    load_name=injection.name, phase=phase,
+                    power_type="active", power_pu=active_power_pu,
+                    unit="MW", required_component="resistor",
+                )
+            if requires_inductive_power and inductance_ref not in available_components:
+                self._log_unsupported_load_power(
+                    load_name=injection.name, phase=phase,
+                    power_type="inductive reactive", power_pu=reactive_power_pu,
+                    unit="MVAr", required_component="inductor",
+                )
+            if requires_capacitive_power and capacitance_ref not in available_components:
+                self._log_unsupported_load_power(
+                    load_name=injection.name, phase=phase,
+                    power_type="capacitive reactive", power_pu=reactive_power_pu,
+                    unit="MVAr", required_component="capacitor",
+                )
+
+    def _log_unsupported_load_power(
+            self,
+            load_name: str,
+            phase: str,
+            power_type: str,
+            power_pu: float,
+            unit: str,
+            required_component: str,
+    ) -> None:
+        """Record one unsupported load setpoint in physical power units."""
+        power_magnitude = abs(power_pu) * self.grid.Sbase
+        self.logger.add_warning(
+            msg=f"EMT load model cannot provide the {power_type} power required by the power-flow setpoint.",
+            device=load_name,
+            value=f"phase {phase}: {power_magnitude:.6g} {unit}",
+            expected_value=f"A load model with a phase-{phase} {required_component}",
+        )
 
     def _apply_injection_seed(
             self,
@@ -6546,26 +6721,108 @@ class EmtProblemDae(EmtProblemTemplate):
                     )
         else:
             phase_power: np.ndarray = seed_store.get_ac_seed(injection_index)
-            if seed_store.has_current_seed(injection_index):
-                phase_current_vector: np.ndarray = seed_store.get_ac_current_seed(injection_index)
-            else:
-                phase_current_vector = np.zeros(4, dtype=np.complex128)
+            self._warn_unsupported_load_power(injection, mdl, phase_power)
+            phase_current_vector: np.ndarray = np.zeros(4, dtype=np.complex128)
             preserve_generator_current_seed: bool
 
-            if self.power_flow_results_3ph is None:
-                voltage_vector: np.ndarray = self._get_bus_voltage_vector_balanced(bus_index)
-            else:
-                voltage_vector = self._get_bus_voltage_vector_3ph(bus_index)
+            voltage_vector: np.ndarray = self._get_bus_voltage_vector(bus_index)
 
-            # Impedance-equivalent EMT loads derive R/L/C from scheduled P/Q.
-            # Use the actual PF voltage so their t=0 component currents agree
-            # with the terminal-current seed.
+            # Ordinary Vm always represents the operating state, including zero.
+            # Component dimensioning opts into a separate declared reference.
+            operating_vm: float = float(np.abs(voltage_vector[1]))
             self.set_if_exists(
                 mdl=mdl,
                 key=VarPowerFlowReferenceType.Vm,
-                value=float(np.abs(voltage_vector[1])),
+                value=operating_vm,
                 persist_after_native_init=True,
             )
+            for phase_index, magnitude_key in (
+                (1, VarPowerFlowReferenceType.Vm_A),
+                (2, VarPowerFlowReferenceType.Vm_B),
+                (3, VarPowerFlowReferenceType.Vm_C),
+            ):
+                self.set_if_exists(
+                    mdl=mdl,
+                    key=magnitude_key,
+                    value=float(np.abs(voltage_vector[phase_index])),
+                    persist_after_native_init=True,
+                )
+
+            sizing_mapping: Dict[VarPowerFlowReferenceType, Var | None] | None = _get_external_mapping_local(self, mdl)
+            sizing_var: Var | None = None
+            if sizing_mapping is None:
+                pass
+            else:
+                sizing_var = sizing_mapping.get(VarPowerFlowReferenceType.VmSizing, None)
+            if sizing_var is None:
+                pass
+            else:
+                # This runs before super/finalization, so resolve the current
+                # declaration in its owner instead of reading later flat values.
+                sizing_owner: Block | None = _find_event_var_owner(mdl, sizing_var)
+                sizing_error: str
+                if sizing_owner is None:
+                    sizing_error = (
+                        f"EMT sizing reference '{sizing_var.name}' on '{injection.name}' "
+                        "must be declared as a runtime parameter"
+                    )
+                    self.logger.add_error(sizing_error, device=injection.name)
+                    raise ValueError(sizing_error)
+                else:
+                    pass
+                sizing_vm: float
+                if np.isfinite(operating_vm) and operating_vm > 0.0:
+                    sizing_vm = operating_vm
+                elif operating_vm == 0.0:
+                    declared_nominal: Expr | None = None
+                    owner_var: Var
+                    owner_expression: Expr
+                    for owner_var, owner_expression in sizing_owner.event_dict.items():
+                        if owner_var.uid == sizing_var.uid:
+                            declared_nominal = owner_expression
+                        else:
+                            pass
+                    nominal_vm: float | None = None
+                    if (
+                            isinstance(declared_nominal, Const)
+                            and isinstance(declared_nominal.value, (int, float, np.integer, np.floating))
+                            and not isinstance(declared_nominal.value, (bool, np.bool_))
+                    ):
+                        nominal_vm = float(declared_nominal.value)
+                    else:
+                        pass
+                    if nominal_vm is not None and np.isfinite(nominal_vm) and nominal_vm > 0.0:
+                        sizing_vm = nominal_vm
+                        self.logger.add_warning(
+                            "EMT impedance sizing uses declared nominal at zero PF voltage",
+                            device=injection.name,
+                            value=operating_vm,
+                            expected_value=nominal_vm,
+                            comment=sizing_var.name,
+                        )
+                    else:
+                        sizing_error = (
+                            f"EMT sizing reference '{sizing_var.name}' on '{injection.name}' "
+                            f"in block '{sizing_owner.name}' requires a finite positive "
+                            "declared nominal at zero PF voltage"
+                        )
+                        self.logger.add_error(sizing_error, device=injection.name)
+                        raise ValueError(sizing_error)
+                else:
+                    sizing_error = (
+                        f"EMT sizing reference '{sizing_var.name}' on '{injection.name}' "
+                        "requires a finite operating PF voltage magnitude"
+                    )
+                    self.logger.add_error(sizing_error, device=injection.name)
+                    raise ValueError(sizing_error)
+                # Reuse the synchronized temporary/native replay stores. Neither
+                # the operating seeds nor the persisted nominal is overwritten.
+                self.set_if_exists(
+                    mdl=mdl,
+                    key=VarPowerFlowReferenceType.VmSizing,
+                    value=sizing_vm,
+                    persist_after_native_init=True,
+                )
 
             if (
                     injection.device_type == DeviceType.GeneratorDevice
@@ -6602,16 +6859,11 @@ class EmtProblemDae(EmtProblemTemplate):
                 phase_voltage: complex = complex(voltage_vector[phase_index])
                 phase_complex_power: complex = complex(phase_power[phase_index])
 
-                if seed_store.has_current_seed(injection_index):
-                    phase_current: complex = complex(phase_current_vector[phase_index])
+                if abs(phase_voltage) > 1.0e-12:
+                    # Phase powers use Sbase; conductor currents use the three-phase Ibase.
+                    phase_current: complex = 3.0 * np.conj(phase_complex_power / phase_voltage)
                 else:
-                    if abs(phase_voltage) > 1.0e-12:
-                        # Phase powers use the total three-phase Sbase while
-                        # conductor currents use the standard three-phase Ibase.
-                        phase_current = 3.0 * np.conj(
-                            phase_complex_power / phase_voltage)
-                    else:
-                        phase_current = 0.0 + 0.0j
+                    phase_current = 0.0 + 0.0j
 
                 phase_current_vector[phase_index] = phase_current
                 current_instantaneous: float = float(np.sqrt(2.0) * np.imag(phase_current))
@@ -6638,6 +6890,31 @@ class EmtProblemDae(EmtProblemTemplate):
                 phase_index += 1
 
             if injection.device_type == DeviceType.GeneratorDevice:
+                self._warn_balanced_thevenin_operating_point(
+                    injection, mdl, voltage_vector, phase_current_vector,
+                )
+                # Transport the already converted phase phasors to models
+                # declaring these PF references. Runtime initialization needs
+                # both quadratures to reconstruct each internal voltage and
+                # the periodic current derivative on the same phase base.
+                quadrature_keys: tuple[tuple[VarPowerFlowReferenceType, ...], ...] = (
+                    (VarPowerFlowReferenceType.UR_A, VarPowerFlowReferenceType.UR_B, VarPowerFlowReferenceType.UR_C),
+                    (VarPowerFlowReferenceType.UI_A, VarPowerFlowReferenceType.UI_B, VarPowerFlowReferenceType.UI_C),
+                    (VarPowerFlowReferenceType.IR_A, VarPowerFlowReferenceType.IR_B, VarPowerFlowReferenceType.IR_C),
+                    (VarPowerFlowReferenceType.II_A, VarPowerFlowReferenceType.II_B, VarPowerFlowReferenceType.II_C),
+                )
+                quadrature_values: tuple[np.ndarray, ...] = (
+                    voltage_vector.real, voltage_vector.imag,
+                    phase_current_vector.real, phase_current_vector.imag,
+                )
+                quadrature_index: int
+                for quadrature_index in range(4):
+                    for phase_index in range(3):
+                        self.set_if_exists(
+                            mdl=mdl,
+                            key=quadrature_keys[quadrature_index][phase_index],
+                            value=float(quadrature_values[quadrature_index][phase_index + 1]),
+                        )
                 self._set_vsc_pf_positive_sequence(
                     mdl=mdl,
                     VA=complex(voltage_vector[1]),
@@ -6664,7 +6941,13 @@ class EmtProblemDae(EmtProblemTemplate):
                     ia_inst = self._temp_init_guess.get(ia_var.uid, 0.0) if ia_var is not None else 0.0
                     ib_inst = self._temp_init_guess.get(ib_var.uid, 0.0) if ib_var is not None else 0.0
                     ic_inst = self._temp_init_guess.get(ic_var.uid, 0.0) if ic_var is not None else 0.0
-                    neutral_inst = -(ia_inst + ib_inst + ic_inst)
+                    # A grounded-star load returns phase imbalance through its
+                    # internal grounding link, not the external neutral port.
+                    if (injection.device_type == DeviceType.LoadDevice
+                            and has_emt_internal_grounding_link(block=mdl)):
+                        neutral_inst = 0.0
+                    else:
+                        neutral_inst = -(ia_inst + ib_inst + ic_inst)
                     self._temp_init_guess[neutral_var.uid] = float(neutral_inst)
                     self._temp_post_init_guess[neutral_var.uid] = float(neutral_inst)
             else:
@@ -6693,157 +6976,37 @@ class EmtProblemDae(EmtProblemTemplate):
                     pass
                 phase_index += 1
 
-    def _try_set_bus_pf_init(self, bus: Bus,
-                             mdl: Block,
-                             bus_index: int) -> None:
-        """
-        Initialize bus voltage variables from three-phase power-flow results.
-
-        Phasor results are transformed into instantaneous abc-domain values at t = 0.
-        Only variables that exist in the model external mapping are initialized.
-
-        :param bus: Bus device
-        :param mdl: Bus symbolic block.
-        :param bus_index: Bus index in the power-flow results.
-        :return: None
-        """
-        omega_base: float = 2.0 * np.pi * self.grid.fBase
-
+    def _try_set_bus_pf_init(self, bus: Bus, mdl: Block, bus_index: int) -> None:
+        """Seed mapped bus voltages from three-phase or balanced PF results."""
         if bus.is_dc:
-
-            if self.power_flow_results is not None:
-                # DC bus: use Vdc (magnitude) -> angle is not applicable for DC
-                self.set_init_guess_and_preserve_post_init(
-                    mdl,
-                    VarPowerFlowReferenceType.Vdc,
-                    float(np.abs(self.power_flow_results.voltage[bus_index]))
-                )
-            else:
-                raise ValueError(f"EMT simulation with DC branches requires the non unbalanced PowerFlow to be calculated.")
-
-        else:
-
-            if _get_external_mapping_var_if_present(mdl=mdl, key=VarPowerFlowReferenceType.v_N) is not None:
-                V_N = self.power_flow_results_3ph.voltage_N[bus_index]
-                v_N: float = np.sqrt(2.0) * np.imag(V_N)
-                d_v_N: float = omega_base * np.sqrt(2.0) * np.real(V_N)
-
-                self.set_init_guess_and_preserve_post_init(mdl, VarPowerFlowReferenceType.v_N, v_N)
-                self.set_diff_init_guess(mdl, VarPowerFlowReferenceType.d_v_N, d_v_N)
-            else:
-                pass
-
-            if _get_external_mapping_var_if_present(mdl=mdl, key=VarPowerFlowReferenceType.v_A) is not None:
-                V_A = self.power_flow_results_3ph.voltage_A[bus_index]
-                v_A: float = np.sqrt(2.0) * np.imag(V_A)
-                d_v_A: float = omega_base * np.sqrt(2.0) * np.real(V_A)
-
-                self.set_init_guess_and_preserve_post_init(mdl, VarPowerFlowReferenceType.v_A, v_A)
-                self.set_diff_init_guess(mdl, VarPowerFlowReferenceType.d_v_A, d_v_A)
-            else:
-                pass
-
-            if _get_external_mapping_var_if_present(mdl=mdl, key=VarPowerFlowReferenceType.v_B) is not None:
-                V_B = self.power_flow_results_3ph.voltage_B[bus_index]
-                v_B: float = np.sqrt(2.0) * np.imag(V_B)
-                d_v_B: float = omega_base * np.sqrt(2.0) * np.real(V_B)
-
-                self.set_init_guess_and_preserve_post_init(mdl, VarPowerFlowReferenceType.v_B, v_B)
-                self.set_diff_init_guess(mdl, VarPowerFlowReferenceType.d_v_B, d_v_B)
-            else:
-                pass
-
-            if _get_external_mapping_var_if_present(mdl=mdl, key=VarPowerFlowReferenceType.v_C) is not None:
-                V_C = self.power_flow_results_3ph.voltage_C[bus_index]
-                v_C: float = np.sqrt(2.0) * np.imag(V_C)
-                d_v_C: float = omega_base * np.sqrt(2.0) * np.real(V_C)
-
-                self.set_init_guess_and_preserve_post_init(mdl, VarPowerFlowReferenceType.v_C, v_C)
-                self.set_diff_init_guess(mdl, VarPowerFlowReferenceType.d_v_C, d_v_C)
-            else:
-                pass
-
-    def _try_set_bus_pf_init_balanced(self, bus: Bus,
-                                      mdl: Block,
-                                      bus_index: int) -> None:
-        """
-        Initialize bus voltage variables from balanced power-flow results.
-
-        The balanced power flow provides one complex bus-voltage phasor per AC bus in
-        self.power_flow_results.voltage. This phasor is interpreted as the balanced
-        phase-A phasor, and the remaining phases are reconstructed as:
-
-            V_A = V
-            V_B = V * exp(-j*2*pi/3)
-            V_C = V * exp(+j*2*pi/3)
-            V_N = 0
-
-        Phasor results are transformed into instantaneous abc-domain values at t = 0.
-        Only variables that exist in the model external mapping are initialized.
-
-        :param bus: Bus device
-        :param mdl: Bus symbolic block.
-        :param bus_index: Bus index in the power-flow results.
-        :return: None
-        """
-        omega_base: float = 2.0 * np.pi * self.grid.fBase
-
-        if bus.is_dc:
-
-            if self.power_flow_results is not None:
-                # DC bus: use Vdc (magnitude) -> angle is not applicable for DC
-                self.set_init_guess_and_preserve_post_init(
-                    mdl,
-                    VarPowerFlowReferenceType.Vdc,
-                    float(np.abs(self.power_flow_results.voltage[bus_index]))
-                )
-            else:
+            if self.power_flow_results is None:
                 raise ValueError(
                     "EMT simulation with DC branches requires the non unbalanced PowerFlow to be calculated."
                 )
+            self.set_init_guess_and_preserve_post_init(
+                mdl,
+                VarPowerFlowReferenceType.Vdc,
+                float(np.abs(self.power_flow_results.voltage[bus_index])),
+            )
+            return
 
-        else:
-
-            if self.power_flow_results is None:
-                raise ValueError(
-                    "Balanced EMT initialization requires the balanced PowerFlow to be calculated."
+        voltage_vector: np.ndarray = self._get_bus_voltage_vector(bus_index)
+        omega_base: float = 2.0 * np.pi * self.grid.fBase
+        phase_mappings = (
+            (0, VarPowerFlowReferenceType.v_N, VarPowerFlowReferenceType.d_v_N),
+            (1, VarPowerFlowReferenceType.v_A, VarPowerFlowReferenceType.d_v_A),
+            (2, VarPowerFlowReferenceType.v_B, VarPowerFlowReferenceType.d_v_B),
+            (3, VarPowerFlowReferenceType.v_C, VarPowerFlowReferenceType.d_v_C),
+        )
+        for phase_index, voltage_key, derivative_key in phase_mappings:
+            if _get_external_mapping_var_if_present(mdl=mdl, key=voltage_key) is not None:
+                phasor: complex = complex(voltage_vector[phase_index])
+                self.set_init_guess_and_preserve_post_init(
+                    mdl, voltage_key, float(np.sqrt(2.0) * np.imag(phasor))
                 )
-
-            alpha: float = 2.0 * np.pi / 3.0
-            V_bus: CxVec = self.power_flow_results.voltage[bus_index]
-
-            V_N: complex = 0.0 + 0.0j
-            V_A: CxVec = V_bus
-            V_B: complex = V_bus * np.exp(-1j * alpha)
-            V_C: complex = V_bus * np.exp(+1j * alpha)
-
-            if _get_external_mapping_var_if_present(mdl=mdl, key=VarPowerFlowReferenceType.v_N) is not None:
-                v_N: float = np.sqrt(2.0) * np.imag(V_N)
-                d_v_N: float = omega_base * np.sqrt(2.0) * np.real(V_N)
-
-                self.set_init_guess_and_preserve_post_init(mdl, VarPowerFlowReferenceType.v_N, v_N)
-                self.set_diff_init_guess(mdl, VarPowerFlowReferenceType.d_v_N, d_v_N)
-
-            if _get_external_mapping_var_if_present(mdl=mdl, key=VarPowerFlowReferenceType.v_A) is not None:
-                v_A: float = np.sqrt(2.0) * np.imag(V_A)
-                d_v_A: float = omega_base * np.sqrt(2.0) * np.real(V_A)
-
-                self.set_init_guess_and_preserve_post_init(mdl, VarPowerFlowReferenceType.v_A, v_A)
-                self.set_diff_init_guess(mdl, VarPowerFlowReferenceType.d_v_A, d_v_A)
-
-            if _get_external_mapping_var_if_present(mdl=mdl, key=VarPowerFlowReferenceType.v_B) is not None:
-                v_B: float = np.sqrt(2.0) * np.imag(V_B)
-                d_v_B: float = omega_base * np.sqrt(2.0) * np.real(V_B)
-
-                self.set_init_guess_and_preserve_post_init(mdl, VarPowerFlowReferenceType.v_B, v_B)
-                self.set_diff_init_guess(mdl, VarPowerFlowReferenceType.d_v_B, d_v_B)
-
-            if _get_external_mapping_var_if_present(mdl=mdl, key=VarPowerFlowReferenceType.v_C) is not None:
-                v_C: float = np.sqrt(2.0) * np.imag(V_C)
-                d_v_C: float = omega_base * np.sqrt(2.0) * np.real(V_C)
-
-                self.set_init_guess_and_preserve_post_init(mdl, VarPowerFlowReferenceType.v_C, v_C)
-                self.set_diff_init_guess(mdl, VarPowerFlowReferenceType.d_v_C, d_v_C)
+                self.set_diff_init_guess(
+                    mdl, derivative_key, float(omega_base * np.sqrt(2.0) * np.real(phasor))
+                )
 
     def _get_vsc_terminal_indices(self,
                                   f_bus_idx: int,
@@ -6867,787 +7030,156 @@ class EmtProblemDae(EmtProblemTemplate):
 
         return t_bus_idx, f_bus_idx, False
 
-    def _set_vsc_pf_positive_sequence(self,
-                                      mdl: Block,
-                                      VA: complex,
-                                      VB: complex,
-                                      VC: complex,
-                                      IA: complex,
-                                      IB: complex,
-                                      IC: complex,
+    def _get_vsc_pf_powers(self, mdl: Block, ac_bus_index: int,
+                           sbase: float, vsc_index: int) -> Tuple[np.ndarray, complex]:
+        """Read NABC AC powers and total DC power in branch-terminal convention.
+
+        Balanced PF splits AC power equally across ABC. PF3 retains its phase
+        powers, using balanced results only when those phase powers are absent.
+        """
+        balanced_pf = self.power_flow_results
+        three_phase_pf = self.power_flow_results_3ph
+        phase_powers = _zero_ac_power_vector()
+        if three_phase_pf is None:
+            ac_power = _get_balanced_vsc_ac_power(balanced_pf, vsc_index) / sbase
+            dc_power = _get_balanced_vsc_dc_power(balanced_pf, vsc_index) / sbase
+            if _has_vsc_positive_sequence_pf_contract(mdl) and abs(ac_power) <= 1e-6:
+                bus_power = -_get_connected_bus_balanced_power(balanced_pf, ac_bus_index, sbase)
+                ac_power = bus_power if abs(bus_power) > 1e-12 else dc_power
+            phase_powers[1:4] = ac_power / 3.0
+        else:
+            phase_powers[1] = three_phase_pf.St_vsc_A[vsc_index] / sbase
+            phase_powers[2] = three_phase_pf.St_vsc_B[vsc_index] / sbase
+            phase_powers[3] = three_phase_pf.St_vsc_C[vsc_index] / sbase
+            if np.sum(np.abs(phase_powers)) < 1e-12 and balanced_pf is not None:
+                ac_power = _get_balanced_vsc_ac_power(balanced_pf, vsc_index) / sbase
+                phase_powers[1:4] = ac_power / 3.0
+            # PF3 stores the DC transfer in Pfp_vsc; unlike balanced PF it
+            # has no separate Pfn_vsc result.
+            dc_power = complex(three_phase_pf.Pfp_vsc[vsc_index] / sbase)
+            if abs(np.sum(phase_powers)) < 1e-12 and balanced_pf is not None:
+                dc_power = _get_balanced_vsc_dc_power(balanced_pf, vsc_index) / sbase
+        return phase_powers, dc_power
+
+    def _set_vsc_pf_positive_sequence(self, mdl: Block,
+                                      VA: complex, VB: complex, VC: complex,
+                                      IA: complex, IB: complex, IC: complex,
                                       S_ac_total: complex | None = None) -> None:
+        """Seed mapped sequence references from ABC phasors for any PF format.
+
+        Branch callers seed their total powers separately. Injection callers
+        omit S_ac_total and derive their power seed from the sequence phasors.
         """
-        Populate positive-sequence PF-derived quantities used by VSC templates
-        when they expose them in the external mapping.
-        """
-        a = np.exp(1j * 2.0 * np.pi / 3.0)
+        rotation = np.exp(2j * np.pi / 3.0)
+        voltage = (VA + rotation * VB + rotation ** 2 * VC) / 3.0
+        current = (IA + rotation * IB + rotation ** 2 * IC) / 3.0
+        if abs(current) <= 1e-12 and S_ac_total is not None and abs(voltage) > 1e-12:
+            current = np.conj(S_ac_total / voltage)
 
-        # Build the balanced positive-sequence voltage from the PF bus phasors.
-        V1: complex = (VA + a * VB + (a * a) * VC) / 3.0
-        I1: complex = (IA + a * IB + (a * a) * IC) / 3.0
-        if abs(I1) <= 1.0e-12 and S_ac_total is not None and abs(V1) > 1.0e-12:
-            I1 = np.conj(S_ac_total / V1)
-        else:
-            pass
-
-        phi_V = float(np.angle(V1))
-        phi_I = float(np.angle(I1))
-
-        ang = phi_I - phi_V
-        phi = float(np.arctan2(np.sin(ang), np.cos(ang)))
-
-        external_mapping: Optional[Dict[Any, Var]] = _get_external_mapping_local(
-            problem=self,
-            mdl=mdl,
+        mapping = _get_external_mapping_local(self, mdl)
+        if mapping is None:
+            return
+        voltage_angle = float(np.angle(voltage))
+        angle_difference = float(np.angle(current)) - voltage_angle
+        current_angle = float(np.arctan2(np.sin(angle_difference), np.cos(angle_difference)))
+        references = (
+            (VarPowerFlowReferenceType.phi_v, voltage_angle),
+            (VarPowerFlowReferenceType.phi, current_angle),
+            (VarPowerFlowReferenceType.Vpk, float(np.sqrt(2.0) * abs(voltage))),
+            (VarPowerFlowReferenceType.Ipk, float(np.sqrt(2.0) * abs(current))),
         )
-        if external_mapping is None:
+        for key, value in references:
+            variable = mapping.get(key)
+            if variable is not None:
+                self.set_external_param(mdl, key, value)
+                self._temp_post_init_guess[variable.uid] = value
+
+        if S_ac_total is None and _has_vsc_positive_sequence_pf_contract(mdl):
+            export_power = -voltage * np.conj(current)
+            self.set_if_exists(mdl, VarPowerFlowReferenceType.Pe, float(export_power.real))
+            self.set_if_exists(mdl, VarPowerFlowReferenceType.Qe, float(export_power.imag))
+
+    def _seed_vsc_ac_terminals(self, mdl: Block, voltages: np.ndarray,
+                               currents: np.ndarray, powers: np.ndarray,
+                               ac_is_from: bool) -> None:
+        """Seed AC terminal mappings; leave the DC terminal's AC phases zero."""
+        zero_phases = _zero_ac_power_vector()
+        from_voltages = voltages if ac_is_from else zero_phases
+        to_voltages = zero_phases if ac_is_from else voltages
+        from_powers = powers if ac_is_from else zero_phases
+        to_powers = zero_phases if ac_is_from else powers
+        self._seed_branch_terminal_voltage_derivatives(mdl, from_voltages, to_voltages)
+        self._seed_ac_branch_phase_powers(mdl, from_powers, to_powers)
+
+        phase_mappings = (
+            (0, VarPowerFlowReferenceType.v_N, VarPowerFlowReferenceType.i_N,
+             VarPowerFlowReferenceType.if_N, VarPowerFlowReferenceType.it_N),
+            (1, VarPowerFlowReferenceType.v_A, VarPowerFlowReferenceType.i_A,
+             VarPowerFlowReferenceType.if_A, VarPowerFlowReferenceType.it_A),
+            (2, VarPowerFlowReferenceType.v_B, VarPowerFlowReferenceType.i_B,
+             VarPowerFlowReferenceType.if_B, VarPowerFlowReferenceType.it_B),
+            (3, VarPowerFlowReferenceType.v_C, VarPowerFlowReferenceType.i_C,
+             VarPowerFlowReferenceType.if_C, VarPowerFlowReferenceType.it_C),
+        )
+        for phase, voltage_key, current_key, from_key, to_key in phase_mappings:
+            voltage_value = float(np.sqrt(2.0) * voltages[phase].imag)
+            current_value = float(np.sqrt(2.0) * currents[phase].imag)
+            self.set_if_exists(mdl, voltage_key, voltage_value)
+            self.set_if_exists(mdl, current_key, current_value)
+            self.set_if_exists(mdl, from_key, current_value if ac_is_from else 0.0)
+            self.set_if_exists(mdl, to_key, 0.0 if ac_is_from else current_value)
+
+    def _try_set_vsc_branch_pf_init(self, mdl: Block, f_bus_idx: int,
+                                    t_bus_idx: int, sbase: float, vsc_index: int) -> None:
+        """Read PF values, calculate phasors, then seed VSC terminal/control mappings."""
+        if self.power_flow_results_3ph is None and self.power_flow_results is None:
             return
 
-        if VarPowerFlowReferenceType.phi_v in external_mapping:
-            self.set_external_param(mdl, VarPowerFlowReferenceType.phi_v, phi_V)
-            phi_v_var: Var = external_mapping[VarPowerFlowReferenceType.phi_v]
-            self._temp_post_init_guess[phi_v_var.uid] = float(phi_V)
-        else:
-            pass
-
-        if VarPowerFlowReferenceType.phi in external_mapping:
-            self.set_external_param(mdl, VarPowerFlowReferenceType.phi, phi)
-            phi_var: Var = external_mapping[VarPowerFlowReferenceType.phi]
-            self._temp_post_init_guess[phi_var.uid] = float(phi)
-        else:
-            pass
-
-        if VarPowerFlowReferenceType.Vpk in external_mapping:
-            vpk_value: float = float(np.sqrt(2.0) * np.abs(V1))
-            self.set_external_param(mdl, VarPowerFlowReferenceType.Vpk, vpk_value)
-            vpk_var: Var = external_mapping[VarPowerFlowReferenceType.Vpk]
-            self._temp_post_init_guess[vpk_var.uid] = vpk_value
-        else:
-            pass
-
-        if VarPowerFlowReferenceType.Ipk in external_mapping:
-            ipk_value: float = float(np.sqrt(2.0) * np.abs(I1))
-            self.set_external_param(mdl, VarPowerFlowReferenceType.Ipk, ipk_value)
-            ipk_var: Var = external_mapping[VarPowerFlowReferenceType.Ipk]
-            self._temp_post_init_guess[ipk_var.uid] = ipk_value
-        else:
-            pass
-
-        if _has_vsc_positive_sequence_pf_contract(mdl):
-            # Positive-sequence driven GFM-style templates expose ``Pe`` / ``Qe``
-            # as algebraic operating-point variables while deriving their full
-            # initialization from ``Vpk`` / ``phi_v`` / ``Ipk`` / ``phi``.
-            # Preserve that PF-consistent algebraic seed only for that template
-            # family instead of applying it to every VSC exposing ``Pe``/``Qe``.
-            p_init_value: float = float(-0.5 * np.sqrt(2.0) * np.abs(V1) * np.sqrt(2.0) * np.abs(I1) * np.cos(phi))
-            q_init_value: float = float(0.5 * np.sqrt(2.0) * np.abs(V1) * np.sqrt(2.0) * np.abs(I1) * np.sin(phi))
-            self.set_internal_init_if_exists(mdl=mdl, var_name="Pe", value=p_init_value)
-            self.set_internal_init_if_exists(mdl=mdl, var_name="Qe", value=q_init_value)
-            pe_vars: List[Var] = _find_internal_vars_by_name(mdl, "Pe")
-            qe_vars: List[Var] = _find_internal_vars_by_name(mdl, "Qe")
-            pe_var: Var
-            qe_var: Var
-
-            for pe_var in pe_vars:
-                self._temp_init_guess[pe_var.uid] = float(p_init_value)
-                self._temp_post_init_guess[pe_var.uid] = float(p_init_value)
-
-            for qe_var in qe_vars:
-                self._temp_init_guess[qe_var.uid] = float(q_init_value)
-                self._temp_post_init_guess[qe_var.uid] = float(q_init_value)
-        else:
-            pass
-
-    def _set_vsc_pf_positive_sequence_balanced(self,
-                                               mdl: Block,
-                                               V1: complex,
-                                               S_ac_total: complex) -> None:
-        """
-        Populate balanced positive-sequence PF references for one VSC from the AC terminal.
-
-        :param mdl: VSC EMT model block.
-        :param V1: AC-terminal positive-sequence voltage phasor.
-        :param S_ac_total: Total AC-terminal three-phase complex power in pu.
-        :return: None.
-        """
-        target_block: Block = mdl.children[0] if len(mdl.children) > 0 else mdl
-        external_mapping: Optional[Dict[Any, Var]] = _get_external_mapping(target_block)
-        I1: complex
-        phi_v: float
-        phi_i: float
-        phi: float
-        vpk_value: float
-        ipk_value: float
-        p_init_value: float
-        q_init_value: float
-        pe_vars: List[Var]
-        qe_vars: List[Var]
-        pe_var: Var
-        qe_var: Var
-
-        if external_mapping is None:
-            return
-        else:
-            pass
-
-        if abs(V1) <= 1.0e-12:
-            I1 = 0.0 + 0.0j
-        else:
-            I1 = np.conj(S_ac_total / V1)
-
-        if abs(I1) <= 1.0e-12 and abs(S_ac_total) > 1.0e-12 and abs(V1) > 1.0e-12:
-            I1 = np.conj(S_ac_total / V1)
-        else:
-            pass
-
-        phi_v = float(np.angle(V1))
-        phi_i = float(np.angle(I1))
-        phi = float(np.arctan2(np.sin(phi_i - phi_v), np.cos(phi_i - phi_v)))
-        vpk_value = float(np.sqrt(2.0) * np.abs(V1))
-        ipk_value = float(np.sqrt(2.0) * np.abs(I1))
-        p_init_value = float(np.real(-S_ac_total))
-        q_init_value = float(np.imag(-S_ac_total))
-
-        if abs(p_init_value) <= 1.0e-12 and abs(vpk_value) > 1.0e-12 and abs(ipk_value) > 1.0e-12:
-            p_init_value = float(-0.5 * vpk_value * ipk_value * np.cos(phi))
-            q_init_value = float(0.5 * vpk_value * ipk_value * np.sin(phi))
-        else:
-            pass
-
-        if VarPowerFlowReferenceType.phi_v in external_mapping:
-            self.set_external_param(target_block, VarPowerFlowReferenceType.phi_v, phi_v)
-            phi_v_var_rt: Var = external_mapping[VarPowerFlowReferenceType.phi_v]
-            self._set_runtime_parameter_value_by_uid(uid=phi_v_var_rt.uid, value=phi_v)
-        else:
-            pass
-
-        if VarPowerFlowReferenceType.phi in external_mapping:
-            self.set_external_param(target_block, VarPowerFlowReferenceType.phi, phi)
-            phi_var_rt: Var = external_mapping[VarPowerFlowReferenceType.phi]
-            self._set_runtime_parameter_value_by_uid(uid=phi_var_rt.uid, value=phi)
-        else:
-            pass
-
-        if VarPowerFlowReferenceType.Vpk in external_mapping:
-            self.set_external_param(target_block, VarPowerFlowReferenceType.Vpk, vpk_value)
-            vpk_var_rt: Var = external_mapping[VarPowerFlowReferenceType.Vpk]
-            self._set_runtime_parameter_value_by_uid(uid=vpk_var_rt.uid, value=vpk_value)
-        else:
-            pass
-
-        if VarPowerFlowReferenceType.Ipk in external_mapping:
-            self.set_external_param(target_block, VarPowerFlowReferenceType.Ipk, ipk_value)
-            ipk_var_rt: Var = external_mapping[VarPowerFlowReferenceType.Ipk]
-            self._set_runtime_parameter_value_by_uid(uid=ipk_var_rt.uid, value=ipk_value)
-        else:
-            pass
-
-        if _has_vsc_positive_sequence_pf_contract(target_block):
-            pe_vars = _find_internal_vars_by_name(target_block, "Pe")
-            qe_vars = _find_internal_vars_by_name(target_block, "Qe")
-            p_ref_vars: List[Var] = _find_internal_vars_by_name(target_block, "P_ref")
-            q_ref_vars: List[Var] = _find_internal_vars_by_name(target_block, "Q_ref")
-            v_ref_vars: List[Var] = _find_internal_vars_by_name(target_block, "V_ref")
-            p_ref_var: Var
-            q_ref_var: Var
-            v_ref_var: Var
-
-            self.set_internal_init_if_exists(target_block, "Pe", p_init_value)
-            self.set_internal_init_if_exists(target_block, "Qe", q_init_value)
-            self.set_internal_init_if_exists(mdl, "Pe", p_init_value)
-            self.set_internal_init_if_exists(mdl, "Qe", q_init_value)
-
-            pe_init_var: Optional[Var] = _find_internal_var_for_init(target_block, "Pe")
-            qe_init_var: Optional[Var] = _find_internal_var_for_init(target_block, "Qe")
-            if pe_init_var is None:
-                pass
-            else:
-                self._temp_post_init_guess[pe_init_var.uid] = p_init_value
-            if qe_init_var is None:
-                pass
-            else:
-                self._temp_post_init_guess[qe_init_var.uid] = q_init_value
-
-            for pe_var in pe_vars:
-                self._temp_init_guess[pe_var.uid] = p_init_value
-                self._temp_post_init_guess[pe_var.uid] = p_init_value
-
-            for qe_var in qe_vars:
-                self._temp_init_guess[qe_var.uid] = q_init_value
-                self._temp_post_init_guess[qe_var.uid] = q_init_value
-
-            for p_ref_var in p_ref_vars:
-                self._temp_init_guess[p_ref_var.uid] = p_init_value
-                self._temp_post_init_guess[p_ref_var.uid] = p_init_value
-
-            for q_ref_var in q_ref_vars:
-                self._temp_init_guess[q_ref_var.uid] = q_init_value
-                self._temp_post_init_guess[q_ref_var.uid] = q_init_value
-
-            for v_ref_var in v_ref_vars:
-                self._set_runtime_parameter_seed_by_uid(
-                    uid=v_ref_var.uid,
-                    value=vpk_value,
-                    persist_after_native_init=True,
-                )
-                self._temp_init_guess[v_ref_var.uid] = vpk_value
-                self._temp_post_init_guess[v_ref_var.uid] = vpk_value
-        else:
-            pass
-
-    def _try_set_vsc_branch_pf_init(self,
-                                    mdl: Block,
-                                    f_bus_idx: int,
-                                    t_bus_idx: int,
-                                    sbase: float,
-                                    vsc_index: int) -> None:
-        """
-        Initialize a VSC branch from three-phase PF results using the converter
-        external mapping as the source of truth.
-        """
-        pf_results_3ph = self.power_flow_results_3ph
-        ac_bus_idx, dc_bus_idx, ac_is_from = self._get_vsc_terminal_indices(
-            f_bus_idx=f_bus_idx,
-            t_bus_idx=t_bus_idx,
-        )
-
-        if pf_results_3ph is None:
-            if self.power_flow_results is None:
-                return
-            else:
-                balanced_voltage: complex = self.power_flow_results.voltage[ac_bus_idx]
-                VA = balanced_voltage
-                VB = balanced_voltage * np.exp(-1j * 2.0 * np.pi / 3.0)
-                VC = balanced_voltage * np.exp(+1j * 2.0 * np.pi / 3.0)
-        else:
-            VA = pf_results_3ph.voltage_A[ac_bus_idx]
-            VB = pf_results_3ph.voltage_B[ac_bus_idx]
-            VC = pf_results_3ph.voltage_C[ac_bus_idx]
-        VN = 0.0 + 0.0j
-        alpha = 2.0 * np.pi / 3.0
-
-        if pf_results_3ph is None:
-            SA = 0.0 + 0.0j
-            SB = 0.0 + 0.0j
-            SC = 0.0 + 0.0j
-        else:
-            SA = pf_results_3ph.St_vsc_A[vsc_index] / sbase
-            SB = pf_results_3ph.St_vsc_B[vsc_index] / sbase
-            SC = pf_results_3ph.St_vsc_C[vsc_index] / sbase
-        balanced_ac_power_fallback: complex = 0.0 + 0.0j
-
-        if abs(SA) + abs(SB) + abs(SC) < 1e-12 and self.power_flow_results is not None:
-            # The 3-ph VSC result container may not populate per-phase converter powers yet.
-            # In that case we fall back to the balanced PF operating point and distribute the
-            # total converter power equally across the three phases for initialization only.
-            balanced_ac_power_fallback = _get_balanced_vsc_ac_power(self.power_flow_results, vsc_index) / sbase
-            SA = balanced_ac_power_fallback / 3.0
-            SB = balanced_ac_power_fallback / 3.0
-            SC = balanced_ac_power_fallback / 3.0
-        else:
-            pass
-
-        S_ac_total = SA + SB + SC
-
-        current_scale = 3.0 if _has_vsc_positive_sequence_pf_contract(mdl) else 1.0
-        IA = 0.0 + 0.0j if abs(VA) <= 1e-12 else current_scale * np.conj(SA / VA)
-        IB = 0.0 + 0.0j if abs(VB) <= 1e-12 else current_scale * np.conj(SB / VB)
-        IC = 0.0 + 0.0j if abs(VC) <= 1e-12 else current_scale * np.conj(SC / VC)
-
-        # Some balanced PF VSC cases report the AC terminal power correctly while
-        # the reconstructed branch current collapses to zero in the averaged EMT
-        # seed path. Rebuild a balanced current phasor from the total AC power so
-        # positive-sequence references such as ``Ipk_ref`` keep the PF operating
-        # point instead of flattening ``Pe``/``Qe`` to zero.
-        if abs(IA) + abs(IB) + abs(IC) <= 1.0e-12 and abs(VA) > 1.0e-12:
-            I1_balanced: complex = np.conj(S_ac_total / VA)
-            IA = I1_balanced
-            IB = I1_balanced * np.exp(-1j * alpha)
-            IC = I1_balanced * np.exp(+1j * alpha)
-
-        if pf_results_3ph is None:
-            pf_results_3ph_pfn_vsc = 0.0
-        else:
-            pf_results_3ph_pfn_vsc = float(pf_results_3ph.Pfp_vsc[vsc_index])
-
-        if abs(S_ac_total) < 1e-12 and self.power_flow_results is not None:
-            if abs(balanced_ac_power_fallback) > 1.0e-12:
-                S_ac_total = balanced_ac_power_fallback
-                if abs(VA) > 1.0e-12:
-                    I1_balanced: complex = np.conj(S_ac_total / VA)
-                    IA = I1_balanced
-                    IB = I1_balanced * np.exp(-1j * alpha)
-                    IC = I1_balanced * np.exp(+1j * alpha)
-                else:
-                    pass
-            else:
-                pass
-
-            S_dc_total = _get_balanced_vsc_dc_power(self.power_flow_results, vsc_index) / sbase
-        else:
-            if pf_results_3ph is None:
-                if self.power_flow_results is None:
-                    S_dc_total = 0.0 + 0.0j
-                else:
-                    S_dc_total = _get_balanced_vsc_dc_power(self.power_flow_results, vsc_index) / sbase
-            else:
-                S_dc_total = complex(
-                    (
-                        pf_results_3ph.Pfp_vsc[vsc_index]
-                        + pf_results_3ph_pfn_vsc
-                    ) / sbase,
-                    0.0,
-                )
-
-        phase_voltage_dict: Dict[str, complex] = {
-            "N": VN,
-            "A": VA,
-            "B": VB,
-            "C": VC,
-        }
-        phase_current_dict: Dict[str, complex] = {
-            "N": 0.0 + 0.0j,
-            "A": IA,
-            "B": IB,
-            "C": IC,
-        }
-        phase_power_dict: Dict[str, complex] = {
-            "N": 0.0 + 0.0j,
-            "A": SA,
-            "B": SB,
-            "C": SC,
-        }
-
-        ac_voltage_keys: Dict[str, VarPowerFlowReferenceType] = {
-            "N": VarPowerFlowReferenceType.v_N,
-            "A": VarPowerFlowReferenceType.v_A,
-            "B": VarPowerFlowReferenceType.v_B,
-            "C": VarPowerFlowReferenceType.v_C,
-        }
-        ac_current_keys: Dict[str, VarPowerFlowReferenceType] = {
-            "N": VarPowerFlowReferenceType.i_N,
-            "A": VarPowerFlowReferenceType.i_A,
-            "B": VarPowerFlowReferenceType.i_B,
-            "C": VarPowerFlowReferenceType.i_C,
-        }
-        if_keys: Dict[str, VarPowerFlowReferenceType] = {
-            "N": VarPowerFlowReferenceType.if_N,
-            "A": VarPowerFlowReferenceType.if_A,
-            "B": VarPowerFlowReferenceType.if_B,
-            "C": VarPowerFlowReferenceType.if_C,
-        }
-        it_keys: Dict[str, VarPowerFlowReferenceType] = {
-            "N": VarPowerFlowReferenceType.it_N,
-            "A": VarPowerFlowReferenceType.it_A,
-            "B": VarPowerFlowReferenceType.it_B,
-            "C": VarPowerFlowReferenceType.it_C,
-        }
-        sf_keys: Dict[str, Optional[VarPowerFlowReferenceType]] = {
-            "N": None,
-            "A": VarPowerFlowReferenceType.Sf_A,
-            "B": VarPowerFlowReferenceType.Sf_B,
-            "C": VarPowerFlowReferenceType.Sf_C,
-        }
-        st_keys: Dict[str, Optional[VarPowerFlowReferenceType]] = {
-            "N": None,
-            "A": VarPowerFlowReferenceType.St_A,
-            "B": VarPowerFlowReferenceType.St_B,
-            "C": VarPowerFlowReferenceType.St_C,
-        }
-        d_vf_keys: Dict[str, VarPowerFlowReferenceType] = {
-            "N": VarPowerFlowReferenceType.d_v_N_f,
-            "A": VarPowerFlowReferenceType.d_v_A_f,
-            "B": VarPowerFlowReferenceType.d_v_B_f,
-            "C": VarPowerFlowReferenceType.d_v_C_f,
-        }
-        d_vt_keys: Dict[str, VarPowerFlowReferenceType] = {
-            "N": VarPowerFlowReferenceType.d_v_N_t,
-            "A": VarPowerFlowReferenceType.d_v_A_t,
-            "B": VarPowerFlowReferenceType.d_v_B_t,
-            "C": VarPowerFlowReferenceType.d_v_C_t,
-        }
-
-        omega_base: float = 2.0 * np.pi * self.grid.fBase
-        # ``I_ph = conj(S/V)`` already yields the branch-convention current
-        # from bus into branch. The EMT KCL also uses branch
-        # convention for VSC branches (``I_kcl -= i_branch``), so the
-        # seeded value is taken directly without any sign flip, just like
-        # with other branches
-        for ph in ["N", "A", "B", "C"]:
-            V_ph = phase_voltage_dict[ph]
-            I_ph = phase_current_dict[ph]
-            S_ph = phase_power_dict[ph]
-
-            # Store it once and reuse
-            i_branch_init: float = float(np.sqrt(2.0) * np.imag(I_ph))
-
-            self.set_if_exists(mdl=mdl,
-                               key=ac_voltage_keys[ph],
-                               value=float(np.sqrt(2.0) * np.imag(V_ph)))
-            self.set_if_exists(mdl=mdl,
-                               key=ac_current_keys[ph],
-                               value=i_branch_init)
-
-            if ac_is_from:
-                self.set_if_exists(mdl=mdl,
-                                   key=if_keys[ph],
-                                   value=i_branch_init)
-                self.set_if_exists(mdl=mdl,
-                                   key=it_keys[ph],
-                                   value=0.0)
-                self.set_external_param(mdl, d_vf_keys[ph], omega_base * np.sqrt(2.0) * np.real(V_ph))
-                self.set_external_param(mdl, d_vt_keys[ph], 0.0)
-            else:
-                self.set_if_exists(mdl=mdl,
-                                   key=if_keys[ph],
-                                   value=0.0)
-                self.set_if_exists(mdl=mdl,
-                                   key=it_keys[ph],
-                                   value=i_branch_init)
-                self.set_external_param(mdl, d_vf_keys[ph], 0.0)
-                self.set_external_param(mdl, d_vt_keys[ph], omega_base * np.sqrt(2.0) * np.real(V_ph))
-
-            sf_key = sf_keys[ph]
-            st_key = st_keys[ph]
-            if sf_key is not None:
-                self.set_if_exists(mdl=mdl,
-                                   key=sf_key,
-                                   value=float(np.real(S_ph if ac_is_from else 0.0 + 0.0j)))
-            if st_key is not None:
-                self.set_if_exists(mdl=mdl,
-                                   key=st_key,
-                                   value=float(np.real(0.0 + 0.0j if ac_is_from else S_ph)))
-
-        self._set_vsc_pf_positive_sequence_balanced(
-            mdl=mdl,
-            V1=complex(VA),
-            S_ac_total=S_ac_total,
-        )
-
-        if _has_vsc_positive_sequence_pf_contract(mdl):
-            # Preserve the balanced PF operating point only for positive-sequence
-            # driven GFM-style templates that intentionally initialize from that
-            # PF contract.
-            pe_value_balanced: float = float(np.real(-S_ac_total))
-            qe_value_balanced: float = float(np.imag(-S_ac_total))
-            self.set_internal_init_if_exists(mdl=mdl, var_name="Pe", value=pe_value_balanced)
-            self.set_internal_init_if_exists(mdl=mdl, var_name="Qe", value=qe_value_balanced)
-            pe_vars_balanced: List[Var] = _find_internal_vars_by_name(mdl, "Pe")
-            qe_vars_balanced: List[Var] = _find_internal_vars_by_name(mdl, "Qe")
-            pe_var_balanced: Var
-            qe_var_balanced: Var
-
-            for pe_var_balanced in pe_vars_balanced:
-                self._temp_init_guess[pe_var_balanced.uid] = pe_value_balanced
-                self._temp_post_init_guess[pe_var_balanced.uid] = pe_value_balanced
-
-            for qe_var_balanced in qe_vars_balanced:
-                self._temp_init_guess[qe_var_balanced.uid] = qe_value_balanced
-                self._temp_post_init_guess[qe_var_balanced.uid] = qe_value_balanced
-        else:
-            pass
-
-        if self.power_flow_results is not None:
-            v_dc = float(np.abs(self.power_flow_results.voltage[dc_bus_idx]))
-            self.set_if_exists(
-                mdl=mdl,
-                key=VarPowerFlowReferenceType.Vdc,
-                value=v_dc,
-                persist_after_native_init=True,
-            )
-            if abs(v_dc) > 1e-12:
-                self.set_if_exists(mdl=mdl,
-                                   key=VarPowerFlowReferenceType.If_dc,
-                                   value=float(np.real(S_dc_total) / v_dc),
-                                   persist_after_native_init=True)
-            else:
-                self.set_if_exists(
-                    mdl=mdl,
-                    key=VarPowerFlowReferenceType.If_dc,
-                    value=0.0,
-                    persist_after_native_init=True,
-                )
-
-        # The GFM positive-sequence template defines P/Q references as converter
-        # export, opposite to the PF AC-terminal branch-flow sign. Other VSC
-        # templates retain the branch-flow convention.
-        reference_power = -S_ac_total if _has_vsc_positive_sequence_pf_contract(mdl) else S_ac_total
-        self.set_if_exists(mdl=mdl, key=VarPowerFlowReferenceType.P, value=float(np.real(reference_power)))
-        self.set_if_exists(mdl=mdl, key=VarPowerFlowReferenceType.Q, value=float(np.imag(reference_power)))
-        # Voltage-controlled converters still need the solved active-power transfer
-        # as their controller feedforward operating point.  The API object's P0 is
-        # commonly zero in Vm_dc mode, which otherwise initializes i_d/P_f at zero
-        # while the DC load is already drawing the full PF power.
-        if _find_internal_vars_by_name(mdl, "P_loss0"):
-            self.set_internal_runtime_if_exists(
-                mdl=mdl,
-                var_name="P0",
-                value=float(-np.real(S_dc_total) * sbase),
-            )
-            self.set_internal_runtime_if_exists(mdl=mdl, var_name="sbase", value=float(sbase))
-            vsc_device = self.grid.vsc_devices[vsc_index]
-            self.set_internal_runtime_if_exists(mdl=mdl, var_name="P_loss0", value=float(vsc_device.alpha1))
-            self.set_internal_runtime_if_exists(mdl=mdl, var_name="P_loss_i1", value=float(vsc_device.alpha2))
-            self.set_internal_runtime_if_exists(mdl=mdl, var_name="P_loss_i2", value=float(vsc_device.alpha3))
-
-        S_from = S_ac_total if ac_is_from else S_dc_total
-        S_to = S_dc_total if ac_is_from else S_ac_total
-        self.set_if_exists(mdl=mdl, key=VarPowerFlowReferenceType.Pf, value=float(np.real(S_from)))
-        self.set_if_exists(mdl=mdl, key=VarPowerFlowReferenceType.Qf, value=float(np.imag(S_from)))
-        self.set_if_exists(mdl=mdl, key=VarPowerFlowReferenceType.Pt, value=float(np.real(S_to)))
-        self.set_if_exists(mdl=mdl, key=VarPowerFlowReferenceType.Qt, value=float(np.imag(S_to)))
-
-    def _try_set_vsc_branch_pf_init_balanced(self,
-                                             mdl: Block,
-                                             f_bus_idx: int,
-                                             t_bus_idx: int,
-                                             sbase: float,
-                                             vsc_index: int) -> None:
-        """
-        Initialize a VSC branch from balanced PF results using the converter
-        external mapping as the source of truth.
-        """
-        pf_results = self.power_flow_results
-        if pf_results is None:
-            return
-
-        ac_bus_idx, dc_bus_idx, ac_is_from = self._get_vsc_terminal_indices(
-            f_bus_idx=f_bus_idx,
-            t_bus_idx=t_bus_idx,
-        )
-
-        alpha = 2.0 * np.pi / 3.0
-        V_bus = pf_results.voltage[ac_bus_idx]
-        VA = V_bus
-        VB = V_bus * np.exp(-1j * alpha)
-        VC = V_bus * np.exp(+1j * alpha)
-        VN = 0.0 + 0.0j
-
-        pf_results_pfn_vsc: float = float(pf_results.Pfn_vsc[vsc_index])
-
-        if _has_vsc_positive_sequence_pf_contract(mdl):
-            S_ac_total = _get_balanced_vsc_ac_power_for_positive_sequence_seed(pf_results, vsc_index) / sbase
-        else:
-            S_ac_total = _get_balanced_vsc_ac_power(pf_results, vsc_index) / sbase
-        S_dc_total = _get_balanced_vsc_dc_power(pf_results, vsc_index) / sbase
-
-        if abs(S_ac_total) <= 1.0e-6 and _has_vsc_positive_sequence_pf_contract(mdl):
-            # GFM-style balanced EMT seeding needs one non-zero AC operating point.
-            # Prefer the balanced PF helper contract first; if that still resolves
-            # to zero, use the connected AC-bus power as the last balanced seed.
-            ac_bus_power: complex = -_get_connected_bus_balanced_power(
-                pf_results=pf_results,
-                bus_index=ac_bus_idx,
-                sbase=sbase,
-            )
-            if abs(ac_bus_power) > 1.0e-12:
-                S_ac_total = ac_bus_power
-            else:
-                S_ac_total = _get_balanced_vsc_dc_power(pf_results, vsc_index) / sbase
-        else:
-            pass
-
-        SA = S_ac_total / 3.0
-        SB = S_ac_total / 3.0
-        SC = S_ac_total / 3.0
-
-        current_scale = 3.0 if _has_vsc_positive_sequence_pf_contract(mdl) else 1.0
-        IA = 0.0 + 0.0j if abs(VA) <= 1e-12 else current_scale * np.conj(SA / VA)
-        IB = 0.0 + 0.0j if abs(VB) <= 1e-12 else current_scale * np.conj(SB / VB)
-        IC = 0.0 + 0.0j if abs(VC) <= 1e-12 else current_scale * np.conj(SC / VC)
-
-        phase_voltage_dict: Dict[str, complex] = {
-            "N": VN,
-            "A": VA,
-            "B": VB,
-            "C": VC,
-        }
-        phase_current_dict: Dict[str, complex] = {
-            "N": 0.0 + 0.0j,
-            "A": IA,
-            "B": IB,
-            "C": IC,
-        }
-        phase_power_dict: Dict[str, complex] = {
-            "N": 0.0 + 0.0j,
-            "A": SA,
-            "B": SB,
-            "C": SC,
-        }
-
-        ac_voltage_keys: Dict[str, VarPowerFlowReferenceType] = {
-            "N": VarPowerFlowReferenceType.v_N,
-            "A": VarPowerFlowReferenceType.v_A,
-            "B": VarPowerFlowReferenceType.v_B,
-            "C": VarPowerFlowReferenceType.v_C,
-        }
-        ac_current_keys: Dict[str, VarPowerFlowReferenceType] = {
-            "N": VarPowerFlowReferenceType.i_N,
-            "A": VarPowerFlowReferenceType.i_A,
-            "B": VarPowerFlowReferenceType.i_B,
-            "C": VarPowerFlowReferenceType.i_C,
-        }
-        if_keys: Dict[str, VarPowerFlowReferenceType] = {
-            "N": VarPowerFlowReferenceType.if_N,
-            "A": VarPowerFlowReferenceType.if_A,
-            "B": VarPowerFlowReferenceType.if_B,
-            "C": VarPowerFlowReferenceType.if_C,
-        }
-        it_keys: Dict[str, VarPowerFlowReferenceType] = {
-            "N": VarPowerFlowReferenceType.it_N,
-            "A": VarPowerFlowReferenceType.it_A,
-            "B": VarPowerFlowReferenceType.it_B,
-            "C": VarPowerFlowReferenceType.it_C,
-        }
-        sf_keys: Dict[str, Optional[VarPowerFlowReferenceType]] = {
-            "N": None,
-            "A": VarPowerFlowReferenceType.Sf_A,
-            "B": VarPowerFlowReferenceType.Sf_B,
-            "C": VarPowerFlowReferenceType.Sf_C,
-        }
-        st_keys: Dict[str, Optional[VarPowerFlowReferenceType]] = {
-            "N": None,
-            "A": VarPowerFlowReferenceType.St_A,
-            "B": VarPowerFlowReferenceType.St_B,
-            "C": VarPowerFlowReferenceType.St_C,
-        }
-        d_vf_keys: Dict[str, VarPowerFlowReferenceType] = {
-            "N": VarPowerFlowReferenceType.d_v_N_f,
-            "A": VarPowerFlowReferenceType.d_v_A_f,
-            "B": VarPowerFlowReferenceType.d_v_B_f,
-            "C": VarPowerFlowReferenceType.d_v_C_f,
-        }
-        d_vt_keys: Dict[str, VarPowerFlowReferenceType] = {
-            "N": VarPowerFlowReferenceType.d_v_N_t,
-            "A": VarPowerFlowReferenceType.d_v_A_t,
-            "B": VarPowerFlowReferenceType.d_v_B_t,
-            "C": VarPowerFlowReferenceType.d_v_C_t,
-        }
-
-        omega_base: float = 2.0 * np.pi * self.grid.fBase
-
-        for ph in ["N", "A", "B", "C"]:
-            V_ph = phase_voltage_dict[ph]
-            I_ph = phase_current_dict[ph]
-            S_ph = phase_power_dict[ph]
-
-            # ``I_ph = conj(S/V)`` is already in branch convention
-            # Hence no sign change needed
-            i_branch_init: float = float(np.sqrt(2.0) * np.imag(I_ph))
-
-            self.set_if_exists(mdl=mdl,
-                               key=ac_voltage_keys[ph],
-                               value=float(np.sqrt(2.0) * np.imag(V_ph)))
-            self.set_if_exists(mdl=mdl,
-                               key=ac_current_keys[ph],
-                               value=i_branch_init)
-
-            if ac_is_from:
-                self.set_if_exists(mdl=mdl,
-                                   key=if_keys[ph],
-                                   value=i_branch_init)
-                self.set_if_exists(mdl=mdl,
-                                   key=it_keys[ph],
-                                   value=0.0)
-                self.set_external_param(mdl, d_vf_keys[ph], omega_base * np.sqrt(2.0) * np.real(V_ph))
-                self.set_external_param(mdl, d_vt_keys[ph], 0.0)
-            else:
-                self.set_if_exists(mdl=mdl,
-                                   key=if_keys[ph],
-                                   value=0.0)
-                self.set_if_exists(mdl=mdl,
-                                   key=it_keys[ph],
-                                   value=i_branch_init)
-                self.set_external_param(mdl, d_vf_keys[ph], 0.0)
-                self.set_external_param(mdl, d_vt_keys[ph], omega_base * np.sqrt(2.0) * np.real(V_ph))
-
-            sf_key = sf_keys[ph]
-            st_key = st_keys[ph]
-            if sf_key is not None:
-                self.set_if_exists(mdl=mdl,
-                                   key=sf_key,
-                                   value=float(np.real(S_ph if ac_is_from else 0.0 + 0.0j)))
-            if st_key is not None:
-                self.set_if_exists(mdl=mdl,
-                                   key=st_key,
-                                   value=float(np.real(0.0 + 0.0j if ac_is_from else S_ph)))
-
+        # Read terminal voltages and powers in the PF branch convention.
+        ac_bus, dc_bus, ac_is_from = self._get_vsc_terminal_indices(f_bus_idx, t_bus_idx)
+        voltages = self._get_bus_voltage_vector(ac_bus)
+        voltages[0] = 0.0  # VSC templates have no neutral-terminal PF seed.
+        phase_powers, dc_power = self._get_vsc_pf_powers(mdl, ac_bus, sbase, vsc_index)
+        ac_power = complex(np.sum(phase_powers))
+        uses_positive_sequence = _has_vsc_positive_sequence_pf_contract(mdl)
+
+        # All network terminal currents use the system three-phase current base.
+        currents = get_currents_from_power(voltages, phase_powers, 3.0)
+        if self.power_flow_results_3ph is not None:
+            if np.sum(np.abs(currents)) <= 1e-12 and abs(voltages[1]) > 1e-12:
+                phase_a_current = np.conj(ac_power / voltages[1])
+                for phase in range(1, 4):
+                    currents[phase] = phase_a_current * _phase_sequence_shift(phase)
+
+        # Apply the phasors to mappings; native model equations own internal states.
+        self._seed_vsc_ac_terminals(mdl, voltages, currents, phase_powers, ac_is_from)
         self._set_vsc_pf_positive_sequence(
-            mdl=mdl,
-            VA=complex(VA),
-            VB=complex(VB),
-            VC=complex(VC),
-            IA=IA,
-            IB=IB,
-            IC=IC,
-            S_ac_total=S_ac_total,
+            mdl, voltages[1], voltages[2], voltages[3],
+            currents[1], currents[2], currents[3], S_ac_total=ac_power,
         )
-
-        v_dc = float(np.abs(pf_results.voltage[dc_bus_idx]))
-        self.set_if_exists(
-            mdl=mdl,
-            key=VarPowerFlowReferenceType.Vdc,
-            value=v_dc,
-            persist_after_native_init=True,
-        )
-        if abs(v_dc) > 1e-12:
-            self.set_if_exists(mdl=mdl,
-                               key=VarPowerFlowReferenceType.If_dc,
-                               value=float(np.real(S_dc_total) / v_dc),
+        if self.power_flow_results is not None:
+            dc_voltage = float(abs(self.power_flow_results.voltage[dc_bus]))
+            dc_current = float(dc_power.real / dc_voltage) if dc_voltage > 1e-12 else 0.0
+            self.set_if_exists(mdl, VarPowerFlowReferenceType.Vdc, dc_voltage,
                                persist_after_native_init=True)
-        else:
-            self.set_if_exists(
-                mdl=mdl,
-                key=VarPowerFlowReferenceType.If_dc,
-                value=0.0,
-                persist_after_native_init=True,
-            )
+            self.set_if_exists(mdl, VarPowerFlowReferenceType.If_dc, dc_current,
+                               persist_after_native_init=True)
 
-        if _has_vsc_positive_sequence_pf_contract(mdl):
-            pe_value_balanced: float = float(np.real(-S_ac_total))
-            qe_value_balanced: float = float(np.imag(-S_ac_total))
-            pe_vars_balanced: List[Var] = _find_internal_vars_by_name(mdl, "Pe")
-            qe_vars_balanced: List[Var] = _find_internal_vars_by_name(mdl, "Qe")
-            pe_var_balanced: Var
-            qe_var_balanced: Var
-
-            self.set_internal_init_if_exists(mdl=mdl, var_name="Pe", value=pe_value_balanced)
-            self.set_internal_init_if_exists(mdl=mdl, var_name="Qe", value=qe_value_balanced)
-
-            for pe_var_balanced in pe_vars_balanced:
-                self._temp_init_guess[pe_var_balanced.uid] = pe_value_balanced
-                self._temp_post_init_guess[pe_var_balanced.uid] = pe_value_balanced
-
-            for qe_var_balanced in qe_vars_balanced:
-                self._temp_init_guess[qe_var_balanced.uid] = qe_value_balanced
-                self._temp_post_init_guess[qe_var_balanced.uid] = qe_value_balanced
-        else:
-            pass
-
-        # The GFM positive-sequence template defines P/Q references as converter
-        # export, opposite to the PF AC-terminal branch-flow sign. Other VSC
-        # templates retain the branch-flow convention.
-        reference_power = -S_ac_total if _has_vsc_positive_sequence_pf_contract(mdl) else S_ac_total
-        self.set_if_exists(mdl=mdl, key=VarPowerFlowReferenceType.P, value=float(np.real(reference_power)))
-        self.set_if_exists(mdl=mdl, key=VarPowerFlowReferenceType.Q, value=float(np.imag(reference_power)))
-        if _find_internal_vars_by_name(mdl, "P_loss0"):
-            self.set_internal_runtime_if_exists(
-                mdl=mdl,
-                var_name="P0",
-                value=float(-np.real(S_dc_total) * sbase),
-            )
-            self.set_internal_runtime_if_exists(mdl=mdl, var_name="sbase", value=float(sbase))
-            vsc_device = self.grid.vsc_devices[vsc_index]
-            self.set_internal_runtime_if_exists(mdl=mdl, var_name="P_loss0", value=float(vsc_device.alpha1))
-            self.set_internal_runtime_if_exists(mdl=mdl, var_name="P_loss_i1", value=float(vsc_device.alpha2))
-            self.set_internal_runtime_if_exists(mdl=mdl, var_name="P_loss_i2", value=float(vsc_device.alpha3))
-
-        S_from = S_ac_total if ac_is_from else S_dc_total
-        S_to = S_dc_total if ac_is_from else S_ac_total
-        self.set_if_exists(mdl=mdl, key=VarPowerFlowReferenceType.Pf, value=float(np.real(S_from)))
-        self.set_if_exists(mdl=mdl, key=VarPowerFlowReferenceType.Qf, value=float(np.imag(S_from)))
-        self.set_if_exists(mdl=mdl, key=VarPowerFlowReferenceType.Pt, value=float(np.real(S_to)))
-        self.set_if_exists(mdl=mdl, key=VarPowerFlowReferenceType.Qt, value=float(np.imag(S_to)))
+        # GFM references use converter export, opposite to AC branch flow.
+        reference_power = -ac_power if uses_positive_sequence else ac_power
+        if uses_positive_sequence:
+            self.set_if_exists(mdl, VarPowerFlowReferenceType.Pe, float(reference_power.real))
+            self.set_if_exists(mdl, VarPowerFlowReferenceType.Qe, float(reference_power.imag))
+        self.set_if_exists(mdl, VarPowerFlowReferenceType.P, float(reference_power.real))
+        self.set_if_exists(mdl, VarPowerFlowReferenceType.Q, float(reference_power.imag))
+        # Voltage-controlled converters need solved DC transfer as feedforward,
+        # even when their static API P0 is zero.
+        self._assign_event_mapping_value_if_present(
+            mdl=mdl, key=ParamPowerFlowReferenceType.P0, value=float(-dc_power.real * sbase),
+        )
+        from_power = ac_power if ac_is_from else dc_power
+        to_power = dc_power if ac_is_from else ac_power
+        self._seed_branch_terminal_powers(mdl, from_power, to_power)
 
     def _try_set_dc_branch_pf_init(
             self,
@@ -7808,1147 +7340,390 @@ class EmtProblemDae(EmtProblemTemplate):
         self.set_if_exists(mdl=mdl, key=VarPowerFlowReferenceType.Pt, value=float(np.real(s_t)))
         self.set_if_exists(mdl=mdl, key=VarPowerFlowReferenceType.Qt, value=float(np.imag(s_t)))
 
+    def _seed_branch_terminal_voltage_derivatives(
+            self,
+            mdl: Block,
+            from_voltages: np.ndarray,
+            to_voltages: np.ndarray,
+    ) -> None:
+        """Seed mapped branch terminal voltage derivatives from NABC phasors."""
+        omega_base: float = 2.0 * np.pi * self.grid.fBase
+        phase_mappings = (
+            (0, VarPowerFlowReferenceType.d_v_N_f, VarPowerFlowReferenceType.d_v_N_t),
+            (1, VarPowerFlowReferenceType.d_v_A_f, VarPowerFlowReferenceType.d_v_A_t),
+            (2, VarPowerFlowReferenceType.d_v_B_f, VarPowerFlowReferenceType.d_v_B_t),
+            (3, VarPowerFlowReferenceType.d_v_C_f, VarPowerFlowReferenceType.d_v_C_t),
+        )
+        for phase_index, from_key, to_key in phase_mappings:
+            if _get_external_mapping_var_if_present(mdl=mdl, key=from_key) is not None:
+                value: float = float(omega_base * np.sqrt(2.0) * np.real(from_voltages[phase_index]))
+                self.set_external_param(mdl, from_key, value)
+            if _get_external_mapping_var_if_present(mdl=mdl, key=to_key) is not None:
+                value = float(omega_base * np.sqrt(2.0) * np.real(to_voltages[phase_index]))
+                self.set_external_param(mdl, to_key, value)
+
+    def _seed_branch_terminal_powers(self, mdl: Block, from_power: complex, to_power: complex) -> None:
+        """Seed mapped aggregate power references at both branch terminals."""
+        self.set_if_exists(mdl=mdl, key=VarPowerFlowReferenceType.Pf, value=float(np.real(from_power)))
+        self.set_if_exists(mdl=mdl, key=VarPowerFlowReferenceType.Qf, value=float(np.imag(from_power)))
+        self.set_if_exists(mdl=mdl, key=VarPowerFlowReferenceType.Pt, value=float(np.real(to_power)))
+        self.set_if_exists(mdl=mdl, key=VarPowerFlowReferenceType.Qt, value=float(np.imag(to_power)))
+
+    def _seed_branch_phase_currents(
+            self,
+            mdl: Block,
+            from_currents: np.ndarray,
+            to_currents: np.ndarray,
+            preserve_current_seed: bool,
+            has_physical_g: bool,
+    ) -> None:
+        """Apply terminal currents with the PF projection's persistence policy.
+
+        Balanced currents computed from a nonzero line impedance survive native
+        initialization. PF3 and balanced power-derived currents are guesses only.
+        Physical shunt conductance supplies the neutral current; otherwise derive
+        it from the phase sum and leave that neutral seed free to be initialized.
+        """
+        phase_mappings = (
+            (0, VarPowerFlowReferenceType.if_N, VarPowerFlowReferenceType.it_N),
+            (1, VarPowerFlowReferenceType.if_A, VarPowerFlowReferenceType.it_A),
+            (2, VarPowerFlowReferenceType.if_B, VarPowerFlowReferenceType.it_B),
+            (3, VarPowerFlowReferenceType.if_C, VarPowerFlowReferenceType.it_C),
+        )
+        for phase_index, from_key, to_key in phase_mappings:
+            from_value: float = float(np.sqrt(2.0) * np.imag(from_currents[phase_index]))
+            to_value: float = float(np.sqrt(2.0) * np.imag(to_currents[phase_index]))
+            self.set_if_exists(mdl=mdl, key=from_key, value=from_value,
+                               persist_after_native_init=preserve_current_seed)
+            self.set_if_exists(mdl=mdl, key=to_key, value=to_value,
+                               persist_after_native_init=preserve_current_seed)
+
+        if has_physical_g:
+            return
+        neutral_mappings = (
+            (VarPowerFlowReferenceType.if_N, from_currents),
+            (VarPowerFlowReferenceType.it_N, to_currents),
+        )
+        for neutral_key, phase_currents in neutral_mappings:
+            if _get_external_mapping_var_if_present(mdl=mdl, key=neutral_key) is not None:
+                neutral_current: complex = -sum(
+                    phase_currents[1:4],
+                    0.0 + 0.0j,
+                )
+                neutral_value: float = float(np.sqrt(2.0) * np.imag(neutral_current))
+                self.set_if_exists(mdl=mdl, key=neutral_key, value=neutral_value,
+                                   persist_after_native_init=False)
+
+    def _seed_ac_branch_phase_powers(
+            self,
+            mdl: Block,
+            from_powers: np.ndarray,
+            to_powers: np.ndarray,
+    ) -> Tuple[complex, complex]:
+        """Seed available NABC phase powers and return the mapped terminal totals."""
+        phase_keys = (
+            (1, VarPowerFlowReferenceType.Sf_A, VarPowerFlowReferenceType.St_A),
+            (2, VarPowerFlowReferenceType.Sf_B, VarPowerFlowReferenceType.St_B),
+            (3, VarPowerFlowReferenceType.Sf_C, VarPowerFlowReferenceType.St_C),
+        )
+        from_total = 0.0 + 0.0j
+        to_total = 0.0 + 0.0j
+        for phase_index, from_key, to_key in phase_keys:
+            from_power = from_powers[phase_index]
+            to_power = to_powers[phase_index]
+            if not np.isnan(from_power) and _get_external_mapping_var_if_present(mdl, from_key) is not None:
+                self.set_if_exists(mdl, from_key, float(np.real(from_power)))
+                from_total += from_power
+            if not np.isnan(to_power) and _get_external_mapping_var_if_present(mdl, to_key) is not None:
+                self.set_if_exists(mdl, to_key, float(np.real(to_power)))
+                to_total += to_power
+        return from_total, to_total
+
     def _try_set_branch_pf_init(
             self,
             mdl: Block,
-            branch_index: int,
-            f_bus_idx: int,
-            t_bus_idx: int,
-            sbase: float,
-            is_vsc: bool = False,
-            vsc_index: int = -1
-    ) -> None:
-        """
-        Initialize branch variables from three-phase power-flow results.
-
-        The method initializes:
-          - per-phase branch powers Sf_* and St_* when available,
-          - aggregated terminal powers Pf/Qf/Pt/Qt,
-          - per-phase instantaneous terminal currents if_* and it_* at t = 0.
-
-        The neutral phase is initialized to zero for currents if the corresponding
-        PF quantities are not available.
-
-        :param mdl: Branch symbolic block.
-        :param branch_index: Branch index in the power-flow results.
-        :param f_bus_idx: From-bus index in the power-flow results.
-        :param t_bus_idx: To-bus index in the power-flow results.
-        :param sbase: Base power of the grid.
-        :return: None
-        """
-
-        if is_vsc and vsc_index >= 0:
-            self._try_set_vsc_branch_pf_init(
-                mdl=mdl,
-                f_bus_idx=f_bus_idx,
-                t_bus_idx=t_bus_idx,
-                sbase=sbase,
-                vsc_index=vsc_index,
-            )
-            return
-
-        if self.grid.buses[f_bus_idx].is_dc or self.grid.buses[t_bus_idx].is_dc:
-            self._try_set_dc_branch_pf_init(
-                mdl=mdl,
-                branch_index=branch_index,
-                f_bus_idx=f_bus_idx,
-                t_bus_idx=t_bus_idx,
-                sbase=sbase,
-            )
-            return
-
-        phases: List[str] = ["N", "A", "B", "C"]
-
-        sf_key_dict: Dict[str, Optional[VarPowerFlowReferenceType]] = {
-            "N": None,
-            "A": VarPowerFlowReferenceType.Sf_A,
-            "B": VarPowerFlowReferenceType.Sf_B,
-            "C": VarPowerFlowReferenceType.Sf_C,
-        }
-        st_key_dict: Dict[str, Optional[VarPowerFlowReferenceType]] = {
-            "N": None,
-            "A": VarPowerFlowReferenceType.St_A,
-            "B": VarPowerFlowReferenceType.St_B,
-            "C": VarPowerFlowReferenceType.St_C,
-        }
-
-        if_key_dict: Dict[str, VarPowerFlowReferenceType] = {
-            "N": VarPowerFlowReferenceType.if_N,
-            "A": VarPowerFlowReferenceType.if_A,
-            "B": VarPowerFlowReferenceType.if_B,
-            "C": VarPowerFlowReferenceType.if_C,
-        }
-        it_key_dict: Dict[str, VarPowerFlowReferenceType] = {
-            "N": VarPowerFlowReferenceType.it_N,
-            "A": VarPowerFlowReferenceType.it_A,
-            "B": VarPowerFlowReferenceType.it_B,
-            "C": VarPowerFlowReferenceType.it_C,
-        }
-        d_vf_key_dict: Dict[str, VarPowerFlowReferenceType] = {
-            "N": VarPowerFlowReferenceType.d_v_N_f,
-            "A": VarPowerFlowReferenceType.d_v_A_f,
-            "B": VarPowerFlowReferenceType.d_v_B_f,
-            "C": VarPowerFlowReferenceType.d_v_C_f,
-        }
-        d_vt_key_dict: Dict[str, VarPowerFlowReferenceType] = {
-            "N": VarPowerFlowReferenceType.d_v_N_t,
-            "A": VarPowerFlowReferenceType.d_v_A_t,
-            "B": VarPowerFlowReferenceType.d_v_B_t,
-            "C": VarPowerFlowReferenceType.d_v_C_t,
-        }
-
-
-        voltage_from_dict = {
-            "N": self.power_flow_results_3ph.voltage_N,
-            "A": self.power_flow_results_3ph.voltage_A,
-            "B": self.power_flow_results_3ph.voltage_B,
-            "C": self.power_flow_results_3ph.voltage_C,
-        }
-        voltage_to_dict = {
-            "N": self.power_flow_results_3ph.voltage_N,
-            "A": self.power_flow_results_3ph.voltage_A,
-            "B": self.power_flow_results_3ph.voltage_B,
-            "C": self.power_flow_results_3ph.voltage_C,
-        }
-
-        sf_array_dict = {
-            "N": None,
-            "A": self.power_flow_results_3ph.Sf_A,
-            "B": self.power_flow_results_3ph.Sf_B,
-            "C": self.power_flow_results_3ph.Sf_C,
-        }
-        st_array_dict = {
-            "N": None,
-            "A": self.power_flow_results_3ph.St_A,
-            "B": self.power_flow_results_3ph.St_B,
-            "C": self.power_flow_results_3ph.St_C,
-        }
-
-
-        sf_sum: complex = 0.0 + 0.0j
-        st_sum: complex = 0.0 + 0.0j
-        from_phase_currents: Dict[str, complex] = dict()
-        to_phase_currents: Dict[str, complex] = dict()
-        series_phase_currents_inst: Dict[str, float] = dict()
-        series_phase_current_derivatives_inst: Dict[str, float] = dict()
-        from_phase_currents_inst: Dict[str, float] = dict()
-        to_phase_currents_inst: Dict[str, float] = dict()
-
-        for ph in phases:
-            sf_key: Optional[VarPowerFlowReferenceType] = sf_key_dict[ph]
-            st_key: Optional[VarPowerFlowReferenceType] = st_key_dict[ph]
-            sf_array: Optional[np.ndarray] = sf_array_dict[ph]
-            st_array: Optional[np.ndarray] = st_array_dict[ph]
-
-            if sf_key is None:
-                pass
-            else:
-                sf_var: Optional[Any] = _get_external_mapping_var_if_present(mdl=mdl, key=sf_key)
-                if sf_var is not None and sf_array is not None:
-                    pf_idx = vsc_index if is_vsc and vsc_index >= 0 else branch_index
-                    sf_ph_value = _get_array_entry_if_in_range(sf_array, pf_idx)
-                    if sf_ph_value is None:
-                        pass
-                    else:
-                        sf_ph = sf_ph_value / sbase
-                        self.set_if_exists(mdl=mdl, key=sf_key, value=float(np.real(sf_ph)))
-                        sf_sum += sf_ph
-                elif is_vsc:
-                    self.set_if_exists(mdl=mdl, key=sf_key, value=0.0)
-                else:
-                    pass
-
-            if st_key is None:
-                pass
-            else:
-                st_var: Optional[Any] = _get_external_mapping_var_if_present(mdl=mdl, key=st_key)
-                if st_var is not None and st_array is not None:
-                    pf_idx = vsc_index if is_vsc and vsc_index >= 0 else branch_index
-                    st_ph_value = _get_array_entry_if_in_range(st_array, pf_idx)
-                    if st_ph_value is None:
-                        pass
-                    else:
-                        st_ph = st_ph_value / sbase
-                        self.set_if_exists(mdl=mdl, key=st_key, value=float(np.real(st_ph)))
-                        st_sum += st_ph
-                else:
-                    pass
-
-        for ph in phases:
-            if_key: VarPowerFlowReferenceType = if_key_dict[ph]
-            it_key: VarPowerFlowReferenceType = it_key_dict[ph]
-
-            if_key_var: Optional[Any] = _get_external_mapping_var_if_present(mdl=mdl, key=if_key)
-            it_key_var: Optional[Any] = _get_external_mapping_var_if_present(mdl=mdl, key=it_key)
-            uses_currents: bool = if_key_var is not None or it_key_var is not None
-
-            if uses_currents:
-                # Missing optional current mappings are skipped exactly like explicit None entries.
-                sf_array = sf_array_dict[ph]
-                st_array = st_array_dict[ph]
-                voltage_from_array = voltage_from_dict[ph]
-                voltage_to_array = voltage_to_dict[ph]
-
-                pf_idx = vsc_index if is_vsc and vsc_index >= 0 else branch_index
-
-                if sf_array is None or voltage_from_array is None:
-                    i_f = 0.0 + 0.0j
-                else:
-                    sf_ph_value = _get_array_entry_if_in_range(sf_array, pf_idx)
-                    vf_ph = _get_array_entry_if_in_range(voltage_from_array, f_bus_idx)
-                    if sf_ph_value is None or vf_ph is None or abs(vf_ph) <= 1e-12:
-                        i_f = 0.0 + 0.0j
-                    else:
-                        sf_ph = sf_ph_value / sbase
-                        i_f = 3.0 * np.conj(sf_ph / vf_ph)
-
-                if st_array is None or voltage_to_array is None:
-                    i_t = 0.0 + 0.0j
-                else:
-                    st_ph_value = _get_array_entry_if_in_range(st_array, pf_idx)
-                    vt_ph = _get_array_entry_if_in_range(voltage_to_array, t_bus_idx)
-                    if st_ph_value is None or vt_ph is None or abs(vt_ph) <= 1e-12:
-                        i_t = 0.0 + 0.0j
-                    else:
-                        st_ph = st_ph_value / sbase
-                        i_t = 3.0 * np.conj(st_ph / vt_ph)
-
-                i_f0: float = np.sqrt(2.0) * np.imag(i_f)
-                i_t0: float = np.sqrt(2.0) * np.imag(i_t)
-
-                if ph in {"A", "B", "C"}:
-                    from_phase_currents[ph] = complex(i_f)
-                    to_phase_currents[ph] = complex(i_t)
-                    from_phase_currents_inst[ph] = float(i_f0)
-                    to_phase_currents_inst[ph] = float(i_t0)
-                else:
-                    pass
-
-                self.set_if_exists(mdl=mdl, key=if_key, value=float(i_f0), persist_after_native_init=False)
-                self.set_if_exists(mdl=mdl, key=it_key, value=float(i_t0), persist_after_native_init=False)
-            else:
-                pass
-
-        neutral_if_var = _get_external_mapping_var_if_present(mdl=mdl, key=VarPowerFlowReferenceType.if_N)
-        if neutral_if_var is not None:
-            i_f_neutral = -(from_phase_currents.get("A", 0.0 + 0.0j) + from_phase_currents.get("B", 0.0 + 0.0j) + from_phase_currents.get("C", 0.0 + 0.0j))
-            neutral_value = float(np.sqrt(2.0) * np.imag(i_f_neutral))
-            self.set_if_exists(mdl=mdl, key=VarPowerFlowReferenceType.if_N, value=neutral_value, persist_after_native_init=False)
-        else:
-            pass
-
-        neutral_it_var = _get_external_mapping_var_if_present(mdl=mdl, key=VarPowerFlowReferenceType.it_N)
-        if neutral_it_var is not None:
-            i_t_neutral = -(to_phase_currents.get("A", 0.0 + 0.0j) + to_phase_currents.get("B", 0.0 + 0.0j) + to_phase_currents.get("C", 0.0 + 0.0j))
-            neutral_value = float(np.sqrt(2.0) * np.imag(i_t_neutral))
-            self.set_if_exists(mdl=mdl, key=VarPowerFlowReferenceType.it_N, value=neutral_value, persist_after_native_init=False)
-        else:
-            pass
-
-        if find_name_in_block("i_f_A", mdl) is not None:
-            self.set_internal_init_if_exists(mdl, "i_f_A", from_phase_currents_inst.get("A", 0.0))
-            self.set_internal_init_if_exists(mdl, "i_f_B", from_phase_currents_inst.get("B", 0.0))
-            self.set_internal_init_if_exists(mdl, "i_f_C", from_phase_currents_inst.get("C", 0.0))
-            self.set_internal_init_if_exists(mdl, "i_t_A", to_phase_currents_inst.get("A", 0.0))
-            self.set_internal_init_if_exists(mdl, "i_t_B", to_phase_currents_inst.get("B", 0.0))
-            self.set_internal_init_if_exists(mdl, "i_t_C", to_phase_currents_inst.get("C", 0.0))
-        else:
-            if find_name_in_block("i_ser_A", mdl) is not None and find_name_in_block("q_f_A", mdl) is None:
-                self.set_internal_init_if_exists(mdl, "i_ser_A", from_phase_currents_inst.get("A", 0.0))
-                self.set_internal_init_if_exists(mdl, "i_ser_B", from_phase_currents_inst.get("B", 0.0))
-                self.set_internal_init_if_exists(mdl, "i_ser_C", from_phase_currents_inst.get("C", 0.0))
-            else:
-                pass
-
-        omega_base: float = 2.0 * np.pi * self.grid.fBase
-        for ph in phases:
-            d_vf_key: VarPowerFlowReferenceType = d_vf_key_dict[ph]
-            d_vt_key: VarPowerFlowReferenceType = d_vt_key_dict[ph]
-            voltage_from_array = voltage_from_dict[ph]
-            voltage_to_array = voltage_to_dict[ph]
-            d_vf_var: Optional[Any] = _get_external_mapping_var_if_present(mdl=mdl, key=d_vf_key)
-            if d_vf_var is not None:
-                if voltage_from_array is None:
-                    vf_ph = 0.0 + 0.0j
-                else:
-                    vf_ph = _get_array_entry_if_in_range(voltage_from_array, f_bus_idx)
-                    if vf_ph is None:
-                        vf_ph = 0.0 + 0.0j
-                    else:
-                        pass
-                d_vf: float = omega_base * np.sqrt(2.0) * np.real(vf_ph)
-                self.set_external_param(mdl, d_vf_key, d_vf)
-            else:
-                pass
-            d_vt_var: Optional[Any] = _get_external_mapping_var_if_present(mdl=mdl, key=d_vt_key)
-            if d_vt_var is not None:
-                if voltage_to_array is None:
-                    vt_ph = 0.0 + 0.0j
-                else:
-                    vt_ph = _get_array_entry_if_in_range(voltage_to_array, t_bus_idx)
-                    if vt_ph is None:
-                        vt_ph = 0.0 + 0.0j
-                    else:
-                        pass
-                d_vt: float = omega_base * np.sqrt(2.0) * np.real(vt_ph)
-                self.set_external_param(mdl, d_vt_key, d_vt)
-            else:
-                pass
-
-        self.set_if_exists(mdl=mdl, key=VarPowerFlowReferenceType.Pf, value=float(np.real(sf_sum)))
-        self.set_if_exists(mdl=mdl, key=VarPowerFlowReferenceType.Qf, value=float(np.imag(sf_sum)))
-        self.set_if_exists(mdl=mdl, key=VarPowerFlowReferenceType.Pt, value=float(np.real(st_sum)))
-        self.set_if_exists(mdl=mdl, key=VarPowerFlowReferenceType.Qt, value=float(np.imag(st_sum)))
-
-
-    def _try_set_branch_pf_init_balanced(
-            self,
-            mdl: Block,
+            branch: BranchParent,
             branch_index: int,
             f_bus_idx: int,
             t_bus_idx: int,
             sbase: float,
             static_parameter_values_mapping: Dict[Var, Const],
-            is_vsc: bool = False,
-            vsc_index: int = -1
     ) -> None:
-        """
-        Initialize branch variables from balanced power-flow results.
-
-        The balanced PF provides:
-          - one complex bus voltage phasor per bus in self.power_flow_results.voltage
-          - one total three-phase branch power per end in self.power_flow_results.Sf/St
-
-        This method reconstructs balanced phase quantities as:
-          - V_A = V
-          - V_B = V * exp(-j*2*pi/3)
-          - V_C = V * exp(+j*2*pi/3)
-          - V_N = 0
-
-        and distributes total three-phase branch powers equally among phases:
-          - S_phase = S_3ph / 3
-
-        Then:
-          - I_phase = conj(S_phase / V_phase)
-
-        The method initializes:
-          - per-phase branch powers Sf_* and St_*,
-          - aggregated terminal powers Pf/Qf/Pt/Qt,
-          - per-phase instantaneous terminal currents if_* and it_* at t = 0,
-          - per-phase voltage derivatives d_v_* using the same EMT convention as in
-            the original three-phase initializer.
-
-        Neutral voltage is zero. Exposed physical G couplings contribute to
-        terminal current guesses; native equations retain neutral-current authority.
-
-        :param mdl: Device-owned model with external current references.
-        :param branch_index: Balanced power-flow branch index.
-        :param f_bus_idx: From-bus index in the power-flow result.
-        :param t_bus_idx: To-bus index in the power-flow result.
-        :param sbase: System three-phase power base in MVA.
-        :param static_parameter_values_mapping: Owner-resolved constants keyed by Var identity.
-        :param is_vsc: Whether converter-specific initialization applies.
-        :param vsc_index: Converter power-flow index when available.
-        :return: None.
-        """
-        if is_vsc and vsc_index >= 0:
-            self._try_set_vsc_branch_pf_init_balanced(
-                mdl=mdl,
-                f_bus_idx=f_bus_idx,
-                t_bus_idx=t_bus_idx,
-                sbase=sbase,
-                vsc_index=vsc_index,
-            )
+        """Seed an ordinary branch from three-phase or balanced power flow."""
+        if self.power_flow_results_3ph is None and self.power_flow_results is None:
             return
-
         if self.grid.buses[f_bus_idx].is_dc or self.grid.buses[t_bus_idx].is_dc:
             self._try_set_dc_branch_pf_init(
-                mdl=mdl,
-                branch_index=branch_index,
-                f_bus_idx=f_bus_idx,
-                t_bus_idx=t_bus_idx,
-                sbase=sbase,
+                mdl=mdl, branch_index=branch_index,
+                f_bus_idx=f_bus_idx, t_bus_idx=t_bus_idx, sbase=sbase,
             )
             return
 
-        phases: List[str] = ["N", "A", "B", "C"]
-
-        sf_key_dict: Dict[str, Optional[VarPowerFlowReferenceType]] = {
-            "N": None,
-            "A": VarPowerFlowReferenceType.Sf_A,
-            "B": VarPowerFlowReferenceType.Sf_B,
-            "C": VarPowerFlowReferenceType.Sf_C,
-        }
-        st_key_dict: Dict[str, Optional[VarPowerFlowReferenceType]] = {
-            "N": None,
-            "A": VarPowerFlowReferenceType.St_A,
-            "B": VarPowerFlowReferenceType.St_B,
-            "C": VarPowerFlowReferenceType.St_C,
-        }
-
-        if_key_dict: Dict[str, VarPowerFlowReferenceType] = {
-            "N": VarPowerFlowReferenceType.if_N,
-            "A": VarPowerFlowReferenceType.if_A,
-            "B": VarPowerFlowReferenceType.if_B,
-            "C": VarPowerFlowReferenceType.if_C,
-        }
-        it_key_dict: Dict[str, VarPowerFlowReferenceType] = {
-            "N": VarPowerFlowReferenceType.it_N,
-            "A": VarPowerFlowReferenceType.it_A,
-            "B": VarPowerFlowReferenceType.it_B,
-            "C": VarPowerFlowReferenceType.it_C,
-        }
-        d_vf_key_dict: Dict[str, VarPowerFlowReferenceType] = {
-            "N": VarPowerFlowReferenceType.d_v_N_f,
-            "A": VarPowerFlowReferenceType.d_v_A_f,
-            "B": VarPowerFlowReferenceType.d_v_B_f,
-            "C": VarPowerFlowReferenceType.d_v_C_f,
-        }
-        d_vt_key_dict: Dict[str, VarPowerFlowReferenceType] = {
-            "N": VarPowerFlowReferenceType.d_v_N_t,
-            "A": VarPowerFlowReferenceType.d_v_A_t,
-            "B": VarPowerFlowReferenceType.d_v_B_t,
-            "C": VarPowerFlowReferenceType.d_v_C_t,
-        }
-
-        pf_results = self.power_flow_results
-        if pf_results is None:
-            return
-
-        alpha = 2.0 * np.pi / 3.0
-
-        v_f_bus: CxVec = pf_results.voltage[f_bus_idx]
-        v_t_bus: CxVec = pf_results.voltage[t_bus_idx]
-
-        if is_vsc and vsc_index >= 0:
-            pf_results_pfn_vsc: float = float(pf_results.Pfn_vsc[vsc_index])
-
-            sf_total = complex(
-                (
-                    pf_results.Pfp_vsc[vsc_index]
-                    + pf_results_pfn_vsc
-                ) / sbase,
-                0.0,
+        from_voltages, to_voltages = self.get_branch_voltages(f_bus_idx, t_bus_idx)
+        shunt_conductance: np.ndarray = np.zeros((4, 4), dtype=np.float64)
+        damping_conductance: float = 0.0
+        project_balanced_line: bool = self.power_flow_results_3ph is None and isinstance(branch, Line)
+        if project_balanced_line:
+            shunt_conductance, damping_conductance = self._get_branch_emt_conductances(
+                mdl, static_parameter_values_mapping,
             )
-            st_total = pf_results.St_vsc[vsc_index] / sbase
-
-            voltage_dict: Dict[str, complex] = {
-                "N": 0.0 + 0.0j,
-                "A": 0.0 + 0.0j,
-                "B": 0.0 + 0.0j,
-                "C": 0.0 + 0.0j,
-            }
-            voltage_to_dict: Dict[str, CxVec] = {
-                "N": 0.0 + 0.0j,
-                "A": v_t_bus,
-                "B": v_t_bus * np.exp(-1j * alpha),
-                "C": v_t_bus * np.exp(+1j * alpha),
-            }
         else:
-            sf_total = pf_results.Sf[branch_index] / sbase
-            st_total = pf_results.St[branch_index] / sbase
-
-            voltage_dict = {
-                "N": 0.0 + 0.0j,
-                "A": v_f_bus,
-                "B": v_f_bus * np.exp(-1j * alpha),
-                "C": v_f_bus * np.exp(+1j * alpha),
-            }
-            voltage_to_dict = {
-                "N": 0.0 + 0.0j,
-                "A": v_t_bus,
-                "B": v_t_bus * np.exp(-1j * alpha),
-                "C": v_t_bus * np.exp(+1j * alpha),
-            }
-
-        # Consume the same owner-local constants as the compiled equations.
-        # Fixed NABC storage retains coupling without keeping a second model graph.
-        g_keys: List[List[ParamPowerFlowReferenceType]] = get_line_g_keys()
-        g_nabc: np.ndarray = np.zeros((4, 4), dtype=np.float64)
-        parameter_owner: Block
-        g_row: int
-        g_col: int
-        for parameter_owner in mdl.get_all_blocks():
-            for g_row in range(4):
-                for g_col in range(4):
-                    g_parameter: Var | None = parameter_owner.api_obj_mapping.get(g_keys[g_row][g_col], None)
-                    if g_parameter is None:
-                        pass
-                    else:
-                        g_value: Const | None = get_api_parameter_initial_value_by_uid(
-                            parameter=g_parameter,
-                            problem_mapping=static_parameter_values_mapping,
-                        )
-                        if g_value is None:
-                            g_value = parameter_owner.parameters[g_parameter]
+            pass
+        virtual_taps: np.ndarray = np.ones(2, dtype=float)
+        if project_balanced_line:
+            for owner in mdl.get_all_blocks():
+                for terminal, reference in enumerate((ParamPowerFlowReferenceType.vtap_f, ParamPowerFlowReferenceType.vtap_t)):
+                    parameter = owner.api_obj_mapping.get(reference, None)
+                    if parameter is not None:
+                        value = get_api_parameter_initial_value_by_uid(parameter, static_parameter_values_mapping)
+                        if value is None:
+                            value = owner.parameters[parameter]
                         else:
                             pass
-                        if g_value.value is None:
-                            self.logger.add_warning(
-                                msg="Missing optional physical line conductance; using template zero shunt.",
-                                device=mdl.name,
-                                value=g_parameter.name,
-                            )
+                        if value.value is not None and np.isfinite(float(value.value)) and float(value.value) > 0.0:
+                            virtual_taps[terminal] = float(value.value)
                         else:
-                            g_nabc[g_row, g_col] = float(g_value.value)
-
-        voltage_f_nabc: np.ndarray = np.zeros(4, dtype=np.complex128)
-        voltage_t_nabc: np.ndarray = np.zeros(4, dtype=np.complex128)
-        phase_index: int
-        phase_label: str
-        for phase_index, phase_label in enumerate(phases):
-            voltage_f_nabc[phase_index] = voltage_dict[phase_label]
-            voltage_t_nabc[phase_index] = voltage_to_dict[phase_label]
-        physical_current_f: np.ndarray = g_nabc @ voltage_f_nabc
-        physical_current_t: np.ndarray = g_nabc @ voltage_t_nabc
-        has_physical_g: bool = bool(np.any(g_nabc != 0.0))
-
-        sf_phase_total = sf_total / 3.0
-        st_phase_total = st_total / 3.0
-
-        sf_sum: complex = 0.0 + 0.0j
-        st_sum: complex = 0.0 + 0.0j
-        from_phase_currents: Dict[str, complex] = dict()
-        to_phase_currents: Dict[str, complex] = dict()
-        series_phase_currents_inst: Dict[str, float] = dict()
-        series_phase_current_derivatives_inst: Dict[str, float] = dict()
-        z_series: complex = 0.0 + 0.0j
-        b_shunt: float = 0.0
-        omega_base: float = 2.0 * np.pi * self.grid.fBase
-
-        if not is_vsc:
-            try:
-                line_device = self.grid.lines[branch_index]
-                z_series = complex(float(line_device.R), float(line_device.X))
-                b_shunt = float(line_device.B)
-            except Exception:
-                z_series = 0.0 + 0.0j
-                b_shunt = 0.0
-        else:
-            pass
-
-        for ph in phases:
-            sf_key: Optional[VarPowerFlowReferenceType] = sf_key_dict[ph]
-            st_key: Optional[VarPowerFlowReferenceType] = st_key_dict[ph]
-
-            if ph == "N":
-                sf_ph = 0.0 + 0.0j
-                st_ph = 0.0 + 0.0j
-            elif is_vsc:
-                sf_ph = 0.0 + 0.0j
-                st_ph = st_phase_total
-            else:
-                sf_ph = sf_phase_total
-                st_ph = st_phase_total
-
-            if sf_key is not None:
-                sf_var: Optional[Any] = _get_external_mapping_var_if_present(mdl=mdl, key=sf_key)
-                if sf_var is not None:
-                    self.set_if_exists(mdl=mdl, key=sf_key, value=float(np.real(sf_ph)))
-                    sf_sum += sf_ph
-                else:
-                    pass
-            else:
-                pass
-
-            if st_key is not None:
-                st_var: Optional[Any] = _get_external_mapping_var_if_present(mdl=mdl, key=st_key)
-                if st_var is not None:
-                    self.set_if_exists(mdl=mdl, key=st_key, value=float(np.real(st_ph)))
-                    st_sum += st_ph
-                else:
-                    pass
-            else:
-                pass
-
-        for phase_index, ph in enumerate(phases):
-            if_key: VarPowerFlowReferenceType = if_key_dict[ph]
-            it_key: VarPowerFlowReferenceType = it_key_dict[ph]
-
-            if_key_var: Optional[Any] = _get_external_mapping_var_if_present(mdl=mdl, key=if_key)
-            it_key_var: Optional[Any] = _get_external_mapping_var_if_present(mdl=mdl, key=it_key)
-            uses_currents: bool = if_key_var is not None or it_key_var is not None
-
-            if uses_currents:
-                # Missing optional current mappings are skipped exactly like explicit None entries.
-                vf_ph = voltage_dict[ph]
-                vt_ph = voltage_to_dict[ph]
-
-                if ph == "N":
-                    i_f = complex(physical_current_f[phase_index])
-                    i_t = complex(physical_current_t[phase_index])
-                elif is_vsc:
-                    i_f = 0.0 + 0.0j
-                    if abs(vt_ph) <= 1e-12:
-                        i_t = 0.0 + 0.0j
-                    else:
-                        i_t = 3.0 * np.conj(st_phase_total / vt_ph)
-                else:
-                    if abs(z_series) > 1.0e-15:
-                        i_ser = (vf_ph - vt_ph) / z_series
-                        i_cap_f = 1j * (b_shunt / 2.0) * vf_ph
-                        i_cap_t = 1j * (b_shunt / 2.0) * vt_ph
-                        g_damp = 0.0
-                        parameter_owner_block: Block
-                        parameter_var: Var
-                        parameter_value: Const
-                        for parameter_owner_block in mdl.get_all_blocks():
-                            for parameter_var, parameter_value in parameter_owner_block.parameters.items():
-                                if parameter_var.name == "G_damp":
-                                    g_damp = float(parameter_value.value)
-                                else:
-                                    pass
-                        i_f = i_ser + i_cap_f + physical_current_f[phase_index] + g_damp * vf_ph
-                        i_t = -i_ser + i_cap_t + physical_current_t[phase_index] + g_damp * vt_ph
-                    else:
-                        if abs(vf_ph) <= 1e-12:
-                            i_f = 0.0 + 0.0j
-                        else:
-                            i_f = 3.0 * np.conj(sf_phase_total / vf_ph)
-
-                        if abs(vt_ph) <= 1e-12:
-                            i_t = 0.0 + 0.0j
-                        else:
-                            i_t = 3.0 * np.conj(st_phase_total / vt_ph)
-
-                i_f0: float = np.sqrt(2.0) * np.imag(i_f)
-                i_t0: float = np.sqrt(2.0) * np.imag(i_t)
-
-                if ph in {"A", "B", "C"}:
-                    from_phase_currents[ph] = complex(i_f)
-                    to_phase_currents[ph] = complex(i_t)
-                    if not is_vsc and abs(z_series) > 1.0e-15:
-                        i_ser = (vf_ph - vt_ph) / z_series
-                        series_phase_currents_inst[ph] = float(np.sqrt(2.0) * np.imag(i_ser))
-                        series_phase_current_derivatives_inst[ph] = float(omega_base * np.sqrt(2.0) * np.real(i_ser))
+                            self.logger.add_warning(msg="Missing or invalid line virtual tap; using structural identity.",
+                                                    device=mdl.name, value=parameter.name)
                     else:
                         pass
-                else:
-                    pass
-
-                preserve_current_seed = bool((not is_vsc) and abs(z_series) > 1.0e-15)
-                self.set_if_exists(mdl=mdl, key=if_key, value=float(i_f0), persist_after_native_init=preserve_current_seed)
-                self.set_if_exists(mdl=mdl, key=it_key, value=float(i_t0), persist_after_native_init=preserve_current_seed)
-            else:
-                pass
-
-        neutral_if_var = _get_external_mapping_var_if_present(mdl=mdl, key=VarPowerFlowReferenceType.if_N)
-        # A grounded physical shunt need not satisfy the legacy sum-of-phase heuristic.
-        if neutral_if_var is not None and not has_physical_g:
-            i_f_neutral = -(from_phase_currents.get("A", 0.0 + 0.0j) + from_phase_currents.get("B", 0.0 + 0.0j) + from_phase_currents.get("C", 0.0 + 0.0j))
-            neutral_value = float(np.sqrt(2.0) * np.imag(i_f_neutral))
-            self.set_if_exists(mdl=mdl, key=VarPowerFlowReferenceType.if_N, value=neutral_value, persist_after_native_init=False)
         else:
             pass
+        from_currents, to_currents = self.get_branch_currents(
+            branch_index, from_voltages, to_voltages, sbase,
+            branch=branch, shunt_conductance=shunt_conductance,
+            damping_conductance=damping_conductance,
+            virtual_tap_from=virtual_taps[0], virtual_tap_to=virtual_taps[1],
+        )
+        from_powers, to_powers = self.get_branch_powers(branch_index, sbase)
+        from_power, to_power = self._seed_ac_branch_phase_powers(mdl, from_powers, to_powers)
+        self._seed_branch_phase_currents(
+            mdl, from_currents, to_currents,
+            preserve_current_seed=project_balanced_line and abs(complex(branch.R, branch.X)) > 1e-15,
+            has_physical_g=bool(np.any(shunt_conductance != 0.0)),
+        )
+        self._seed_branch_terminal_voltage_derivatives(mdl, from_voltages, to_voltages)
+        self._seed_branch_terminal_powers(mdl, from_power, to_power)
 
-        neutral_it_var = _get_external_mapping_var_if_present(mdl=mdl, key=VarPowerFlowReferenceType.it_N)
-        if neutral_it_var is not None and not has_physical_g:
-            i_t_neutral = -(to_phase_currents.get("A", 0.0 + 0.0j) + to_phase_currents.get("B", 0.0 + 0.0j) + to_phase_currents.get("C", 0.0 + 0.0j))
-            neutral_value = float(np.sqrt(2.0) * np.imag(i_t_neutral))
-            self.set_if_exists(mdl=mdl, key=VarPowerFlowReferenceType.it_N, value=neutral_value, persist_after_native_init=False)
+    def get_branch_powers(
+            self, branch_index: int, sbase: float,
+    ) -> Tuple[np.ndarray, np.ndarray]:
+        """Return complex NABC terminal powers on the total three-phase Sbase.
+
+        PF3 supplies each phase separately; balanced PF totals are divided
+        equally among A/B/C. Neutral power is zero. Missing PF3 phase entries
+        are NaN, which the seed setter skips; a present zero is still applied.
+        The caller must provide a PF result.
+        """
+        from_powers = np.zeros(4, dtype=np.complex128)
+        to_powers = np.zeros(4, dtype=np.complex128)
+        pf3 = self.power_flow_results_3ph
+        if pf3 is not None:
+            phase_powers = ((pf3.Sf_A, pf3.St_A), (pf3.Sf_B, pf3.St_B), (pf3.Sf_C, pf3.St_C))
+            for phase_index, (from_phase, to_phase) in enumerate(phase_powers, start=1):
+                sf = _get_array_entry_if_in_range(from_phase, branch_index)
+                st = _get_array_entry_if_in_range(to_phase, branch_index)
+                from_powers[phase_index] = np.nan if sf is None else complex(sf / sbase)
+                to_powers[phase_index] = np.nan if st is None else complex(st / sbase)
+        else:
+            pf = self.power_flow_results
+            from_powers[1:4] = complex(pf.Sf[branch_index] / (3.0 * sbase))
+            to_powers[1:4] = complex(pf.St[branch_index] / (3.0 * sbase))
+        return from_powers, to_powers
+
+    def get_branch_voltages(self, f_bus_idx: int, t_bus_idx: int) -> Tuple[np.ndarray, np.ndarray]:
+        """Return branch terminal phasors in NABC order from the available PF."""
+        return self._get_bus_voltage_vector(f_bus_idx), self._get_bus_voltage_vector(t_bus_idx)
+
+    def get_branch_currents(
+            self, branch_index: int, from_voltages: np.ndarray,
+            to_voltages: np.ndarray, sbase: float,
+            branch: BranchParent,
+            shunt_conductance: Optional[np.ndarray] = None,
+            damping_conductance: float = 0.0,
+            virtual_tap_from: float = 1.0, virtual_tap_to: float = 1.0,
+    ) -> Tuple[np.ndarray, np.ndarray]:
+        """Return complex NABC terminal currents from the available PF.
+
+        Balanced AC lines use the supplied static device and EMT conductances.
+        Other branches and PF3 use terminal powers from the PF results.
+
+        Currents use the phase current base Sbase / (sqrt(3) * Vbase_LL).
+        PF3 phase powers are on the total three-phase Sbase, hence their
+        current calculation includes a factor of three.
+        """
+        pf3 = self.power_flow_results_3ph
+        phases = ("N", "A", "B", "C")
+        from_currents = np.zeros(4, dtype=np.complex128)
+        to_currents = np.zeros(4, dtype=np.complex128)
+        if pf3 is not None:
+            from_powers, to_powers = self.get_branch_powers(branch_index, sbase)
+            from_currents[1:] = get_currents_from_power(from_voltages[1:], from_powers[1:], 3.0)
+            to_currents[1:] = get_currents_from_power(to_voltages[1:], to_powers[1:], 3.0)
+            return from_currents, to_currents
+
+        pf = self.power_flow_results
+        # Only static AC lines have the scalar PI representation used here.
+        # Other branch types retain the currents from their own PF terminal powers.
+        z_series: complex = complex(branch.R, branch.X) if isinstance(branch, Line) else 0.0j
+        b_shunt: float = float(branch.B) if isinstance(branch, Line) else 0.0
+        g_damp: float = damping_conductance
+        physical_f: np.ndarray = np.zeros(4, dtype=np.complex128)
+        physical_t: np.ndarray = np.zeros(4, dtype=np.complex128)
+        if shunt_conductance is not None:
+            physical_f = shunt_conductance @ from_voltages / virtual_tap_from ** 2
+            physical_t = shunt_conductance @ to_voltages / virtual_tap_to ** 2
         else:
             pass
-
-        omega_base: float = 2.0 * np.pi * self.grid.fBase
-        for ph in phases:
-            d_vf_key: VarPowerFlowReferenceType = d_vf_key_dict[ph]
-            d_vt_key: VarPowerFlowReferenceType = d_vt_key_dict[ph]
-
-            vf_ph = voltage_dict[ph]
-            vt_ph = voltage_to_dict[ph]
-
-            d_vf_var: Optional[Any] = _get_external_mapping_var_if_present(mdl=mdl, key=d_vf_key)
-            if d_vf_var is not None:
-                d_vf: float = omega_base * np.sqrt(2.0) * np.real(vf_ph)
-                self.set_external_param(mdl, d_vf_key, d_vf)
+        for index, phase in enumerate(phases):
+            vf, vt = from_voltages[index], to_voltages[index]
+            if phase == "N":
+                i_f, i_t = physical_f[index], physical_t[index]
+            elif abs(z_series) > 1e-15:
+                i_ser = (vf / virtual_tap_from - vt / virtual_tap_to) / z_series
+                i_f = i_ser / virtual_tap_from + 1j * b_shunt / 2.0 * vf / virtual_tap_from ** 2 + physical_f[index] + g_damp * vf
+                i_t = -i_ser / virtual_tap_to + 1j * b_shunt / 2.0 * vt / virtual_tap_to ** 2 + physical_t[index] + g_damp * vt
             else:
-                pass
+                i_f = 0.0j if abs(vf) <= 1e-12 else np.conj(pf.Sf[branch_index] / sbase / vf)
+                i_t = 0.0j if abs(vt) <= 1e-12 else np.conj(pf.St[branch_index] / sbase / vt)
+            from_currents[index], to_currents[index] = complex(i_f), complex(i_t)
+        return from_currents, to_currents
 
-            d_vt_var: Optional[Any] = _get_external_mapping_var_if_present(mdl=mdl, key=d_vt_key)
-            if d_vt_var is not None:
-                d_vt: float = omega_base * np.sqrt(2.0) * np.real(vt_ph)
-                self.set_external_param(mdl, d_vt_key, d_vt)
-            else:
-                pass
+    def _get_branch_emt_conductances(
+            self, mdl: Block,
+            static_parameter_values_mapping: Dict[Var, Const],
+    ) -> Tuple[np.ndarray, float]:
+        """Read the conductances applied by the EMT model.
 
-        if is_vsc and vsc_index >= 0:
-            self.set_if_exists(mdl=mdl, key=VarPowerFlowReferenceType.Pf, value=float(np.real(sf_total)))
-            self.set_if_exists(mdl=mdl, key=VarPowerFlowReferenceType.Qf, value=float(np.imag(sf_total)))
-            self.set_if_exists(mdl=mdl, key=VarPowerFlowReferenceType.Pt, value=float(np.real(st_total)))
-            self.set_if_exists(mdl=mdl, key=VarPowerFlowReferenceType.Qt, value=float(np.imag(st_total)))
-        else:
-            self.set_if_exists(mdl=mdl, key=VarPowerFlowReferenceType.Pf, value=float(np.real(sf_sum)))
-            self.set_if_exists(mdl=mdl, key=VarPowerFlowReferenceType.Qf, value=float(np.imag(sf_sum)))
-            self.set_if_exists(mdl=mdl, key=VarPowerFlowReferenceType.Pt, value=float(np.real(st_sum)))
-            self.set_if_exists(mdl=mdl, key=VarPowerFlowReferenceType.Qt, value=float(np.imag(st_sum)))
+        :param mdl: Working EMT branch model.
+        :param static_parameter_values_mapping: Resolved static parameter values.
+        :return: Physical NABC shunt conductance and additional damping conductance.
+        """
+        g_nabc = np.zeros((4, 4), dtype=np.float64)
+        g_keys = get_line_g_keys()
+        for owner in mdl.get_all_blocks():
+            for row in range(4):
+                for col in range(4):
+                    parameter = owner.api_obj_mapping.get(g_keys[row][col])
+                    if parameter is not None:
+                        value = get_api_parameter_initial_value_by_uid(parameter, static_parameter_values_mapping)
+                        if value is None:
+                            value = owner.parameters[parameter]
+                        if value.value is None:
+                            self.logger.add_warning(
+                                msg="Missing optional physical line conductance; using template zero shunt.",
+                                device=mdl.name, value=parameter.name,
+                            )
+                        else:
+                            g_nabc[row, col] = float(value.value)
+        g_damp = 0.0
+        for owner in mdl.get_all_blocks():
+            for parameter, value in owner.parameters.items():
+                if parameter.name == "G_damp":
+                    g_damp = float(value.value)
+        return g_nabc, g_damp
 
-            for phase_name in ("A", "B", "C"):
-                i_ser_var: Optional[Var] = _find_internal_var_by_prefix(mdl, f"i_ser_")
-                if i_ser_var is None:
-                    pass
-                else:
-                    # Locate the phase-specific PI-line series state. The cloned
-                    # block name is not guaranteed to match the variable suffix.
-                    for candidate_list in (mdl.state_vars, mdl.algebraic_vars):
-                        for candidate_var in candidate_list:
-                            if candidate_var.name.startswith("i_ser_") and candidate_var.name.endswith(f"_{phase_name}"):
-                                value_float: float = float(series_phase_currents_inst.get(phase_name, 0.0))
-                                self._temp_init_guess[candidate_var.uid] = value_float
-                                self._temp_post_init_guess[candidate_var.uid] = value_float
-                                if candidate_var.diff_var is not None:
-                                    diff_value_float: float = float(series_phase_current_derivatives_inst.get(phase_name, 0.0))
-                                    self._temp_diff_init_guess[candidate_var.diff_var.uid] = diff_value_float
-                                    self._temp_post_diff_init_guess[candidate_var.diff_var.uid] = diff_value_float
-                                else:
-                                    pass
-                            else:
-                                pass
+    def _get_history_line_pf_phasors(
+            self, active_phases: List[str], branch_index: int,
+            f_bus_idx: int, t_bus_idx: int, sbase: float,
+    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+        """Return terminal V/I phasors in a history line's active-phase order.
 
-        if is_vsc and vsc_index >= 0:
-            if self.power_flow_results is not None:
-                P_vsc = -float(np.real(_get_balanced_vsc_ac_power(self.power_flow_results, vsc_index)))
-                self.set_if_exists(mdl=mdl, key=VarPowerFlowReferenceType.P, value=P_vsc)
+        Shared PF readers supply per-phase powers on the total system base,
+        so I = 3*conj(S_phase/V) for both balanced and PF3 results. History
+        models use PF terminal powers, not PI-line impedance currents.
+        Retain available neutral voltage and initialize neutral current to zero.
+        """
+        from_voltages, to_voltages = self.get_branch_voltages(f_bus_idx, t_bus_idx)
+        from_powers, to_powers = self.get_branch_powers(branch_index, sbase)
+        phase_order = {"N": 0, "A": 1, "B": 2, "C": 3}
+        try:
+            phase_indices = [phase_order[phase] for phase in active_phases]
+        except KeyError as exc:
+            raise ValueError(f"Unsupported phase labels in history line: {active_phases}") from exc
+        v_f_phasor = from_voltages[phase_indices]
+        v_t_phasor = to_voltages[phase_indices]
+        from_currents = get_currents_from_power(from_voltages, from_powers, 3.0)
+        to_currents = get_currents_from_power(to_voltages, to_powers, 3.0)
+        from_currents[0] = 0.0
+        to_currents[0] = 0.0
+        i_f_phasor = from_currents[phase_indices]
+        i_t_phasor = to_currents[phase_indices]
+        return v_f_phasor, v_t_phasor, i_f_phasor, i_t_phasor
 
     def _try_set_bergeron_pf_init(
             self,
-            mdl: Block,
             rt: BergeronHistoryRuntime,
             branch_index: int,
             f_bus_idx: int,
             t_bus_idx: int,
-            sbase: float
+            sbase: float,
     ) -> None:
-        """
-        Initialize Bergeron history terms from three-phase power-flow results.
-
-        The history sources are initialized so that, at t = 0:
-            i_f(0) = Gc * v_f(0) + Ih_f(0)
-            i_t(0) = Gc * v_t(0) + Ih_t(0)
-
-        Hence:
-            Ih_f(0) = i_f(0) - Gc * v_f(0)
-            Ih_t(0) = i_t(0) - Gc * v_t(0)
-
-        Only active phases in the Bergeron runtime are considered.
-        """
-        voltage_dict: Dict[str, Optional[np.ndarray]] = {
-            "N": self.power_flow_results_3ph.voltage_N,
-            "A": self.power_flow_results_3ph.voltage_A,
-            "B": self.power_flow_results_3ph.voltage_B,
-            "C": self.power_flow_results_3ph.voltage_C,
-        }
-
-        sf_array_dict: Dict[str, Optional[np.ndarray]] = {
-            "N": None,
-            "A": self.power_flow_results_3ph.Sf_A,
-            "B": self.power_flow_results_3ph.Sf_B,
-            "C": self.power_flow_results_3ph.Sf_C,
-        }
-
-        st_array_dict: Dict[str, Optional[np.ndarray]] = {
-            "N": None,
-            "A": self.power_flow_results_3ph.St_A,
-            "B": self.power_flow_results_3ph.St_B,
-            "C": self.power_flow_results_3ph.St_C,
-        }
-
-        v_f0_red = np.zeros(rt.m, dtype=np.float64)
-        v_t0_red = np.zeros(rt.m, dtype=np.float64)
-        i_f0_red = np.zeros(rt.m, dtype=np.float64)
-        i_t0_red = np.zeros(rt.m, dtype=np.float64)
-        v_f_phasor = np.zeros(rt.m, dtype=np.complex128)
-        v_t_phasor = np.zeros(rt.m, dtype=np.complex128)
-        i_f_phasor = np.zeros(rt.m, dtype=np.complex128)
-        i_t_phasor = np.zeros(rt.m, dtype=np.complex128)
-
-        for k, ph in enumerate(rt.active_ph):
-            voltage_array = voltage_dict[ph]
-
-            if voltage_array is None:
-                vf_ph = 0.0 + 0.0j
-                vt_ph = 0.0 + 0.0j
-            else:
-                vf_ph = voltage_array[f_bus_idx]
-                vt_ph = voltage_array[t_bus_idx]
-            v_f_phasor[k] = vf_ph
-            v_t_phasor[k] = vt_ph
-
-            # Instantaneous voltage at t = 0 with your EMT convention
-            v_f0_red[k] = float(np.sqrt(2.0) * np.imag(vf_ph))
-            v_t0_red[k] = float(np.sqrt(2.0) * np.imag(vt_ph))
-
-            sf_array = sf_array_dict[ph]
-            st_array = st_array_dict[ph]
-
-            if sf_array is None or abs(vf_ph) <= 1e-12:
-                i_f = 0.0 + 0.0j
-            else:
-                sf_ph = sf_array[branch_index] / sbase
-                i_f = 3.0 * np.conj(sf_ph / vf_ph)
-
-            if st_array is None or abs(vt_ph) <= 1e-12:
-                i_t = 0.0 + 0.0j
-            else:
-                st_ph = st_array[branch_index] / sbase
-                i_t = 3.0 * np.conj(st_ph / vt_ph)
-
-            # Instantaneous current at t = 0 with your EMT convention
-            i_f0_red[k] = float(np.sqrt(2.0) * np.imag(i_f))
-            i_t0_red[k] = float(np.sqrt(2.0) * np.imag(i_t))
-            i_f_phasor[k] = i_f
-            i_t_phasor[k] = i_t
-
-        Ih_f0_red = i_f0_red - rt.Gc_red @ v_f0_red
-        Ih_t0_red = i_t0_red - rt.Gc_red @ v_t0_red
-
-        for k in range(rt.m):
-            # PF projection runs before the runtime UID index exists. Preserve
-            # the history source in the temporary seed stores so it reaches the
-            # compiled runtime vector and survives the final init replay.
-            self._set_runtime_parameter_seed_by_uid(
-                uid=rt.Ih_f[k].uid, value=float(Ih_f0_red[k]), persist_after_native_init=True,
-            )
-            self._set_runtime_parameter_seed_by_uid(
-                uid=rt.Ih_t[k].uid, value=float(Ih_t0_red[k]), persist_after_native_init=True,
-            )
-
-        rt.initialize_buffers_from_phasors(
-            v_f=v_f_phasor,
-            v_t=v_t_phasor,
-            i_f=i_f_phasor,
-            i_t=i_t_phasor,
-            frequency_hz=self.grid.fBase,
+        """Seed Bergeron history sources and delay buffers from PF phasors."""
+        v_f_phasor, v_t_phasor, i_f_phasor, i_t_phasor = self._get_history_line_pf_phasors(
+            rt.active_ph, branch_index, f_bus_idx, t_bus_idx, sbase,
         )
-
-    def _try_set_bergeron_pf_init_balanced(
-            self,
-            mdl: Block,
-            rt: BergeronHistoryRuntime,
-            branch_index: int,
-            f_bus_idx: int,
-            t_bus_idx: int,
-            sbase: float
-    ) -> None:
-        """
-        Initialize Bergeron history terms from balanced power-flow results.
-
-        Assumptions
-        -----------
-        - self.power_flow_results.voltage contains one complex bus-voltage phasor per bus
-          (balanced positive-sequence representation).
-        - self.power_flow_results.Sf and self.power_flow_results.St contain the total
-          three-phase complex power at each branch end.
-        - The balanced abc phase voltages are reconstructed from the bus phasor as:
-                V_A = V1
-                V_B = V1 * exp(-j*2*pi/3)
-                V_C = V1 * exp(+j*2*pi/3)
-        - Per-phase power is:
-                S_phase = S_3ph / 3
-        - Per-phase current on the system three-phase current base is:
-                I_phase = 3 * conj(S_phase / V_phase)
-
-        EMT initialization convention kept identical to the existing 3-phase version:
-                x(0) = sqrt(2) * imag(X_phasor)
-
-        Neutral phase, if present, is initialized to zero.
-        """
-        pf_results = self.power_flow_results
-
-        alpha = 2.0 * np.pi / 3.0
-
-        v_f_bus = pf_results.voltage[f_bus_idx]
-        v_t_bus = pf_results.voltage[t_bus_idx]
-
-        s_f_3ph = pf_results.Sf[branch_index] / sbase
-        s_t_3ph = pf_results.St[branch_index] / sbase
-
-        s_f_phase = s_f_3ph / 3.0
-        s_t_phase = s_t_3ph / 3.0
-
-        v_f0_red = np.zeros(rt.m, dtype=np.float64)
-        v_t0_red = np.zeros(rt.m, dtype=np.float64)
-        i_f0_red = np.zeros(rt.m, dtype=np.float64)
-        i_t0_red = np.zeros(rt.m, dtype=np.float64)
-        v_f_phasor = np.zeros(rt.m, dtype=np.complex128)
-        v_t_phasor = np.zeros(rt.m, dtype=np.complex128)
-        i_f_phasor = np.zeros(rt.m, dtype=np.complex128)
-        i_t_phasor = np.zeros(rt.m, dtype=np.complex128)
-
-        for k, ph in enumerate(rt.active_ph):
-
-            if ph == "N":
-                vf_ph = 0.0 + 0.0j
-                vt_ph = 0.0 + 0.0j
-                i_f = 0.0 + 0.0j
-                i_t = 0.0 + 0.0j
-
-            elif ph == "A":
-                vf_ph = v_f_bus
-                vt_ph = v_t_bus
-
-                if abs(vf_ph) <= 1e-12:
-                    i_f = 0.0 + 0.0j
-                else:
-                    i_f = 3.0 * np.conj(s_f_phase / vf_ph)
-
-                if abs(vt_ph) <= 1e-12:
-                    i_t = 0.0 + 0.0j
-                else:
-                    i_t = 3.0 * np.conj(s_t_phase / vt_ph)
-
-            elif ph == "B":
-                vf_ph = v_f_bus * np.exp(-1j * alpha)
-                vt_ph = v_t_bus * np.exp(-1j * alpha)
-
-                if abs(vf_ph) <= 1e-12:
-                    i_f = 0.0 + 0.0j
-                else:
-                    i_f = 3.0 * np.conj(s_f_phase / vf_ph)
-
-                if abs(vt_ph) <= 1e-12:
-                    i_t = 0.0 + 0.0j
-                else:
-                    i_t = 3.0 * np.conj(s_t_phase / vt_ph)
-
-            elif ph == "C":
-                vf_ph = v_f_bus * np.exp(+1j * alpha)
-                vt_ph = v_t_bus * np.exp(+1j * alpha)
-
-                if abs(vf_ph) <= 1e-12:
-                    i_f = 0.0 + 0.0j
-                else:
-                    i_f = 3.0 * np.conj(s_f_phase / vf_ph)
-
-                if abs(vt_ph) <= 1e-12:
-                    i_t = 0.0 + 0.0j
-                else:
-                    i_t = 3.0 * np.conj(s_t_phase / vt_ph)
-
-            else:
-                raise ValueError(f"Unsupported phase label in Bergeron runtime: {ph}")
-
-            # Instantaneous values at t = 0 using the same EMT convention as the original code
-            v_f0_red[k] = float(np.sqrt(2.0) * np.imag(vf_ph))
-            v_t0_red[k] = float(np.sqrt(2.0) * np.imag(vt_ph))
-            i_f0_red[k] = float(np.sqrt(2.0) * np.imag(i_f))
-            i_t0_red[k] = float(np.sqrt(2.0) * np.imag(i_t))
-            v_f_phasor[k] = vf_ph
-            v_t_phasor[k] = vt_ph
-            i_f_phasor[k] = i_f
-            i_t_phasor[k] = i_t
-
-        Ih_f0_red = i_f0_red - rt.Gc_red @ v_f0_red
-        Ih_t0_red = i_t0_red - rt.Gc_red @ v_t0_red
+        Ih_f0_red = np.sqrt(2.0) * (i_f_phasor.imag - rt.Gc_red @ v_f_phasor.imag)
+        Ih_t0_red = np.sqrt(2.0) * (i_t_phasor.imag - rt.Gc_red @ v_t_phasor.imag)
 
         for k in range(rt.m):
-            # PF projection runs before the runtime UID index exists. Preserve
-            # the history source in the temporary seed stores so it reaches the
-            # compiled runtime vector and survives the final init replay.
+            # PF projection precedes runtime UID indexing. Preserve these seeds
+            # through runtime-vector construction and the final init replay.
             self._set_runtime_parameter_seed_by_uid(
                 uid=rt.Ih_f[k].uid, value=float(Ih_f0_red[k]), persist_after_native_init=True,
             )
             self._set_runtime_parameter_seed_by_uid(
                 uid=rt.Ih_t[k].uid, value=float(Ih_t0_red[k]), persist_after_native_init=True,
             )
-
         rt.initialize_buffers_from_phasors(
-            v_f=v_f_phasor,
-            v_t=v_t_phasor,
-            i_f=i_f_phasor,
-            i_t=i_t_phasor,
+            v_f=v_f_phasor, v_t=v_t_phasor, i_f=i_f_phasor, i_t=i_t_phasor,
             frequency_hz=self.grid.fBase,
         )
 
     def _try_set_jmarti_pf_init(
             self,
-            mdl: Block,
             rt: JMartiHistoryRuntime,
             branch_index: int,
             f_bus_idx: int,
             t_bus_idx: int,
-            sbase: float
+            sbase: float,
     ) -> None:
-        """
-        Initialize JMARTI history terms from three-phase power-flow results.
-
-        :param mdl: JMARTI symbolic block.
-        :param rt: JMARTI runtime companion.
-        :param branch_index: Branch index in the power-flow results.
-        :param f_bus_idx: From-side bus index.
-        :param t_bus_idx: To-side bus index.
-        :param sbase: System base power in MVA.
-        :return: None.
-        """
-        voltage_dict: Dict[str, Optional[np.ndarray]] = {
-            "N": self.power_flow_results_3ph.voltage_N,
-            "A": self.power_flow_results_3ph.voltage_A,
-            "B": self.power_flow_results_3ph.voltage_B,
-            "C": self.power_flow_results_3ph.voltage_C,
-        }
-        sf_array_dict: Dict[str, Optional[np.ndarray]] = {
-            "N": None,
-            "A": self.power_flow_results_3ph.Sf_A,
-            "B": self.power_flow_results_3ph.Sf_B,
-            "C": self.power_flow_results_3ph.Sf_C,
-        }
-        st_array_dict: Dict[str, Optional[np.ndarray]] = {
-            "N": None,
-            "A": self.power_flow_results_3ph.St_A,
-            "B": self.power_flow_results_3ph.St_B,
-            "C": self.power_flow_results_3ph.St_C,
-        }
-        v_f0_phasor_red: np.ndarray = np.zeros(rt.m, dtype=np.complex128)
-        v_t0_phasor_red: np.ndarray = np.zeros(rt.m, dtype=np.complex128)
-        i_f0_phasor_red: np.ndarray = np.zeros(rt.m, dtype=np.complex128)
-        i_t0_phasor_red: np.ndarray = np.zeros(rt.m, dtype=np.complex128)
-        phase_index: int = 0
-        ph: str
-        voltage_array: Optional[np.ndarray]
-        sf_array: Optional[np.ndarray]
-        st_array: Optional[np.ndarray]
-        vf_ph: complex
-        vt_ph: complex
-        i_f: complex
-        i_t: complex
-
-        while phase_index < rt.m:
-            ph = rt.active_ph[phase_index]
-            voltage_array = voltage_dict[ph]
-
-            if voltage_array is None:
-                vf_ph = 0.0 + 0.0j
-                vt_ph = 0.0 + 0.0j
-            else:
-                vf_ph = complex(voltage_array[f_bus_idx])
-                vt_ph = complex(voltage_array[t_bus_idx])
-
-            v_f0_phasor_red[phase_index] = vf_ph
-            v_t0_phasor_red[phase_index] = vt_ph
-            sf_array = sf_array_dict[ph]
-            st_array = st_array_dict[ph]
-
-            if sf_array is None or abs(vf_ph) <= 1.0e-12:
-                i_f = 0.0 + 0.0j
-            else:
-                i_f = np.conj(3.0 * complex(sf_array[branch_index]) / sbase / vf_ph)
-
-            if st_array is None or abs(vt_ph) <= 1.0e-12:
-                i_t = 0.0 + 0.0j
-            else:
-                i_t = np.conj(3.0 * complex(st_array[branch_index]) / sbase / vt_ph)
-
-            i_f0_phasor_red[phase_index] = i_f
-            i_t0_phasor_red[phase_index] = i_t
-            phase_index += 1
-
+        """Initialize JMarti filters and delay histories from balanced or PF3 data."""
+        if rt.coupling_block is not None and self.power_flow_results_3ph is not None:
+            pf3 = self.power_flow_results_3ph
+            voltage_arrays = dict(N=pf3.voltage_N, A=pf3.voltage_A, B=pf3.voltage_B, C=pf3.voltage_C)
+            from_power_arrays = dict(A=pf3.Sf_A, B=pf3.Sf_B, C=pf3.Sf_C)
+            to_power_arrays = dict(A=pf3.St_A, B=pf3.St_B, C=pf3.St_C)
+            for phase in rt.active_ph:
+                if voltage_arrays[phase] is None:
+                    return
+                elif phase != "N" and (from_power_arrays[phase] is None or to_power_arrays[phase] is None):
+                    return
+                else:
+                    pass
+        else:
+            pass
+        v_f, v_t, i_f, i_t = self._get_history_line_pf_phasors(
+            rt.active_ph, branch_index, f_bus_idx, t_bus_idx, sbase,
+        )
         ih_f_phase, ih_t_phase = rt.initialize_from_fundamental_phasors(
-            v_f0_phasor_red=v_f0_phasor_red,
-            v_t0_phasor_red=v_t0_phasor_red,
-            i_f0_phasor_red=i_f0_phasor_red,
-            i_t0_phasor_red=i_t0_phasor_red,
+            v_f0_phasor_red=v_f,
+            v_t0_phasor_red=v_t,
+            i_f0_phasor_red=i_f,
+            i_t0_phasor_red=i_t,
             system_frequency_hz=float(self.grid.fBase),
         )
-
-        phase_index = 0
-        while phase_index < rt.m:
-            self._set_runtime_parameter_seed_by_uid(uid=rt.Ih_f[phase_index].uid, value=float(np.real(ih_f_phase[phase_index])), persist_after_native_init=True)
-            self._set_runtime_parameter_seed_by_uid(uid=rt.Ih_t[phase_index].uid, value=float(np.real(ih_t_phase[phase_index])), persist_after_native_init=True)
-            phase_index += 1
-
-    def _try_set_jmarti_pf_init_balanced(
-            self,
-            mdl: Block,
-            rt: JMartiHistoryRuntime,
-            branch_index: int,
-            f_bus_idx: int,
-            t_bus_idx: int,
-            sbase: float
-    ) -> None:
-        """
-        Initialize JMARTI history terms from balanced power-flow results.
-
-        :param mdl: JMARTI symbolic block.
-        :param rt: JMARTI runtime companion.
-        :param branch_index: Branch index in the power-flow results.
-        :param f_bus_idx: From-side bus index.
-        :param t_bus_idx: To-side bus index.
-        :param sbase: System base power in MVA.
-        :return: None.
-        """
-        pf_results = self.power_flow_results
-        alpha: float = 2.0 * np.pi / 3.0
-        v_f_bus: complex = complex(pf_results.voltage[f_bus_idx])
-        v_t_bus: complex = complex(pf_results.voltage[t_bus_idx])
-        s_f_3ph: complex = complex(pf_results.Sf[branch_index]) / sbase
-        s_t_3ph: complex = complex(pf_results.St[branch_index]) / sbase
-        # On the system three-phase current base, balanced per-unit S/V
-        # already gives per-phase current pu; do not divide the power by three.
-        s_f_pu: complex = s_f_3ph
-        s_t_pu: complex = s_t_3ph
-        v_f0_phasor_red: np.ndarray = np.zeros(rt.m, dtype=np.complex128)
-        v_t0_phasor_red: np.ndarray = np.zeros(rt.m, dtype=np.complex128)
-        i_f0_phasor_red: np.ndarray = np.zeros(rt.m, dtype=np.complex128)
-        i_t0_phasor_red: np.ndarray = np.zeros(rt.m, dtype=np.complex128)
-        phase_index: int = 0
-        ph: str
-        vf_ph: complex
-        vt_ph: complex
-        i_f: complex
-        i_t: complex
-
-        while phase_index < rt.m:
-            ph = rt.active_ph[phase_index]
-
-            if ph == "N":
-                vf_ph = 0.0 + 0.0j
-                vt_ph = 0.0 + 0.0j
-                i_f = 0.0 + 0.0j
-                i_t = 0.0 + 0.0j
-            else:
-                if ph == "A":
-                    vf_ph = v_f_bus
-                    vt_ph = v_t_bus
-                else:
-                    if ph == "B":
-                        vf_ph = v_f_bus * np.exp(-1j * alpha)
-                        vt_ph = v_t_bus * np.exp(-1j * alpha)
-                    else:
-                        if ph == "C":
-                            vf_ph = v_f_bus * np.exp(+1j * alpha)
-                            vt_ph = v_t_bus * np.exp(+1j * alpha)
-                        else:
-                            raise ValueError(f"Unsupported phase label in JMARTI runtime: {ph}")
-
-                if abs(vf_ph) <= 1.0e-12:
-                    i_f = 0.0 + 0.0j
-                else:
-                    i_f = np.conj(s_f_pu / vf_ph)
-
-                if abs(vt_ph) <= 1.0e-12:
-                    i_t = 0.0 + 0.0j
-                else:
-                    i_t = np.conj(s_t_pu / vt_ph)
-
-            v_f0_phasor_red[phase_index] = vf_ph
-            v_t0_phasor_red[phase_index] = vt_ph
-            i_f0_phasor_red[phase_index] = i_f
-            i_t0_phasor_red[phase_index] = i_t
-            phase_index += 1
-
-        ih_f_phase, ih_t_phase = rt.initialize_from_fundamental_phasors(
-            v_f0_phasor_red=v_f0_phasor_red,
-            v_t0_phasor_red=v_t0_phasor_red,
-            i_f0_phasor_red=i_f0_phasor_red,
-            i_t0_phasor_red=i_t0_phasor_red,
-            system_frequency_hz=float(self.grid.fBase),
-        )
-
-        phase_index = 0
-        while phase_index < rt.m:
-            self._set_runtime_parameter_seed_by_uid(uid=rt.Ih_f[phase_index].uid, value=float(np.real(ih_f_phase[phase_index])), persist_after_native_init=True)
-            self._set_runtime_parameter_seed_by_uid(uid=rt.Ih_t[phase_index].uid, value=float(np.real(ih_t_phase[phase_index])), persist_after_native_init=True)
-            phase_index += 1
-
+        for phase_index in range(rt.m):
+            self._set_runtime_parameter_seed_by_uid(
+                uid=rt.Ih_f[phase_index].uid,
+                value=float(np.real(ih_f_phase[phase_index])),
+                persist_after_native_init=True,
+            )
+            self._set_runtime_parameter_seed_by_uid(
+                uid=rt.Ih_t[phase_index].uid,
+                value=float(np.real(ih_t_phase[phase_index])),
+                persist_after_native_init=True,
+            )
 
     # ---------------------------------------------------------------------
     # UTILS
@@ -9016,107 +7791,6 @@ class EmtProblemDae(EmtProblemTemplate):
                         else:
                             pass
 
-    def set_internal_init_if_exists(self, mdl: Block, var_name: str, value: float) -> None:
-        """
-        Set one temporary initial guess for an internal variable if it exists.
-
-        :param mdl: Root model block.
-        :param var_name: Internal variable name.
-        :param value: Initialization value.
-        :return: None.
-        """
-        internal_var: Optional[Var] = _find_internal_var_for_init(mdl, var_name)
-
-        if internal_var is None:
-            pass
-        else:
-            self._temp_init_guess[internal_var.uid] = float(value)
-            self._temp_post_init_guess[internal_var.uid] = float(value)
-
-    def set_internal_mode_if_exists(self, mdl: Block, var_name: str, value: float) -> None:
-        """
-        Set one retained runtime mode default if the mode variable exists.
-
-        :param mdl: Root model block.
-        :param var_name: Retained mode variable name.
-        :param value: Runtime mode value.
-        :return: None.
-        """
-        internal_var: Optional[Var]
-        owner_block: Optional[Block]
-
-        internal_var, owner_block = _find_mode_var_owner(mdl, var_name)
-
-        if internal_var is None or owner_block is None:
-            pass
-        else:
-            if internal_var in owner_block.mode_dict:
-                runtime_idx: int | None = None
-                runtime_idx = self._uid2idx_event_params.get(internal_var.uid, None)
-
-                if runtime_idx is None:
-                    runtime_source_parameters: Any = self._runtime_all_parameters_source
-                    runtime_source_equations: Any = self._runtime_all_eqs_source
-                    if isinstance(runtime_source_parameters, list) and isinstance(runtime_source_equations, list):
-                        source_index: int = 0
-                        while source_index < len(runtime_source_parameters):
-                            runtime_parameter: Any = runtime_source_parameters[source_index]
-                            if isinstance(runtime_parameter, Var) and runtime_parameter.uid == internal_var.uid:
-                                runtime_source_equations[source_index] = Const(float(value))
-                            else:
-                                pass
-                            source_index += 1
-                    else:
-                        pass
-                else:
-                    self._set_runtime_parameter_value_by_uid(uid=internal_var.uid, value=float(value))
-            else:
-                pass
-
-    def set_internal_runtime_if_exists(self, mdl: Block, var_name: str, value: float) -> None:
-        """Seed one internal runtime parameter without modifying its source block.
-
-        :param mdl: Root model block.
-        :param var_name: Runtime parameter variable name.
-        :param value: Runtime parameter value.
-        :return: None.
-        """
-        internal_var: Optional[Var]
-        owner_block: Optional[Block]
-
-        internal_var, owner_block = _find_internal_runtime_var_owner_with_fallback(mdl, var_name)
-
-        if internal_var is None or owner_block is None:
-            pass
-        else:
-            if internal_var in owner_block.event_dict:
-                # The Block only declares that the value is runtime-capable.
-                # PF and device-derived initialization belongs to the problem.
-                self._set_runtime_parameter_seed_by_uid(
-                    uid=internal_var.uid,
-                    value=float(value),
-                    persist_after_native_init=False,
-                )
-            else:
-                pass
-
-    def set_internal_diff_init_if_exists(self, mdl: Block, var_name: str, value: float) -> None:
-        """
-        Set one temporary differential initial guess for an internal variable if it exists.
-
-        :param mdl: Root model block.
-        :param var_name: Differential variable name.
-        :param value: Initialization value.
-        :return: None.
-        """
-        internal_var: Optional[Var] = _find_internal_var_for_init(mdl, var_name)
-
-        if internal_var is None:
-            pass
-        else:
-            self._temp_diff_init_guess[internal_var.uid] = float(value)
-            self._temp_post_diff_init_guess[internal_var.uid] = float(value)
-
     def _set_runtime_parameter_value_by_uid(self, uid: int, value: float) -> None:
         """
         Update one runtime parameter through the problem-local EMT runtime store.
@@ -9140,6 +7814,10 @@ class EmtProblemDae(EmtProblemTemplate):
             continuous_parameter_count: int = len(self._runtime_continuous_eqs)
             if runtime_idx < continuous_parameter_count:
                 self._runtime_continuous_eqs[runtime_idx] = resolved_expression
+                # The compiled kernel inlines the continuous equations it was generated
+                # from; drop it so the next compiled evaluation rebuilds it from the
+                # updated equation instead of returning the previous value.
+                self._runtime_parameter_kernel = None
             else:
                 mode_index: int = runtime_idx - continuous_parameter_count
                 if mode_index < len(self._runtime_mode_eqs):
@@ -9198,59 +7876,33 @@ class EmtProblemDae(EmtProblemTemplate):
         for vsc_index, vsc in enumerate(self.grid.vsc_devices):
             f_bus_idx = bus_indices[vsc.bus_from]
             t_bus_idx = bus_indices[vsc.bus_to]
-            if self.power_flow_results_3ph is not None:
-                self._try_set_vsc_branch_pf_init(
-                    mdl=vsc.emt_model,
-                    f_bus_idx=f_bus_idx,
-                    t_bus_idx=t_bus_idx,
-                    sbase=self.grid.Sbase,
-                    vsc_index=vsc_index,
-                )
-            else:
-                self._try_set_vsc_branch_pf_init_balanced(
-                    mdl=vsc.emt_model,
-                    f_bus_idx=f_bus_idx,
-                    t_bus_idx=t_bus_idx,
-                    sbase=self.grid.Sbase,
-                    vsc_index=vsc_index,
-                )
+            self._try_set_vsc_branch_pf_init(
+                mdl=vsc.emt_model,
+                f_bus_idx=f_bus_idx,
+                t_bus_idx=t_bus_idx,
+                sbase=self.grid.Sbase,
+                vsc_index=vsc_index,
+            )
 
     def _seed_all_switch_models(self) -> None:
+        """Seed mapped switch modes from Switch.active when the model requests it.
+
+        With PF seeding disabled, retain the mode initialized by the model.
+        Both variables are resolved through the problem-local external mapping.
         """
-        Seed all EMT switch models from the static switch active state when requested.
-
-        :return: None.
-        """
-        branch_obj: Any
-
-        for branch_obj in self.grid.get_branches_iter(add_vsc=True, add_hvdc=True, add_switch=True):
-            if branch_obj.device_type == DeviceType.SwitchDevice:
-                mdl = branch_obj.emt_model
-
-                if mdl is None:
-                    pass
-                else:
-                    model_name: str = _get_block_name(mdl)
-                    seed_from_pf: float = _get_internal_runtime_default_local(
-                        self,
-                        mdl,
-                        "switch_seed_from_pf",
-                        1.0,
-                    )
-
-                    if seed_from_pf > 0.5:
-                        initial_closed: float = 1.0 if bool(branch_obj.active) else 0.0
-                    else:
-                        initial_closed = _get_internal_mode_default_local(
-                            self,
-                            mdl,
-                            "switch_closed_mode",
-                            1.0,
-                        )
-
-                    self.set_internal_mode_if_exists(mdl, "switch_closed_mode", initial_closed)
-            else:
-                pass
+        for branch in self.grid.get_branches_iter(add_vsc=True, add_hvdc=True, add_switch=True):
+            if branch.device_type == DeviceType.SwitchDevice and branch.emt_model is not None:
+                mapping = _get_external_mapping_local(self, branch.emt_model)
+                if mapping is not None:
+                    closed_mode = mapping.get(VarPowerFlowReferenceType.switch_closed_mode)
+                    seed_flag = mapping.get(VarPowerFlowReferenceType.switch_seed_from_pf)
+                    if closed_mode is not None and seed_flag is not None:
+                        seed_index = self.uid2idx_event_params[seed_flag.uid]
+                        if self.event_params_values[seed_index] > 0.5:
+                            self._set_runtime_parameter_value_by_uid(
+                                uid=closed_mode.uid,
+                                value=1.0 if branch.active else 0.0,
+                            )
 
     def _initialize_mode_event_state(self) -> None:
         """
@@ -9304,33 +7956,66 @@ class EmtProblemDae(EmtProblemTemplate):
 
     def _collect_runtime_mode_parameters(self) -> List[Var]:
         """
-        Collect runtime parameters that must be retained between steps.
+        Collect scheduled modes and numerical history parameters in stable order.
 
-        This includes:
-          - scheduled discrete mode parameters,
-          - Bergeron line history parameters, which are updated explicitly by the runtime.
+        History currents and instantaneous JMARTI voltage offsets are updated
+        from accepted steps. Retaining them prevents continuous event evaluation
+        from replacing their current values with initial placeholders.
+
+        :return: Unique retained parameters, ordered by their existing owner.
         """
-        mode_parameters: List[Var] = list()
-        seen: Set[int] = set()
-
-        # 1) Scheduled mode parameters already registered through mode_dict
-        for parameter in self.get_runtime_mode_parameters():
-            if parameter.uid not in seen:
-                seen.add(parameter.uid)
-                mode_parameters.append(parameter)
-
-        # 2) Bergeron history parameters must also be retained
+        # The family count is known before collection. These are references to
+        # existing parameter arrays, not copied declarations or another owner.
+        group_count: int = 1 + 6 * len(self.history_models)
+        parameter_collections: List[List[Var]] = list((list(),)) * group_count
+        parameter_collections[0] = self.get_runtime_mode_parameters()
+        group_index: int = 1
+        rt: BergeronHistoryRuntime | JMartiHistoryRuntime
         for rt in self.history_models:
-            for parameter in rt.Ih_f:
+            parameter_collections[group_index] = rt.Ih_f
+            parameter_collections[group_index + 1] = rt.Ih_t
+            if isinstance(rt, JMartiHistoryRuntime):
+                parameter_collections[group_index + 2] = rt.incoming_voltage_f_re
+                parameter_collections[group_index + 3] = rt.incoming_voltage_t_re
+                parameter_collections[group_index + 4] = rt.incoming_voltage_f_im
+                parameter_collections[group_index + 5] = rt.incoming_voltage_t_im
+            else:
+                pass
+            group_index += 6
+
+        # Count unique UIDs first so the result never grows after allocation.
+        seen: Set[int] = set()
+        first_parameter: Var | None = None
+        parameter_count: int = 0
+        parameters: List[Var]
+        parameter: Var
+        for parameters in parameter_collections:
+            for parameter in parameters:
                 if parameter.uid not in seen:
                     seen.add(parameter.uid)
-                    mode_parameters.append(parameter)
+                    parameter_count += 1
+                else:
+                    pass
+                if first_parameter is None:
+                    first_parameter = parameter
+                else:
+                    pass
 
-            for parameter in rt.Ih_t:
-                if parameter.uid not in seen:
-                    seen.add(parameter.uid)
-                    mode_parameters.append(parameter)
-
+        mode_parameters: List[Var]
+        if first_parameter is None:
+            mode_parameters = list()
+        else:
+            mode_parameters = list((first_parameter,)) * parameter_count
+            seen.clear()
+            parameter_index: int = 0
+            for parameters in parameter_collections:
+                for parameter in parameters:
+                    if parameter.uid in seen:
+                        pass
+                    else:
+                        seen.add(parameter.uid)
+                        mode_parameters[parameter_index] = parameter
+                        parameter_index += 1
         return mode_parameters
 
     def add_device_var(self, dev: ALL_DEV_TYPES, var: Var)->None:
@@ -9559,8 +8244,60 @@ class EmtProblemDae(EmtProblemTemplate):
         self.step_counter = 0
         self._mode_event_cursor = dict()
         self._initialize_mode_event_state()
+        # An advanced JMARTI runtime has changed rings and four filter stores.
+        # Restore its original source before publishing the next startup seeds.
+        rt: BergeronHistoryRuntime | JMartiHistoryRuntime
+        for rt in self.history_models:
+            if isinstance(rt, JMartiHistoryRuntime) and rt.coupling_block is not None:
+                rt.restore_initial_history()
+                history_from: np.ndarray
+                history_to: np.ndarray
+                if rt.initial_source_available:
+                    voltage_from: np.ndarray = np.sqrt(2.0) * np.imag(rt.initial_source_phasors[0, :])
+                    voltage_to: np.ndarray = np.sqrt(2.0) * np.imag(rt.initial_source_phasors[1, :])
+                    history_from = (
+                        np.sqrt(2.0) * np.imag(rt.initial_source_phasors[2, :])
+                        - rt.direct_yc_phase @ voltage_from
+                        + 2.0 * np.real(rt.phase_current_coupling @ rt.initial_phase_waves[1, :])
+                    )
+                    history_to = (
+                        np.sqrt(2.0) * np.imag(rt.initial_source_phasors[3, :])
+                        - rt.direct_yc_phase @ voltage_to
+                        + 2.0 * np.real(rt.phase_current_coupling @ rt.initial_phase_waves[0, :])
+                    )
+                else:
+                    history_from = np.zeros(rt.m, dtype=np.float64)
+                    history_to = np.zeros(rt.m, dtype=np.float64)
+                phase_index: int = 0
+                while phase_index < rt.m:
+                    self._set_runtime_parameter_seed_by_uid(uid=rt.Ih_f[phase_index].uid, value=float(np.real(history_from[phase_index])), persist_after_native_init=True)
+                    self._set_runtime_parameter_seed_by_uid(uid=rt.Ih_t[phase_index].uid, value=float(np.real(history_to[phase_index])), persist_after_native_init=True)
+                    phase_index += 1
+
+                # Only the coordinate families that exist are populated. All
+                # stores use the canonical UID seed owner and retained partition.
+                offset_groups: tuple[List[Var], ...] = (
+                    rt.incoming_voltage_f_re, rt.incoming_voltage_t_re,
+                    rt.incoming_voltage_f_im, rt.incoming_voltage_t_im,
+                )
+                group_index: int
+                offset_vars: List[Var]
+                offset_var: Var
+                offset_value: complex
+                offset_seed: float
+                for group_index, offset_vars in enumerate(offset_groups):
+                    for phase_index, offset_var in enumerate(offset_vars):
+                        offset_value = complex(rt.initial_voltage_offsets[group_index % 2, phase_index])
+                        if group_index < 2:
+                            offset_seed = float(offset_value.real)
+                        else:
+                            offset_seed = float(offset_value.imag)
+                        self._set_runtime_parameter_seed_by_uid(uid=offset_var.uid, value=offset_seed, persist_after_native_init=True)
+            else:
+                pass
         self._block_boundary_updater = build_boundary_updater_from_block(
             problem=self,
+            expression_mode=ProceduralExpressionMode.Compiled,
             runtime_session=self._manufacturer_native_runtime_session,
             model_mode=1 if self._manufacturer_native_runtime_session is not None else None,
         )

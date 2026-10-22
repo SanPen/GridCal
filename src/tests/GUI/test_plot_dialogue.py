@@ -7,7 +7,7 @@ from PySide6 import QtCore, QtWidgets
 
 from VeraGrid.Gui.Main.SubClasses.Results.results import ResultsMain
 from VeraGrid.Gui.PlotDialogue.plot_dialogue import PlotDialogue
-from VeraGrid.Gui.PlotDialogue.qt_chart_widget import ChartContentType, PolarAngleUnit
+from VeraGrid.Gui.PlotDialogue.qt_chart_widget import ChartContentType, GraphsWidget, PolarAngleUnit
 from VeraGrid.Gui.results_model import ResultsModel
 from VeraGridEngine.enumerations import DeviceType
 from VeraGridEngine.Simulations.results_table import ResultsTable
@@ -388,3 +388,213 @@ def test_plot_dialogue_native_close_releases_chart_once(
     qt_app.processEvents()
     assert dialog._closed
     assert chart._disposed
+
+
+def test_plot_actions_preserve_sources_and_tab_state(qt_app: QtWidgets.QApplication) -> None:
+    """Exercise reversible transforms, independent copies and paired XY data.
+
+    :param qt_app: Shared Qt application fixture.
+    :return: None.
+    """
+    dialog: PlotDialogue = PlotDialogue(title='Actions')
+    coordinates: np.ndarray = np.arange(3.0)
+    dialog.set_line_series(coordinates, ['A', 'B'], [np.array([-3.0, 1.0, -2.0]),
+                                                    np.array([4.0, 5.0, 6.0])])
+    dialog.ui.actionAddPlot.trigger()
+    copied_chart: GraphsWidget = dialog.get_current_chart()
+    dialog.ui.actionAbs.trigger()
+    dialog.ui.actionCDF.trigger()
+    np.testing.assert_array_equal(copied_chart._series[0].get_y_data(), [1.0, 2.0, 3.0])
+    np.testing.assert_array_equal(copied_chart._series[0].get_x_data(), [0.0, 0.5, 1.0])
+    assert copied_chart.axis_x.get_range() == (0.0, 1.0)
+    np.testing.assert_array_equal(dialog.chart._series[0].get_y_data(), [-3.0, 1.0, -2.0])
+    dialog.ui.plotTabs.setCurrentIndex(0)
+    assert not dialog.ui.actionCDF.isChecked()
+    dialog.ui.plotTabs.setCurrentIndex(1)
+    assert dialog.ui.actionCDF.isChecked()
+    dialog.ui.actionCDF.trigger()
+    dialog.ui.actionAbs.trigger()
+    np.testing.assert_array_equal(copied_chart._series[0].get_y_data(), [-3.0, 1.0, -2.0])
+    assert dialog.create_xy_plot(0, 1)
+    np.testing.assert_array_equal(dialog.get_current_chart()._series[0].get_x_data(), [-3.0, 1.0, -2.0])
+    np.testing.assert_array_equal(dialog.get_current_chart()._series[0].get_y_data(), [4.0, 5.0, 6.0])
+    assert dialog.get_current_chart().axis_x.get_title() == 'A'
+    close_plot_dialogue(dialog, qt_app)
+
+
+def test_catalog_transforms_survive_selection(qt_app: QtWidgets.QApplication) -> None:
+    """Keep transforms local while catalog selections rebuild source buffers.
+
+    :param qt_app: Shared Qt application fixture.
+    :return: None.
+    """
+    dialog: PlotDialogue = PlotDialogue(title='Catalog actions')
+    dialog.register_time_series('Results', 'MW', np.arange(3.0), ['A', 'B'],
+                                [np.array([-3.0, 1.0, -2.0]), np.array([4.0, 5.0, 6.0])])
+    assert dialog.select_default_catalog_series()
+    dialog.ui.actionAbs.trigger()
+    dialog._set_catalog_series_visible(1, False)
+    np.testing.assert_array_equal(dialog.get_current_chart()._series[0].get_y_data(), [3.0, 1.0, 2.0])
+    dialog._set_catalog_series_visible(1, True)
+    assert dialog.create_xy_plot(0, 1)
+    dialog.select_no_series()
+    assert not dialog.get_current_chart().get_series_visible(0)
+    dialog.ui.plotTabs.setCurrentIndex(0)
+    assert dialog.get_current_chart().get_series_count() == 2
+    assert dialog.ui.actionAbs.isChecked()
+    close_plot_dialogue(dialog, qt_app)
+
+
+def test_transpose_swaps_axes_and_preserves_tab_transforms(qt_app: QtWidgets.QApplication) -> None:
+    """Swap data and date captions reversibly, including copies and CDF axes.
+
+    :param qt_app: Shared Qt application fixture.
+    :return: None.
+    """
+    dialog: PlotDialogue = PlotDialogue(title='Transpose')
+    dates: np.ndarray = np.array(['2026-01-01', '2026-01-02', '2026-01-03'], dtype='datetime64[ns]')
+    values: np.ndarray = np.array([-3.0, 1.0, -2.0])
+    dialog.set_time_series(dates, ['A'], [values], y_axis_title='MW')
+    original_x: np.ndarray = dialog.chart._series[0].get_x_data().copy()
+    dialog.ui.actionTranspose.trigger()
+    np.testing.assert_array_equal(dialog.chart._series[0].get_x_data(), values)
+    np.testing.assert_array_equal(dialog.chart._series[0].get_y_data(), original_x)
+    assert dialog.chart.axis_x.get_title() == 'MW'
+    assert dialog.chart.axis_y.get_title() == 'Time'
+    assert dialog.chart._y_is_datetime
+    assert not dialog.chart._x_is_datetime
+    dialog.ui.actionAddPlot.trigger()
+    copied_chart: GraphsWidget = dialog.get_current_chart()
+    assert dialog.ui.actionTranspose.isChecked()
+    dialog.ui.actionAbs.trigger()
+    dialog.ui.actionCDF.trigger()
+    np.testing.assert_array_equal(copied_chart._series[0].get_x_data(), [1.0, 2.0, 3.0])
+    np.testing.assert_array_equal(copied_chart._series[0].get_y_data(), [0.0, 0.5, 1.0])
+    assert copied_chart.axis_y.get_range() == (0.0, 1.0)
+    assert copied_chart.axis_y.get_title() == 'Probability'
+    assert not copied_chart._y_is_datetime
+    dialog.ui.actionTranspose.trigger()
+    assert copied_chart.axis_x.get_title() == 'Probability'
+    assert copied_chart.axis_y.get_title() == 'MW'
+    dialog.ui.plotTabs.setCurrentIndex(0)
+    assert dialog.ui.actionTranspose.isChecked()
+    dialog.ui.actionTranspose.trigger()
+    np.testing.assert_array_equal(dialog.chart._series[0].get_x_data(), original_x)
+    np.testing.assert_array_equal(dialog.chart._series[0].get_y_data(), values)
+    assert dialog.chart._x_is_datetime
+    assert not dialog.chart._y_is_datetime
+    close_plot_dialogue(dialog, qt_app)
+
+
+def test_catalog_transpose_survives_selection(qt_app: QtWidgets.QApplication) -> None:
+    """Reapply transpose when the catalog rebuilds the selected series.
+
+    :param qt_app: Shared Qt application fixture.
+    :return: None.
+    """
+    dialog: PlotDialogue = PlotDialogue(title='Catalog transpose')
+    dialog.register_time_series('Results', 'MW', np.arange(3.0), ['A', 'B'],
+                                [np.array([-3.0, 1.0, -2.0]), np.array([4.0, 5.0, 6.0])])
+    assert dialog.select_default_catalog_series()
+    dialog.ui.actionTranspose.trigger()
+    dialog._set_catalog_series_visible(1, False)
+    np.testing.assert_array_equal(dialog.chart._series[0].get_x_data(), [-3.0, 1.0, -2.0])
+    np.testing.assert_array_equal(dialog.chart._series[0].get_y_data(), np.arange(3.0))
+    assert dialog.ui.actionTranspose.isChecked()
+    dialog.ui.actionTranspose.trigger()
+    np.testing.assert_array_equal(dialog.chart._series[0].get_x_data(), np.arange(3.0))
+    close_plot_dialogue(dialog, qt_app)
+
+
+def test_stacked_and_bar_views_are_reversible_and_copied(qt_app: QtWidgets.QApplication) -> None:
+    """Reuse stacked areas and render categorical grouped bars without losing sources.
+
+    :param qt_app: Shared Qt application fixture.
+    :return: None.
+    """
+    dialog: PlotDialogue = PlotDialogue(title='Views')
+    coordinates: np.ndarray = np.array([10.0, 20.0, 30.0])
+    dialog.set_line_series(coordinates, ['A', 'B'], [np.array([-3.0, 1.0, 2.0]),
+                                                   np.array([4.0, 5.0, 6.0])],
+                           x_axis_title='Bus', y_axis_title='MW')
+    dialog.chart.set_row_labels(coordinates, ['North', 'South', 'West'])
+    dialog.ui.actionStacked_plot.trigger()
+    assert dialog.chart._content_type == ChartContentType.CUMULATIVE_AREA
+    assert dialog.chart._y_max == 8.0
+    assert dialog.chart._y_min == -3.0
+    dialog.ui.actionAbs.trigger()
+    assert dialog.chart._y_min == 0.0
+    assert dialog.chart._y_max == 8.0
+    dialog.ui.actionBar_plot.trigger()
+    assert not dialog.ui.actionStacked_plot.isChecked()
+    assert dialog.chart._bar_enabled
+    assert dialog.chart._bar_labels == ['North', 'South', 'West']
+    np.testing.assert_array_equal(dialog.chart._series[0].get_x_data(), [0.0, 1.0, 2.0])
+    np.testing.assert_array_equal(dialog.chart._series[0].get_y_data(), [3.0, 1.0, 2.0])
+    dialog.ui.actionAddPlot.trigger()
+    copied_chart: GraphsWidget = dialog.get_current_chart()
+    assert dialog.ui.actionBar_plot.isChecked()
+    assert copied_chart._bar_labels == ['North', 'South', 'West']
+    dialog.show()
+    qt_app.processEvents()
+    assert not copied_chart.grab().isNull()
+    dialog.ui.actionBar_plot.trigger()
+    dialog.ui.actionAbs.trigger()
+    np.testing.assert_array_equal(copied_chart._series[0].get_x_data(), coordinates)
+    np.testing.assert_array_equal(copied_chart._series[0].get_y_data(), [-3.0, 1.0, 2.0])
+    assert dialog.chart._bar_enabled
+    dialog.ui.plotTabs.setCurrentIndex(0)
+    assert dialog.ui.actionBar_plot.isChecked()
+    close_plot_dialogue(dialog, qt_app)
+
+
+def test_results_bar_view_keeps_selected_row_labels(qt_app: QtWidgets.QApplication) -> None:
+    """Preserve selected table row captions through initial stacked and bar views.
+
+    :param qt_app: Shared Qt application fixture.
+    :return: None.
+    """
+    table: ResultsTable = ResultsTable(
+        data=np.array([[1.0, 2.0], [-3.0, 4.0], [5.0, 6.0]]),
+        columns=np.array(['P', 'Q']), index=np.array(['North', 'South', 'West']),
+        title='Flows', cols_device_type=DeviceType.NoDevice, idx_device_type=DeviceType.NoDevice,
+        xlabel='Bus', ylabel='MW')
+    owner: ResultsPlotOwner = ResultsPlotOwner()
+    ResultsMain.open_native_results_series_plot(
+        owner, mdl=ResultsModel(table), selected_columns=None,
+        selected_rows=np.array([2, 0]), stacked=True)
+    dialog: PlotDialogue = owner._open_plot_dialogs[0]
+    assert dialog.ui.actionStacked_plot.isChecked()
+    dialog.ui.actionBar_plot.trigger()
+    assert dialog.chart._bar_labels == ['North', 'West']
+    np.testing.assert_array_equal(dialog.chart._series[0].get_y_data(), [1.0, 5.0])
+    dialog.ui.actionStacked_plot.trigger()
+    assert not dialog.ui.actionBar_plot.isChecked()
+    assert dialog.chart._content_type == ChartContentType.CUMULATIVE_AREA
+    dialog.ui.actionStacked_plot.trigger()
+    assert dialog.chart._content_type == ChartContentType.XY
+    close_plot_dialogue(dialog, qt_app)
+    owner.deleteLater()
+    qt_app.processEvents()
+
+
+def test_bar_labels_follow_table_order_with_missing_samples(qt_app: QtWidgets.QApplication) -> None:
+    """Keep category labels aligned when signals omit different table rows.
+
+    :param qt_app: Shared Qt application fixture.
+    :return: None.
+    """
+    dialog: PlotDialogue = PlotDialogue(title='Missing samples')
+    dialog.chart.add_line_series('A', np.array([30.0, 20.0]), np.array([3.0, -2.0]))
+    dialog.chart.add_line_series('B', np.array([10.0]), np.array([1.0]))
+    dialog.chart.set_row_labels(np.array([30.0, 10.0, 20.0]), ['West', 'North', 'South'])
+    assert not dialog.chart.set_value_transforms(False, False, stacked=True)
+    np.testing.assert_array_equal(dialog.chart._series[0].get_x_data(), [30.0, 20.0])
+    assert dialog.chart.set_value_transforms(False, False, bar=True)
+    assert dialog.chart._bar_labels == ['West', 'North', 'South']
+    np.testing.assert_array_equal(dialog.chart._series[0].get_x_data(), [0.0, 2.0])
+    np.testing.assert_array_equal(dialog.chart._series[1].get_x_data(), [1.0])
+    assert dialog.chart.axis_y.get_range()[0] < -2.0
+    dialog.center_data()
+    assert dialog.chart.axis_x.get_range() == (-0.5, 2.5)
+    close_plot_dialogue(dialog, qt_app)

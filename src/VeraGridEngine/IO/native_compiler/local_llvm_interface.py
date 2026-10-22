@@ -7,6 +7,8 @@ from __future__ import annotations
 from pathlib import Path
 import subprocess
 
+from VeraGridEngine.basic_structures import Logger
+from VeraGridEngine.Utils.Compiler.interface import ClangHandler, ensure_output_directory
 from VeraGridEngine.enumerations import NativeCompilerFramework
 from VeraGridEngine.IO.native_compiler.compiler_interface import (
     NativeCompilerSelection,
@@ -33,9 +35,9 @@ def resolve_local_llvm_toolset(selection: NativeCompilerSelection) -> NativeComp
         raise ValueError("LOCAL_LLVM requires an explicit absolute binary root")
     package_platform, package_arch, target_triple, library_suffix, linker_name = _native_host_contract()
     if package_platform == "win":
-        tool_names: tuple[str, ...] = ("clang.exe", linker_name, "llvm-nm.exe", "llvm-objdump.exe")
+        tool_names: tuple[str, ...] = ("clang.exe", linker_name)
     else:
-        tool_names = ("clang", linker_name, "llvm-nm", "llvm-objdump")
+        tool_names = ("clang", linker_name)
     tools, tool_hashes = _trusted_tool_paths(binary_root, tool_names)
     if package_platform == "win":
         if selection.support_root is not None:
@@ -104,8 +106,6 @@ def resolve_local_llvm_toolset(selection: NativeCompilerSelection) -> NativeComp
         sdk_root=sdk_root,
         compiler_path=tools[0],
         linker_path=tools[1],
-        nm_path=tools[2],
-        objdump_path=tools[3],
         package_platform=package_platform,
         package_arch=package_arch,
         target_triple=target_triple,
@@ -113,3 +113,93 @@ def resolve_local_llvm_toolset(selection: NativeCompilerSelection) -> NativeComp
         compiler_prefix_arguments=tuple(compiler_prefix_arguments),
         tool_hashes=tool_hashes,
     )
+
+
+def _build_local_llvm_compile_command(
+    toolset: NativeCompilerToolset,
+    source_files: list[str],
+    include_directories: list[str] | None,
+    output_path: Path,
+) -> list[str]:
+    """Build the existing native compile/link command from authenticated roots.
+
+    :param toolset: Selected compiler, linker, target and platform support roots.
+    :param source_files: Ordered source translation units.
+    :param include_directories: Ordered header roots, when supplied.
+    :param output_path: Shared-library destination inside the facade build tree.
+    :return: Explicit command with no environment discovery.
+    """
+    command: list[str] = list((str(toolset.compiler_path),))
+    command.extend(toolset.compiler_prefix_arguments)
+    if toolset.package_platform == "darwin":
+        command.extend(("-dynamiclib", "-fPIC"))
+    else:
+        command.append("-shared")
+        if toolset.package_platform == "linux":
+            command.append("-fPIC")
+        else:
+            pass
+    command.extend(("-std=c99", "-O2"))
+    if include_directories is not None:
+        directory: str
+        for directory in include_directories:
+            command.extend(("-I", str(Path(directory).resolve())))
+    else:
+        pass
+    command.extend(("-o", str(output_path.resolve())))
+    source: str
+    for source in source_files:
+        command.append(str(Path(source).resolve()))
+    if toolset.package_platform == "win":
+        pass
+    else:
+        command.append("-lm")
+    return command
+
+
+class LocalLlvmCompilerHandler(ClangHandler):
+    """Use the existing authenticated LLVM toolset behind the shared facade."""
+
+    __slots__ = ("_toolset",)
+
+    def __init__(self, toolset: NativeCompilerToolset, logger: Logger | None = None) -> None:
+        """Initialize only the selected Clang, without probing other compilers.
+
+        :param toolset: Authenticated tools and native target arguments.
+        :param logger: Optional shared compiler logger.
+        :return: None.
+        """
+        self._toolset: NativeCompilerToolset = toolset
+        super().__init__(logger, str(toolset.compiler_path))
+
+    def compile(self, source_files: list[str], output_dir: str, lib_name: str = "", include_directories: list[str] | None = None) -> str:
+        """Compile using the selected native target, linker and support roots.
+
+        :param source_files: Ordered C source paths.
+        :param output_dir: Facade-owned temporary build directory.
+        :param lib_name: Library filename, or the native default.
+        :param include_directories: Header roots.
+        :return: Generated path, or an empty string on compiler failure.
+        """
+        self._toolset.assert_unchanged()
+        if ensure_output_directory(output_dir, self.logger):
+            pass
+        else:
+            return ""
+        output: Path = Path(output_dir).resolve() / (lib_name or ("liboutput" + self._toolset.library_suffix))
+        # Reuse Clang process diagnostics while retaining the complete native contract.
+        result: subprocess.CompletedProcess[str] = self._execute_command(
+            _build_local_llvm_compile_command(self._toolset, source_files, include_directories, output),
+            str(Path(output_dir).resolve()),
+        )
+        if result.returncode == 0 and output.is_file():
+            return str(output)
+        else:
+            return ""
+
+    def get_native_framework(self) -> NativeCompilerFramework:
+        """Identify the selected provider independently of executable metadata.
+
+        :return: LOCAL_LLVM.
+        """
+        return NativeCompilerFramework.LOCAL_LLVM

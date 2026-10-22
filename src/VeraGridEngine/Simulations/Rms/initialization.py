@@ -6,7 +6,7 @@
 
 import warnings
 from copy import deepcopy
-from typing import Dict, List
+from typing import Dict, List, Set
 import numpy as np
 
 import scipy.sparse as sp
@@ -17,8 +17,96 @@ from VeraGridEngine.Utils.Symbolic.explicit_initialization_symbolic import build
 from VeraGridEngine.Utils.Symbolic.symbolic import eval_uid as eval_expr_uid, get_expression_vars
 from VeraGridEngine.Utils.Symbolic.block import Block
 from VeraGridEngine.Utils.Symbolic.symbolic import Var, Const, Expr, BinOp, UnOp
-from VeraGridEngine.enumerations import VarPowerFlowReferenceType
+from VeraGridEngine.enumerations import VarPowerFlowReferenceType, RmsInitializationMethod
 from VeraGridEngine.basic_structures import Vec
+
+
+def _block_has_complete_explicit_initialization(mdl: Block,
+                                                init_guess: Dict[int, float | int | complex | None],
+                                                uid2idx_vars: Dict[int, int]) -> bool:
+    """
+    Return whether a block can be safely initialized by explicit equations only.
+
+    :param mdl: RMS symbolic block to inspect.
+    :param init_guess: Initial values already seeded from power flow or previous blocks.
+    :param uid2idx_vars: Global system variable index map.
+    :return: ``True`` when every local state/algebraic variable has an explicit value source.
+    """
+    explicit_eq_uids: Set[int] = set()
+    blk: Block
+    init_var: Var
+    event_var: Var
+    event_value: Expr | Const
+    local_vars: List[Var]
+    var: Var
+
+    # Collect equation targets before checking seeds, since child blocks can
+    # initialize variables referenced by their parent.
+    for blk in mdl.get_all_blocks():
+        for init_var in blk.init_eqs.keys():
+            if isinstance(init_var, Var):
+                explicit_eq_uids.add(init_var.uid)
+            else:
+                pass
+        for init_var in blk.diff_init_eqs.keys():
+            if isinstance(init_var, Var):
+                explicit_eq_uids.add(init_var.uid)
+            else:
+                pass
+
+    for blk in mdl.get_all_blocks():
+        # An event parameter without a supplied value also needs an equation.
+        for event_var, event_value in blk.event_dict.items():
+            if isinstance(event_var, Var) and isinstance(event_value, Const) and event_value.value is None:
+                if event_var.uid in explicit_eq_uids:
+                    pass
+                else:
+                    return False
+            else:
+                pass
+
+        # Inspect both owned collections directly; no combined copy is needed
+        # to decide whether all local unknowns have explicit value sources.
+        for local_vars in (blk.state_vars, blk.algebraic_vars):
+            for var in local_vars:
+                if not isinstance(var, Var):
+                    pass
+                elif var.uid not in uid2idx_vars:
+                    pass
+                elif var.uid in init_guess and init_guess[var.uid] is not None:
+                    pass
+                elif var.uid in explicit_eq_uids:
+                    pass
+                else:
+                    return False
+
+    return True
+
+
+def _select_rms_initialization_method(configured_method: RmsInitializationMethod,
+                                      mdl: Block,
+                                      init_guess: Dict[int, float | int | complex | None],
+                                      uid2idx_vars: Dict[int, int]) -> RmsInitializationMethod:
+    """
+    Select the concrete initialization method for one RMS block.
+
+    :param configured_method: User-selected initialization method.
+    :param mdl: RMS symbolic block to initialize.
+    :param init_guess: Initial values already seeded from power flow or previous blocks.
+    :param uid2idx_vars: Global system variable index map.
+    :return: Concrete initialization method to execute.
+    """
+    if configured_method == RmsInitializationMethod.Auto:
+        if _block_has_complete_explicit_initialization(mdl=mdl,
+                                                       init_guess=init_guess,
+                                                       uid2idx_vars=uid2idx_vars):
+            selected_method: RmsInitializationMethod = RmsInitializationMethod.Explicit
+        else:
+            selected_method = RmsInitializationMethod.PseudoTransient
+    else:
+        selected_method = configured_method
+
+    return selected_method
 
 
 def is_branch_like_pf_mapping(mdl: Block) -> bool:
@@ -91,9 +179,9 @@ def get_pseudo_transient_freeze_references(mdl: Block) -> list[VarPowerFlowRefer
             VarPowerFlowReferenceType.Iit,
         ]
     else:
-        # Injection-like models use the single bus voltage/angle and net injection
-        # powers as PF anchors. Currents remain local unknowns because they must
-        # satisfy model equations such as Pdc = Idc * Vdc.
+        # Injection-like models initialize at the solved power-flow operating
+        # point. Active/reactive power and terminal voltage/angle are therefore
+        # fixed boundary values throughout the local pseudo-transient solve.
         pf_var_references = [
             VarPowerFlowReferenceType.P,
             VarPowerFlowReferenceType.Q,
@@ -680,6 +768,24 @@ class PseudoTransientInitProblem:
         self._compiler_names_dict_local = dict(compiler_names_dict)
         self._alias_names_dict_local = dict(alias_names_dict)
 
+        # Global boundary indices address x_global, never the smaller local
+        # Newton vector. Keep local unknowns and mutable parameter channels
+        # independent while freezing supplied finite external startup values.
+        global_uid: int
+        global_index: int
+        for global_uid, global_index in self._uid2idx_vars_global.items():
+            if (global_uid not in self._uid2idx_vars
+                    and global_uid not in fixed_parameter_uids
+                    and global_uid not in equilibrium_input_uids):
+                boundary_value: float = float(self.x_global[global_index])
+                if np.isfinite(boundary_value):
+                    self._compiler_names_dict_local[global_uid] = repr(boundary_value)
+                    self._alias_names_dict_local[global_uid] = f"boundary_{global_uid}"
+                else:
+                    pass
+            else:
+                pass
+
         for uid, i in self._uid2idx_vars.items():
             self._compiler_names_dict_local[uid] = f"{VARS_NAME}[{i}]"
             self._alias_names_dict_local[uid] = f"{VARS_NAME}_{i}"
@@ -940,7 +1046,6 @@ class PseudoTransientInitProblem:
         """
         # Collect all equations
         all_eqs = list(self.block.state_eqs) + list(self.block.algebraic_eqs) + list(self._equilibrium_reference_eqs)
-        
         # Compile RHS function
         if all_eqs:
             self._rhs_fn = SymbolicVector(
@@ -1024,34 +1129,32 @@ class PseudoTransientInitProblem:
     
     def rhs_algebraic(self, x: Vec, dx: Vec) -> Vec:
         """
-        Evaluate RHS for algebraic equations.
-        :param x:
-        :param dx:
-        :return:
-        """
-        if self._rhs_fn is None:
-            return np.array([])
+        Evaluate algebraic residuals without advancing equilibrium updates.
 
-        self.update_equilibrium_parameters(x)
-        full_rhs = self._rhs_fn(x, dx, self._variable_parameters_values, self._constant_params)
-        # Return only algebraic part
-        if self._n_states > 0:
-            return full_rhs[self._n_states:]
-        return full_rhs
+        :param x: Original candidate in local state/algebraic order.
+        :param dx: Derivative values held fixed during this evaluation.
+        :return: Copied algebraic rows from one prepared full residual.
+        """
+        # Both components observe the same candidate even when the solver asks
+        # for g before f or repeats a component during a line search.
+        full_rhs: Vec = self._compute_rhs_full(x, dx, 1.0)
+        return full_rhs[self._n_states:].copy()
     
     def rhs_state(self, x: Vec, dx: Vec) -> Vec:
         """
-        Evaluate RHS for state equations.
-        :param x:
-        :param dx:
-        :return:
+        Evaluate state residuals without advancing equilibrium updates.
+
+        :param x: Original candidate in local state/algebraic order.
+        :param dx: Derivative values held fixed during this evaluation.
+        :return: Copied state rows, or an empty vector for a stateless block.
         """
         if self._rhs_fn is None or self._n_states == 0:
-            return np.array([])
-
-        self.update_equilibrium_parameters(x)
-        full_rhs = self._rhs_fn(x, dx, self._variable_parameters_values, self._constant_params)
-        return full_rhs[:self._n_states]
+            return np.zeros(0, dtype=float)
+        else:
+            # Reuse the full owner so input/reference staging cannot diverge
+            # from the algebraic component or from Jacobian probes.
+            full_rhs: Vec = self._compute_rhs_full(x, dx, 1.0)
+            return full_rhs[:self._n_states].copy()
     
     def get_dx(self, x: Vec, xn: Vec, dx: Vec, h: float) -> Vec:
         """
@@ -1080,50 +1183,89 @@ class PseudoTransientInitProblem:
 
     def _compute_numerical_jacobian(self, x: Vec, dx: Vec, h: float) -> sp.csc_matrix:
         """
-        Compute Jacobian with compiled symbolic fallback to finite differences.
-        :param x:
-        :param dx:
-        :param h:
-        :return:
+        Differentiate the prepared residual, including equilibrium updates.
+
+        :param x: Original local candidate; perturbations use independent copies.
+        :param dx: Derivatives held fixed across all residual probes.
+        :param h: Step supplied to the existing compiled Jacobian when applicable.
+        :return: CSC Jacobian; active updates use central finite differences.
         """
-        n_total = self._n_vars
+        n_total: int = self._n_vars
         if n_total == 0:
             return sp.csc_matrix((0, 0))
+        else:
+            pass
 
-        self.update_equilibrium_parameters(x)
-        if self._jacobian_fn is not None:
+        # The compiled partial Jacobian treats mutable channels as constants.
+        # It is valid only when input/reference preparation is inactive.
+        active_updates: bool = not self.equilibrium_references_as_equations and (
+            self._equilibrium_input_update_fn is not None or self._equilibrium_reference_update_fn is not None
+        )
+        if not active_updates and self._jacobian_fn is not None:
             try:
                 return self._jacobian_fn(x, dx, self._variable_parameters_values, self._constant_params, h).tocsc()
-            except Exception:   # TODO: Except what?
+            except Exception:
+                # Retain the existing numerical fallback if compilation cannot
+                # evaluate this candidate; each probe still observes one point.
                 pass
+        else:
+            pass
 
-        # Compute RHS at current point
-        rhs = np.array(self._compute_rhs_full(x, dx, h), dtype=float, copy=True)
+        # Allocate the known residual/unknown shape once. Central differences
+        # balance truncation and roundoff without inventing physical scales.
+        row_count: int = len(self._state_eqs) + len(self._algebraic_eqs) + len(self._equilibrium_reference_eqs)
+        base_eps: float = float(np.cbrt(np.finfo(float).eps))
+        jacobian_dense: np.ndarray = np.zeros((row_count, n_total), dtype=float)
+        column: int
+        for column in range(n_total):
+            step: float = base_eps * max(1.0, abs(float(x[column])))
+            x_plus: Vec = x.copy()
+            x_minus: Vec = x.copy()
+            x_plus[column] += step
+            x_minus[column] -= step
+            rhs_plus: Vec = self._compute_rhs_full(x_plus, dx, h)
+            rhs_minus: Vec = self._compute_rhs_full(x_minus, dx, h)
+            jacobian_dense[:, column] = (rhs_plus - rhs_minus) / (2.0 * step)
 
-        # Numerical Jacobian
-        base_eps = 1e-7
-        J_dense = np.zeros((len(rhs), n_total))
-
-        for j in range(n_total):
-            x_perturbed = x.copy()
-            step = base_eps * (1.0 + abs(float(x[j])))
-            x_perturbed[j] += step
-            rhs_perturbed = np.array(self._compute_rhs_full(x_perturbed, dx, h), dtype=float, copy=True)
-            J_dense[:, j] = (rhs_perturbed - rhs) / step
-
-        return sp.csc_matrix(J_dense)
+        return sp.csc_matrix(jacobian_dense)
 
     def _compute_rhs_full(self, x: Vec, dx: Vec, h: float) -> Vec:
         """
-        Compute full RHS (state + algebraic) for Jacobian computation.
-        :param x:
-        :param dx:
-        :param h:
-        :return:
+        Evaluate one input-then-reference preparation transactionally.
+
+        :param x: Original local candidate, preserved on every exit.
+        :param dx: Fixed derivative values passed to the compiled residual.
+        :param h: Existing interface step; preparation itself is step independent.
+        :return: Independent full residual in state then algebraic row order.
         """
         if self._rhs_fn is None:
-            return np.array([])
-        return self._rhs_fn(x, dx, self._variable_parameters_values, self._constant_params)
+            return np.zeros(0, dtype=float)
+        else:
+            pass
+
+        active_updates: bool = not self.equilibrium_references_as_equations and (
+            self._equilibrium_input_update_fn is not None or self._equilibrium_reference_update_fn is not None
+        )
+        if active_updates:
+            # The explicit update owner intentionally writes its candidate and
+            # channels. Restrict those writes to this temporary evaluation and
+            # restore existing channel/lookup contents even after an exception.
+            candidate: Vec = x.copy()
+            parameter_values: Vec = self._variable_parameters_values.copy()
+            reference_values: dict[str, float] = self._equilibrium_reference_values.copy()
+            try:
+                self.update_equilibrium_parameters(candidate)
+                return np.array(self._rhs_fn(candidate, dx, self._variable_parameters_values, self._constant_params),
+                                dtype=float, copy=True)
+            finally:
+                self._variable_parameters_values[:] = parameter_values
+                self._equilibrium_reference_values.clear()
+                self._equilibrium_reference_values.update(reference_values)
+        else:
+            # Preserve the compiled path for ordinary or equation-based models,
+            # copying its reusable result buffer before a subsequent evaluation.
+            return np.array(self._rhs_fn(x, dx, self._variable_parameters_values, self._constant_params),
+                            dtype=float, copy=True)
 
     def get_j11(self, x: Vec, dx: Vec, h: float) -> sp.csc_matrix:
         """
@@ -1207,32 +1349,38 @@ def init_pseudo_transient(mdl: Block,
                           max_iter: int = 100,
                           tol: float = 1e-6,
                           verbose: bool = False,
-                          pseudo_transient_options: object | None = None):
+                          pseudo_transient_options: object | None = None) -> Dict[int, float | int | complex | None]:
     """
-    Initialize model using pseudo-transient method.
+    Initialize a private model copy from supplied seeds before random retries.
 
-    :param mdl:
-    :param sys_vars:
-    :param variable_parameters:
-    :param event_parameters_eqs:
-    :param constant_parameters:
-    :param init_guess:
-    :param uid2idx_vars:
-    :param uid2idx_params:
-    :param uid2idx_event_params:
-    :param compiler_names_dict:
-    :param alias_names_dict:
-    :param VARIABLE_PARAMS_NAME:
-    :param TIME_NAME:
-    :param VARS_NAME:
-    :param DIFF_NAME:
-    :param CONSTANT_PARAMS_NAME:
-    :param dtau0:
-    :param max_iter:
-    :param tol:
-    :param verbose:
-    :param pseudo_transient_options:
-    :return:
+    The first local candidate reuses finite UID values, with structural zero for
+    unavailable coordinates. These are initial guesses, not fixed states or
+    physical source defaults. Preparation or solver failure retains the random
+    fallback within the existing total of fifty initialization attempts.
+
+    :param mdl: Source block, preserved while initialization works on its copy.
+    :param sys_vars: Global system variables indexed by UID.
+    :param variable_parameters: Ordered runtime parameter variables.
+    :param event_parameters_eqs: Runtime expressions receiving recovered constants.
+    :param constant_parameters: Ordered physical parameter variables.
+    :param init_guess: Existing UID seeds, updated with solved system coordinates.
+    :param uid2idx_vars: Global system UID-to-coordinate mapping.
+    :param uid2idx_params: Physical parameter UID-to-index mapping.
+    :param uid2idx_event_params: Runtime parameter UID-to-index mapping.
+    :param compiler_names_dict: Existing UID-to-vector expression bindings.
+    :param alias_names_dict: Existing aliases used by compiled expressions.
+    :param VARIABLE_PARAMS_NAME: Runtime parameter vector name for compilation.
+    :param TIME_NAME: Runtime time symbol retained by the caller interface.
+    :param VARS_NAME: System vector name for compilation.
+    :param DIFF_NAME: Derivative vector name for compilation.
+    :param CONSTANT_PARAMS_NAME: Physical parameter vector name for compilation.
+    :param dtau0: Requested initial step; the current constructor retains its fixed step.
+    :param max_iter: Requested iteration count; the current constructor retains its fixed count.
+    :param tol: Requested residual tolerance, subject to existing acceptance floors.
+    :param verbose: Enable existing solver diagnostics and optional plots.
+    :param pseudo_transient_options: Existing local solver and equilibrium policies.
+    :return: Global UID lookup with solved local values and other supplied entries retained.
+    :raises RuntimeError: If attempts fail the residual guard and best effort is disabled.
     """
     # Import here to avoid circular imports
     from VeraGridEngine.Simulations.Rms.numerical.pseudo_transient import PseudoTransient, PseudoTransientOptions
@@ -1327,6 +1475,10 @@ def init_pseudo_transient(mdl: Block,
     # Freeze PF anchors in this local model. Branch-like models freeze terminal
     # quantities only, while injection-like models freeze their bus injection.
     pf_var_references: list[VarPowerFlowReferenceType] = get_pseudo_transient_freeze_references(mdl=mdl_work)
+    has_explicit_init_eqs: bool = any(
+        len(blk.init_eqs) > 0 for blk in mdl_work.get_all_blocks()
+    )
+    fixed_pf_var_uids: set[int] = set()
     for pf_ref in pf_var_references:
         if pf_ref not in mdl_work.external_mapping:
             continue
@@ -1353,6 +1505,16 @@ def init_pseudo_transient(mdl: Block,
                 else:
                     pass
 
+            if (
+                has_explicit_init_eqs
+                and pf_ref in (VarPowerFlowReferenceType.P, VarPowerFlowReferenceType.Q)
+            ):
+                # Generator/load power remains part of the square physical
+                # residual, but pseudo-transient must not move the solved power
+                # flow operating point. The solver applies a fixed-variable mask.
+                fixed_pf_var_uids.add(pf_var.uid)
+                continue
+
             for blk in mdl_work.get_all_blocks():
                 remove_alg_idx = [i for i, v in enumerate(blk.algebraic_vars)
                                   if isinstance(v, Var) and v.uid == pf_var.uid]
@@ -1377,7 +1539,32 @@ def init_pseudo_transient(mdl: Block,
             else:
                 pass
 
-    ordered_init_update_eqs: Dict[Var, Expr | Const] = _build_ordered_init_update_eqs(mdl=mdl_work)
+    # Static mapping may have resolved a parameter only in the global runtime
+    # channel. Bind that existing value in the initialization-only copy before
+    # promoting unresolved references; source declarations remain untouched.
+    parameter_block: Block
+    parameter_var: Var
+    parameter_expression: Expr | Const
+    for parameter_block in mdl_work.get_all_blocks():
+        for parameter_var, parameter_expression in parameter_block.event_dict.items():
+            if isinstance(parameter_expression, Const) and parameter_expression.value is None:
+                parameter_index: int | None = uid2idx_event_params.get(parameter_var.uid, None)
+                if parameter_index is not None:
+                    runtime_expression: Expr | Const = event_parameters_eqs[parameter_index]
+                    if isinstance(runtime_expression, Const) and runtime_expression.value is not None:
+                        runtime_value: float = float(runtime_expression.value)
+                        if np.isfinite(runtime_value):
+                            parameter_block.event_dict[parameter_var] = Const(runtime_value)
+                        else:
+                            pass
+                    else:
+                        pass
+                else:
+                    pass
+            else:
+                pass
+
+    ordered_init_update_eqs: Dict[Var, Expr | Const] = dict()
     locked_event_parameter_uids: set[int] = set()
     for blk in mdl_work.get_all_blocks():
         for event_var, event_value in blk.event_dict.items():
@@ -1399,8 +1586,19 @@ def init_pseudo_transient(mdl: Block,
             if isinstance(var, Var) and (not isinstance(value, Const) or value.value is None)
         ]
         for var, event_expression in initializable_event_parameters:
-            ordered_expr: Expr | Const | None = ordered_init_update_eqs.get(var, None)
-            if isinstance(event_expression, Const):
+            event_idx: int | None = uid2idx_event_params.get(var.uid, None)
+            seeded_event_expression: Expr | Const | None = (
+                event_parameters_eqs[event_idx]
+                if event_idx is not None and 0 <= event_idx < len(event_parameters_eqs)
+                else None
+            )
+            if (
+                isinstance(seeded_event_expression, Const)
+                and seeded_event_expression.value is not None
+            ):
+                blk.event_dict[var] = Const(float(seeded_event_expression.value))
+                continue
+            elif isinstance(event_expression, Const):
                 update_expr: Expr | None = _find_equilibrium_reference_update_eq(
                     mdl=mdl_work,
                     ref_var=var,
@@ -1410,10 +1608,7 @@ def init_pseudo_transient(mdl: Block,
                 else:
                     pass
             else:
-                if isinstance(ordered_expr, Expr):
-                    initialization_expression: Expr = ordered_expr
-                else:
-                    initialization_expression = event_expression
+                initialization_expression: Expr = event_expression
                 blk.algebraic_eqs.append((var - initialization_expression).simplify())
 
             event_is_algebraic: bool = any(
@@ -1464,7 +1659,7 @@ def init_pseudo_transient(mdl: Block,
         max_iter=1000,
         verbose=verbose,
         reference_error_tol=-1,
-        fixed_var_uids=[],
+        fixed_var_uids=list(fixed_pf_var_uids),
         options=pseudo_transient_options,
     )
 
@@ -1472,17 +1667,34 @@ def init_pseudo_transient(mdl: Block,
     # This is only a seed; delta remains a solved state afterwards.
     delta_seed = pseudo_transient_options.delta_seed
 
-    def _enforce_delta_seed(x_vec: np.ndarray) -> np.ndarray:
-        if delta_seed is None:
-            return x_vec
-        x_out = np.array(x_vec, dtype=float, copy=True)
-        for local_idx, var in enumerate(local_vars):
-            if local_idx < len(x_out) and isinstance(var, Var) and var.name.lower().startswith("delta"):
-                x_out[local_idx] = delta_seed
-        return x_out
+    delta_indices: np.ndarray = np.array([
+        index for index, variable in enumerate(local_vars)
+        if isinstance(variable, Var) and variable.name.lower().startswith("delta")
+    ], dtype=int)
 
-    residual_tol = max(float(tol), 1e-6)
-    max_random_attempts: int = 50
+    # Reuse caller-owned values by UID, not global array position: promoted
+    # references can occupy local slots outside the global system mapping.
+    initial_seed: Vec = np.zeros(problem.get_all_vars_number(), dtype=float)
+    seed_index: int
+    seed_variable: Var
+    for seed_index, seed_variable in enumerate(local_vars):
+        seed_value: float | None = init_guess.get(seed_variable.uid, None)
+        if seed_value is not None and np.isfinite(seed_value):
+            initial_seed[seed_index] = float(seed_value)
+        else:
+            # Structural zero is a trial coordinate, never persisted as a
+            # supplied physical datum; the solver must still determine it.
+            pass
+
+    fixed_local_indices: np.ndarray = np.array([
+        index for index, variable in enumerate(local_vars)
+        if variable.uid in fixed_pf_var_uids
+    ], dtype=int)
+
+    # The caller owns required accuracy; an undocumented floor can accept
+    # recovered states that the assembled network cannot keep fixed consistently.
+    residual_tol: float = float(tol)
+    max_attempts: int = 50
     best_x_solution: Vec | None = None
     best_residual_inf: float = np.inf
     best_residual_pre_inf: float = np.inf
@@ -1490,24 +1702,33 @@ def init_pseudo_transient(mdl: Block,
     last_error_message: str = ""
     x_solution: Vec | None = None
 
-    for attempt_idx in range(max_random_attempts):
-        # Build a fresh initial guess without using existing init equations/guesses.
-        x0 = np.random.rand(problem.get_all_vars_number())
-        x0 = _enforce_delta_seed(x0)
-        problem.update_equilibrium_parameters(x0)
+    for attempt_idx in range(max_attempts):
+        if attempt_idx == 0:
+            x0: Vec = initial_seed.copy()
+        else:
+            # A rejected supplied point retains the existing random backup,
+            # without adding a fifty-first attempt or reseeding the generator.
+            x0 = np.random.rand(problem.get_all_vars_number())
+        if delta_seed is not None:
+            x0[delta_indices] = delta_seed
+        else:
+            pass
+        x0[fixed_local_indices] = initial_seed[fixed_local_indices]
 
-        if verbose and max_random_attempts > 1:
-            print(f"[PseudoTransientInit] random attempt {attempt_idx + 1}/{max_random_attempts}")
+        if verbose and max_attempts > 1:
+            print(f"[PseudoTransientInit] initialization attempt {attempt_idx + 1}/{max_attempts}")
         else:
             pass
 
         try:
-            # Run pseudo-transient simulation.
+            # A finite seed can lie outside a reference expression's domain.
+            # Preparation must share the existing retry guard with the solver.
+            problem.update_equilibrium_parameters(x0)
             x_attempt, _ = solver.simulate(plot=bool(verbose), x0=x0)
         except Exception as exc:
             last_error_message = str(exc)
             if verbose:
-                print(f"[PseudoTransientInit] random attempt {attempt_idx + 1} failed during simulate: {exc}")
+                print(f"[PseudoTransientInit] attempt {attempt_idx + 1} failed during preparation or simulation: {exc}")
             else:
                 pass
             continue
@@ -1526,7 +1747,9 @@ def init_pseudo_transient(mdl: Block,
         x_nr = np.array(x_attempt, dtype=float, copy=True)
 
         newton_max_iter = 25
-        newton_tol = max(float(tol), 1e-8)
+        # Polish to the requested local accuracy before recovered states become
+        # fixed seeds for the existing assembled consistency owner.
+        newton_tol: float = float(tol)
         for it in range(newton_max_iter):
             if dx_newton.size > 0:
                 dx_newton = np.array(problem.get_dx(x_nr, x_nr, dx_newton, h=1.0), dtype=float, copy=True)
@@ -1604,6 +1827,7 @@ def init_pseudo_transient(mdl: Block,
             base_inf = rhs_inf
             for _ in range(8):
                 x_try = x_nr - alpha * np.asarray(delta, dtype=float)
+                x_try[fixed_local_indices] = initial_seed[fixed_local_indices]
 
                 dx_try = dx_newton
                 if dx_newton.size > 0:
@@ -1655,7 +1879,7 @@ def init_pseudo_transient(mdl: Block,
                 f"bad_vals={bad_vals.tolist()}"
             )
             if verbose:
-                print(f"[PseudoTransientInit] random attempt {attempt_idx + 1} rejected: {last_error_message}")
+                print(f"[PseudoTransientInit] attempt {attempt_idx + 1} rejected: {last_error_message}")
             else:
                 pass
             continue
@@ -1694,7 +1918,7 @@ def init_pseudo_transient(mdl: Block,
             )
         else:
             raise RuntimeError(
-                f"PseudoTransient failed after {max_random_attempts} random attempts; "
+                f"PseudoTransient failed after {max_attempts} initialization attempts; "
                 f"best ||r||_inf={best_residual_inf:.6e} > {residual_tol:.6e}; "
                 f"best_pre_newton={best_residual_pre_inf:.6e}, "
                 f"best_post_newton={best_residual_post_inf:.6e}; "

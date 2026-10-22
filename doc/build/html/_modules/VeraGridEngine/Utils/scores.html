@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Utils.scores &mdash; VeraGrid 6.7.13 documentation</title>
+  <title>VeraGridEngine.Utils.scores &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=16fbabd8"></script>
+      <script src="../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/js/theme.js"></script>
@@ -118,13 +118,13 @@
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Utils.html#VeraGridEngine.Utils.scores.get_overload_score">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_overload_score</span><span class="p">(</span><span class="n">loading</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">CxMat</span><span class="p">,</span> <span class="n">CxVec</span><span class="p">],</span> <span class="n">branches_cost</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute overload score by multiplying the loadings above 100% by the associated branch cost.</span>
 <span class="sd">    :param loading: load results</span>
 <span class="sd">    :param branches_cost: all branch elements from studied grid</span>
 <span class="sd">    :param threshold: threshold for overload</span>
 <span class="sd">    :return: sum of all costs associated to branch overloads</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">cost_</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">loading</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
@@ -149,14 +149,14 @@
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Utils.html#VeraGridEngine.Utils.scores.get_voltage_module_score">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_voltage_module_score</span><span class="p">(</span><span class="n">voltage</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">CxVec</span><span class="p">,</span> <span class="n">CxMat</span><span class="p">],</span> <span class="n">vm_cost</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">vm_max</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">vm_min</span><span class="p">:</span> <span class="n">Vec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute voltage module score by multiplying the voltages outside limits by the associated bus costs.</span>
 <span class="sd">    :param voltage: voltage results</span>
 <span class="sd">    :param vm_cost: Vm cost array</span>
 <span class="sd">    :param vm_max: maximum voltage</span>
 <span class="sd">    :param vm_min: minimum voltage</span>
 <span class="sd">    :return: sum of all costs associated to voltage module deviation</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">cost_</span> <span class="o">=</span> <span class="mf">0.0</span>
 
     <span class="k">if</span> <span class="n">voltage</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
@@ -183,14 +183,14 @@
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Utils.html#VeraGridEngine.Utils.scores.get_voltage_phase_score">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_voltage_phase_score</span><span class="p">(</span><span class="n">voltage</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">CxMat</span><span class="p">,</span> <span class="n">CxVec</span><span class="p">],</span> <span class="n">va_cost</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">va_max</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">va_min</span><span class="p">:</span> <span class="n">Vec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute voltage phase score by multiplying the phases outside limits by the associated bus costs.</span>
 <span class="sd">    :param voltage: voltage results</span>
 <span class="sd">    :param va_cost: array of bus angles costs</span>
 <span class="sd">    :param va_max: maximum voltage angles</span>
 <span class="sd">    :param va_min: minimum voltage angles</span>
 <span class="sd">    :return: sum of all costs associated to voltage module deviation</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">cost_</span> <span class="o">=</span> <span class="mf">0.0</span>
 
     <span class="k">if</span> <span class="n">voltage</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
@@ -217,22 +217,22 @@
 <div class="viewcode-block" id="TechnoEconomicScores">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Utils.html#VeraGridEngine.Utils.scores.TechnoEconomicScores">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">TechnoEconomicScores</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    InvestmentScores</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;capex_score&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;opex_score&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;losses_score&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;overload_score&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;voltage_module_score&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;voltage_angle_score&quot;</span><span class="p">,</span>
+        <span class="s2">"capex_score"</span><span class="p">,</span>
+        <span class="s2">"opex_score"</span><span class="p">,</span>
+        <span class="s2">"losses_score"</span><span class="p">,</span>
+        <span class="s2">"overload_score"</span><span class="p">,</span>
+        <span class="s2">"voltage_module_score"</span><span class="p">,</span>
+        <span class="s2">"voltage_angle_score"</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Constructor</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">capex_score</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">opex_score</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">losses_score</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span>
@@ -242,10 +242,10 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">financial_score</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the financial score: CAPEX + OPEX</span>
 <span class="sd">        :return: float</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">capex_score</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">opex_score</span>
 
     <span class="nd">@property</span>
@@ -255,7 +255,7 @@
 <div class="viewcode-block" id="TechnoEconomicScores.arr">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Utils.html#VeraGridEngine.Utils.scores.TechnoEconomicScores.arr">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">arr</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return multidimensional metrics for the optimization.</span>
 
 <span class="sd">        CAPEX and OPEX are reported as two separate entries, matching the objective formulation</span>
@@ -263,7 +263,7 @@
 <span class="sd">        the operational cost as two independent magnitudes.</span>
 
 <span class="sd">        :return: array of 6 values: losses, overload, voltage module, voltage angle, CAPEX and OPEX</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">losses_score</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">overload_score</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">voltage_module_score</span><span class="p">,</span>
                          <span class="bp">self</span><span class="o">.</span><span class="n">voltage_angle_score</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">capex_score</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">opex_score</span><span class="p">])</span></div>
 </div>

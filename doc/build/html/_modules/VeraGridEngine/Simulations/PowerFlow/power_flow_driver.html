@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Simulations.PowerFlow.power_flow_driver &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Simulations.PowerFlow.power_flow_driver &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/license.html">📜 License</a></li>
@@ -128,31 +129,31 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow.html#VeraGridEngine.Simulations.PowerFlow.power_flow_driver.PowerFlowDriver">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">PowerFlowDriver</span><span class="p">(</span><span class="n">DriverTemplate</span><span class="p">):</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;options&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;opf_results&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;t_idx&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;convergence_reports&quot;</span><span class="p">,</span>
+        <span class="s2">"options"</span><span class="p">,</span>
+        <span class="s2">"opf_results"</span><span class="p">,</span>
+        <span class="s2">"t_idx"</span><span class="p">,</span>
+        <span class="s2">"convergence_reports"</span><span class="p">,</span>
     <span class="p">)</span>
 
-    <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;Power Flow&#39;</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s1">'Power Flow'</span>
     <span class="n">tpe</span> <span class="o">=</span> <span class="n">SimulationTypes</span><span class="o">.</span><span class="n">PowerFlow_run</span>
 
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Power flow wrapper to use with Qt</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">grid</span><span class="p">:</span> <span class="n">MultiCircuit</span><span class="p">,</span>
                  <span class="n">options</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">PowerFlowOptions</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">opf_results</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">OptimalPowerFlowResults</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">t_idx</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">engine</span><span class="p">:</span> <span class="n">EngineType</span> <span class="o">=</span> <span class="n">EngineType</span><span class="o">.</span><span class="n">VeraGrid</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        PowerFlowDriver class constructor</span>
 <span class="sd">        :param grid: MultiCircuit instance</span>
 <span class="sd">        :param options: PowerFlowOptions instance (optional)</span>
 <span class="sd">        :param opf_results: OptimalPowerFlowResults instance (optional)</span>
 <span class="sd">        :param engine: EngineType (i.e., EngineType.VeraGrid) (optional)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="n">DriverTemplate</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">grid</span><span class="o">=</span><span class="n">grid</span><span class="p">,</span> <span class="n">engine</span><span class="o">=</span><span class="n">engine</span><span class="p">)</span>
 
@@ -188,29 +189,29 @@
 <div class="viewcode-block" id="PowerFlowDriver.get_steps">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow.html#VeraGridEngine.Simulations.PowerFlow.power_flow_driver.PowerFlowDriver.get_steps">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_steps</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="nb">list</span><span class="p">()</span></div>
 
 
 <div class="viewcode-block" id="PowerFlowDriver.add_report">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow.html#VeraGridEngine.Simulations.PowerFlow.power_flow_driver.PowerFlowDriver.add_report">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">add_report</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Add a report of the results (in-place)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="n">vm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">voltage</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">bus</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">buses</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">vm</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">bus</span><span class="o">.</span><span class="n">Vmax</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s2">&quot;Overvoltage&quot;</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s2">"Overvoltage"</span><span class="p">,</span>
                                         <span class="n">device</span><span class="o">=</span><span class="n">bus</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
                                         <span class="n">value</span><span class="o">=</span><span class="n">vm</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
                                         <span class="n">expected_value</span><span class="o">=</span><span class="n">bus</span><span class="o">.</span><span class="n">Vmax</span><span class="p">)</span>
             <span class="k">elif</span> <span class="n">vm</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">bus</span><span class="o">.</span><span class="n">Vmin</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s2">&quot;Undervoltage&quot;</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s2">"Undervoltage"</span><span class="p">,</span>
                                         <span class="n">device</span><span class="o">=</span><span class="n">bus</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
                                         <span class="n">value</span><span class="o">=</span><span class="n">vm</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
                                         <span class="n">expected_value</span><span class="o">=</span><span class="n">bus</span><span class="o">.</span><span class="n">Vmin</span><span class="p">)</span>
@@ -219,41 +220,41 @@
         <span class="n">branches</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">get_branches</span><span class="p">(</span><span class="n">add_vsc</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">add_hvdc</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">add_switch</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">branch</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">branches</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">loading</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mf">1.0</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s2">&quot;Overload&quot;</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s2">"Overload"</span><span class="p">,</span>
                                         <span class="n">device</span><span class="o">=</span><span class="n">branch</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
                                         <span class="n">value</span><span class="o">=</span><span class="n">loading</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="mf">100.0</span><span class="p">,</span>
                                         <span class="n">expected_value</span><span class="o">=</span><span class="mf">100.0</span><span class="p">)</span>
 
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">elm</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">generators</span><span class="p">):</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">elm</span><span class="o">.</span><span class="n">Qmin</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">gen_q</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">elm</span><span class="o">.</span><span class="n">Qmax</span><span class="p">):</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s2">&quot;Generator Q out of bounds&quot;</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s2">"Generator Q out of bounds"</span><span class="p">,</span>
                                         <span class="n">device</span><span class="o">=</span><span class="n">elm</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
                                         <span class="n">value</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">gen_q</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
-                                        <span class="n">expected_value</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">elm</span><span class="o">.</span><span class="n">Qmin</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">elm</span><span class="o">.</span><span class="n">Qmax</span><span class="si">}</span><span class="s2">]&quot;</span><span class="p">,</span> <span class="p">)</span>
+                                        <span class="n">expected_value</span><span class="o">=</span><span class="sa">f</span><span class="s2">"[</span><span class="si">{</span><span class="n">elm</span><span class="o">.</span><span class="n">Qmin</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">elm</span><span class="o">.</span><span class="n">Qmax</span><span class="si">}</span><span class="s2">]"</span><span class="p">,</span> <span class="p">)</span>
 
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">elm</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">batteries</span><span class="p">):</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">elm</span><span class="o">.</span><span class="n">Qmin</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">battery_q</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">elm</span><span class="o">.</span><span class="n">Qmax</span><span class="p">):</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s2">&quot;Battery Q out of bounds&quot;</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s2">"Battery Q out of bounds"</span><span class="p">,</span>
                                         <span class="n">device</span><span class="o">=</span><span class="n">elm</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
                                         <span class="n">value</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">battery_q</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
-                                        <span class="n">expected_value</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">elm</span><span class="o">.</span><span class="n">Qmin</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">elm</span><span class="o">.</span><span class="n">Qmax</span><span class="si">}</span><span class="s2">]&quot;</span><span class="p">,</span> <span class="p">)</span></div>
+                                        <span class="n">expected_value</span><span class="o">=</span><span class="sa">f</span><span class="s2">"[</span><span class="si">{</span><span class="n">elm</span><span class="o">.</span><span class="n">Qmin</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">elm</span><span class="o">.</span><span class="n">Qmax</span><span class="si">}</span><span class="s2">]"</span><span class="p">,</span> <span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="PowerFlowDriver.run">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow.html#VeraGridEngine.Simulations.PowerFlow.power_flow_driver.PowerFlowDriver.run">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Pack run_pf for the QThread</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">tic</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s2">&quot;Compiling and configuring...&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s2">"Compiling and configuring..."</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span> <span class="o">==</span> <span class="n">EngineType</span><span class="o">.</span><span class="n">GSLV</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">GSLV_AVAILABLE</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">engine</span> <span class="o">=</span> <span class="n">EngineType</span><span class="o">.</span><span class="n">VeraGrid</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s1">&#39;Failed back to VeraGrid&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s1">'Failed back to VeraGrid'</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span> <span class="o">==</span> <span class="n">EngineType</span><span class="o">.</span><span class="n">PGM</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">PGM_AVAILABLE</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">engine</span> <span class="o">=</span> <span class="n">EngineType</span><span class="o">.</span><span class="n">VeraGrid</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s1">&#39;Failed back to VeraGrid&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s1">'Failed back to VeraGrid'</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span> <span class="o">==</span> <span class="n">EngineType</span><span class="o">.</span><span class="n">VeraGrid</span><span class="p">:</span>
 
@@ -281,7 +282,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">area_names</span> <span class="o">=</span> <span class="p">[</span><span class="n">a</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">areas</span><span class="p">]</span>
 
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Engine &#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">value</span> <span class="o">+</span> <span class="s1">&#39; not implemented for &#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">'Engine '</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">value</span> <span class="o">+</span> <span class="s1">' not implemented for '</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
 
         <span class="c1"># fill F, T, Areas, etc...</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">fill_circuit_info</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="p">)</span>
@@ -291,21 +292,21 @@
         <span class="k">for</span> <span class="n">convergence_report</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">convergence_reports</span><span class="p">:</span>
             <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">convergence_report</span><span class="o">.</span><span class="n">error_</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Method </span><span class="si">{</span><span class="n">convergence_report</span><span class="o">.</span><span class="n">methods_</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
-                                     <span class="n">device_property</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Converged&quot;</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="sa">f</span><span class="s2">"Method </span><span class="si">{</span><span class="n">convergence_report</span><span class="o">.</span><span class="n">methods_</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+                                     <span class="n">device_property</span><span class="o">=</span><span class="sa">f</span><span class="s2">"Converged"</span><span class="p">,</span>
                                      <span class="n">value</span><span class="o">=</span><span class="n">convergence_report</span><span class="o">.</span><span class="n">converged_</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
-                                     <span class="n">expected_value</span><span class="o">=</span><span class="s2">&quot;True&quot;</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Method </span><span class="si">{</span><span class="n">convergence_report</span><span class="o">.</span><span class="n">methods_</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
-                                     <span class="n">device_property</span><span class="o">=</span><span class="s2">&quot;Elapsed (s)&quot;</span><span class="p">,</span>
-                                     <span class="n">value</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">{:.4f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">convergence_report</span><span class="o">.</span><span class="n">elapsed_</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Method </span><span class="si">{</span><span class="n">convergence_report</span><span class="o">.</span><span class="n">methods_</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
-                                     <span class="n">device_property</span><span class="o">=</span><span class="s2">&quot;Error (p.u.)&quot;</span><span class="p">,</span>
-                                     <span class="n">value</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">{:.4e}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">convergence_report</span><span class="o">.</span><span class="n">error_</span><span class="p">[</span><span class="n">i</span><span class="p">]),</span>
-                                     <span class="n">expected_value</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;&lt;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">tolerance</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Method </span><span class="si">{</span><span class="n">convergence_report</span><span class="o">.</span><span class="n">methods_</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
-                                     <span class="n">device_property</span><span class="o">=</span><span class="s2">&quot;Iterations&quot;</span><span class="p">,</span>
+                                     <span class="n">expected_value</span><span class="o">=</span><span class="s2">"True"</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="sa">f</span><span class="s2">"Method </span><span class="si">{</span><span class="n">convergence_report</span><span class="o">.</span><span class="n">methods_</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+                                     <span class="n">device_property</span><span class="o">=</span><span class="s2">"Elapsed (s)"</span><span class="p">,</span>
+                                     <span class="n">value</span><span class="o">=</span><span class="s1">'</span><span class="si">{:.4f}</span><span class="s1">'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">convergence_report</span><span class="o">.</span><span class="n">elapsed_</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="sa">f</span><span class="s2">"Method </span><span class="si">{</span><span class="n">convergence_report</span><span class="o">.</span><span class="n">methods_</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+                                     <span class="n">device_property</span><span class="o">=</span><span class="s2">"Error (p.u.)"</span><span class="p">,</span>
+                                     <span class="n">value</span><span class="o">=</span><span class="s1">'</span><span class="si">{:.4e}</span><span class="s1">'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">convergence_report</span><span class="o">.</span><span class="n">error_</span><span class="p">[</span><span class="n">i</span><span class="p">]),</span>
+                                     <span class="n">expected_value</span><span class="o">=</span><span class="sa">f</span><span class="s2">"&lt;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">tolerance</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="sa">f</span><span class="s2">"Method </span><span class="si">{</span><span class="n">convergence_report</span><span class="o">.</span><span class="n">methods_</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+                                     <span class="n">device_property</span><span class="o">=</span><span class="s2">"Iterations"</span><span class="p">,</span>
                                      <span class="n">value</span><span class="o">=</span><span class="n">convergence_report</span><span class="o">.</span><span class="n">iterations_</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
-                                     <span class="n">expected_value</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;&lt;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">max_iter</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                                     <span class="n">expected_value</span><span class="o">=</span><span class="sa">f</span><span class="s2">"&lt;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">max_iter</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">generate_report</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">add_report</span><span class="p">()</span></div>

@@ -212,10 +212,7 @@ def get_switch_emt_template(
     templ.name = name
     templ.block.name = name
 
-    # The command remains the public event target. Optional phase latches below
-    # convert an open command into the zero-current commutation used by the
-    # Simulink Specialized Power Systems three-phase breaker.
-    closed_mode: Var = vf.add_var(f"switch_closed_mode")
+    closed_mode: Var = vf.add_var("switch_closed_mode", reference=VarPowerFlowReferenceType.switch_closed_mode)
     templ.block.mode_dict[closed_mode] = Const(1.0 if initial_closed else 0.0, name="switch_closed_mode")
 
     g_device: Var = vf.add_var(f"switch_closed_g_api")
@@ -223,7 +220,7 @@ def get_switch_emt_template(
     g_open: Var = vf.add_var(f"switch_open_g")
     tau_var: Var = vf.add_var(f"switch_tau")
     g_parallel: Var = vf.add_var(f"switch_closed_parallel_g")
-    seed_from_pf_var: Var = vf.add_var(f"switch_seed_from_pf")
+    seed_from_pf_var: Var = vf.add_var("switch_seed_from_pf", reference=VarPowerFlowReferenceType.switch_seed_from_pf)
 
     templ.block.parameters[g_device] = Const(0.0, name="switch_closed_g_api")
     templ.block.api_obj_mapping[ParamPowerFlowReferenceType.g] = g_device
@@ -257,6 +254,8 @@ def get_switch_emt_template(
     state_eqs: List[Expr] = list()
     out_vars: List[Var] = list()
     external_mapping: Dict[VarPowerFlowReferenceType, Var | None] = dict({
+        VarPowerFlowReferenceType.switch_closed_mode: closed_mode,
+        VarPowerFlowReferenceType.switch_seed_from_pf: seed_from_pf_var,
         VarPowerFlowReferenceType.vf_N: None,
         VarPowerFlowReferenceType.vf_A: None,
         VarPowerFlowReferenceType.vf_B: None,

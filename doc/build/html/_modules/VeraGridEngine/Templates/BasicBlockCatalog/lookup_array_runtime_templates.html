@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Templates.BasicBlockCatalog.lookup_array_runtime_templates &mdash; VeraGrid 6.7.13 documentation</title>
+  <title>VeraGridEngine.Templates.BasicBlockCatalog.lookup_array_runtime_templates &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=16fbabd8"></script>
+      <script src="../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -131,27 +131,27 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_build_lookup_comparison</span><span class="p">(</span><span class="n">lhs</span><span class="p">:</span> <span class="n">Expr</span><span class="p">,</span> <span class="n">op</span><span class="p">:</span> <span class="n">CmpOp</span><span class="p">,</span> <span class="n">rhs</span><span class="p">:</span> <span class="n">Expr</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Expr</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Build one boolean-like expression used to activate a lookup segment.</span>
 
 <span class="sd">    :param lhs: Left-hand side expression.</span>
 <span class="sd">    :param op: Comparison operator.</span>
 <span class="sd">    :param rhs: Right-hand side expression.</span>
 <span class="sd">    :return: Symbolic 0/1 expression.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">comparison</span><span class="p">:</span> <span class="n">Comparison</span> <span class="o">=</span> <span class="n">Comparison</span><span class="p">(</span><span class="n">lhs</span><span class="o">=</span><span class="n">lhs</span><span class="p">,</span> <span class="n">op</span><span class="o">=</span><span class="n">op</span><span class="p">,</span> <span class="n">rhs</span><span class="o">=</span><span class="n">rhs</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">comparison</span><span class="o">.</span><span class="n">to_expression</span><span class="p">()</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_build_interval_selector</span><span class="p">(</span><span class="n">value_expr</span><span class="p">:</span> <span class="n">Expr</span><span class="p">,</span> <span class="n">lower_var</span><span class="p">:</span> <span class="n">Var</span><span class="p">,</span> <span class="n">upper_var</span><span class="p">:</span> <span class="n">Var</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Expr</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Build the activation selector for one lookup interval.</span>
 
 <span class="sd">    :param value_expr: Evaluated lookup coordinate.</span>
 <span class="sd">    :param lower_var: Lower interval bound.</span>
 <span class="sd">    :param upper_var: Optional exclusive upper interval bound.</span>
 <span class="sd">    :return: Symbolic 0/1 selector.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">lower_expr</span><span class="p">:</span> <span class="n">Expr</span> <span class="o">=</span> <span class="n">_build_lookup_comparison</span><span class="p">(</span><span class="n">value_expr</span><span class="p">,</span> <span class="n">CmpOp</span><span class="o">.</span><span class="n">GE</span><span class="p">,</span> <span class="n">lower_var</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">upper_var</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -162,24 +162,24 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_validate_lookup_points</span><span class="p">(</span><span class="n">x_points</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">y_points</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">float</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Validate one one-dimensional lookup table before building its symbolic block.</span>
 
 <span class="sd">    :param x_points: Monotonic abscissa values.</span>
 <span class="sd">    :param y_points: Ordinated values.</span>
 <span class="sd">    :return: None.</span>
 <span class="sd">    :raises ValueError: If the lookup table is not valid.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">point_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">x_points</span><span class="p">)</span>
     <span class="n">point_index</span><span class="p">:</span> <span class="nb">int</span>
 
     <span class="k">if</span> <span class="n">point_count</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">y_points</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Lookup table x/y vectors must have the same size&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Lookup table x/y vectors must have the same size"</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">pass</span>
 
     <span class="k">if</span> <span class="n">point_count</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Lookup table requires at least two points&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Lookup table requires at least two points"</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">pass</span>
 
@@ -187,30 +187,30 @@
         <span class="k">if</span> <span class="nb">float</span><span class="p">(</span><span class="n">x_points</span><span class="p">[</span><span class="n">point_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span> <span class="o">&gt;</span> <span class="nb">float</span><span class="p">(</span><span class="n">x_points</span><span class="p">[</span><span class="n">point_index</span><span class="p">]):</span>
             <span class="k">pass</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Lookup table x values must be strictly increasing&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Lookup table x values must be strictly increasing"</span><span class="p">)</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_normalize_inverse_lookup_points</span><span class="p">(</span><span class="n">x_points</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">y_points</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">float</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Normalize one inverse lookup table so the driven axis is strictly increasing.</span>
 
 <span class="sd">    :param x_points: Original x values.</span>
 <span class="sd">    :param y_points: Original y values to be inverted.</span>
 <span class="sd">    :return: Normalized `(x_points, y_points)` where `y_points` are increasing.</span>
 <span class="sd">    :raises ValueError: If the inverse lookup is not strictly monotonic.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">point_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">x_points</span><span class="p">)</span>
     <span class="n">point_index</span><span class="p">:</span> <span class="nb">int</span>
     <span class="n">is_increasing</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
     <span class="n">is_decreasing</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
 
     <span class="k">if</span> <span class="n">point_count</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">y_points</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Inverse lookup x/y vectors must have the same size&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Inverse lookup x/y vectors must have the same size"</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">pass</span>
 
     <span class="k">if</span> <span class="n">point_count</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Inverse lookup requires at least two points&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Inverse lookup requires at least two points"</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">pass</span>
 
@@ -221,7 +221,7 @@
             <span class="k">if</span> <span class="nb">float</span><span class="p">(</span><span class="n">y_points</span><span class="p">[</span><span class="n">point_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span> <span class="o">&lt;</span> <span class="nb">float</span><span class="p">(</span><span class="n">y_points</span><span class="p">[</span><span class="n">point_index</span><span class="p">]):</span>
                 <span class="n">is_increasing</span> <span class="o">=</span> <span class="kc">False</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Inverse lookup requires strictly monotonic y values&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Inverse lookup requires strictly monotonic y values"</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">is_increasing</span><span class="p">:</span>
         <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">item</span><span class="p">)</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">x_points</span><span class="p">),</span> <span class="nb">list</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">item</span><span class="p">)</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">y_points</span><span class="p">)</span>
@@ -229,11 +229,11 @@
         <span class="k">if</span> <span class="n">is_decreasing</span><span class="p">:</span>
             <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">item</span><span class="p">)</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="n">x_points</span><span class="p">)),</span> <span class="nb">list</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">item</span><span class="p">)</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="n">y_points</span><span class="p">))</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Inverse lookup requires y values to be strictly monotonic&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Inverse lookup requires y values to be strictly monotonic"</span><span class="p">)</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_validate_lookup_matrix</span><span class="p">(</span><span class="n">x_points</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">y_points</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">z_matrix</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Sequence</span><span class="p">[</span><span class="nb">float</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Validate one two-dimensional lookup table before building its symbolic block.</span>
 
 <span class="sd">    :param x_points: Strictly increasing x-axis values.</span>
@@ -241,7 +241,7 @@
 <span class="sd">    :param z_matrix: Matrix values indexed as `[y][x]`.</span>
 <span class="sd">    :return: None.</span>
 <span class="sd">    :raises ValueError: If the lookup matrix is not valid.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">x_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">x_points</span><span class="p">)</span>
     <span class="n">y_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">y_points</span><span class="p">)</span>
     <span class="n">point_index</span><span class="p">:</span> <span class="nb">int</span>
@@ -253,7 +253,7 @@
     <span class="k">if</span> <span class="n">x_count</span> <span class="o">&gt;=</span> <span class="mi">2</span> <span class="ow">and</span> <span class="n">y_count</span> <span class="o">&gt;=</span> <span class="mi">2</span><span class="p">:</span>
         <span class="k">pass</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Lookup matrix requires at least two points on each axis&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Lookup matrix requires at least two points on each axis"</span><span class="p">)</span>
 
     <span class="c1"># Repeated or descending coordinates make interval selection ambiguous and</span>
     <span class="c1"># can introduce divisions by zero in the interpolation equations.</span>
@@ -261,33 +261,33 @@
         <span class="k">if</span> <span class="nb">float</span><span class="p">(</span><span class="n">x_points</span><span class="p">[</span><span class="n">point_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span> <span class="o">&gt;</span> <span class="nb">float</span><span class="p">(</span><span class="n">x_points</span><span class="p">[</span><span class="n">point_index</span><span class="p">]):</span>
             <span class="k">pass</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Lookup matrix x-axis values must be strictly increasing&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Lookup matrix x-axis values must be strictly increasing"</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">point_index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">y_count</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">float</span><span class="p">(</span><span class="n">y_points</span><span class="p">[</span><span class="n">point_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span> <span class="o">&gt;</span> <span class="nb">float</span><span class="p">(</span><span class="n">y_points</span><span class="p">[</span><span class="n">point_index</span><span class="p">]):</span>
             <span class="k">pass</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Lookup matrix y-axis values must be strictly increasing&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Lookup matrix y-axis values must be strictly increasing"</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">z_matrix</span><span class="p">)</span> <span class="o">==</span> <span class="n">y_count</span><span class="p">:</span>
         <span class="k">pass</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Lookup matrix row count must match the y-axis size&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Lookup matrix row count must match the y-axis size"</span><span class="p">)</span>
 
     <span class="k">for</span> <span class="n">row_index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">z_matrix</span><span class="p">)):</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">z_matrix</span><span class="p">[</span><span class="n">row_index</span><span class="p">])</span> <span class="o">==</span> <span class="n">x_count</span><span class="p">:</span>
             <span class="k">pass</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Lookup matrix column count must match the x-axis size&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Lookup matrix column count must match the x-axis size"</span><span class="p">)</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_build_linear_combination</span><span class="p">(</span><span class="n">sample_values</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Expr</span><span class="p">],</span> <span class="n">weights</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">float</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Expr</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Build one linear combination of symbolic sample values.</span>
 
 <span class="sd">    :param sample_values: Symbolic sample values.</span>
 <span class="sd">    :param weights: Numeric weights.</span>
 <span class="sd">    :return: Linear-combination expression.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">result_expr</span><span class="p">:</span> <span class="n">Expr</span> <span class="o">=</span> <span class="n">Const</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
     <span class="n">sample_index</span><span class="p">:</span> <span class="nb">int</span>
 
@@ -298,13 +298,13 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_solve_natural_cubic_second_derivatives</span><span class="p">(</span><span class="n">axis_points</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">sample_values</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Solve the natural cubic spline second derivatives for one numeric surface.</span>
 
 <span class="sd">    :param axis_points: Strictly increasing axis values.</span>
 <span class="sd">    :param sample_values: Numeric sample values on that axis.</span>
 <span class="sd">    :return: Numeric second-derivative vector.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">point_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">axis_points</span><span class="p">)</span>
     <span class="n">second_derivatives</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">point_count</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
     <span class="n">equation_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">point_count</span> <span class="o">-</span> <span class="mi">2</span>
@@ -343,12 +343,12 @@
 
 <span class="nd">@lru_cache</span><span class="p">(</span><span class="n">maxsize</span><span class="o">=</span><span class="mi">32</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">_compute_natural_cubic_segment_weights</span><span class="p">(</span><span class="n">axis_points_key</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="o">...</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="o">...</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Return linear weights for every natural-cubic spline segment coefficient.</span>
 
 <span class="sd">    :param axis_points_key: Hashable axis-point tuple.</span>
 <span class="sd">    :return: Per-segment coefficient weights `(a, b, c, d)`.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">axis_points</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="n">axis_points_key</span>
     <span class="n">point_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">axis_points</span><span class="p">)</span>
     <span class="n">segment_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">point_count</span> <span class="o">-</span> <span class="mi">1</span>
@@ -405,7 +405,7 @@
     <span class="n">axis_vars</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Var</span><span class="p">],</span>
     <span class="n">sample_values</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Expr</span><span class="p">],</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Expr</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Build the clipped natural cubic spline expression for one axis.</span>
 
 <span class="sd">    :param coord_expr: Lookup coordinate.</span>
@@ -413,7 +413,7 @@
 <span class="sd">    :param axis_vars: Strictly increasing symbolic axis variables.</span>
 <span class="sd">    :param sample_values: Symbolic sample values aligned with the axis.</span>
 <span class="sd">    :return: Piecewise cubic spline expression.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">point_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">axis_vars</span><span class="p">)</span>
     <span class="n">segment_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">point_count</span> <span class="o">-</span> <span class="mi">1</span>
     <span class="c1"># Clamp the lower exterior region to the first table value. Keeping this</span>
@@ -438,7 +438,7 @@
 
         <span class="c1"># Every cubic segment is active only inside its two breakpoints. The</span>
         <span class="c1"># former open-ended final segment extrapolated above the table even</span>
-        <span class="c1"># though this helper&#39;s contract specifies clipping.</span>
+        <span class="c1"># though this helper's contract specifies clipping.</span>
         <span class="n">selector_expr</span><span class="p">:</span> <span class="n">Expr</span> <span class="o">=</span> <span class="n">_build_interval_selector</span><span class="p">(</span>
             <span class="n">coord_expr</span><span class="p">,</span>
             <span class="n">axis_vars</span><span class="p">[</span><span class="n">segment_index</span><span class="p">],</span>
@@ -462,7 +462,7 @@
     <span class="n">y_left_var</span><span class="p">:</span> <span class="n">Var</span><span class="p">,</span>
     <span class="n">y_right_var</span><span class="p">:</span> <span class="n">Var</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Expr</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Build one affine interpolation expression between two lookup points.</span>
 
 <span class="sd">    :param yi_var: Lookup input variable.</span>
@@ -471,21 +471,21 @@
 <span class="sd">    :param y_left_var: Segment left y value.</span>
 <span class="sd">    :param y_right_var: Segment right y value.</span>
 <span class="sd">    :return: Interpolation expression valid on that segment.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">slope_expr</span><span class="p">:</span> <span class="n">Expr</span> <span class="o">=</span> <span class="p">(</span><span class="n">y_right_var</span> <span class="o">-</span> <span class="n">y_left_var</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">x_right_var</span> <span class="o">-</span> <span class="n">x_left_var</span><span class="p">)</span>
     <span class="n">intercept_expr</span><span class="p">:</span> <span class="n">Expr</span> <span class="o">=</span> <span class="n">y_left_var</span> <span class="o">-</span> <span class="n">slope_expr</span> <span class="o">*</span> <span class="n">x_left_var</span>
     <span class="k">return</span> <span class="n">slope_expr</span> <span class="o">*</span> <span class="n">yi_var</span> <span class="o">+</span> <span class="n">intercept_expr</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_build_clipped_lookup_expression</span><span class="p">(</span><span class="n">yi_var</span><span class="p">:</span> <span class="n">Var</span><span class="p">,</span> <span class="n">x_vars</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Var</span><span class="p">],</span> <span class="n">y_vars</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Var</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Expr</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Build the clipped lookup expression for one strictly increasing table.</span>
 
 <span class="sd">    :param yi_var: Lookup input variable.</span>
 <span class="sd">    :param x_vars: Symbolic x-point parameters.</span>
 <span class="sd">    :param y_vars: Symbolic y-point parameters.</span>
 <span class="sd">    :return: Piecewise clipped interpolation expression.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">point_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">x_vars</span><span class="p">)</span>
     <span class="n">segment_index</span><span class="p">:</span> <span class="nb">int</span>
     <span class="n">result_expr</span><span class="p">:</span> <span class="n">Expr</span> <span class="o">=</span> <span class="n">y_vars</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">_build_lookup_comparison</span><span class="p">(</span><span class="n">yi_var</span><span class="p">,</span> <span class="n">CmpOp</span><span class="o">.</span><span class="n">LT</span><span class="p">,</span> <span class="n">x_vars</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
@@ -512,14 +512,14 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_build_unclipped_lookup_expression</span><span class="p">(</span><span class="n">yi_var</span><span class="p">:</span> <span class="n">Var</span><span class="p">,</span> <span class="n">x_vars</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Var</span><span class="p">],</span> <span class="n">y_vars</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Var</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Expr</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Build the non-clipped lookup expression with linear extrapolation.</span>
 
 <span class="sd">    :param yi_var: Lookup input variable.</span>
 <span class="sd">    :param x_vars: Symbolic x-point parameters.</span>
 <span class="sd">    :param y_vars: Symbolic y-point parameters.</span>
 <span class="sd">    :return: Piecewise interpolation plus linear extrapolation expression.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">point_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">x_vars</span><span class="p">)</span>
     <span class="n">first_segment_expr</span><span class="p">:</span> <span class="n">Expr</span> <span class="o">=</span> <span class="n">_build_segment_expression</span><span class="p">(</span>
         <span class="n">yi_var</span><span class="o">=</span><span class="n">yi_var</span><span class="p">,</span>
@@ -576,7 +576,7 @@
     <span class="n">z01_var</span><span class="p">:</span> <span class="n">Var</span><span class="p">,</span>
     <span class="n">z11_var</span><span class="p">:</span> <span class="n">Var</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Expr</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Build one bilinear interpolation expression on a single rectangular cell.</span>
 
 <span class="sd">    :param x_expr: Clipped x lookup coordinate.</span>
@@ -590,7 +590,7 @@
 <span class="sd">    :param z01_var: Cell value at `(x_left, y_upper)`.</span>
 <span class="sd">    :param z11_var: Cell value at `(x_right, y_upper)`.</span>
 <span class="sd">    :return: Bilinear interpolation expression.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">one_const</span><span class="p">:</span> <span class="n">Const</span> <span class="o">=</span> <span class="n">Const</span><span class="p">(</span><span class="mf">1.0</span><span class="p">)</span>
     <span class="n">tx_expr</span><span class="p">:</span> <span class="n">Expr</span> <span class="o">=</span> <span class="p">(</span><span class="n">x_expr</span> <span class="o">-</span> <span class="n">x_left_var</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">x_right_var</span> <span class="o">-</span> <span class="n">x_left_var</span><span class="p">)</span>
     <span class="n">ty_expr</span><span class="p">:</span> <span class="n">Expr</span> <span class="o">=</span> <span class="p">(</span><span class="n">y_expr</span> <span class="o">-</span> <span class="n">y_lower_var</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">y_upper_var</span> <span class="o">-</span> <span class="n">y_lower_var</span><span class="p">)</span>
@@ -609,7 +609,7 @@
     <span class="n">y_vars</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Var</span><span class="p">],</span>
     <span class="n">z_vars</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Sequence</span><span class="p">[</span><span class="n">Var</span><span class="p">]],</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Expr</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Build the clipped bilinear interpolation expression for one lookup matrix.</span>
 
 <span class="sd">    :param x_input_var: X-axis input variable.</span>
@@ -618,7 +618,7 @@
 <span class="sd">    :param y_vars: Symbolic y-axis parameters.</span>
 <span class="sd">    :param z_vars: Symbolic matrix values indexed as `[y][x]`.</span>
 <span class="sd">    :return: Bilinear interpolation expression.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">x_index</span><span class="p">:</span> <span class="nb">int</span>
     <span class="n">y_index</span><span class="p">:</span> <span class="nb">int</span>
     <span class="n">x_clamped_expr</span><span class="p">:</span> <span class="n">Expr</span> <span class="o">=</span> <span class="n">sym</span><span class="o">.</span><span class="n">hard_sat</span><span class="p">(</span><span class="n">x_input_var</span><span class="p">,</span> <span class="n">x_vars</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">x_vars</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">x_vars</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">])</span>
@@ -666,18 +666,18 @@
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="n">vf</span><span class="p">,</span>
             <span class="n">params</span><span class="o">=</span><span class="p">[</span>
-                <span class="n">TemplateProp</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;points&quot;</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">descr</span><span class="o">=</span><span class="s2">&quot;Strictly increasing x breakpoints.&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">X_Y_SequenceType</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="p">((</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span> <span class="p">(</span><span class="mf">0.02</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mf">0.04</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">))),</span>
-                <span class="n">TemplateProp</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;clip&quot;</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">descr</span><span class="o">=</span><span class="s2">&quot;If True, clip outside the table; otherwise extrapolate linearly.&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">bool</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
-                <span class="n">TemplateProp</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">descr</span><span class="o">=</span><span class="s2">&quot;Optional explicit runtime template name.&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="s2">&quot;lookup_array_linear_runtime&quot;</span><span class="p">),</span>
+                <span class="n">TemplateProp</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">"points"</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">""</span><span class="p">,</span> <span class="n">descr</span><span class="o">=</span><span class="s2">"Strictly increasing x breakpoints."</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">X_Y_SequenceType</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="p">((</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span> <span class="p">(</span><span class="mf">0.02</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mf">0.04</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">))),</span>
+                <span class="n">TemplateProp</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">"clip"</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">""</span><span class="p">,</span> <span class="n">descr</span><span class="o">=</span><span class="s2">"If True, clip outside the table; otherwise extrapolate linearly."</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">bool</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+                <span class="n">TemplateProp</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">"name"</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">""</span><span class="p">,</span> <span class="n">descr</span><span class="o">=</span><span class="s2">"Optional explicit runtime template name."</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="s2">"lookup_array_linear_runtime"</span><span class="p">),</span>
             <span class="p">]</span>
         <span class="p">)</span>
 
 <div class="viewcode-block" id="LookupArrayLinearRuntimeTemplate.eval">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Templates.BasicBlockCatalog.html#VeraGridEngine.Templates.BasicBlockCatalog.lookup_array_runtime_templates.LookupArrayLinearRuntimeTemplate.eval">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">eval</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EmtModelTemplate</span><span class="p">:</span>
-        <span class="n">points</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Vec</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span><span class="s2">&quot;points&quot;</span><span class="p">)</span>
-        <span class="n">clip</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span><span class="s2">&quot;clip&quot;</span><span class="p">)</span>
-        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">)</span>
+        <span class="n">points</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Vec</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span><span class="s2">"points"</span><span class="p">)</span>
+        <span class="n">clip</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span><span class="s2">"clip"</span><span class="p">)</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span><span class="s2">"name"</span><span class="p">)</span>
 
         <span class="n">x_points</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
         <span class="n">y_points</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
@@ -706,7 +706,7 @@
     <span class="n">clip</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EmtModelTemplate</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Build one runtime one-dimensional linear lookup template from explicit points.</span>
 
 <span class="sd">    :param vf: Variable factory used to allocate symbolic objects.</span>
@@ -715,7 +715,7 @@
 <span class="sd">    :param clip: If True, clip outside the table; otherwise extrapolate linearly.</span>
 <span class="sd">    :param name: Optional explicit runtime template name.</span>
 <span class="sd">    :return: Materialized EMT template.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">template_name</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">point_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">x_points</span><span class="p">)</span>
     <span class="n">point_index</span><span class="p">:</span> <span class="nb">int</span>
@@ -736,32 +736,32 @@
 
     <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">clip</span><span class="p">:</span>
-            <span class="n">template_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;lookup_array_linear_</span><span class="si">{</span><span class="n">point_count</span><span class="si">}</span><span class="s2">pt&quot;</span>
+            <span class="n">template_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"lookup_array_linear_</span><span class="si">{</span><span class="n">point_count</span><span class="si">}</span><span class="s2">pt"</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">template_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;lookup_array_linear_noclipping_</span><span class="si">{</span><span class="n">point_count</span><span class="si">}</span><span class="s2">pt&quot;</span>
+            <span class="n">template_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"lookup_array_linear_noclipping_</span><span class="si">{</span><span class="n">point_count</span><span class="si">}</span><span class="s2">pt"</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">template_name</span> <span class="o">=</span> <span class="n">name</span>
 
     <span class="n">template</span><span class="o">.</span><span class="n">tpe</span> <span class="o">=</span> <span class="n">DeviceType</span><span class="o">.</span><span class="n">NoDevice</span>
     <span class="n">template</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">template_name</span>
 
-    <span class="n">yi_var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;yi_&quot;</span> <span class="o">+</span> <span class="n">template_name</span><span class="p">)</span>
-    <span class="n">yo_var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;yo_&quot;</span> <span class="o">+</span> <span class="n">template_name</span><span class="p">)</span>
+    <span class="n">yi_var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"yi_"</span> <span class="o">+</span> <span class="n">template_name</span><span class="p">)</span>
+    <span class="n">yo_var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"yo_"</span> <span class="o">+</span> <span class="n">template_name</span><span class="p">)</span>
 
     <span class="k">for</span> <span class="n">point_index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">point_count</span><span class="p">):</span>
-        <span class="n">parameter_var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;arr_x&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">point_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="n">template_name</span><span class="p">)</span>
-        <span class="n">template</span><span class="o">.</span><span class="n">block</span><span class="o">.</span><span class="n">event_dict</span><span class="p">[</span><span class="n">parameter_var</span><span class="p">]</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_const</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">x_points</span><span class="p">[</span><span class="n">point_index</span><span class="p">]),</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;arr_x&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">point_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="n">parameter_var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"arr_x"</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">point_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="s2">"_"</span> <span class="o">+</span> <span class="n">template_name</span><span class="p">)</span>
+        <span class="n">template</span><span class="o">.</span><span class="n">block</span><span class="o">.</span><span class="n">event_dict</span><span class="p">[</span><span class="n">parameter_var</span><span class="p">]</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_const</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">x_points</span><span class="p">[</span><span class="n">point_index</span><span class="p">]),</span> <span class="n">name</span><span class="o">=</span><span class="s2">"arr_x"</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">point_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
         <span class="n">x_vars</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">parameter_var</span><span class="p">)</span>
 
-        <span class="n">parameter_var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;arr_y&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">point_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="n">template_name</span><span class="p">)</span>
-        <span class="n">template</span><span class="o">.</span><span class="n">block</span><span class="o">.</span><span class="n">event_dict</span><span class="p">[</span><span class="n">parameter_var</span><span class="p">]</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_const</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">y_points</span><span class="p">[</span><span class="n">point_index</span><span class="p">]),</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;arr_y&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">point_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="n">parameter_var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"arr_y"</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">point_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="s2">"_"</span> <span class="o">+</span> <span class="n">template_name</span><span class="p">)</span>
+        <span class="n">template</span><span class="o">.</span><span class="n">block</span><span class="o">.</span><span class="n">event_dict</span><span class="p">[</span><span class="n">parameter_var</span><span class="p">]</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_const</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">y_points</span><span class="p">[</span><span class="n">point_index</span><span class="p">]),</span> <span class="n">name</span><span class="o">=</span><span class="s2">"arr_y"</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">point_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
         <span class="n">y_vars</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">parameter_var</span><span class="p">)</span>
 
     <span class="c1"># Retain the boundary rule as an ordinary mode parameter so reopening</span>
     <span class="c1"># General Options can recover it after a save/load round trip.</span>
     <span class="n">clipped_lookup_expr</span> <span class="o">=</span> <span class="n">_build_clipped_lookup_expression</span><span class="p">(</span><span class="n">yi_var</span><span class="o">=</span><span class="n">yi_var</span><span class="p">,</span> <span class="n">x_vars</span><span class="o">=</span><span class="n">x_vars</span><span class="p">,</span> <span class="n">y_vars</span><span class="o">=</span><span class="n">y_vars</span><span class="p">)</span>
     <span class="n">extrapolated_lookup_expr</span> <span class="o">=</span> <span class="n">_build_unclipped_lookup_expression</span><span class="p">(</span><span class="n">yi_var</span><span class="o">=</span><span class="n">yi_var</span><span class="p">,</span> <span class="n">x_vars</span><span class="o">=</span><span class="n">x_vars</span><span class="p">,</span> <span class="n">y_vars</span><span class="o">=</span><span class="n">y_vars</span><span class="p">)</span>
-    <span class="n">clip_mode_var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;lookup_clip_&quot;</span> <span class="o">+</span> <span class="n">template_name</span><span class="p">)</span>
+    <span class="n">clip_mode_var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"lookup_clip_"</span> <span class="o">+</span> <span class="n">template_name</span><span class="p">)</span>
     <span class="n">lookup_expr</span> <span class="o">=</span> <span class="p">(</span>
         <span class="n">clip_mode_var</span> <span class="o">*</span> <span class="n">clipped_lookup_expr</span>
         <span class="o">+</span> <span class="p">(</span><span class="n">Const</span><span class="p">(</span><span class="mf">1.0</span><span class="p">)</span> <span class="o">-</span> <span class="n">clip_mode_var</span><span class="p">)</span> <span class="o">*</span> <span class="n">extrapolated_lookup_expr</span>
@@ -773,7 +773,7 @@
         <span class="n">in_vars</span><span class="o">=</span><span class="nb">list</span><span class="p">([</span><span class="n">yi_var</span><span class="p">]),</span>
         <span class="n">out_vars</span><span class="o">=</span><span class="nb">list</span><span class="p">([</span><span class="n">yo_var</span><span class="p">]),</span>
         <span class="n">event_dict</span><span class="o">=</span><span class="n">template</span><span class="o">.</span><span class="n">block</span><span class="o">.</span><span class="n">event_dict</span><span class="p">,</span>
-        <span class="n">mode_dict</span><span class="o">=</span><span class="nb">dict</span><span class="p">(((</span><span class="n">clip_mode_var</span><span class="p">,</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_const</span><span class="p">(</span><span class="mf">1.0</span> <span class="k">if</span> <span class="n">clip</span> <span class="k">else</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;clip&quot;</span><span class="p">)),)),</span>
+        <span class="n">mode_dict</span><span class="o">=</span><span class="nb">dict</span><span class="p">(((</span><span class="n">clip_mode_var</span><span class="p">,</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_const</span><span class="p">(</span><span class="mf">1.0</span> <span class="k">if</span> <span class="n">clip</span> <span class="k">else</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"clip"</span><span class="p">)),)),</span>
         <span class="n">name</span><span class="o">=</span><span class="n">template_name</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="k">return</span> <span class="n">template</span></div>
@@ -783,40 +783,40 @@
 <div class="viewcode-block" id="LookupArrayLinearVariableRuntimeTemplate">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Templates.BasicBlockCatalog.html#VeraGridEngine.Templates.BasicBlockCatalog.lookup_array_runtime_templates.LookupArrayLinearVariableRuntimeTemplate">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">LookupArrayLinearVariableRuntimeTemplate</span><span class="p">(</span><span class="n">TemplateDefinition</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Build a linear lookup whose tabulated coordinates are signal inputs.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Build a linear lookup whose tabulated coordinates are signal inputs."""</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">()</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vf</span><span class="p">:</span> <span class="n">VarFactory</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create the configurable dynamic-table builder.</span>
+<span class="w">        </span><span class="sd">"""Create the configurable dynamic-table builder.</span>
 
 <span class="sd">        :param vf: Variable factory used to allocate the symbolic interface.</span>
 <span class="sd">        :return: None.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">TemplateDefinition</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
             <span class="n">vf</span><span class="p">,</span>
             <span class="n">params</span><span class="o">=</span><span class="nb">list</span><span class="p">((</span>
                 <span class="n">TemplateProp</span><span class="p">(</span>
-                    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;point_count&quot;</span><span class="p">,</span>
-                    <span class="n">units</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
-                    <span class="n">descr</span><span class="o">=</span><span class="s2">&quot;Number of signal-driven (x, y) points in the table.&quot;</span><span class="p">,</span>
+                    <span class="n">name</span><span class="o">=</span><span class="s2">"point_count"</span><span class="p">,</span>
+                    <span class="n">units</span><span class="o">=</span><span class="s2">""</span><span class="p">,</span>
+                    <span class="n">descr</span><span class="o">=</span><span class="s2">"Number of signal-driven (x, y) points in the table."</span><span class="p">,</span>
                     <span class="n">tpe</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span>
                     <span class="n">value</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
                 <span class="p">),</span>
                 <span class="n">TemplateProp</span><span class="p">(</span>
-                    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;clip&quot;</span><span class="p">,</span>
-                    <span class="n">units</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
-                    <span class="n">descr</span><span class="o">=</span><span class="s2">&quot;Clip outside the table instead of extrapolating linearly.&quot;</span><span class="p">,</span>
+                    <span class="n">name</span><span class="o">=</span><span class="s2">"clip"</span><span class="p">,</span>
+                    <span class="n">units</span><span class="o">=</span><span class="s2">""</span><span class="p">,</span>
+                    <span class="n">descr</span><span class="o">=</span><span class="s2">"Clip outside the table instead of extrapolating linearly."</span><span class="p">,</span>
                     <span class="n">tpe</span><span class="o">=</span><span class="nb">bool</span><span class="p">,</span>
                     <span class="n">value</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                 <span class="p">),</span>
                 <span class="n">TemplateProp</span><span class="p">(</span>
-                    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;name&quot;</span><span class="p">,</span>
-                    <span class="n">units</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
-                    <span class="n">descr</span><span class="o">=</span><span class="s2">&quot;Optional explicit runtime template name.&quot;</span><span class="p">,</span>
+                    <span class="n">name</span><span class="o">=</span><span class="s2">"name"</span><span class="p">,</span>
+                    <span class="n">units</span><span class="o">=</span><span class="s2">""</span><span class="p">,</span>
+                    <span class="n">descr</span><span class="o">=</span><span class="s2">"Optional explicit runtime template name."</span><span class="p">,</span>
                     <span class="n">tpe</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
-                    <span class="n">value</span><span class="o">=</span><span class="s2">&quot;lookup_array_linear_variable_runtime&quot;</span><span class="p">,</span>
+                    <span class="n">value</span><span class="o">=</span><span class="s2">"lookup_array_linear_variable_runtime"</span><span class="p">,</span>
                 <span class="p">),</span>
             <span class="p">)),</span>
         <span class="p">)</span>
@@ -824,13 +824,13 @@
 <div class="viewcode-block" id="LookupArrayLinearVariableRuntimeTemplate.eval">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Templates.BasicBlockCatalog.html#VeraGridEngine.Templates.BasicBlockCatalog.lookup_array_runtime_templates.LookupArrayLinearVariableRuntimeTemplate.eval">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">eval</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EmtModelTemplate</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Materialize the dynamic lookup using the selected structure.</span>
+<span class="w">        </span><span class="sd">"""Materialize the dynamic lookup using the selected structure.</span>
 
 <span class="sd">        :return: EMT template whose breakpoints and samples are input ports.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">point_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span><span class="s2">&quot;point_count&quot;</span><span class="p">)</span>
-        <span class="n">clip</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span><span class="s2">&quot;clip&quot;</span><span class="p">)</span>
-        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">)</span>
+<span class="sd">        """</span>
+        <span class="n">point_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span><span class="s2">"point_count"</span><span class="p">)</span>
+        <span class="n">clip</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span><span class="s2">"clip"</span><span class="p">)</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span><span class="s2">"name"</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">build_lookup_array_linear_variable_runtime_template</span><span class="p">(</span>
             <span class="n">vf</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">vf</span><span class="p">,</span>
             <span class="n">point_count</span><span class="o">=</span><span class="n">point_count</span><span class="p">,</span>
@@ -849,7 +849,7 @@
     <span class="n">clip</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EmtModelTemplate</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Build a linear lookup whose complete table is supplied by signals.</span>
+<span class="w">    </span><span class="sd">"""Build a linear lookup whose complete table is supplied by signals.</span>
 
 <span class="sd">    The first port is the lookup coordinate, followed by every x breakpoint</span>
 <span class="sd">    and then every y sample. A stable positional naming scheme allows General</span>
@@ -862,29 +862,29 @@
 <span class="sd">    :param name: Optional explicit runtime template name.</span>
 <span class="sd">    :return: Materialized EMT template with signal-driven table coordinates.</span>
 <span class="sd">    :raises ValueError: If fewer than two points are requested.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">template_name</span><span class="p">:</span> <span class="nb">str</span>
     <span class="k">if</span> <span class="n">point_count</span> <span class="o">&gt;=</span> <span class="mi">2</span><span class="p">:</span>
         <span class="k">pass</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Dynamic lookup table requires at least two points&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Dynamic lookup table requires at least two points"</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">template_name</span> <span class="o">=</span> <span class="s2">&quot;lookup_array_linear_variable_&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">point_count</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;pt&quot;</span>
+        <span class="n">template_name</span> <span class="o">=</span> <span class="s2">"lookup_array_linear_variable_"</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">point_count</span><span class="p">)</span> <span class="o">+</span> <span class="s2">"pt"</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">template_name</span> <span class="o">=</span> <span class="n">name</span>
 
     <span class="c1"># Allocate the lookup coordinate and stable table-input groups separately</span>
     <span class="c1"># so their port order matches the imported variable-table blocks.</span>
-    <span class="n">lookup_input</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;yi_&quot;</span> <span class="o">+</span> <span class="n">template_name</span><span class="p">)</span>
-    <span class="n">output_variable</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;yo_&quot;</span> <span class="o">+</span> <span class="n">template_name</span><span class="p">)</span>
+    <span class="n">lookup_input</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"yi_"</span> <span class="o">+</span> <span class="n">template_name</span><span class="p">)</span>
+    <span class="n">output_variable</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"yo_"</span> <span class="o">+</span> <span class="n">template_name</span><span class="p">)</span>
     <span class="n">x_variables</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Var</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
     <span class="n">y_variables</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Var</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
     <span class="n">point_index</span><span class="p">:</span> <span class="nb">int</span>
     <span class="k">for</span> <span class="n">point_index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">point_count</span><span class="p">):</span>
-        <span class="n">x_variables</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;arr_x&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">point_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="n">template_name</span><span class="p">))</span>
+        <span class="n">x_variables</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"arr_x"</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">point_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="s2">"_"</span> <span class="o">+</span> <span class="n">template_name</span><span class="p">))</span>
     <span class="k">for</span> <span class="n">point_index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">point_count</span><span class="p">):</span>
-        <span class="n">y_variables</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;arr_y&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">point_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="n">template_name</span><span class="p">))</span>
+        <span class="n">y_variables</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"arr_y"</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">point_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="s2">"_"</span> <span class="o">+</span> <span class="n">template_name</span><span class="p">))</span>
 
     <span class="c1"># Store the boundary choice in the symbolic model so General Options can</span>
     <span class="c1"># reconstruct it after persistence without relying on Python-only state.</span>
@@ -898,7 +898,7 @@
         <span class="n">x_vars</span><span class="o">=</span><span class="n">x_variables</span><span class="p">,</span>
         <span class="n">y_vars</span><span class="o">=</span><span class="n">y_variables</span><span class="p">,</span>
     <span class="p">)</span>
-    <span class="n">clip_mode_variable</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;lookup_clip_&quot;</span> <span class="o">+</span> <span class="n">template_name</span><span class="p">)</span>
+    <span class="n">clip_mode_variable</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"lookup_clip_"</span> <span class="o">+</span> <span class="n">template_name</span><span class="p">)</span>
     <span class="n">lookup_expression</span><span class="p">:</span> <span class="n">Expr</span> <span class="o">=</span> <span class="p">(</span>
         <span class="n">clip_mode_variable</span> <span class="o">*</span> <span class="n">clipped_lookup_expression</span>
         <span class="o">+</span> <span class="p">(</span><span class="n">Const</span><span class="p">(</span><span class="mf">1.0</span><span class="p">)</span> <span class="o">-</span> <span class="n">clip_mode_variable</span><span class="p">)</span> <span class="o">*</span> <span class="n">extrapolated_lookup_expression</span>
@@ -914,7 +914,7 @@
         <span class="n">algebraic_eqs</span><span class="o">=</span><span class="nb">list</span><span class="p">((</span><span class="n">output_variable</span> <span class="o">-</span> <span class="n">lookup_expression</span><span class="p">,)),</span>
         <span class="n">in_vars</span><span class="o">=</span><span class="n">input_variables</span><span class="p">,</span>
         <span class="n">out_vars</span><span class="o">=</span><span class="nb">list</span><span class="p">((</span><span class="n">output_variable</span><span class="p">,)),</span>
-        <span class="n">mode_dict</span><span class="o">=</span><span class="nb">dict</span><span class="p">(((</span><span class="n">clip_mode_variable</span><span class="p">,</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_const</span><span class="p">(</span><span class="mf">1.0</span> <span class="k">if</span> <span class="n">clip</span> <span class="k">else</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;clip&quot;</span><span class="p">)),)),</span>
+        <span class="n">mode_dict</span><span class="o">=</span><span class="nb">dict</span><span class="p">(((</span><span class="n">clip_mode_variable</span><span class="p">,</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_const</span><span class="p">(</span><span class="mf">1.0</span> <span class="k">if</span> <span class="n">clip</span> <span class="k">else</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"clip"</span><span class="p">)),)),</span>
         <span class="n">name</span><span class="o">=</span><span class="n">template_name</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="k">return</span> <span class="n">template</span></div>
@@ -932,21 +932,21 @@
             <span class="n">vf</span><span class="p">,</span>
             <span class="n">params</span><span class="o">=</span><span class="p">[</span>
                 <span class="n">TemplateProp</span><span class="p">(</span>
-                    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;points&quot;</span><span class="p">,</span>
-                    <span class="n">units</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
-                    <span class="n">descr</span><span class="o">=</span><span class="s2">&quot;Points with strictly monotonic y values so the table can be inverted.&quot;</span><span class="p">,</span>
+                    <span class="n">name</span><span class="o">=</span><span class="s2">"points"</span><span class="p">,</span>
+                    <span class="n">units</span><span class="o">=</span><span class="s2">""</span><span class="p">,</span>
+                    <span class="n">descr</span><span class="o">=</span><span class="s2">"Points with strictly monotonic y values so the table can be inverted."</span><span class="p">,</span>
                     <span class="n">tpe</span><span class="o">=</span><span class="n">X_Y_SequenceType</span><span class="p">,</span>
                     <span class="n">value</span><span class="o">=</span><span class="p">((</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span> <span class="p">(</span><span class="mf">0.02</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">),</span> <span class="p">(</span><span class="mf">0.04</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)),</span>
                 <span class="p">),</span>
-                <span class="n">TemplateProp</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">descr</span><span class="o">=</span><span class="s2">&quot;Name of the runtime template.&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="s2">&quot;inverse_lookup_array_linear_runtime&quot;</span><span class="p">),</span>
+                <span class="n">TemplateProp</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">"name"</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">""</span><span class="p">,</span> <span class="n">descr</span><span class="o">=</span><span class="s2">"Name of the runtime template."</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="s2">"inverse_lookup_array_linear_runtime"</span><span class="p">),</span>
             <span class="p">]</span>
         <span class="p">)</span>
 
 <div class="viewcode-block" id="InverseLookupArrayLinearRuntimeTemplate.eval">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Templates.BasicBlockCatalog.html#VeraGridEngine.Templates.BasicBlockCatalog.lookup_array_runtime_templates.InverseLookupArrayLinearRuntimeTemplate.eval">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">eval</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EmtModelTemplate</span><span class="p">:</span>
-        <span class="n">points</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Vec</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span><span class="s2">&quot;points&quot;</span><span class="p">)</span>
-        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">)</span>
+        <span class="n">points</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Vec</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span><span class="s2">"points"</span><span class="p">)</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span><span class="s2">"name"</span><span class="p">)</span>
 
         <span class="n">x_points</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
         <span class="n">y_points</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
@@ -969,7 +969,7 @@
     <span class="n">y_points</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EmtModelTemplate</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Build one runtime inverse linear lookup template from explicit points.</span>
 
 <span class="sd">    :param vf: Variable factory used to allocate symbolic objects.</span>
@@ -977,7 +977,7 @@
 <span class="sd">    :param y_points: Original y values to invert.</span>
 <span class="sd">    :param name: Optional explicit runtime template name.</span>
 <span class="sd">    :return: Materialized EMT template.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">template_name</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">point_count</span><span class="p">:</span> <span class="nb">int</span>
     <span class="n">point_index</span><span class="p">:</span> <span class="nb">int</span>
@@ -999,23 +999,23 @@
     <span class="n">point_count</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">normalized_x_points</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">template_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;inverse_lookup_array_linear_</span><span class="si">{</span><span class="n">point_count</span><span class="si">}</span><span class="s2">pt&quot;</span>
+        <span class="n">template_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"inverse_lookup_array_linear_</span><span class="si">{</span><span class="n">point_count</span><span class="si">}</span><span class="s2">pt"</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">template_name</span> <span class="o">=</span> <span class="n">name</span>
 
     <span class="n">template</span><span class="o">.</span><span class="n">tpe</span> <span class="o">=</span> <span class="n">DeviceType</span><span class="o">.</span><span class="n">NoDevice</span>
     <span class="n">template</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">template_name</span>
 
-    <span class="n">yi_var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;yi_&quot;</span> <span class="o">+</span> <span class="n">template_name</span><span class="p">)</span>
-    <span class="n">yo_var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;yo_&quot;</span> <span class="o">+</span> <span class="n">template_name</span><span class="p">)</span>
+    <span class="n">yi_var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"yi_"</span> <span class="o">+</span> <span class="n">template_name</span><span class="p">)</span>
+    <span class="n">yo_var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"yo_"</span> <span class="o">+</span> <span class="n">template_name</span><span class="p">)</span>
 
     <span class="k">for</span> <span class="n">point_index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">point_count</span><span class="p">):</span>
-        <span class="n">parameter_var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;arr_x&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">point_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="n">template_name</span><span class="p">)</span>
-        <span class="n">template</span><span class="o">.</span><span class="n">block</span><span class="o">.</span><span class="n">event_dict</span><span class="p">[</span><span class="n">parameter_var</span><span class="p">]</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_const</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">normalized_x_points</span><span class="p">[</span><span class="n">point_index</span><span class="p">]),</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;arr_x&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">point_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="n">parameter_var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"arr_x"</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">point_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="s2">"_"</span> <span class="o">+</span> <span class="n">template_name</span><span class="p">)</span>
+        <span class="n">template</span><span class="o">.</span><span class="n">block</span><span class="o">.</span><span class="n">event_dict</span><span class="p">[</span><span class="n">parameter_var</span><span class="p">]</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_const</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">normalized_x_points</span><span class="p">[</span><span class="n">point_index</span><span class="p">]),</span> <span class="n">name</span><span class="o">=</span><span class="s2">"arr_x"</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">point_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
         <span class="n">x_vars</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">parameter_var</span><span class="p">)</span>
 
-        <span class="n">parameter_var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;arr_y&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">point_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="n">template_name</span><span class="p">)</span>
-        <span class="n">template</span><span class="o">.</span><span class="n">block</span><span class="o">.</span><span class="n">event_dict</span><span class="p">[</span><span class="n">parameter_var</span><span class="p">]</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_const</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">normalized_y_points</span><span class="p">[</span><span class="n">point_index</span><span class="p">]),</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;arr_y&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">point_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="n">parameter_var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"arr_y"</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">point_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="s2">"_"</span> <span class="o">+</span> <span class="n">template_name</span><span class="p">)</span>
+        <span class="n">template</span><span class="o">.</span><span class="n">block</span><span class="o">.</span><span class="n">event_dict</span><span class="p">[</span><span class="n">parameter_var</span><span class="p">]</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_const</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">normalized_y_points</span><span class="p">[</span><span class="n">point_index</span><span class="p">]),</span> <span class="n">name</span><span class="o">=</span><span class="s2">"arr_y"</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">point_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
         <span class="n">y_vars</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">parameter_var</span><span class="p">)</span>
 
     <span class="n">lookup_expr</span> <span class="o">=</span> <span class="n">_build_clipped_lookup_expression</span><span class="p">(</span><span class="n">yi_var</span><span class="o">=</span><span class="n">yi_var</span><span class="p">,</span> <span class="n">x_vars</span><span class="o">=</span><span class="n">y_vars</span><span class="p">,</span> <span class="n">y_vars</span><span class="o">=</span><span class="n">x_vars</span><span class="p">)</span>
@@ -1041,16 +1041,16 @@
             <span class="n">vf</span><span class="p">,</span>
             <span class="n">params</span><span class="o">=</span><span class="p">[</span>
 
-                <span class="n">TemplateProp</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;x_y_z_values&quot;</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">descr</span><span class="o">=</span><span class="s2">&quot;Flat matrix values in row-major order (y then x).&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">X_Y_Z_Matrix</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="p">((</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">),</span> <span class="p">(</span><span class="mf">0.02</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">((</span><span class="mf">0.04</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),(</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">)))),</span>
-                <span class="n">TemplateProp</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">descr</span><span class="o">=</span><span class="s2">&quot;Optional explicit runtime template name.&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="s2">&quot;lookup_matrix_linear_runtime&quot;</span><span class="p">),</span>
+                <span class="n">TemplateProp</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">"x_y_z_values"</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">""</span><span class="p">,</span> <span class="n">descr</span><span class="o">=</span><span class="s2">"Flat matrix values in row-major order (y then x)."</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">X_Y_Z_Matrix</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="p">((</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">),</span> <span class="p">(</span><span class="mf">0.02</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">((</span><span class="mf">0.04</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),(</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">)))),</span>
+                <span class="n">TemplateProp</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">"name"</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">""</span><span class="p">,</span> <span class="n">descr</span><span class="o">=</span><span class="s2">"Optional explicit runtime template name."</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="s2">"lookup_matrix_linear_runtime"</span><span class="p">),</span>
             <span class="p">]</span>
         <span class="p">)</span>
 
 <div class="viewcode-block" id="LookupMatrixLinearRuntimeTemplate.eval">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Templates.BasicBlockCatalog.html#VeraGridEngine.Templates.BasicBlockCatalog.lookup_array_runtime_templates.LookupMatrixLinearRuntimeTemplate.eval">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">eval</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EmtModelTemplate</span><span class="p">:</span>
-        <span class="n">x_y_z_values</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span><span class="s2">&quot;x_y_z_values&quot;</span><span class="p">)</span>
-        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">)</span>
+        <span class="n">x_y_z_values</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span><span class="s2">"x_y_z_values"</span><span class="p">)</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span><span class="s2">"name"</span><span class="p">)</span>
 
         <span class="n">x_points</span> <span class="o">=</span> <span class="n">x_y_z_values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">y_points</span> <span class="o">=</span> <span class="n">x_y_z_values</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
@@ -1077,7 +1077,7 @@
     <span class="n">z_matrix</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Sequence</span><span class="p">[</span><span class="nb">float</span><span class="p">]],</span>
     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EmtModelTemplate</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Build one runtime bilinear lookup matrix template from explicit axes and values.</span>
 
 <span class="sd">    :param vf: Variable factory used to allocate symbolic objects.</span>
@@ -1086,7 +1086,7 @@
 <span class="sd">    :param z_matrix: Matrix values indexed as `[y][x]`.</span>
 <span class="sd">    :param name: Optional explicit runtime template name.</span>
 <span class="sd">    :return: Materialized EMT template.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">template_name</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">x_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">x_points</span><span class="p">)</span>
     <span class="n">y_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">y_points</span><span class="p">)</span>
@@ -1105,34 +1105,34 @@
     <span class="n">_validate_lookup_matrix</span><span class="p">(</span><span class="n">x_points</span><span class="o">=</span><span class="n">x_points</span><span class="p">,</span> <span class="n">y_points</span><span class="o">=</span><span class="n">y_points</span><span class="p">,</span> <span class="n">z_matrix</span><span class="o">=</span><span class="n">z_matrix</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">template_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;lookup_matrix_linear_</span><span class="si">{</span><span class="n">x_count</span><span class="si">}</span><span class="s2">x</span><span class="si">{</span><span class="n">y_count</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="n">template_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"lookup_matrix_linear_</span><span class="si">{</span><span class="n">x_count</span><span class="si">}</span><span class="s2">x</span><span class="si">{</span><span class="n">y_count</span><span class="si">}</span><span class="s2">"</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">template_name</span> <span class="o">=</span> <span class="n">name</span>
 
     <span class="n">template</span><span class="o">.</span><span class="n">tpe</span> <span class="o">=</span> <span class="n">DeviceType</span><span class="o">.</span><span class="n">NoDevice</span>
     <span class="n">template</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">template_name</span>
 
-    <span class="n">x_input_var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;yi1_&quot;</span> <span class="o">+</span> <span class="n">template_name</span><span class="p">)</span>
-    <span class="n">y_input_var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;yi2_&quot;</span> <span class="o">+</span> <span class="n">template_name</span><span class="p">)</span>
-    <span class="n">output_var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;yo_&quot;</span> <span class="o">+</span> <span class="n">template_name</span><span class="p">)</span>
+    <span class="n">x_input_var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"yi1_"</span> <span class="o">+</span> <span class="n">template_name</span><span class="p">)</span>
+    <span class="n">y_input_var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"yi2_"</span> <span class="o">+</span> <span class="n">template_name</span><span class="p">)</span>
+    <span class="n">output_var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"yo_"</span> <span class="o">+</span> <span class="n">template_name</span><span class="p">)</span>
 
     <span class="k">for</span> <span class="n">x_index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">x_count</span><span class="p">):</span>
-        <span class="n">parameter_var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;arr_x&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">x_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="n">template_name</span><span class="p">)</span>
-        <span class="n">template</span><span class="o">.</span><span class="n">block</span><span class="o">.</span><span class="n">event_dict</span><span class="p">[</span><span class="n">parameter_var</span><span class="p">]</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_const</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">x_points</span><span class="p">[</span><span class="n">x_index</span><span class="p">]),</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;arr_x&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">x_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="n">parameter_var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"arr_x"</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">x_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="s2">"_"</span> <span class="o">+</span> <span class="n">template_name</span><span class="p">)</span>
+        <span class="n">template</span><span class="o">.</span><span class="n">block</span><span class="o">.</span><span class="n">event_dict</span><span class="p">[</span><span class="n">parameter_var</span><span class="p">]</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_const</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">x_points</span><span class="p">[</span><span class="n">x_index</span><span class="p">]),</span> <span class="n">name</span><span class="o">=</span><span class="s2">"arr_x"</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">x_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
         <span class="n">x_axis_vars</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">parameter_var</span><span class="p">)</span>
 
     <span class="k">for</span> <span class="n">y_index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">y_count</span><span class="p">):</span>
-        <span class="n">parameter_var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;arr_y&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">y_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="n">template_name</span><span class="p">)</span>
-        <span class="n">template</span><span class="o">.</span><span class="n">block</span><span class="o">.</span><span class="n">event_dict</span><span class="p">[</span><span class="n">parameter_var</span><span class="p">]</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_const</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">y_points</span><span class="p">[</span><span class="n">y_index</span><span class="p">]),</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;arr_y&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">y_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="n">parameter_var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"arr_y"</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">y_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="s2">"_"</span> <span class="o">+</span> <span class="n">template_name</span><span class="p">)</span>
+        <span class="n">template</span><span class="o">.</span><span class="n">block</span><span class="o">.</span><span class="n">event_dict</span><span class="p">[</span><span class="n">parameter_var</span><span class="p">]</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_const</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">y_points</span><span class="p">[</span><span class="n">y_index</span><span class="p">]),</span> <span class="n">name</span><span class="o">=</span><span class="s2">"arr_y"</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">y_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
         <span class="n">y_axis_vars</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">parameter_var</span><span class="p">)</span>
 
     <span class="k">for</span> <span class="n">y_index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">y_count</span><span class="p">):</span>
         <span class="n">row_vars</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Var</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">x_index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">x_count</span><span class="p">):</span>
-            <span class="n">parameter_var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;arr_z&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">y_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">x_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="n">template_name</span><span class="p">)</span>
+            <span class="n">parameter_var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"arr_z"</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">y_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="s2">"_"</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">x_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="s2">"_"</span> <span class="o">+</span> <span class="n">template_name</span><span class="p">)</span>
             <span class="n">template</span><span class="o">.</span><span class="n">block</span><span class="o">.</span><span class="n">event_dict</span><span class="p">[</span><span class="n">parameter_var</span><span class="p">]</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_const</span><span class="p">(</span>
                 <span class="nb">float</span><span class="p">(</span><span class="n">z_matrix</span><span class="p">[</span><span class="n">y_index</span><span class="p">][</span><span class="n">x_index</span><span class="p">]),</span>
-                <span class="n">name</span><span class="o">=</span><span class="s2">&quot;arr_z&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">y_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">x_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span>
+                <span class="n">name</span><span class="o">=</span><span class="s2">"arr_z"</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">y_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="s2">"_"</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">x_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span>
             <span class="p">)</span>
             <span class="n">row_vars</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">parameter_var</span><span class="p">)</span>
         <span class="n">z_value_vars</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row_vars</span><span class="p">)</span>
@@ -1166,17 +1166,17 @@
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="n">vf</span><span class="p">,</span>
             <span class="n">params</span><span class="o">=</span><span class="p">[</span>
-                <span class="n">TemplateProp</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;points&quot;</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">descr</span><span class="o">=</span><span class="s2">&quot;Strictly increasing x breakpoints.&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">X_Y_SequenceType</span><span class="p">,</span>
+                <span class="n">TemplateProp</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">"points"</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">""</span><span class="p">,</span> <span class="n">descr</span><span class="o">=</span><span class="s2">"Strictly increasing x breakpoints."</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">X_Y_SequenceType</span><span class="p">,</span>
                              <span class="n">value</span><span class="o">=</span><span class="p">((</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span> <span class="p">(</span><span class="mf">0.02</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mf">0.04</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">))),</span>
-                <span class="n">TemplateProp</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">descr</span><span class="o">=</span><span class="s2">&quot;Optional explicit runtime template name.&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="s2">&quot;lookup_array_spline_runtime&quot;</span><span class="p">),</span>
+                <span class="n">TemplateProp</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">"name"</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">""</span><span class="p">,</span> <span class="n">descr</span><span class="o">=</span><span class="s2">"Optional explicit runtime template name."</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="s2">"lookup_array_spline_runtime"</span><span class="p">),</span>
             <span class="p">]</span>
         <span class="p">)</span>
 
 <div class="viewcode-block" id="LookupArraySplineRuntimeTemplate.eval">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Templates.BasicBlockCatalog.html#VeraGridEngine.Templates.BasicBlockCatalog.lookup_array_runtime_templates.LookupArraySplineRuntimeTemplate.eval">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">eval</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EmtModelTemplate</span><span class="p">:</span>
-        <span class="n">points</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Vec</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span><span class="s2">&quot;points&quot;</span><span class="p">)</span>
-        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">)</span>
+        <span class="n">points</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Vec</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span><span class="s2">"points"</span><span class="p">)</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span><span class="s2">"name"</span><span class="p">)</span>
 
         <span class="n">x_points</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
         <span class="n">y_points</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
@@ -1201,7 +1201,7 @@
     <span class="n">y_points</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EmtModelTemplate</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Build one runtime one-dimensional spline lookup template from explicit points.</span>
 
 <span class="sd">    :param vf: Variable factory used to allocate symbolic objects.</span>
@@ -1209,7 +1209,7 @@
 <span class="sd">    :param y_points: Matching y values.</span>
 <span class="sd">    :param name: Optional explicit runtime template name.</span>
 <span class="sd">    :return: Materialized EMT template.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">template_name</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">point_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">x_points</span><span class="p">)</span>
     <span class="n">point_index</span><span class="p">:</span> <span class="nb">int</span>
@@ -1225,23 +1225,23 @@
     <span class="n">_validate_lookup_points</span><span class="p">(</span><span class="n">x_points</span><span class="o">=</span><span class="n">x_points</span><span class="p">,</span> <span class="n">y_points</span><span class="o">=</span><span class="n">y_points</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">template_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;lookup_array_spline_</span><span class="si">{</span><span class="n">point_count</span><span class="si">}</span><span class="s2">pt&quot;</span>
+        <span class="n">template_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"lookup_array_spline_</span><span class="si">{</span><span class="n">point_count</span><span class="si">}</span><span class="s2">pt"</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">template_name</span> <span class="o">=</span> <span class="n">name</span>
 
     <span class="n">template</span><span class="o">.</span><span class="n">tpe</span> <span class="o">=</span> <span class="n">DeviceType</span><span class="o">.</span><span class="n">NoDevice</span>
     <span class="n">template</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">template_name</span>
 
-    <span class="n">yi_var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;yi_&quot;</span> <span class="o">+</span> <span class="n">template_name</span><span class="p">)</span>
-    <span class="n">yo_var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;yo_&quot;</span> <span class="o">+</span> <span class="n">template_name</span><span class="p">)</span>
+    <span class="n">yi_var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"yi_"</span> <span class="o">+</span> <span class="n">template_name</span><span class="p">)</span>
+    <span class="n">yo_var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"yo_"</span> <span class="o">+</span> <span class="n">template_name</span><span class="p">)</span>
 
     <span class="k">for</span> <span class="n">point_index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">point_count</span><span class="p">):</span>
-        <span class="n">parameter_var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;arr_x&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">point_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="n">template_name</span><span class="p">)</span>
-        <span class="n">template</span><span class="o">.</span><span class="n">block</span><span class="o">.</span><span class="n">event_dict</span><span class="p">[</span><span class="n">parameter_var</span><span class="p">]</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_const</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">x_points</span><span class="p">[</span><span class="n">point_index</span><span class="p">]),</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;arr_x&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">point_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="n">parameter_var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"arr_x"</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">point_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="s2">"_"</span> <span class="o">+</span> <span class="n">template_name</span><span class="p">)</span>
+        <span class="n">template</span><span class="o">.</span><span class="n">block</span><span class="o">.</span><span class="n">event_dict</span><span class="p">[</span><span class="n">parameter_var</span><span class="p">]</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_const</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">x_points</span><span class="p">[</span><span class="n">point_index</span><span class="p">]),</span> <span class="n">name</span><span class="o">=</span><span class="s2">"arr_x"</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">point_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
         <span class="n">x_vars</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">parameter_var</span><span class="p">)</span>
 
-        <span class="n">parameter_var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;arr_y&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">point_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="n">template_name</span><span class="p">)</span>
-        <span class="n">template</span><span class="o">.</span><span class="n">block</span><span class="o">.</span><span class="n">event_dict</span><span class="p">[</span><span class="n">parameter_var</span><span class="p">]</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_const</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">y_points</span><span class="p">[</span><span class="n">point_index</span><span class="p">]),</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;arr_y&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">point_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="n">parameter_var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"arr_y"</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">point_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="s2">"_"</span> <span class="o">+</span> <span class="n">template_name</span><span class="p">)</span>
+        <span class="n">template</span><span class="o">.</span><span class="n">block</span><span class="o">.</span><span class="n">event_dict</span><span class="p">[</span><span class="n">parameter_var</span><span class="p">]</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_const</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">y_points</span><span class="p">[</span><span class="n">point_index</span><span class="p">]),</span> <span class="n">name</span><span class="o">=</span><span class="s2">"arr_y"</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">point_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
         <span class="n">y_vars</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">parameter_var</span><span class="p">)</span>
 
     <span class="n">lookup_expr</span> <span class="o">=</span> <span class="n">_build_cubic_spline_piecewise_expression</span><span class="p">(</span>
@@ -1272,16 +1272,16 @@
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="n">vf</span><span class="p">,</span>
             <span class="n">params</span><span class="o">=</span><span class="p">[</span>
-                <span class="n">TemplateProp</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;x_y_z_values&quot;</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">descr</span><span class="o">=</span><span class="s2">&quot;Flat matrix values in row-major order (y then x).&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">X_Y_Z_Matrix</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="p">((</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">),</span> <span class="p">(</span><span class="mf">0.02</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">((</span><span class="mf">0.04</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span> <span class="p">(</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">)))),</span>
-                <span class="n">TemplateProp</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">descr</span><span class="o">=</span><span class="s2">&quot;Optional explicit runtime template name.&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="s2">&quot;lookup_matrix_spline_runtime&quot;</span><span class="p">),</span>
+                <span class="n">TemplateProp</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">"x_y_z_values"</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">""</span><span class="p">,</span> <span class="n">descr</span><span class="o">=</span><span class="s2">"Flat matrix values in row-major order (y then x)."</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">X_Y_Z_Matrix</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="p">((</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">),</span> <span class="p">(</span><span class="mf">0.02</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">((</span><span class="mf">0.04</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span> <span class="p">(</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">)))),</span>
+                <span class="n">TemplateProp</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">"name"</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">""</span><span class="p">,</span> <span class="n">descr</span><span class="o">=</span><span class="s2">"Optional explicit runtime template name."</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="s2">"lookup_matrix_spline_runtime"</span><span class="p">),</span>
             <span class="p">]</span>
         <span class="p">)</span>
 
 <div class="viewcode-block" id="LookupMatrixSplineRuntimeTemplate.eval">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Templates.BasicBlockCatalog.html#VeraGridEngine.Templates.BasicBlockCatalog.lookup_array_runtime_templates.LookupMatrixSplineRuntimeTemplate.eval">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">eval</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EmtModelTemplate</span><span class="p">:</span>
-        <span class="n">x_y_z_values</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span><span class="s2">&quot;x_y_z_values&quot;</span><span class="p">)</span>
-        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">)</span>
+        <span class="n">x_y_z_values</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span><span class="s2">"x_y_z_values"</span><span class="p">)</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span><span class="s2">"name"</span><span class="p">)</span>
 
         <span class="n">x_points</span> <span class="o">=</span> <span class="n">x_y_z_values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">y_points</span> <span class="o">=</span> <span class="n">x_y_z_values</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
@@ -1307,7 +1307,7 @@
     <span class="n">z_matrix</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Sequence</span><span class="p">[</span><span class="nb">float</span><span class="p">]],</span>
     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EmtModelTemplate</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Build one runtime two-dimensional spline lookup template from explicit axes and values.</span>
 
 <span class="sd">    :param vf: Variable factory used to allocate symbolic objects.</span>
@@ -1316,7 +1316,7 @@
 <span class="sd">    :param z_matrix: Matrix values indexed as `[y][x]`.</span>
 <span class="sd">    :param name: Optional explicit runtime template name.</span>
 <span class="sd">    :return: Materialized EMT template.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">template_name</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">x_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">x_points</span><span class="p">)</span>
     <span class="n">y_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">y_points</span><span class="p">)</span>
@@ -1336,34 +1336,34 @@
     <span class="n">_validate_lookup_matrix</span><span class="p">(</span><span class="n">x_points</span><span class="o">=</span><span class="n">x_points</span><span class="p">,</span> <span class="n">y_points</span><span class="o">=</span><span class="n">y_points</span><span class="p">,</span> <span class="n">z_matrix</span><span class="o">=</span><span class="n">z_matrix</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">template_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;lookup_matrix_spline_</span><span class="si">{</span><span class="n">x_count</span><span class="si">}</span><span class="s2">x</span><span class="si">{</span><span class="n">y_count</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="n">template_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"lookup_matrix_spline_</span><span class="si">{</span><span class="n">x_count</span><span class="si">}</span><span class="s2">x</span><span class="si">{</span><span class="n">y_count</span><span class="si">}</span><span class="s2">"</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">template_name</span> <span class="o">=</span> <span class="n">name</span>
 
     <span class="n">template</span><span class="o">.</span><span class="n">tpe</span> <span class="o">=</span> <span class="n">DeviceType</span><span class="o">.</span><span class="n">NoDevice</span>
     <span class="n">template</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">template_name</span>
 
-    <span class="n">x_input_var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;yi1_&quot;</span> <span class="o">+</span> <span class="n">template_name</span><span class="p">)</span>
-    <span class="n">y_input_var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;yi2_&quot;</span> <span class="o">+</span> <span class="n">template_name</span><span class="p">)</span>
-    <span class="n">output_var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;yo_&quot;</span> <span class="o">+</span> <span class="n">template_name</span><span class="p">)</span>
+    <span class="n">x_input_var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"yi1_"</span> <span class="o">+</span> <span class="n">template_name</span><span class="p">)</span>
+    <span class="n">y_input_var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"yi2_"</span> <span class="o">+</span> <span class="n">template_name</span><span class="p">)</span>
+    <span class="n">output_var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"yo_"</span> <span class="o">+</span> <span class="n">template_name</span><span class="p">)</span>
 
     <span class="k">for</span> <span class="n">x_index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">x_count</span><span class="p">):</span>
-        <span class="n">parameter_var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;arr_x&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">x_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="n">template_name</span><span class="p">)</span>
-        <span class="n">template</span><span class="o">.</span><span class="n">block</span><span class="o">.</span><span class="n">event_dict</span><span class="p">[</span><span class="n">parameter_var</span><span class="p">]</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_const</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">x_points</span><span class="p">[</span><span class="n">x_index</span><span class="p">]),</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;arr_x&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">x_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="n">parameter_var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"arr_x"</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">x_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="s2">"_"</span> <span class="o">+</span> <span class="n">template_name</span><span class="p">)</span>
+        <span class="n">template</span><span class="o">.</span><span class="n">block</span><span class="o">.</span><span class="n">event_dict</span><span class="p">[</span><span class="n">parameter_var</span><span class="p">]</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_const</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">x_points</span><span class="p">[</span><span class="n">x_index</span><span class="p">]),</span> <span class="n">name</span><span class="o">=</span><span class="s2">"arr_x"</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">x_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
         <span class="n">x_axis_vars</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">parameter_var</span><span class="p">)</span>
 
     <span class="k">for</span> <span class="n">y_index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">y_count</span><span class="p">):</span>
-        <span class="n">parameter_var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;arr_y&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">y_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="n">template_name</span><span class="p">)</span>
-        <span class="n">template</span><span class="o">.</span><span class="n">block</span><span class="o">.</span><span class="n">event_dict</span><span class="p">[</span><span class="n">parameter_var</span><span class="p">]</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_const</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">y_points</span><span class="p">[</span><span class="n">y_index</span><span class="p">]),</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;arr_y&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">y_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="n">parameter_var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"arr_y"</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">y_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="s2">"_"</span> <span class="o">+</span> <span class="n">template_name</span><span class="p">)</span>
+        <span class="n">template</span><span class="o">.</span><span class="n">block</span><span class="o">.</span><span class="n">event_dict</span><span class="p">[</span><span class="n">parameter_var</span><span class="p">]</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_const</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">y_points</span><span class="p">[</span><span class="n">y_index</span><span class="p">]),</span> <span class="n">name</span><span class="o">=</span><span class="s2">"arr_y"</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">y_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
         <span class="n">y_axis_vars</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">parameter_var</span><span class="p">)</span>
 
     <span class="k">for</span> <span class="n">y_index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">y_count</span><span class="p">):</span>
         <span class="n">row_vars</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Expr</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">x_index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">x_count</span><span class="p">):</span>
-            <span class="n">parameter_var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;arr_z&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">y_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">x_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="n">template_name</span><span class="p">)</span>
+            <span class="n">parameter_var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"arr_z"</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">y_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="s2">"_"</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">x_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="s2">"_"</span> <span class="o">+</span> <span class="n">template_name</span><span class="p">)</span>
             <span class="n">template</span><span class="o">.</span><span class="n">block</span><span class="o">.</span><span class="n">event_dict</span><span class="p">[</span><span class="n">parameter_var</span><span class="p">]</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_const</span><span class="p">(</span>
                 <span class="nb">float</span><span class="p">(</span><span class="n">z_matrix</span><span class="p">[</span><span class="n">y_index</span><span class="p">][</span><span class="n">x_index</span><span class="p">]),</span>
-                <span class="n">name</span><span class="o">=</span><span class="s2">&quot;arr_z&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">y_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">x_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span>
+                <span class="n">name</span><span class="o">=</span><span class="s2">"arr_z"</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">y_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="s2">"_"</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">x_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span>
             <span class="p">)</span>
             <span class="n">row_vars</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">parameter_var</span><span class="p">)</span>
         <span class="n">z_value_vars</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row_vars</span><span class="p">)</span>

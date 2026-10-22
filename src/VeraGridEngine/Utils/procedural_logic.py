@@ -6,8 +6,9 @@
 from __future__ import annotations
 
 import math
+from enum import Enum
 
-from typing import Dict, Iterable, List, Optional, Protocol, Tuple
+from typing import Callable, Dict, Iterable, List, Optional, Protocol, Tuple
 
 import numpy as np
 
@@ -20,6 +21,7 @@ from VeraGridEngine.Utils.procedural_logic_contract import (
     ManufacturerNativeRuntimeSessionProtocol,
 )
 from VeraGridEngine.Utils.Symbolic.block import Block
+from VeraGridEngine.Utils.Symbolic.jit_compiler import ProceduralExpressionCompiler
 from VeraGridEngine.Utils.Symbolic.symbolic import CmpOp, Comparison, Const, Expr, Var
 from VeraGridEngine.basic_structures import Vec
 from VeraGridEngine.enumerations import ProceduralLogicType
@@ -105,8 +107,15 @@ def _read_procedural_integer(
         )
 
 
+class ProceduralExpressionMode(Enum):
+    """Select procedural evaluation explicitly at the solver boundary."""
+
+    Compiled = 1
+    Interpreted = 2
+
+
 class ProceduralProblem(Protocol):
-    """Declare the EMT surface required by procedural runtime logic."""
+    """Declare the runtime surface required by procedural logic."""
 
     __slots__ = ()
 
@@ -176,6 +185,10 @@ class ProceduralProblem(Protocol):
         :param variable: Symbolic variable whose solver-vector index is needed.
         :return: Zero-based index in the compiled solver vector.
         """
+        ...
+
+    def get_procedural_expression_compiler(self) -> ProceduralExpressionCompiler:
+        """Return the shared problem-local expression compiler."""
         ...
 
 
@@ -608,6 +621,8 @@ class ProceduralLogicBase(ProceduralLogicEntryContract[Expr]):
         "_expr_plan_cache",
         "_comparison_expr_cache",
         "_expr_binding_cache",
+        "_compiled_expr_cache",
+        "_compiled_expressions_enabled",
         "_output_parameter_indices",
     ]
     logic_tpe = ProceduralLogicType.Base
@@ -619,13 +634,17 @@ class ProceduralLogicBase(ProceduralLogicEntryContract[Expr]):
         self._expr_plan_cache: Dict[int, List[Tuple[int, int, int]]] = dict()
         self._comparison_expr_cache: Dict[int, Expr] = dict()
         self._expr_binding_cache: Dict[int, Dict[int, float]] = dict()
+        self._compiled_expr_cache: Dict[int, Callable[..., float]] = dict()
+        self._compiled_expressions_enabled: bool = True
         self._output_parameter_indices: List[int] = list()
 
-    def bind(self, problem: ProceduralProblem) -> None:
+    def bind(self, problem: ProceduralProblem,
+             expression_mode: ProceduralExpressionMode = ProceduralExpressionMode.Compiled) -> None:
         """
-        Bind the logic to a concrete EMT problem.
+        Bind the logic to a concrete RMS or EMT problem.
 
-        :param problem: EMT problem owning the block and variable maps.
+        :param expression_mode: Explicit compiled or interpreted expression binding.
+        :param problem: RMS or EMT problem owning the block and variable maps.
         :return: None
         """
         self._problem = problem
@@ -633,6 +652,8 @@ class ProceduralLogicBase(ProceduralLogicEntryContract[Expr]):
         self._expr_plan_cache = dict()
         self._comparison_expr_cache = dict()
         self._expr_binding_cache = dict()
+        self._compiled_expr_cache = dict()
+        self._compiled_expressions_enabled = expression_mode == ProceduralExpressionMode.Compiled
         self._output_parameter_indices = list()
 
     def _register_output_parameter_index(self, parameter_index: int) -> None:
@@ -733,6 +754,29 @@ class ProceduralLogicBase(ProceduralLogicEntryContract[Expr]):
         plan = self._build_expr_plan(expr_eval, problem)
         self._expr_plan_cache[key] = plan
         return plan
+
+    def _prepare_numeric_expression(
+            self,
+            expr: Expr | Comparison | float | int | bool,
+    ) -> None:
+        """Eagerly compile one compound expression during logic binding.
+
+        Scalars, constants, and single variables retain their cheaper direct
+        access paths. Compound expressions and comparisons are compiled once
+        before the first boundary update.
+
+        :param expr: Declarative expression used by this logic entry.
+        :return: None.
+        """
+        if not self._compiled_expressions_enabled or isinstance(expr, (float, int)):
+            pass
+        else:
+            expr_eval: Expr = self._get_normalized_expr(expr)
+            if isinstance(expr_eval, (Const, Var)):
+                pass
+            else:
+                compiler: ProceduralExpressionCompiler = self._get_problem().get_procedural_expression_compiler()
+                self._compiled_expr_cache[id(expr_eval)] = compiler.compile(expr_eval)
 
     def update(self, t: float, x: Vec, params: Vec) -> None:
         """
@@ -869,6 +913,28 @@ class ProceduralLogicBase(ProceduralLogicEntryContract[Expr]):
 
             raise KeyError(f"Unknown procedural variable '{expr_eval.name}'")
 
+        if self._compiled_expressions_enabled:
+            compiled_kernel: Callable[..., float] | None = self._compiled_expr_cache.get(
+                id(expr_eval),
+                None,
+            )
+            if compiled_kernel is None:
+                raise RuntimeError(
+                    "Procedural expression was not compiled during bind: "
+                    + repr(expr_eval)
+                )
+            else:
+                compiler: ProceduralExpressionCompiler = problem.get_procedural_expression_compiler()
+                return float(compiled_kernel(
+                    x,
+                    params,
+                    compiler.fixed_values,
+                    sample_time,
+                    float(t),
+                ))
+        else:
+            pass
+
         plan: List[Tuple[int, int, int]] = self._get_expr_plan(
             expr_eval=expr_eval,
             problem=problem,
@@ -939,6 +1005,7 @@ class ProceduralLogicBase(ProceduralLogicEntryContract[Expr]):
         :return: Evaluator bound to this procedural state machine.
         """
         self._get_problem()
+        self._prepare_numeric_expression(expr)
         return ProceduralNumericEvaluator(logic=self, expression=expr)
 
 
@@ -1063,16 +1130,21 @@ class DelayedSwitchEventLogic(ProceduralLogicBase):
         self.pending_event_time: Optional[float] = None
         self.fired: bool = False
 
-    def bind(self, problem: ProceduralProblem) -> None:
+    def bind(self, problem: ProceduralProblem,
+             expression_mode: ProceduralExpressionMode = ProceduralExpressionMode.Compiled) -> None:
         """Resolve the local switch-position mode and clear runtime state.
 
+        :param expression_mode: Explicit compiled or interpreted expression binding.
         :param problem: Bound RMS or EMT problem.
         :return: None.
         """
-        super().bind(problem)
+        super().bind(problem, expression_mode)
         output_var: Var = _find_var_by_name(problem.sys_block, self.output_var_name)
         self.output_idx = int(problem.uid2idx_event_params[output_var.uid])
         self._register_output_parameter_index(self.output_idx)
+        self._prepare_numeric_expression(self.guard_expr)
+        self._prepare_numeric_expression(self.trigger_expr)
+        self._prepare_numeric_expression(self.delay_expr)
         self.state = 1.0 if self.initial_closed else 0.0
         self.initialized = False
         self.trigger_was_high = False
@@ -1166,17 +1238,20 @@ class FixedSampleLogic(ProceduralLogicBase):
         self.output_idx = -1
         self.initialized = False
 
-    def bind(self, problem: ProceduralProblem) -> None:
+    def bind(self, problem: ProceduralProblem,
+             expression_mode: ProceduralExpressionMode = ProceduralExpressionMode.Compiled) -> None:
         """
         Resolve the runtime output slot for this logic entry.
 
+        :param expression_mode: Explicit compiled or interpreted expression binding.
         :param problem: Bound EMT problem.
         :return: None
         """
-        super().bind(problem)
+        super().bind(problem, expression_mode)
         output_var = _find_var_by_name(problem.sys_block, self.output_var_name)
         self.output_idx = int(problem.uid2idx_event_params[output_var.uid])
         self._register_output_parameter_index(self.output_idx)
+        self._prepare_numeric_expression(self.condition_expr)
         self.initialized = False
 
     def update(self, t: float, x: Vec, params: Vec) -> None:
@@ -1245,14 +1320,16 @@ class SampledValueLogic(ProceduralLogicBase):
         self.output_idx: int = -1
         self._source_eval: ProceduralNumericEvaluator | None = None
 
-    def bind(self, problem: ProceduralProblem) -> None:
+    def bind(self, problem: ProceduralProblem,
+             expression_mode: ProceduralExpressionMode = ProceduralExpressionMode.Compiled) -> None:
         """
         Resolve the runtime output slot for this sampled value.
 
+        :param expression_mode: Explicit compiled or interpreted expression binding.
         :param problem: Bound EMT problem.
         :return: None
         """
-        super().bind(problem)
+        super().bind(problem, expression_mode)
         if self.output_var_uid is None:
             output_var: Var = _find_var_by_name(
                 problem.sys_block,
@@ -1332,13 +1409,15 @@ class HardSaturationLogic(ProceduralLogicBase):
         self._u_min_eval: ProceduralNumericEvaluator | None = None
         self._u_max_eval: ProceduralNumericEvaluator | None = None
 
-    def bind(self, problem: ProceduralProblem) -> None:
+    def bind(self, problem: ProceduralProblem,
+             expression_mode: ProceduralExpressionMode = ProceduralExpressionMode.Compiled) -> None:
         """Bind the saturation output and numeric evaluators to a problem.
 
+        :param expression_mode: Explicit compiled or interpreted expression binding.
         :param problem: Runtime problem that owns variables and parameter indices.
         :return: None.
         """
-        super().bind(problem)
+        super().bind(problem, expression_mode)
         output_var = _find_var_by_name(problem.sys_block, self.output_var_name)
         self.output_idx = int(problem.uid2idx_event_params[output_var.uid])
         self._register_output_parameter_index(self.output_idx)
@@ -1399,16 +1478,20 @@ class TimeDelayLogic(ProceduralLogicBase):
         self.output_idx = -1
         self.history: List[Tuple[float, float]] = list()
 
-    def bind(self, problem: ProceduralProblem) -> None:
+    def bind(self, problem: ProceduralProblem,
+             expression_mode: ProceduralExpressionMode = ProceduralExpressionMode.Compiled) -> None:
         """Bind the delayed output and reset its sample history.
 
+        :param expression_mode: Explicit compiled or interpreted expression binding.
         :param problem: Runtime problem that owns variables and parameter indices.
         :return: None.
         """
-        super().bind(problem)
+        super().bind(problem, expression_mode)
         output_var = _find_var_by_name(problem.sys_block, self.output_var_name)
         self.output_idx = int(problem.uid2idx_event_params[output_var.uid])
         self._register_output_parameter_index(self.output_idx)
+        self._prepare_numeric_expression(self.source_expr)
+        self._prepare_numeric_expression(self.delay_expr)
         self.history = list()
 
     def update(self, t: float, x: Vec, params: Vec) -> None:
@@ -1463,16 +1546,21 @@ class MovingAverageLogic(ProceduralLogicBase):
         self.output_idx = -1
         self.history: List[Tuple[float, float]] = list()
 
-    def bind(self, problem: ProceduralProblem) -> None:
+    def bind(self, problem: ProceduralProblem,
+             expression_mode: ProceduralExpressionMode = ProceduralExpressionMode.Compiled) -> None:
         """Bind the moving-average output and reset its sample history.
 
+        :param expression_mode: Explicit compiled or interpreted expression binding.
         :param problem: Runtime problem that owns variables and parameter indices.
         :return: None.
         """
-        super().bind(problem)
+        super().bind(problem, expression_mode)
         output_var = _find_var_by_name(problem.sys_block, self.output_var_name)
         self.output_idx = int(problem.uid2idx_event_params[output_var.uid])
         self._register_output_parameter_index(self.output_idx)
+        self._prepare_numeric_expression(self.source_expr)
+        self._prepare_numeric_expression(self.delay_expr)
+        self._prepare_numeric_expression(self.window_expr)
         self.history = list()
 
     def update(self, t: float, x: Vec, params: Vec) -> None:
@@ -1540,16 +1628,21 @@ class GradientLimiterLogic(ProceduralLogicBase):
         self.held_value = 0.0
         self.initialized = False
 
-    def bind(self, problem: ProceduralProblem) -> None:
+    def bind(self, problem: ProceduralProblem,
+             expression_mode: ProceduralExpressionMode = ProceduralExpressionMode.Compiled) -> None:
         """Bind the gradient-limited output and reset its runtime state.
 
+        :param expression_mode: Explicit compiled or interpreted expression binding.
         :param problem: Runtime problem that owns variables and parameter indices.
         :return: None.
         """
-        super().bind(problem)
+        super().bind(problem, expression_mode)
         output_var = _find_var_by_name(problem.sys_block, self.output_var_name)
         self.output_idx = int(problem.uid2idx_event_params[output_var.uid])
         self._register_output_parameter_index(self.output_idx)
+        self._prepare_numeric_expression(self.source_expr)
+        self._prepare_numeric_expression(self.lower_rate_expr)
+        self._prepare_numeric_expression(self.upper_rate_expr)
         self.last_time = None
         self.held_value = 0.0
         self.initialized = False
@@ -1611,17 +1704,21 @@ class FlipFlopLogic(ProceduralLogicBase):
         self.state = 0.0
         self.initialized = False
 
-    def bind(self, problem: ProceduralProblem) -> None:
+    def bind(self, problem: ProceduralProblem,
+             expression_mode: ProceduralExpressionMode = ProceduralExpressionMode.Compiled) -> None:
         """
         Resolve the runtime output slot for the latch state.
 
+        :param expression_mode: Explicit compiled or interpreted expression binding.
         :param problem: Bound EMT problem.
         :return: None
         """
-        super().bind(problem)
+        super().bind(problem, expression_mode)
         output_var = _find_var_by_name(problem.sys_block, self.output_var_name)
         self.output_idx = int(problem.uid2idx_event_params[output_var.uid])
         self._register_output_parameter_index(self.output_idx)
+        self._prepare_numeric_expression(self.set_expr)
+        self._prepare_numeric_expression(self.reset_expr)
         self.state = 0.0
         self.initialized = False
 
@@ -1705,17 +1802,22 @@ class AnalogFlipFlopLogic(ProceduralLogicBase):
         self.initialized = False
         self.held_value = 0.0
 
-    def bind(self, problem: ProceduralProblem) -> None:
+    def bind(self, problem: ProceduralProblem,
+             expression_mode: ProceduralExpressionMode = ProceduralExpressionMode.Compiled) -> None:
         """
         Resolve the runtime output slot and reset the analog latch state.
 
+        :param expression_mode: Explicit compiled or interpreted expression binding.
         :param problem: Bound EMT problem.
         :return: None
         """
-        super().bind(problem)
+        super().bind(problem, expression_mode)
         output_var = _find_var_by_name(problem.sys_block, self.output_var_name)
         self.output_idx = int(problem.uid2idx_event_params[output_var.uid])
         self._register_output_parameter_index(self.output_idx)
+        self._prepare_numeric_expression(self.input_expr)
+        self._prepare_numeric_expression(self.set_expr)
+        self._prepare_numeric_expression(self.reset_expr)
         self.state = 0.0
         self.initialized = False
         self.held_value = 0.0
@@ -1823,14 +1925,16 @@ class PickupDropoffLogic(ProceduralLogicBase):
         self.pending_pickup_time: Optional[float] = None
         self.pending_drop_time: Optional[float] = None
 
-    def bind(self, problem: ProceduralProblem) -> None:
+    def bind(self, problem: ProceduralProblem,
+             expression_mode: ProceduralExpressionMode = ProceduralExpressionMode.Compiled) -> None:
         """
         Resolve the runtime output slot and clear the relay timers.
 
+        :param expression_mode: Explicit compiled or interpreted expression binding.
         :param problem: Bound EMT problem.
         :return: None
         """
-        super().bind(problem)
+        super().bind(problem, expression_mode)
         if self.output_var_uid is None:
             output_var: Var = _find_var_by_name(
                 problem.sys_block,
@@ -1849,6 +1953,9 @@ class PickupDropoffLogic(ProceduralLogicBase):
                 output_var = output_var_optional
         self.output_idx = int(problem.uid2idx_event_params[output_var.uid])
         self._register_output_parameter_index(self.output_idx)
+        self._prepare_numeric_expression(self.bool_expr)
+        self._prepare_numeric_expression(self.pickup_delay_expr)
+        self._prepare_numeric_expression(self.drop_delay_expr)
         self.state = 0.0
         self.initialized = False
         self.pickup_started_at = None
@@ -2002,17 +2109,21 @@ class ResetOnRisingEdgeLogic(ProceduralLogicBase):
         self.initialized = False
         self.last_reset_high = False
 
-    def bind(self, problem: ProceduralProblem) -> None:
+    def bind(self, problem: ProceduralProblem,
+             expression_mode: ProceduralExpressionMode = ProceduralExpressionMode.Compiled) -> None:
         """
         Resolve whether the reset target is a state variable or a runtime parameter.
 
+        :param expression_mode: Explicit compiled or interpreted expression binding.
         :param problem: Bound EMT problem.
         :return: None
         """
-        super().bind(problem)
+        super().bind(problem, expression_mode)
         target_var = _find_var_by_name(problem.sys_block, self.target_var_name)
         self.target_state_idx = int(problem.uid2idx_vars.get(target_var.uid, -1))
         self.target_param_idx = int(problem.uid2idx_event_params.get(target_var.uid, -1))
+        self._prepare_numeric_expression(self.reset_expr)
+        self._prepare_numeric_expression(self.value_expr)
 
         if self.target_state_idx < 0 and self.target_param_idx < 0:
             raise KeyError(f"Reset target '{self.target_var_name}' is not a state/algebraic variable nor a runtime parameter")
@@ -2559,14 +2670,16 @@ class DelayedThresholdLatchLogic(ProceduralLogicBase):
         self.trace_latched: List[float] = list()
         self.trace_mode: List[float] = list()
 
-    def bind(self, problem: ProceduralProblem) -> None:
+    def bind(self, problem: ProceduralProblem,
+             expression_mode: ProceduralExpressionMode = ProceduralExpressionMode.Compiled) -> None:
         """
         Resolve the monitored state and runtime mode indices.
 
+        :param expression_mode: Explicit compiled or interpreted expression binding.
         :param problem: Bound EMT problem.
         :return: None
         """
-        super().bind(problem)
+        super().bind(problem, expression_mode)
         mode_var = _find_var_by_name(problem.sys_block, self.mode_var_name)
         monitored_var = _find_var_by_name(problem.sys_block, self.monitored_var_name)
         self.mode_idx = int(problem.uid2idx_event_params[mode_var.uid])
@@ -2766,17 +2879,19 @@ class StartupHandoverLogic(ProceduralLogicBase):
         self.enable_time_idx = -1
         self.on_value_idx = -1
 
-    def bind(self, problem: ProceduralProblem) -> None:
+    def bind(self, problem: ProceduralProblem,
+             expression_mode: ProceduralExpressionMode = ProceduralExpressionMode.Compiled) -> None:
         """
         Resolve the retained mode and enable-time runtime indices.
 
+        :param expression_mode: Explicit compiled or interpreted expression binding.
         :param problem: Bound EMT problem.
         :return: None.
         """
         mode_var: Var
         enable_time_var: Var
 
-        super().bind(problem)
+        super().bind(problem, expression_mode)
         mode_var = _find_var_by_name(problem.sys_block, self.mode_var_name)
         enable_time_var = _find_var_by_name(problem.sys_block, self.enable_time_var_name)
         self.mode_idx = int(problem.uid2idx_event_params[mode_var.uid])
@@ -2918,10 +3033,12 @@ class ValveStateLogic(ProceduralLogicBase):
         self.valve_voltage_idx = -1
         self.valve_current_idx = -1
 
-    def bind(self, problem: ProceduralProblem) -> None:
+    def bind(self, problem: ProceduralProblem,
+             expression_mode: ProceduralExpressionMode = ProceduralExpressionMode.Compiled) -> None:
         """
         Resolve the runtime and algebraic indices required by the valve logic.
 
+        :param expression_mode: Explicit compiled or interpreted expression binding.
         :param problem: Bound EMT problem.
         :return: None.
         """
@@ -2934,7 +3051,7 @@ class ValveStateLogic(ProceduralLogicBase):
         valve_voltage_var: Var
         valve_current_var: Var
 
-        super().bind(problem)
+        super().bind(problem, expression_mode)
         mode_var = _find_var_by_name(problem.sys_block, self.mode_var_name)
         valve_type_var = _find_var_by_name(problem.sys_block, self.valve_type_var_name)
         gate_var = _find_var_by_name(problem.sys_block, self.gate_var_name)
@@ -3337,10 +3454,12 @@ class ThreePhaseCarrierPwmLogic(ProceduralLogicBase):
         self.pending_transition_gate = np.zeros(3, dtype=float)
         self.current_gate = np.zeros(3, dtype=float)
 
-    def bind(self, problem: ProceduralProblem) -> None:
+    def bind(self, problem: ProceduralProblem,
+             expression_mode: ProceduralExpressionMode = ProceduralExpressionMode.Compiled) -> None:
         """
         Resolve the variable indices and initialize the first PWM interval.
 
+        :param expression_mode: Explicit compiled or interpreted expression binding.
         :param problem: Bound EMT problem.
         :return: None.
         """
@@ -3355,7 +3474,7 @@ class ThreePhaseCarrierPwmLogic(ProceduralLogicBase):
         x0: Vec
         params0: Vec
 
-        super().bind(problem)
+        super().bind(problem, expression_mode)
         mod_a_var = _find_var_by_name(problem.sys_block, self.mod_a_var_name)
         mod_b_var = _find_var_by_name(problem.sys_block, self.mod_b_var_name)
         mod_c_var = _find_var_by_name(problem.sys_block, self.mod_c_var_name)
@@ -3752,10 +3871,12 @@ class ThreePhaseCarrierSampledModulationLogic(ProceduralLogicBase):
         self.initialized = False
         self.interval_end_time = None
 
-    def bind(self, problem: ProceduralProblem) -> None:
+    def bind(self, problem: ProceduralProblem,
+             expression_mode: ProceduralExpressionMode = ProceduralExpressionMode.Compiled) -> None:
         """
         Resolve modulation, sampled-mode and carrier parameter indices.
 
+        :param expression_mode: Explicit compiled or interpreted expression binding.
         :param problem: Concrete EMT problem.
         :return: None.
         """
@@ -3768,7 +3889,7 @@ class ThreePhaseCarrierSampledModulationLogic(ProceduralLogicBase):
         omega_sw_var: Var = _find_var_by_name(problem.sys_block, self.omega_sw_var_name)
         carrier_phase_var: Var | None = _find_var_by_name_optional(problem.sys_block, self.carrier_phase_var_name)
 
-        super().bind(problem)
+        super().bind(problem, expression_mode)
         self.mod_a_idx = int(problem.uid2idx_vars[mod_a_var.uid])
         self.mod_b_idx = int(problem.uid2idx_vars[mod_b_var.uid])
         self.mod_c_idx = int(problem.uid2idx_vars[mod_c_var.uid])
@@ -4195,6 +4316,413 @@ class ManufacturerNativeControllerLogic(ProceduralLogicBase):
             name=self.name,
         )
 
+class CompiledProceduralBoundaryPlan:
+    """Own one fused procedural kernel and its fixed-size retained state."""
+
+    __slots__ = [
+        "_kernel",
+        "_fixed_values",
+        "_initial_memory",
+        "_memory",
+        "_pickup_pending_offsets",
+        "_sample_time",
+        "_logic_error_names",
+    ]
+
+    def __init__(
+            self,
+            kernel: Callable[..., int],
+            fixed_values: np.ndarray,
+            initial_memory: np.ndarray,
+            pickup_pending_offsets: Tuple[Tuple[int, int], ...],
+            logic_error_names: Tuple[str, ...],
+    ) -> None:
+        """Store a compiled model-specific update plan.
+
+        :param kernel: Eagerly compiled fused update function.
+        :param fixed_values: Problem-local immutable parameter values.
+        :param initial_memory: Initial retained state for every compiled entry.
+        :param pickup_pending_offsets: Memory slots containing pending relay times.
+        :param logic_error_names: User-facing names keyed by source logic order.
+        :return: None.
+        """
+        self._kernel: Callable[..., int] = kernel
+        self._fixed_values: np.ndarray = fixed_values
+        self._initial_memory: np.ndarray = initial_memory
+        self._memory: np.ndarray = initial_memory.copy()
+        self._pickup_pending_offsets: Tuple[Tuple[int, int], ...] = pickup_pending_offsets
+        self._sample_time: float | None = None
+        self._logic_error_names: Tuple[str, ...] = logic_error_names
+
+    def reset(self) -> None:
+        """Restore the retained state used at the beginning of a simulation.
+
+        :return: None.
+        """
+        self._memory[:] = self._initial_memory
+        self._sample_time = None
+
+    def update(self, target_time: float, states: Vec, runtime_values: Vec) -> None:
+        """Execute the entire ordered procedural update with one Python call.
+
+        :param target_time: Current solver boundary time.
+        :param states: Accepted state and algebraic vector.
+        :param runtime_values: Mutable runtime-parameter vector.
+        :return: None.
+        """
+        if self._sample_time is None:
+            sample_time: float = target_time
+        else:
+            sample_time = self._sample_time
+
+        error_index: int = int(self._kernel(
+            states,
+            runtime_values,
+            self._fixed_values,
+            sample_time,
+            target_time,
+            self._memory,
+        ))
+        if error_index > 0:
+            logic_name: str = self._logic_error_names[error_index - 1]
+            raise ValueError(
+                f"flipflop '{logic_name}' cannot initialize with set=1 and reset=1"
+            )
+        else:
+            pass
+
+    def get_next_forced_event_time(self, t_prev: float, t_target: float) -> float | None:
+        """Return the earliest compiled relay event inside one solver step.
+
+        :param t_prev: Previous accepted solver time.
+        :param t_target: Nominal target solver time.
+        :return: Earliest pending relay event, if any.
+        """
+        # Procedural timers arm from the previous accepted boundary.
+        self._sample_time = float(t_prev)
+        next_time: float | None = None
+        pickup_offset: int
+        drop_offset: int
+        for pickup_offset, drop_offset in self._pickup_pending_offsets:
+            pickup_time: float = float(self._memory[pickup_offset])
+            drop_time: float = float(self._memory[drop_offset])
+            if not np.isnan(pickup_time) and t_prev < pickup_time <= t_target:
+                if next_time is None or pickup_time < next_time:
+                    next_time = pickup_time
+                else:
+                    pass
+            else:
+                pass
+            if not np.isnan(drop_time) and t_prev < drop_time <= t_target:
+                if next_time is None or drop_time < next_time:
+                    next_time = drop_time
+                else:
+                    pass
+            else:
+                pass
+        return next_time
+
+
+def _append_gradient_limiter_source(
+        source_lines: List[str],
+        logic: GradientLimiterLogic,
+        logic_index: int,
+        memory_offset: int,
+        compiler: ProceduralExpressionCompiler,
+) -> int:
+    """Append one gradient-limiter operation to a fused kernel.
+
+    :param source_lines: Generated source accumulated in execution order.
+    :param logic: Bound gradient limiter.
+    :param logic_index: Stable source-logic ordinal.
+    :param memory_offset: First free retained-memory slot.
+    :param compiler: Problem-local symbolic renderer.
+    :return: First free retained-memory slot after this operation.
+    """
+    suffix: str = str(logic_index)
+    source_lines.extend([
+        f"    source_{suffix} = float({compiler.render(_value_expr(logic.source_expr))})",
+        f"    lower_rate_{suffix} = float({compiler.render(_value_expr(logic.lower_rate_expr))})",
+        f"    upper_rate_{suffix} = float({compiler.render(_value_expr(logic.upper_rate_expr))})",
+        f"    if memory[{memory_offset}] < 0.5:",
+        f"        memory[{memory_offset + 1}] = sample_time",
+        f"        memory[{memory_offset + 2}] = source_{suffix}",
+        f"        memory[{memory_offset}] = 1.0",
+        "    else:",
+        f"        dt_{suffix} = max(0.0, sample_time - memory[{memory_offset + 1}])",
+        f"        lower_bound_{suffix} = memory[{memory_offset + 2}] + lower_rate_{suffix} * dt_{suffix}",
+        f"        upper_bound_{suffix} = memory[{memory_offset + 2}] + upper_rate_{suffix} * dt_{suffix}",
+        f"        if lower_bound_{suffix} > upper_bound_{suffix}:",
+        f"            swap_{suffix} = lower_bound_{suffix}",
+        f"            lower_bound_{suffix} = upper_bound_{suffix}",
+        f"            upper_bound_{suffix} = swap_{suffix}",
+        f"        memory[{memory_offset + 2}] = min(max(source_{suffix}, lower_bound_{suffix}), upper_bound_{suffix})",
+        f"        memory[{memory_offset + 1}] = sample_time",
+        f"    runtime_values[{logic.output_idx}] = memory[{memory_offset + 2}]",
+    ])
+    return memory_offset + 3
+
+
+def _append_flip_flop_source(
+        source_lines: List[str],
+        logic: FlipFlopLogic,
+        logic_index: int,
+        memory_offset: int,
+        compiler: ProceduralExpressionCompiler,
+) -> int:
+    """Append one set/reset latch to a fused kernel.
+
+    :param source_lines: Generated source accumulated in execution order.
+    :param logic: Bound set/reset latch.
+    :param logic_index: Stable source-logic ordinal and error code basis.
+    :param memory_offset: First free retained-memory slot.
+    :param compiler: Problem-local symbolic renderer.
+    :return: First free retained-memory slot after this operation.
+    """
+    suffix: str = str(logic_index)
+    source_lines.extend([
+        f"    set_on_{suffix} = float({compiler.render(_bool_expr(logic.set_expr))}) > 0.5",
+        f"    reset_on_{suffix} = float({compiler.render(_bool_expr(logic.reset_expr))}) > 0.5",
+        f"    if memory[{memory_offset}] < 0.5:",
+        f"        if set_on_{suffix} and reset_on_{suffix}:",
+        f"            return {logic_index + 1}",
+        f"        memory[{memory_offset + 1}] = 1.0 if set_on_{suffix} else 0.0",
+        f"        memory[{memory_offset}] = 1.0",
+        f"    elif set_on_{suffix} and not reset_on_{suffix}:",
+        f"        memory[{memory_offset + 1}] = 1.0",
+        f"    elif not set_on_{suffix} and reset_on_{suffix}:",
+        f"        memory[{memory_offset + 1}] = 0.0",
+        "    else:",
+        "        pass",
+        f"    runtime_values[{logic.output_idx}] = memory[{memory_offset + 1}]",
+    ])
+    return memory_offset + 2
+
+
+def _append_pickup_dropoff_source(
+        source_lines: List[str],
+        logic: PickupDropoffLogic,
+        logic_index: int,
+        memory_offset: int,
+        compiler: ProceduralExpressionCompiler,
+) -> int:
+    """Append one delayed relay state machine to a fused kernel.
+
+    :param source_lines: Generated source accumulated in execution order.
+    :param logic: Bound delayed pickup/dropoff relay.
+    :param logic_index: Stable source-logic ordinal.
+    :param memory_offset: First free retained-memory slot.
+    :param compiler: Problem-local symbolic renderer.
+    :return: First free retained-memory slot after this operation.
+    """
+    suffix: str = str(logic_index)
+    initialized: int = memory_offset
+    state: int = memory_offset + 1
+    pickup_started: int = memory_offset + 2
+    drop_started: int = memory_offset + 3
+    pending_pickup: int = memory_offset + 4
+    pending_drop: int = memory_offset + 5
+    pickup_delay_code: str = compiler.render(_value_expr(logic.pickup_delay_expr))
+    drop_delay_code: str = compiler.render(_value_expr(logic.drop_delay_expr))
+    source_lines.extend([
+        f"    bool_on_{suffix} = float({compiler.render(_bool_expr(logic.bool_expr))}) > 0.5",
+        f"    if memory[{initialized}] < 0.5:",
+        f"        memory[{initialized}] = 1.0",
+        f"        if bool_on_{suffix}:",
+        f"            pickup_delay_{suffix} = max(0.0, float({pickup_delay_code}))",
+        f"            if pickup_delay_{suffix} <= 1.0e-15:",
+        f"                memory[{state}] = 1.0",
+        "            else:",
+        f"                memory[{pickup_started}] = sample_time",
+        f"                memory[{pending_pickup}] = sample_time + pickup_delay_{suffix}",
+        "        else:",
+        "            pass",
+        "    else:",
+        "        pass",
+        f"    if memory[{state}] < 0.5:",
+        f"        memory[{drop_started}] = np.nan",
+        f"        memory[{pending_drop}] = np.nan",
+        f"        if bool_on_{suffix}:",
+        f"            if np.isnan(memory[{pickup_started}]):",
+        f"                memory[{pickup_started}] = sample_time",
+        "            else:",
+        "                pass",
+        f"            memory[{pending_pickup}] = memory[{pickup_started}] + max(0.0, float({pickup_delay_code}))",
+        "        else:",
+        f"            memory[{pickup_started}] = np.nan",
+        f"            memory[{pending_pickup}] = np.nan",
+        f"        if not np.isnan(memory[{pending_pickup}]) and target_time >= memory[{pending_pickup}] - 1.0e-15:",
+        f"            memory[{state}] = 1.0",
+        f"            memory[{pickup_started}] = np.nan",
+        f"            memory[{pending_pickup}] = np.nan",
+        "        else:",
+        "            pass",
+        "    else:",
+        f"        memory[{pickup_started}] = np.nan",
+        f"        memory[{pending_pickup}] = np.nan",
+        f"        if not bool_on_{suffix}:",
+        f"            if np.isnan(memory[{drop_started}]):",
+        f"                memory[{drop_started}] = sample_time",
+        "            else:",
+        "                pass",
+        f"            memory[{pending_drop}] = memory[{drop_started}] + max(0.0, float({drop_delay_code}))",
+        "        else:",
+        f"            memory[{drop_started}] = np.nan",
+        f"            memory[{pending_drop}] = np.nan",
+        f"        if not np.isnan(memory[{pending_drop}]) and target_time >= memory[{pending_drop}] - 1.0e-15:",
+        f"            memory[{state}] = 0.0",
+        f"            memory[{drop_started}] = np.nan",
+        f"            memory[{pending_drop}] = np.nan",
+        "        else:",
+        "            pass",
+        f"    runtime_values[{logic.output_idx}] = memory[{state}]",
+    ])
+    return memory_offset + 6
+
+
+def _append_valve_state_source(
+        source_lines: List[str],
+        logic: ValveStateLogic,
+        logic_index: int,
+) -> None:
+    """Append one retained EMT valve transition to a fused kernel.
+
+    :param source_lines: Generated source accumulated in execution order.
+    :param logic: Bound valve-state entry.
+    :param logic_index: Stable source-logic ordinal.
+    :return: None.
+    """
+    suffix: str = str(logic_index)
+    source_lines.extend([
+        f"    raw_mode_{suffix} = runtime_values[{logic.mode_idx}]",
+        f"    old_mode_{suffix} = 1.0 if raw_mode_{suffix} > 0.5 else (-1.0 if raw_mode_{suffix} < -0.5 else 0.0)",
+        f"    valve_type_{suffix} = runtime_values[{logic.valve_type_idx}]",
+        f"    gate_{suffix} = runtime_values[{logic.gate_idx}] > 0.5",
+        f"    antiparallel_{suffix} = runtime_values[{logic.antiparallel_idx}] > 0.5",
+        f"    voltage_eps_{suffix} = abs(runtime_values[{logic.voltage_eps_idx}])",
+        f"    current_eps_{suffix} = abs(runtime_values[{logic.current_eps_idx}])",
+        f"    voltage_{suffix} = states[{logic.valve_voltage_idx}]",
+        f"    current_{suffix} = states[{logic.valve_current_idx}]",
+        f"    new_mode_{suffix} = 0.0",
+        f"    if valve_type_{suffix} < 0.5:",
+        f"        if voltage_{suffix} > voltage_eps_{suffix} or (old_mode_{suffix} > 0.5 and current_{suffix} > -current_eps_{suffix}):",
+        f"            new_mode_{suffix} = 1.0",
+        f"        elif antiparallel_{suffix} and (voltage_{suffix} < -voltage_eps_{suffix} or (old_mode_{suffix} < -0.5 and current_{suffix} < current_eps_{suffix})):",
+        f"            new_mode_{suffix} = -1.0",
+        "        else:",
+        "            pass",
+        f"    elif valve_type_{suffix} < 1.5:",
+        f"        if gate_{suffix} and (voltage_{suffix} > -voltage_eps_{suffix} or (old_mode_{suffix} > 0.5 and current_{suffix} > -current_eps_{suffix})):",
+        f"            new_mode_{suffix} = 1.0",
+        f"        elif antiparallel_{suffix} and (voltage_{suffix} < -voltage_eps_{suffix} or (old_mode_{suffix} < -0.5 and current_{suffix} < current_eps_{suffix})):",
+        f"            new_mode_{suffix} = -1.0",
+        "        else:",
+        "            pass",
+        "    else:",
+        f"        if (old_mode_{suffix} > 0.5 and current_{suffix} > current_eps_{suffix} and voltage_{suffix} > -voltage_eps_{suffix}) or (gate_{suffix} and voltage_{suffix} > -voltage_eps_{suffix}):",
+        f"            new_mode_{suffix} = 1.0",
+        f"        elif antiparallel_{suffix} and (voltage_{suffix} < -voltage_eps_{suffix} or (old_mode_{suffix} < -0.5 and current_{suffix} < current_eps_{suffix})):",
+        f"            new_mode_{suffix} = -1.0",
+        "        else:",
+        "            pass",
+        f"    runtime_values[{logic.mode_idx}] = new_mode_{suffix}",
+    ])
+
+
+def build_compiled_procedural_boundary_plan(
+        problem: ProceduralProblem,
+        logic_entries: List[ProceduralLogicBase],
+) -> CompiledProceduralBoundaryPlan | None:
+    """Build one model-specific kernel when every entry has fused support.
+
+    The all-or-nothing fallback preserves declaration order: a mixed model never
+    runs some entries in a compiled batch and others through Python around it.
+
+    :param problem: Bound runtime problem.
+    :param logic_entries: Bound procedural declarations in execution order.
+    :return: Compiled plan, or ``None`` when the model requires the fallback path.
+    """
+    if len(logic_entries) == 0:
+        return None
+    else:
+        pass
+
+    logic: ProceduralLogicBase
+    for logic in logic_entries:
+        if isinstance(logic, (SampledValueLogic, GradientLimiterLogic, FlipFlopLogic, PickupDropoffLogic, ValveStateLogic)):
+            pass
+        else:
+            return None
+
+    compiler: ProceduralExpressionCompiler = problem.get_procedural_expression_compiler()
+    source_lines: List[str] = [
+        "def procedural_boundary_update(states, runtime_values, fixed_values, sample_time, target_time, memory):"
+    ]
+    initial_memory_values: List[float] = list()
+    pickup_pending_offsets: List[Tuple[int, int]] = list()
+    logic_error_names: List[str] = list()
+    memory_offset: int = 0
+    logic_index: int
+
+    # Emit operations in declaration order because later entries may read earlier outputs.
+    for logic_index, logic in enumerate(logic_entries):
+        if isinstance(logic, FlipFlopLogic) and len(logic.name) == 0:
+            logic_error_names.append(logic.output_var_name)
+        else:
+            logic_error_names.append(logic.name)
+        if isinstance(logic, SampledValueLogic):
+            source_lines.append(
+                f"    runtime_values[{logic.output_idx}] = float({compiler.render(_value_expr(logic.source_expr))})"
+            )
+        elif isinstance(logic, GradientLimiterLogic):
+            initial_memory_values.extend([0.0, np.nan, 0.0])
+            memory_offset = _append_gradient_limiter_source(
+                source_lines=source_lines,
+                logic=logic,
+                logic_index=logic_index,
+                memory_offset=memory_offset,
+                compiler=compiler,
+            )
+        elif isinstance(logic, FlipFlopLogic):
+            initial_memory_values.extend([0.0, 0.0])
+            memory_offset = _append_flip_flop_source(
+                source_lines=source_lines,
+                logic=logic,
+                logic_index=logic_index,
+                memory_offset=memory_offset,
+                compiler=compiler,
+            )
+        elif isinstance(logic, PickupDropoffLogic):
+            initial_memory_values.extend([0.0, 0.0, np.nan, np.nan, np.nan, np.nan])
+            pickup_pending_offsets.append((memory_offset + 4, memory_offset + 5))
+            memory_offset = _append_pickup_dropoff_source(
+                source_lines=source_lines,
+                logic=logic,
+                logic_index=logic_index,
+                memory_offset=memory_offset,
+                compiler=compiler,
+            )
+        elif isinstance(logic, ValveStateLogic):
+            _append_valve_state_source(
+                source_lines=source_lines,
+                logic=logic,
+                logic_index=logic_index,
+            )
+        else:
+            return None
+
+    source_lines.append("    return 0")
+    kernel: Callable[..., int] = compiler.compile_boundary_kernel("\n".join(source_lines))
+    initial_memory: np.ndarray = np.asarray(initial_memory_values, dtype=np.float64)
+    return CompiledProceduralBoundaryPlan(
+        kernel=kernel,
+        fixed_values=compiler.fixed_values,
+        initial_memory=initial_memory,
+        pickup_pending_offsets=tuple(pickup_pending_offsets),
+        logic_error_names=tuple(logic_error_names),
+    )
+
+
 class BlockProceduralLogicUpdater(BoundaryUpdateWrapper):
     """
     Boundary updater that delegates runtime decisions to block-attached procedural logic entries.
@@ -4207,23 +4735,28 @@ class BlockProceduralLogicUpdater(BoundaryUpdateWrapper):
         "model_mode",
         "runtime_initialized",
         "_output_parameter_indices",
+        "_compiled_plan",
+        "_expression_mode",
     ]
 
     def __init__(self,
                  problem: ProceduralProblem,
                  logic_entries: List[ProceduralLogicBase],
                  runtime_session: ManufacturerNativeRuntimeSessionProtocol | None = None,
-                 model_mode: int | None = None) -> None:
+                 model_mode: int | None = None,
+                 expression_mode: ProceduralExpressionMode = ProceduralExpressionMode.Compiled) -> None:
         """
-        Bind all procedural logic entries to one EMT problem.
+        Bind all procedural logic entries to one RMS or EMT problem.
 
         :param problem: Bound EMT problem.
         :param logic_entries: Procedural logic entries attached to the root block.
         :param runtime_session: Optional driver-owned manufacturer-native session.
+        :param expression_mode: Solver-selected procedural expression execution mode.
         :param model_mode: Exact IEEE/CIGRE RMS or EMT mode number.
         :return: None
         """
         self.problem: ProceduralProblem = problem
+        self._expression_mode: ProceduralExpressionMode = expression_mode
         self.logic_entries: List[ProceduralLogicBase] = logic_entries
         self.runtime_session: ManufacturerNativeRuntimeSessionProtocol | None = runtime_session
         self.model_mode: int | None = model_mode
@@ -4236,10 +4769,33 @@ class BlockProceduralLogicUpdater(BoundaryUpdateWrapper):
                 self.runtime_session.preflight(problem, self.logic_entries, self.model_mode)
         else:
             pass
+
+        fused_candidate: bool = self.runtime_session is None and len(self.logic_entries) > 0
+        logic: ProceduralLogicBase
         for logic in self.logic_entries:
-            logic.bind(problem)
+            if isinstance(logic, (SampledValueLogic, GradientLimiterLogic, FlipFlopLogic, PickupDropoffLogic, ValveStateLogic)):
+                pass
+            else:
+                fused_candidate = False
+
+        # Fused kernels own expression execution; binding only resolves their indexes.
+        binding_mode: ProceduralExpressionMode = expression_mode
+        if fused_candidate and expression_mode == ProceduralExpressionMode.Compiled:
+            binding_mode = ProceduralExpressionMode.Interpreted
+        else:
+            pass
+        for logic in self.logic_entries:
+            logic.bind(problem, binding_mode)
 
         self._refresh_output_parameter_indices()
+        if self.runtime_session is None and expression_mode == ProceduralExpressionMode.Compiled:
+            self._compiled_plan: CompiledProceduralBoundaryPlan | None = build_compiled_procedural_boundary_plan(
+                problem=self.problem,
+                logic_entries=self.logic_entries,
+            )
+        else:
+            # RMS uses interpreted expressions; native sessions retain their ordered dispatcher.
+            self._compiled_plan = None
 
     def _refresh_output_parameter_indices(self) -> None:
         """Collect and validate every runtime slot owned by procedural logic.
@@ -4309,11 +4865,15 @@ class BlockProceduralLogicUpdater(BoundaryUpdateWrapper):
         """
         self.runtime_initialized = False
 
-        logic: ProceduralLogicBase
-        for logic in self.logic_entries:
-            logic.bind(self.problem)
-
-        self._refresh_output_parameter_indices()
+        if self._compiled_plan is not None:
+            # All retained state belongs to the fixed-size kernel memory; the
+            # bound indexes and ownership set remain valid for the same problem.
+            self._compiled_plan.reset()
+        else:
+            logic: ProceduralLogicBase
+            for logic in self.logic_entries:
+                logic.bind(self.problem, self._expression_mode)
+            self._refresh_output_parameter_indices()
 
     def update(self, t: float, x: Vec, params: Vec) -> None:
         """
@@ -4325,16 +4885,23 @@ class BlockProceduralLogicUpdater(BoundaryUpdateWrapper):
         :return: None
         """
         update_time: float = float(t)
-        logic: ProceduralLogicBase
-        for logic in self.logic_entries:
-            if isinstance(logic, ManufacturerNativeControllerLogic):
-                pass
-            else:
-                # Repeated calls at one timestamp can contain a newer nonlinear
-                # iterate or accepted state. Each procedural entry owns its own
-                # retention semantics, so the dispatcher must not discard that
-                # updated snapshot globally.
-                logic.update(update_time, x, params)
+        if self._compiled_plan is not None:
+            self._compiled_plan.update(
+                target_time=update_time,
+                states=x,
+                runtime_values=params,
+            )
+        else:
+            logic: ProceduralLogicBase
+            for logic in self.logic_entries:
+                if isinstance(logic, ManufacturerNativeControllerLogic):
+                    pass
+                else:
+                    # Repeated calls at one timestamp can contain a newer nonlinear
+                    # iterate or accepted state. Each procedural entry owns its own
+                    # retention semantics, so the dispatcher must not discard that
+                    # updated snapshot globally.
+                    logic.update(update_time, x, params)
         if self.runtime_session is not None and not self.runtime_initialized:
             if abs(update_time) <= 1e-12:
                 self.runtime_session.initialize(update_time, x, params)
@@ -4377,10 +4944,23 @@ class BlockProceduralLogicUpdater(BoundaryUpdateWrapper):
         :return: Earliest event in the interval, if any.
         """
         candidates: List[float] = list()
-        for logic in self.logic_entries:
-            candidate = logic.get_next_forced_event_time(t_prev, t_target)
-            if candidate is not None:
-                candidates.append(candidate)
+        if self._compiled_plan is not None:
+            compiled_candidate: float | None = self._compiled_plan.get_next_forced_event_time(
+                t_prev=t_prev,
+                t_target=t_target,
+            )
+            if compiled_candidate is not None:
+                candidates.append(compiled_candidate)
+            else:
+                pass
+        else:
+            logic: ProceduralLogicBase
+            for logic in self.logic_entries:
+                candidate: float | None = logic.get_next_forced_event_time(t_prev, t_target)
+                if candidate is not None:
+                    candidates.append(candidate)
+                else:
+                    pass
         if self.runtime_session is not None:
             native_candidate: float | None = self.runtime_session.get_next_sample_time(t_prev, t_target)
             if native_candidate is not None:
@@ -5140,6 +5720,7 @@ def build_boundary_updater_from_block(
         problem: ProceduralProblem,
         runtime_session: ManufacturerNativeRuntimeSessionProtocol | None = None,
         model_mode: int | None = None,
+        expression_mode: ProceduralExpressionMode = ProceduralExpressionMode.Compiled,
 ) -> Optional[BlockProceduralLogicUpdater]:
     """
     Build an isolated runtime updater from the logic attached to ``problem.sys_block``.
@@ -5150,6 +5731,7 @@ def build_boundary_updater_from_block(
 
     :param problem: Numerical problem containing the root block.
     :param runtime_session: Optional driver-owned manufacturer-native session.
+    :param expression_mode: Solver-selected procedural expression execution mode.
     :param model_mode: Exact IEEE/CIGRE RMS or EMT mode number.
     :return: Boundary updater or None.
     """
@@ -5192,4 +5774,5 @@ def build_boundary_updater_from_block(
         logic_entries=runtime_entries,
         runtime_session=runtime_session,
         model_mode=model_mode,
+        expression_mode=expression_mode,
     )

@@ -13,9 +13,10 @@ from pathlib import Path
 import numpy as np
 from PySide6 import QtCore, QtGui, QtWidgets
 
+from VeraGrid.Gui.dialog_lifecycle import is_dialog_available
 from VeraGrid.Gui.PlotDialogue.plot_dialogue_ui import Ui_PlotDialogue
 from VeraGrid.Gui.PlotDialogue.plot_export import save_chart_image
-from VeraGrid.Gui.PlotDialogue.qt_chart_widget import GraphsWidget, PolarAngleUnit
+from VeraGrid.Gui.PlotDialogue.qt_chart_widget import ChartContentType, ChartSeries, GraphsWidget, PolarAngleUnit
 
 
 class PlotSeries:
@@ -68,6 +69,8 @@ class PlotDialogue(QtWidgets.QMainWindow):
         :return: None.
         """
         QtWidgets.QMainWindow.__init__(self, parent)
+        # Closed plots are disposable: Qt must destroy their complete child hierarchy.
+        self.setAttribute(QtCore.Qt.WidgetAttribute.WA_DeleteOnClose, True)
         self.ui: Ui_PlotDialogue = Ui_PlotDialogue()
         self.ui.setupUi(self)
         self.setWindowFlags(
@@ -102,6 +105,12 @@ class PlotDialogue(QtWidgets.QMainWindow):
         self.ui.seriesTreeWidget.itemChanged.connect(self._set_series_visibility)
         self.ui.selectAllButton.clicked.connect(self.select_all_series)
         self.ui.selectNoneButton.clicked.connect(self.select_no_series)
+        self.ui.actionCDF.toggled.connect(self._transform_current_plot)
+        self.ui.actionAbs.toggled.connect(self._transform_current_plot)
+        self.ui.actionTranspose.toggled.connect(self._transform_current_plot)
+        self.ui.actionStacked_plot.toggled.connect(self._transform_current_plot)
+        self.ui.actionBar_plot.toggled.connect(self._transform_current_plot)
+        self.ui.actionx_y.triggered.connect(self._create_xy_plot)
         self.ui.actionAddPlot.triggered.connect(self._add_plot_from_toolbar)
         self.ui.plotTabs.tabCloseRequested.connect(self._close_plot_tab)
 
@@ -138,11 +147,13 @@ class PlotDialogue(QtWidgets.QMainWindow):
             self.ui.seriesTreeWidget.clear()
             self.ui.seriesTreeWidget.blockSignals(False)
             self.ui.seriesSelectorFrame.setVisible(False)
-            if self._active_save_dialog is not None:
-                self._active_save_dialog.close()
-                self._active_save_dialog = None
-            else:
-                pass
+            save_dialog: QtWidgets.QFileDialog | None = self._active_save_dialog
+            self._active_save_dialog = None
+            if save_dialog is not None:
+                if is_dialog_available(save_dialog):
+                    # Prevent picker callbacks from reentering a plot during teardown.
+                    save_dialog.blockSignals(True)
+                    save_dialog.close()
             chart: GraphsWidget
             for chart in self._tab_charts:
                 chart.dispose()
@@ -209,13 +220,124 @@ class PlotDialogue(QtWidgets.QMainWindow):
         return tab_chart
 
     def _add_plot_from_toolbar(self, checked: bool = False) -> None:
-        """Create a blank plot tab from the toolbar action.
+        """Duplicate the active plot into an independently editable tab.
 
         :param checked: QAction state, unused by this momentary action.
         :return: None.
         """
         _ = checked
-        self.add_tab(title=self.tr("Plot {number}").format(number=len(self._tab_charts) + 1))
+        source: GraphsWidget = self.get_current_chart()
+        source_index: int = self.ui.plotTabs.currentIndex()
+        title: str = self.ui.plotTabs.tabText(source_index)
+        target: GraphsWidget = self.add_tab(title=self.tr('{title} copy').format(title=title))
+        source.copy_plot_to(target)
+        self._plot_series_indices[-1] = self._plot_series_indices[source_index].copy()
+        self._refresh_series_selector()
+
+    def _transform_current_plot(self, checked: bool = False) -> None:
+        """Apply the toolbar switches to the active plot.
+
+        :param checked: Emitted switch state; the actions supply the full state.
+        :return: None.
+        """
+        # Stacked areas and categorical bars are alternative views of the same signals.
+        sender: QtCore.QObject | None = self.sender()
+        actions_to_clear: list[QtGui.QAction] = list()
+        if checked and sender == self.ui.actionStacked_plot:
+            actions_to_clear = [self.ui.actionBar_plot, self.ui.actionTranspose]
+        elif checked and sender == self.ui.actionBar_plot:
+            actions_to_clear = [self.ui.actionStacked_plot, self.ui.actionTranspose, self.ui.actionCDF]
+        else:
+            pass
+        action: QtGui.QAction
+        for action in actions_to_clear:
+            action.blockSignals(True)
+            action.setChecked(False)
+            action.blockSignals(False)
+        accepted: bool = self.get_current_chart().set_value_transforms(
+            cdf=self.ui.actionCDF.isChecked(), absolute=self.ui.actionAbs.isChecked(),
+            transpose=self.ui.actionTranspose.isChecked(),
+            stacked=self.ui.actionStacked_plot.isChecked(), bar=self.ui.actionBar_plot.isChecked())
+        self._refresh_series_selector()
+        if not accepted:
+            QtWidgets.QMessageBox.information(self, self.tr('Plot view'),
+                                              self.tr('This view needs nonempty series with matching sample coordinates.'))
+        else:
+            pass
+
+    def _create_xy_plot(self, checked: bool = False) -> None:
+        """Ask for two stored signals and plot their paired values in a new tab.
+
+        :param checked: Unused momentary action state.
+        :return: None.
+        """
+        _ = checked
+        chart: GraphsWidget = self.get_current_chart()
+        if chart._content_type != ChartContentType.XY or chart.get_series_count() < 2:
+            QtWidgets.QMessageBox.information(self, self.tr('X,Y plot'),
+                                              self.tr('The current plot needs at least two XY series.'))
+            return
+        else:
+            pass
+        picker: QtWidgets.QDialog = QtWidgets.QDialog(self)
+        picker.setWindowTitle(self.tr('Select X and Y series'))
+        layout: QtWidgets.QFormLayout = QtWidgets.QFormLayout(picker)
+        x_selector: QtWidgets.QComboBox = QtWidgets.QComboBox(picker)
+        y_selector: QtWidgets.QComboBox = QtWidgets.QComboBox(picker)
+        series_index: int
+        for series_index in range(chart.get_series_count()):
+            label: str = f'{series_index + 1}: {chart.get_series_name(series_index)}'
+            x_selector.addItem(label)
+            y_selector.addItem(label)
+        y_selector.setCurrentIndex(1)
+        layout.addRow(self.tr('X'), x_selector)
+        layout.addRow(self.tr('Y'), y_selector)
+        buttons: QtWidgets.QDialogButtonBox = QtWidgets.QDialogButtonBox(
+            QtWidgets.QDialogButtonBox.StandardButton.Ok | QtWidgets.QDialogButtonBox.StandardButton.Cancel,
+            parent=picker)
+        buttons.accepted.connect(picker.accept)
+        buttons.rejected.connect(picker.reject)
+        layout.addRow(buttons)
+        result: int = picker.exec()
+        # The nested event loop may have destroyed the plot and its picker.
+        if is_dialog_available(self) and not self._closed and is_dialog_available(picker):
+            if result == QtWidgets.QDialog.DialogCode.Accepted:
+                self.create_xy_plot(x_selector.currentIndex(), y_selector.currentIndex())
+            else:
+                pass
+        else:
+            pass
+        if is_dialog_available(picker):
+            picker.deleteLater()
+        else:
+            pass
+
+    def create_xy_plot(self, x_index: int, y_index: int) -> bool:
+        """Create a new scatter tab when the chosen signals share sample coordinates.
+
+        :param x_index: Active chart series supplying horizontal values.
+        :param y_index: Active chart series supplying vertical values.
+        :return: Whether a new plot was created.
+        """
+        chart: GraphsWidget = self.get_current_chart()
+        if (chart._content_type == ChartContentType.XY
+                and 0 <= x_index < chart.get_series_count()
+                and 0 <= y_index < chart.get_series_count()):
+            x_series: ChartSeries = chart._series[x_index]
+            y_series: ChartSeries = chart._series[y_index]
+            if np.array_equal(x_series.get_x_data(), y_series.get_x_data()) and x_series.get_x_data().size > 0:
+                target: GraphsWidget = self.add_tab(self.tr('X,Y plot'))
+                target._catalog_detached = True
+                self.set_scatter_series(x_series.get_y_data(), [y_series.get_name()],
+                                        [y_series.get_y_data()], [y_series.get_color().name()],
+                                        x_axis_title=x_series.get_name(), y_axis_title=y_series.get_name())
+                return True
+            else:
+                QtWidgets.QMessageBox.information(self, self.tr('X,Y plot'),
+                                                  self.tr('Choose series with matching sample coordinates.'))
+        else:
+            pass
+        return False
 
     def _close_plot_tab(self, tab_index: int) -> None:
         """Dispose a chart before removing its Qt-owned tab page.
@@ -280,7 +402,8 @@ class PlotDialogue(QtWidgets.QMainWindow):
                         series_index=len(self._series_catalog),
                     ).name(),
                 )
-                if (candidate.x_values.size > 0
+                if (candidate.x_values.ndim == 1 and candidate.y_values.ndim == 1
+                        and candidate.x_values.size > 0
                         and candidate.x_values.size == candidate.y_values.size
                         and bool(np.any(np.isfinite(candidate.y_values)))):
                     self._series_catalog.append(candidate)
@@ -350,6 +473,11 @@ class PlotDialogue(QtWidgets.QMainWindow):
                     series_values.append(candidate.y_values)
                     series_colors.append(candidate.color)
                 chart: GraphsWidget = self.get_current_chart()
+                cdf: bool = chart._cdf_enabled
+                absolute: bool = chart._abs_enabled
+                transpose: bool = chart._transpose_enabled
+                stacked: bool = chart._stacked_enabled
+                bar: bool = chart._bar_enabled
                 if chart.set_line_series(
                         x_values=x_values,
                         series_names=series_names,
@@ -357,6 +485,10 @@ class PlotDialogue(QtWidgets.QMainWindow):
                         colors=series_colors):
                     chart.set_axis_titles(self.tr('Time'), first_series.unit)
                     chart.setTitle(self.windowTitle())
+                    if cdf or absolute or transpose or stacked or bar:
+                        chart.set_value_transforms(cdf, absolute, transpose, stacked, bar)
+                    else:
+                        pass
                 else:
                     pass
             else:
@@ -602,7 +734,30 @@ class PlotDialogue(QtWidgets.QMainWindow):
         :return: None.
         """
         _ = current_index
-        if self._series_catalog_enabled:
+        active_chart: GraphsWidget = self.get_current_chart()
+        supports_views: bool = active_chart._content_type in (ChartContentType.XY, ChartContentType.CUMULATIVE_AREA)
+        self.ui.actionCDF.setEnabled(supports_views and not active_chart._bar_enabled)
+        self.ui.actionAbs.setEnabled(supports_views)
+        self.ui.actionTranspose.setEnabled(supports_views and not active_chart._bar_enabled
+                                          and not active_chart._stacked_enabled)
+        self.ui.actionStacked_plot.setEnabled(supports_views)
+        self.ui.actionBar_plot.setEnabled(supports_views)
+        self.ui.actionStacked_plot.blockSignals(True)
+        self.ui.actionBar_plot.blockSignals(True)
+        self.ui.actionStacked_plot.setChecked(active_chart._stacked_enabled)
+        self.ui.actionBar_plot.setChecked(active_chart._bar_enabled)
+        self.ui.actionStacked_plot.blockSignals(False)
+        self.ui.actionBar_plot.blockSignals(False)
+        self.ui.actionTranspose.blockSignals(True)
+        self.ui.actionTranspose.setChecked(active_chart._transpose_enabled)
+        self.ui.actionTranspose.blockSignals(False)
+        self.ui.actionCDF.blockSignals(True)
+        self.ui.actionAbs.blockSignals(True)
+        self.ui.actionCDF.setChecked(active_chart._cdf_enabled)
+        self.ui.actionAbs.setChecked(active_chart._abs_enabled)
+        self.ui.actionCDF.blockSignals(False)
+        self.ui.actionAbs.blockSignals(False)
+        if self._series_catalog_enabled and not self.get_current_chart()._catalog_detached:
             self._refresh_catalog_tree()
             return
         else:
@@ -627,6 +782,7 @@ class PlotDialogue(QtWidgets.QMainWindow):
         self.ui.actionopencloseTree.setChecked(selector_visible)
         self.ui.seriesTreeWidget.blockSignals(True)
         self.ui.seriesTreeWidget.clear()
+        self._series_tree_initialized = False
         group_items: dict[str, QtWidgets.QTreeWidgetItem] = dict()
         for series_index in range(chart.get_series_count()):
             series_name: str = chart.get_series_name(series_index=series_index)
@@ -670,7 +826,7 @@ class PlotDialogue(QtWidgets.QMainWindow):
         self._series_selector_override = visible
         self.ui.seriesSelectorFrame.setVisible(visible)
         chart: GraphsWidget = self.get_current_chart()
-        if self._series_catalog_enabled:
+        if self._series_catalog_enabled and not self.get_current_chart()._catalog_detached:
             chart.set_legend_overlay(enabled=True)
             chart.set_legend_visible(visible=True)
         else:
@@ -711,7 +867,7 @@ class PlotDialogue(QtWidgets.QMainWindow):
         :param visible: Whether every named series should be rendered.
         :return: None.
         """
-        if self._series_catalog_enabled:
+        if self._series_catalog_enabled and not self.get_current_chart()._catalog_detached:
             self._set_catalog_visibility(visible=visible)
             return
         else:
@@ -774,7 +930,7 @@ class PlotDialogue(QtWidgets.QMainWindow):
         """
         _ = column
         visible: bool = tree_item.checkState(0) == QtCore.Qt.CheckState.Checked
-        if self._series_catalog_enabled:
+        if self._series_catalog_enabled and not self.get_current_chart()._catalog_detached:
             series_index_value: object = tree_item.data(0, QtCore.Qt.ItemDataRole.UserRole)
             if isinstance(series_index_value, int):
                 self._set_catalog_series_visible(series_index=series_index_value, visible=visible)
@@ -957,7 +1113,7 @@ class PlotDialogue(QtWidgets.QMainWindow):
         :return: None.
         """
         _ = checked
-        if self._active_save_dialog is None:
+        if not is_dialog_available(self._active_save_dialog):
             file_dialog: QtWidgets.QFileDialog = QtWidgets.QFileDialog(self, self.tr('Save plot image'))
             file_dialog.setAcceptMode(QtWidgets.QFileDialog.AcceptMode.AcceptSave)
             file_dialog.setFileMode(QtWidgets.QFileDialog.FileMode.AnyFile)
@@ -997,7 +1153,10 @@ class PlotDialogue(QtWidgets.QMainWindow):
         :return: None.
         """
         _ = result
-        self._active_save_dialog = None
+        if self.sender() is self._active_save_dialog:
+            self._active_save_dialog = None
+        else:
+            pass
 
     def save_image_to_file(self, file_name: str) -> bool:
         """Export the current chart without opening a file dialog.

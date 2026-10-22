@@ -11,10 +11,20 @@ other solver interface easily
 from __future__ import annotations
 
 from typing import List, Union, Callable, Any
-from pygslv import LpModel as gslvLpModel, LpResult, LpCst, LpVar, LpExp
+from VeraGridEngine.Compilers.Gslv.activation import GSLV_AVAILABLE, GSLV_UNAVAILABLE_REASON, pg
 from VeraGridEngine.enumerations import MIPSolvers
 from VeraGridEngine.basic_structures import Logger
 from VeraGridEngine.Utils.MIP.mip_interface_template import AbstractLpModel
+
+# Explicit imports of this optional adapter must honor the engine's compatibility gate.
+if GSLV_AVAILABLE:
+    gslvLpModel = pg.LpModel
+    LpResult = pg.LpResult
+    LpCst = pg.LpCst
+    LpVar = pg.LpVar
+    LpExp = pg.LpExp
+else:
+    raise ImportError(f"GSLV unavailable: {GSLV_UNAVAILABLE_REASON}")
 
 
 def get_available_mip_solvers() -> List[str]:

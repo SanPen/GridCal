@@ -5,24 +5,27 @@
 
 from __future__ import annotations
 
-from typing import Dict
+import warnings
 
 from VeraGridEngine.Utils.NumericalMethods.emt_sparse_solver_loader import load_sparse_solver_backend_provider
-from VeraGridEngine.Utils.NumericalMethods.emt_sparse_superlu_backend import SuperLUSparseBackendProvider
 from VeraGridEngine.Utils.NumericalMethods.external_sparse_solver_interface import SparseLinearSolverBackendProvider
+from VeraGridEngine.Utils.NumericalMethods.sparse_lu_selection import get_sparse_lu_provider_status, resolve_sparse_lu_provider
+from VeraGridEngine.basic_structures import Logger
 from VeraGridEngine.enumerations import SparseSolver
 
 
-def build_internal_sparse_solver_provider_map() -> Dict[SparseSolver, SparseLinearSolverBackendProvider]:
+def _report_sparse_solver_warning(message: str, logger: Logger | None) -> None:
     """
-    Build the map of built-in EMT sparse solver providers.
+    Report a sparse solver resolution warning.
 
-    :return: Built-in provider map.
-    :rtype: Dict[SparseSolver, SparseLinearSolverBackendProvider]
+    :param message: Warning text.
+    :param logger: Logger receiving the warning; a RuntimeWarning is emitted when None.
+    :return: None
     """
-    provider_map: Dict[SparseSolver, SparseLinearSolverBackendProvider] = dict()
-    provider_map[SparseSolver.SuperLU] = SuperLUSparseBackendProvider()
-    return provider_map
+    if logger is None:
+        warnings.warn(message, RuntimeWarning, stacklevel=3)
+    else:
+        logger.add_warning(message)
 
 
 def resolve_emt_sparse_solver_backend_provider(
@@ -30,9 +33,13 @@ def resolve_emt_sparse_solver_backend_provider(
         external_plugin_name: str,
         external_plugin_directory: str,
         allow_internal_fallback: bool,
+        logger: Logger | None = None,
 ) -> SparseLinearSolverBackendProvider:
     """
     Resolve the EMT sparse solver backend provider.
+
+    Internal providers and every fallback go through the sparse LU selection layer,
+    which reports why a requested solver is unavailable and uses SciPy SuperLU.
 
     :param solver_type: Requested sparse solver type.
     :type solver_type: SparseSolver
@@ -42,11 +49,11 @@ def resolve_emt_sparse_solver_backend_provider(
     :type external_plugin_directory: str
     :param allow_internal_fallback: Whether internal fallback is allowed.
     :type allow_internal_fallback: bool
+    :param logger: Logger receiving fallback warnings; RuntimeWarning is used when None.
+    :type logger: Logger | None
     :return: Resolved backend provider.
     :rtype: SparseLinearSolverBackendProvider
     """
-    internal_provider_map: Dict[SparseSolver, SparseLinearSolverBackendProvider] = build_internal_sparse_solver_provider_map()
-
     if len(external_plugin_name) > 0:
         plugin_provider: SparseLinearSolverBackendProvider
 
@@ -55,35 +62,36 @@ def resolve_emt_sparse_solver_backend_provider(
                 plugin_name=external_plugin_name,
                 plugin_directory_override=external_plugin_directory,
             )
-        except (FileNotFoundError, RuntimeError, AttributeError, TypeError, ValueError):
+        except (FileNotFoundError, RuntimeError, AttributeError, TypeError, ValueError) as error:
             if allow_internal_fallback:
-                if solver_type in internal_provider_map:
-                    return internal_provider_map[solver_type]
-                elif SparseSolver.SuperLU in internal_provider_map:
-                    return internal_provider_map[SparseSolver.SuperLU]
-                else:
-                    raise RuntimeError(
-                        f"External sparse solver plugin '{external_plugin_name}' could not be loaded and no internal fallback is available"
-                    )
+                _report_sparse_solver_warning(
+                    f"External sparse solver plugin '{external_plugin_name}' could not be loaded: {error}",
+                    logger,
+                )
+                return resolve_sparse_lu_provider(solver_type, logger)
             else:
                 raise
 
         if plugin_provider.get_solver_type() == solver_type:
             if plugin_provider.is_available():
                 return plugin_provider
-            elif allow_internal_fallback:
-                if solver_type in internal_provider_map:
-                    return internal_provider_map[solver_type]
-                elif SparseSolver.SuperLU in internal_provider_map:
-                    return internal_provider_map[SparseSolver.SuperLU]
+            else:
+                plugin_reason: str = plugin_provider.get_unavailable_reason()
+                if len(plugin_reason) == 0:
+                    plugin_reason = "plugin reported unavailable without a reason"
+                else:
+                    pass
+
+                if allow_internal_fallback:
+                    _report_sparse_solver_warning(
+                        f"External sparse solver plugin '{external_plugin_name}' is unavailable: {plugin_reason}",
+                        logger,
+                    )
+                    return resolve_sparse_lu_provider(solver_type, logger)
                 else:
                     raise RuntimeError(
-                        f"External sparse solver plugin '{external_plugin_name}' is unavailable and no internal fallback exists for {solver_type}"
+                        f"External sparse solver plugin '{external_plugin_name}' is unavailable and fallback is disabled: {plugin_reason}"
                     )
-            else:
-                raise RuntimeError(
-                    f"External sparse solver plugin '{external_plugin_name}' is unavailable and fallback is disabled"
-                )
         else:
             raise ValueError(
                 f"External sparse solver plugin '{external_plugin_name}' exposes {plugin_provider.get_solver_type()} instead of requested {solver_type}"
@@ -91,9 +99,11 @@ def resolve_emt_sparse_solver_backend_provider(
     else:
         pass
 
-    if solver_type in internal_provider_map:
-        return internal_provider_map[solver_type]
-    elif allow_internal_fallback and SparseSolver.SuperLU in internal_provider_map:
-        return internal_provider_map[SparseSolver.SuperLU]
+    if allow_internal_fallback:
+        return resolve_sparse_lu_provider(solver_type, logger)
     else:
-        raise RuntimeError(f"No EMT sparse solver backend provider available for {solver_type}")
+        provider, reason = get_sparse_lu_provider_status(solver_type)
+        if provider is None:
+            raise RuntimeError(f"Sparse LU solver {solver_type.value} is unavailable: {reason}")
+        else:
+            return provider

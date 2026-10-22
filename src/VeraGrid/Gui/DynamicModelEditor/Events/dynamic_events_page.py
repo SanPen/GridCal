@@ -23,7 +23,7 @@ from VeraGridEngine.Devices.Events.rms_event import RmsEvent
 from VeraGridEngine.Devices.Events.rms_events_group import RmsEventsGroup
 from VeraGridEngine.Devices.multi_circuit import MultiCircuit
 from VeraGridEngine.Utils.Symbolic.symbolic import Var
-from VeraGridEngine.enumerations import DynamicEventTransitionType, DynamicSimulationMode
+from VeraGridEngine.enumerations import DynamicEventTransitionType, DynamicSimulationMode, VarPowerFlowReferenceType
 
 
 class DynamicEventsPage(QtWidgets.QWidget):
@@ -473,7 +473,7 @@ class DynamicEventsPage(QtWidgets.QWidget):
         candidates: List[DynamicEventParameterCandidate] = list()
         candidate: DynamicEventParameterCandidate
         for candidate in self.handler.candidates:
-            if candidate.is_mode_parameter and candidate.parameter.name.startswith("switch_closed_mode_"):
+            if candidate.is_mode_parameter and candidate.parameter.ref == VarPowerFlowReferenceType.switch_closed_mode:
                 candidates.append(candidate)
             else:
                 pass

@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Devices.Injections.static_generator &mdash; VeraGrid 6.7.13 documentation</title>
+  <title>VeraGridEngine.Devices.Injections.static_generator &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=16fbabd8"></script>
+      <script src="../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -120,44 +120,44 @@
 <div class="viewcode-block" id="StaticGenerator">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Injections.html#VeraGridEngine.Devices.Injections.static_generator.StaticGenerator">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">StaticGenerator</span><span class="p">(</span><span class="n">LoadParent</span><span class="p">):</span>
-    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;_Snom&quot;</span><span class="p">,</span> <span class="s2">&quot;_control_mode&quot;</span><span class="p">,</span> <span class="s2">&quot;_Vset&quot;</span><span class="p">,</span> <span class="s2">&quot;_droop&quot;</span><span class="p">,</span> <span class="s2">&quot;_Vset_min&quot;</span><span class="p">,</span> <span class="s2">&quot;_Vset_max&quot;</span><span class="p">,</span>
-                 <span class="s2">&quot;_R0&quot;</span><span class="p">,</span> <span class="s2">&quot;_X0&quot;</span><span class="p">,</span> <span class="s2">&quot;_R2&quot;</span><span class="p">,</span> <span class="s2">&quot;_X2&quot;</span><span class="p">)</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"_Snom"</span><span class="p">,</span> <span class="s2">"_control_mode"</span><span class="p">,</span> <span class="s2">"_Vset"</span><span class="p">,</span> <span class="s2">"_droop"</span><span class="p">,</span> <span class="s2">"_Vset_min"</span><span class="p">,</span> <span class="s2">"_Vset_max"</span><span class="p">,</span>
+                 <span class="s2">"_R0"</span><span class="p">,</span> <span class="s2">"_X0"</span><span class="p">,</span> <span class="s2">"_R2"</span><span class="p">,</span> <span class="s2">"_X2"</span><span class="p">)</span>
 
     <span class="n">LOCAL_PROPERTY_DECLARATIONS</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">GCProp</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;R0&#39;</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;p.u.&#39;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
-               <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Zero-sequence resistance on the system base; used by grounded sequence injections.&#39;</span><span class="p">,</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">prop_name</span><span class="o">=</span><span class="s1">'R0'</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s1">'p.u.'</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
+               <span class="n">definition</span><span class="o">=</span><span class="s1">'Zero-sequence resistance on the system base; used by grounded sequence injections.'</span><span class="p">,</span>
                <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">PF3</span><span class="p">]),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;X0&#39;</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;p.u.&#39;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
-               <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Zero-sequence reactance on the system base; used by grounded sequence injections.&#39;</span><span class="p">,</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">prop_name</span><span class="o">=</span><span class="s1">'X0'</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s1">'p.u.'</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
+               <span class="n">definition</span><span class="o">=</span><span class="s1">'Zero-sequence reactance on the system base; used by grounded sequence injections.'</span><span class="p">,</span>
                <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">PF3</span><span class="p">]),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;R2&#39;</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;p.u.&#39;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
-               <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Negative-sequence resistance on the system base. R2=X2=0 omits the passive response.&#39;</span><span class="p">,</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">prop_name</span><span class="o">=</span><span class="s1">'R2'</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s1">'p.u.'</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
+               <span class="n">definition</span><span class="o">=</span><span class="s1">'Negative-sequence resistance on the system base. R2=X2=0 omits the passive response.'</span><span class="p">,</span>
                <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">PF3</span><span class="p">]),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;X2&#39;</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;p.u.&#39;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
-               <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Negative-sequence reactance on the system base. R2=X2=0 omits the passive response.&#39;</span><span class="p">,</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">prop_name</span><span class="o">=</span><span class="s1">'X2'</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s1">'p.u.'</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
+               <span class="n">definition</span><span class="o">=</span><span class="s1">'Negative-sequence reactance on the system base. R2=X2=0 omits the passive response.'</span><span class="p">,</span>
                <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">PF3</span><span class="p">]),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;Snom&#39;</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;MVA&#39;</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'Snom'</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">'MVA'</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Nominal power.&#39;</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">'Nominal power.'</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">OPF</span><span class="p">,</span> <span class="n">PrpCat</span><span class="o">.</span><span class="n">PF</span><span class="p">,</span> <span class="n">PrpCat</span><span class="o">.</span><span class="n">PF3</span><span class="p">],</span>
             <span class="n">dyn_ref</span><span class="o">=</span><span class="n">ParamPowerFlowReferenceType</span><span class="o">.</span><span class="n">static_generator_snom_mva</span><span class="p">,</span>
         <span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;control_mode&#39;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">StaticGeneratorControlMode</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
-               <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Fixed P/Q or the VSC Q-V droop law; ABC control uses positive-sequence voltage.&#39;</span><span class="p">,</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">prop_name</span><span class="o">=</span><span class="s1">'control_mode'</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">StaticGeneratorControlMode</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s1">''</span><span class="p">,</span>
+               <span class="n">definition</span><span class="o">=</span><span class="s1">'Fixed P/Q or the VSC Q-V droop law; ABC control uses positive-sequence voltage.'</span><span class="p">,</span>
                <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">PF</span><span class="p">,</span> <span class="n">PrpCat</span><span class="o">.</span><span class="n">PF3</span><span class="p">]),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;Vset&#39;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;p.u.&#39;</span><span class="p">,</span> <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Droop voltage reference.&#39;</span><span class="p">,</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">prop_name</span><span class="o">=</span><span class="s1">'Vset'</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s1">'p.u.'</span><span class="p">,</span> <span class="n">definition</span><span class="o">=</span><span class="s1">'Droop voltage reference.'</span><span class="p">,</span>
                <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">PF</span><span class="p">,</span> <span class="n">PrpCat</span><span class="o">.</span><span class="n">PF3</span><span class="p">]),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;droop&#39;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;%&#39;</span><span class="p">,</span>
-               <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Voltage droop on Snom; must be positive in Q-V droop mode.&#39;</span><span class="p">,</span> <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">PF</span><span class="p">,</span> <span class="n">PrpCat</span><span class="o">.</span><span class="n">PF3</span><span class="p">]),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;Vset_min&#39;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;p.u.&#39;</span><span class="p">,</span>
-               <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Lower clamp on the voltage used by the droop curve.&#39;</span><span class="p">,</span> <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">PF</span><span class="p">,</span> <span class="n">PrpCat</span><span class="o">.</span><span class="n">PF3</span><span class="p">]),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;Vset_max&#39;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;p.u.&#39;</span><span class="p">,</span>
-               <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Upper clamp on the voltage used by the droop curve.&#39;</span><span class="p">,</span> <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">PF</span><span class="p">,</span> <span class="n">PrpCat</span><span class="o">.</span><span class="n">PF3</span><span class="p">]),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">prop_name</span><span class="o">=</span><span class="s1">'droop'</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s1">'%'</span><span class="p">,</span>
+               <span class="n">definition</span><span class="o">=</span><span class="s1">'Voltage droop on Snom; must be positive in Q-V droop mode.'</span><span class="p">,</span> <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">PF</span><span class="p">,</span> <span class="n">PrpCat</span><span class="o">.</span><span class="n">PF3</span><span class="p">]),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">prop_name</span><span class="o">=</span><span class="s1">'Vset_min'</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s1">'p.u.'</span><span class="p">,</span>
+               <span class="n">definition</span><span class="o">=</span><span class="s1">'Lower clamp on the voltage used by the droop curve.'</span><span class="p">,</span> <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">PF</span><span class="p">,</span> <span class="n">PrpCat</span><span class="o">.</span><span class="n">PF3</span><span class="p">]),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">prop_name</span><span class="o">=</span><span class="s1">'Vset_max'</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s1">'p.u.'</span><span class="p">,</span>
+               <span class="n">definition</span><span class="o">=</span><span class="s1">'Upper clamp on the voltage used by the droop curve.'</span><span class="p">,</span> <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">PF</span><span class="p">,</span> <span class="n">PrpCat</span><span class="o">.</span><span class="n">PF3</span><span class="p">]),</span>
     <span class="p">)</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;StaticGen&#39;</span><span class="p">,</span> <span class="n">idtag</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">code</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">'StaticGen'</span><span class="p">,</span> <span class="n">idtag</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">code</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">''</span><span class="p">,</span>
                  <span class="n">P</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">Q</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">active</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
                  <span class="n">P1</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">P2</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">P3</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
                  <span class="n">Q1</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">Q2</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">Q3</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
@@ -167,7 +167,7 @@
                  <span class="n">vset</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">droop</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">3.0</span><span class="p">,</span>
                  <span class="n">vset_min</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.9</span><span class="p">,</span> <span class="n">vset_max</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.1</span><span class="p">,</span>
                  <span class="n">r0</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">x0</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">r2</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">x2</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :param name:</span>
 <span class="sd">        :param idtag:</span>
@@ -197,7 +197,7 @@
 <span class="sd">        :param x0: Zero-sequence reactance on the system base.</span>
 <span class="sd">        :param r2: Negative-sequence resistance on the system base.</span>
 <span class="sd">        :param x2: Negative-sequence reactance on the system base.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="n">LoadParent</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                             <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
@@ -235,163 +235,163 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">R0</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Read zero-sequence resistance.</span>
+<span class="w">        </span><span class="sd">"""Read zero-sequence resistance.</span>
 
 <span class="sd">        :return: Resistance on the system base, pu.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_R0</span>
 
     <span class="nd">@R0</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">R0</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set zero-sequence resistance.</span>
+<span class="w">        </span><span class="sd">"""Set zero-sequence resistance.</span>
 
 <span class="sd">        :param value: Resistance on the system base, pu.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_R0</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">X0</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Read zero-sequence reactance.</span>
+<span class="w">        </span><span class="sd">"""Read zero-sequence reactance.</span>
 
 <span class="sd">        :return: Reactance on the system base, pu.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_X0</span>
 
     <span class="nd">@X0</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">X0</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set zero-sequence reactance.</span>
+<span class="w">        </span><span class="sd">"""Set zero-sequence reactance.</span>
 
 <span class="sd">        :param value: Reactance on the system base, pu.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_X0</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">R2</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Read negative-sequence resistance.</span>
+<span class="w">        </span><span class="sd">"""Read negative-sequence resistance.</span>
 
 <span class="sd">        :return: Resistance on the system base, pu.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_R2</span>
 
     <span class="nd">@R2</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">R2</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set negative-sequence resistance.</span>
+<span class="w">        </span><span class="sd">"""Set negative-sequence resistance.</span>
 
 <span class="sd">        :param value: Resistance on the system base, pu.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_R2</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">X2</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Read negative-sequence reactance.</span>
+<span class="w">        </span><span class="sd">"""Read negative-sequence reactance.</span>
 
 <span class="sd">        :return: Reactance on the system base, pu.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_X2</span>
 
     <span class="nd">@X2</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">X2</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set negative-sequence reactance.</span>
+<span class="w">        </span><span class="sd">"""Set negative-sequence reactance.</span>
 
 <span class="sd">        :param value: Reactance on the system base, pu.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_X2</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">control_mode</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StaticGeneratorControlMode</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Read the control objective.</span>
+<span class="w">        </span><span class="sd">"""Read the control objective.</span>
 
 <span class="sd">        :return: Reactive-power control mode.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_control_mode</span>
 
     <span class="nd">@control_mode</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">control_mode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">StaticGeneratorControlMode</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the control objective.</span>
+<span class="w">        </span><span class="sd">"""Set the control objective.</span>
 
 <span class="sd">        :param value: Reactive-power control mode.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_control_mode</span> <span class="o">=</span> <span class="n">StaticGeneratorControlMode</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">Vset</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Read the voltage reference.</span>
+<span class="w">        </span><span class="sd">"""Read the voltage reference.</span>
 
 <span class="sd">        :return: Reference in pu.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Vset</span>
 
     <span class="nd">@Vset</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">Vset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the voltage reference.</span>
+<span class="w">        </span><span class="sd">"""Set the voltage reference.</span>
 
 <span class="sd">        :param value: Reference in pu.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_Vset</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">droop</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Read the droop on the device rating.</span>
+<span class="w">        </span><span class="sd">"""Read the droop on the device rating.</span>
 
 <span class="sd">        :return: Droop in percent.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_droop</span>
 
     <span class="nd">@droop</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">droop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the droop on the device rating.</span>
+<span class="w">        </span><span class="sd">"""Set the droop on the device rating.</span>
 
 <span class="sd">        :param value: Droop in percent.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_droop</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">Vset_min</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Read the measured-voltage lower clamp.</span>
+<span class="w">        </span><span class="sd">"""Read the measured-voltage lower clamp.</span>
 
 <span class="sd">        :return: Lower clamp in pu.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Vset_min</span>
 
     <span class="nd">@Vset_min</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">Vset_min</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the measured-voltage lower clamp.</span>
+<span class="w">        </span><span class="sd">"""Set the measured-voltage lower clamp.</span>
 
 <span class="sd">        :param value: Lower clamp in pu.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_Vset_min</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">Vset_max</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Read the measured-voltage upper clamp.</span>
+<span class="w">        </span><span class="sd">"""Read the measured-voltage upper clamp.</span>
 
 <span class="sd">        :return: Upper clamp in pu.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Vset_max</span>
 
     <span class="nd">@Vset_max</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">Vset_max</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the measured-voltage upper clamp.</span>
+<span class="w">        </span><span class="sd">"""Set the measured-voltage upper clamp.</span>
 
 <span class="sd">        :param value: Upper clamp in pu.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_Vset_max</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">Snom</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return the reactive power lower limit</span>
 <span class="sd">        :return: value</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Snom</span>
 
     <span class="nd">@Snom</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">Snom</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Set the generator nominal power</span>
 <span class="sd">        if the reactive power curve was generated automatically, then it is refreshed</span>
 <span class="sd">        :param val: float value</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">val</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_Snom</span> <span class="o">=</span> <span class="n">val</span></div>
 

@@ -18,8 +18,9 @@ class BergeronHistorySymbolicRuntime(BergeronHistoryRuntime):
 
     This class reuses the existing numerical setup (phase reduction, Gc/H matrices,
     indexing) and exposes symbolic-friendly builders for:
-      - branch nodal injections
-      - history recursion update expressions
+
+    - branch nodal injections
+    - history recursion update expressions
     """
 
     __slots__ = (

@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Simulations.EMT.problems.emt_problem_multilinear &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Simulations.EMT.problems.emt_problem_multilinear &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/license.html">📜 License</a></li>
@@ -123,7 +124,7 @@
 <div class="viewcode-block" id="EmtProblemMultilinear">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.problems.html#VeraGridEngine.Simulations.EMT.problems.emt_problem_multilinear.EmtProblemMultilinear">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">EmtProblemMultilinear</span><span class="p">(</span><span class="n">EmtProblemDae</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    EMT DAE problem with multilinear-oriented utilities.</span>
 
 <span class="sd">    This class keeps the regular EMT symbolic assembly from ``EmtProblemDae``</span>
@@ -131,20 +132,20 @@
 <span class="sd">    ``RmsProblemMultilinear``. The EMT-specific part is parameter substitution:</span>
 <span class="sd">    EMT runtime and constant values are stored in ``_event_params_values`` and</span>
 <span class="sd">    ``_constant_params_values``.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;Phi&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;S&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;_ml_all_vars_sa&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;_ml_all_basis_vars&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;_ml_idx_vars&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;_ml_uid_to_basis_idx&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;_ml_uid_to_idx_full&quot;</span><span class="p">,</span>
+        <span class="s2">"Phi"</span><span class="p">,</span>
+        <span class="s2">"S"</span><span class="p">,</span>
+        <span class="s2">"_ml_all_vars_sa"</span><span class="p">,</span>
+        <span class="s2">"_ml_all_basis_vars"</span><span class="p">,</span>
+        <span class="s2">"_ml_idx_vars"</span><span class="p">,</span>
+        <span class="s2">"_ml_uid_to_basis_idx"</span><span class="p">,</span>
+        <span class="s2">"_ml_uid_to_idx_full"</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize the multilinear EMT problem.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Initialize the multilinear EMT problem."""</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">Phi</span><span class="p">:</span> <span class="n">sparse</span><span class="o">.</span><span class="n">csr_matrix</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">S</span><span class="p">:</span> <span class="n">sparse</span><span class="o">.</span><span class="n">csc_matrix</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
@@ -155,7 +156,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_ml_uid_to_idx_full</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_ensure_multilinear_index_cache</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Build and cache multilinear index maps reused across methods.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Build and cache multilinear index maps reused across methods."""</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ml_all_vars_sa</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span>
         <span class="k">else</span><span class="p">:</span>
@@ -173,12 +174,12 @@
 <div class="viewcode-block" id="EmtProblemMultilinear.build_multilinear_matrices">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.problems.html#VeraGridEngine.Simulations.EMT.problems.emt_problem_multilinear.EmtProblemMultilinear.build_multilinear_matrices">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">build_multilinear_matrices</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">sparse</span><span class="o">.</span><span class="n">csc_matrix</span><span class="p">,</span> <span class="n">sparse</span><span class="o">.</span><span class="n">csr_matrix</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Build ``(S, Phi)`` multilinear matrices from the EMT problem equations.</span>
 
 <span class="sd">        ``S`` encodes monomial structure as ``variables x monomials`` and</span>
 <span class="sd">        ``Phi`` encodes equation coefficients as ``equations x monomials``.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_ensure_multilinear_index_cache</span><span class="p">()</span>
         <span class="n">all_eqs</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_state_eqs</span><span class="p">)</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_algebraic_eqs</span><span class="p">)</span>
         <span class="n">all_vars</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ml_all_basis_vars</span>
@@ -259,7 +260,7 @@
 <div class="viewcode-block" id="EmtProblemMultilinear.linearize_matrices">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.problems.html#VeraGridEngine.Simulations.EMT.problems.emt_problem_multilinear.EmtProblemMultilinear.linearize_matrices">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">linearize_matrices</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">sparse</span><span class="o">.</span><span class="n">csr_matrix</span><span class="p">,</span> <span class="n">sparse</span><span class="o">.</span><span class="n">csc_matrix</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return ``(Phi, S)`` for callers that use the linearize-matrices API name.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Return ``(Phi, S)`` for callers that use the linearize-matrices API name."""</span>
         <span class="n">S</span><span class="p">,</span> <span class="n">Phi</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">build_multilinear_matrices</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">Phi</span><span class="p">,</span> <span class="n">S</span></div>
 
@@ -267,12 +268,12 @@
 <div class="viewcode-block" id="EmtProblemMultilinear.get_floquet_jacobian_evaluator">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.problems.html#VeraGridEngine.Simulations.EMT.problems.emt_problem_multilinear.EmtProblemMultilinear.get_floquet_jacobian_evaluator">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_floquet_jacobian_evaluator</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">default_jacobian_evaluator</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return an EMT Floquet Jacobian evaluator backed by multilinear ``S/Phi``.</span>
+<span class="w">        </span><span class="sd">"""Return an EMT Floquet Jacobian evaluator backed by multilinear ``S/Phi``.</span>
 
 <span class="sd">        The returned callable follows the compiled EMT Jacobian evaluator signature</span>
 <span class="sd">        used by ``BlockEmtFloquetOperator`` and returns the discrete residual</span>
 <span class="sd">        Jacobian for the current integration method.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_ensure_multilinear_index_cache</span><span class="p">()</span>
         <span class="n">S</span><span class="p">,</span> <span class="n">Phi</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">build_multilinear_matrices</span><span class="p">()</span>
 
@@ -380,13 +381,13 @@
 <div class="viewcode-block" id="EmtProblemMultilinear.get_floquet_ak_stack">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.problems.html#VeraGridEngine.Simulations.EMT.problems.emt_problem_multilinear.EmtProblemMultilinear.get_floquet_ak_stack">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_floquet_ak_stack</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">trajectory</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">jac_evaluator</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">static_params</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Force the existing LU-cached Floquet operator for multilinear EMT.</span>
+<span class="w">        </span><span class="sd">"""Force the existing LU-cached Floquet operator for multilinear EMT.</span>
 
 <span class="sd">        The current explicit ``A_k`` stack shortcut is a one-step state-map path,</span>
 <span class="sd">        while the LU operator already handles the trapezoidal/BDF history terms used</span>
 <span class="sd">        by EMT simulations. Returning ``None`` keeps the driver polymorphic and routes</span>
 <span class="sd">        it through ``get_floquet_jacobian_evaluator``.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="kc">None</span></div>
 
 
@@ -406,7 +407,7 @@
 
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="s2">&quot;EmtProblemMultilinear&quot;</span><span class="p">,</span>
+    <span class="s2">"EmtProblemMultilinear"</span><span class="p">,</span>
 <span class="p">]</span>
 </pre></div>
 

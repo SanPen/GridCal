@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Simulations.StateEstimation.state_stimation_driver &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Simulations.StateEstimation.state_stimation_driver &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/license.html">📜 License</a></li>
@@ -128,22 +129,22 @@
 <div class="viewcode-block" id="StateEstimationOptions">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.StateEstimation.html#VeraGridEngine.Simulations.StateEstimation.state_stimation_driver.StateEstimationOptions">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">StateEstimationOptions</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    StateEstimationOptions</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;solver&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;tol&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;max_iter&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;verbose&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;prefer_correct&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;c_threshold&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;fixed_slack&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;observability_analysis&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;add_pseudo_measurements&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;pseudo_meas_std&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;run_meas_profiling&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;include_line_measurements_on_both_ends&quot;</span><span class="p">,</span>
+        <span class="s2">"solver"</span><span class="p">,</span>
+        <span class="s2">"tol"</span><span class="p">,</span>
+        <span class="s2">"max_iter"</span><span class="p">,</span>
+        <span class="s2">"verbose"</span><span class="p">,</span>
+        <span class="s2">"prefer_correct"</span><span class="p">,</span>
+        <span class="s2">"c_threshold"</span><span class="p">,</span>
+        <span class="s2">"fixed_slack"</span><span class="p">,</span>
+        <span class="s2">"observability_analysis"</span><span class="p">,</span>
+        <span class="s2">"add_pseudo_measurements"</span><span class="p">,</span>
+        <span class="s2">"pseudo_meas_std"</span><span class="p">,</span>
+        <span class="s2">"run_meas_profiling"</span><span class="p">,</span>
+        <span class="s2">"include_line_measurements_on_both_ends"</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
@@ -159,7 +160,7 @@
                  <span class="n">run_measurement_profiling</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
                  <span class="n">include_line_measurements_on_both_ends</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
                  <span class="n">pseudo_meas_std</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :param solver:</span>
 <span class="sd">        :param tol: Tolerance</span>
@@ -173,7 +174,7 @@
 <span class="sd">        :param run_measurement_profiling:</span>
 <span class="sd">        :param include_line_measurements_on_both_ends:</span>
 <span class="sd">        :param pseudo_meas_std:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">solver</span> <span class="o">=</span> <span class="n">solver</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">tol</span> <span class="o">=</span> <span class="n">tol</span>
@@ -194,18 +195,18 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.StateEstimation.html#VeraGridEngine.Simulations.StateEstimation.state_stimation_driver.StateEstimationConvergenceReport">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">StateEstimationConvergenceReport</span><span class="p">(</span><span class="n">ConvergenceReport</span><span class="p">):</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;bad_data_detected&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;unobservable_buses&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;bus_contribution&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;pseudo_measurements&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;_is_observable&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;measurement_profile&quot;</span><span class="p">,</span>
+        <span class="s2">"bad_data_detected"</span><span class="p">,</span>
+        <span class="s2">"unobservable_buses"</span><span class="p">,</span>
+        <span class="s2">"bus_contribution"</span><span class="p">,</span>
+        <span class="s2">"pseudo_measurements"</span><span class="p">,</span>
+        <span class="s2">"_is_observable"</span><span class="p">,</span>
+        <span class="s2">"measurement_profile"</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Constructor</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">bad_data_detected</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">unobservable_buses</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
@@ -227,7 +228,7 @@
                <span class="n">pseudo_measurements</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
                <span class="n">unobservable_buses</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
                <span class="n">measurement_profile</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :param method:</span>
 <span class="sd">        :param converged:</span>
@@ -241,8 +242,8 @@
 <span class="sd">        :param unobservable_buses:</span>
 <span class="sd">        :param measurement_profile:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># Call parent&#39;s add method for common parameters</span>
+<span class="sd">        """</span>
+        <span class="c1"># Call parent's add method for common parameters</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">method</span><span class="p">,</span> <span class="n">converged</span><span class="p">,</span> <span class="n">error</span><span class="p">,</span> <span class="n">elapsed</span><span class="p">,</span> <span class="n">iterations</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">bad_data_detected</span> <span class="o">=</span> <span class="n">bad_data_detected</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_is_observable</span> <span class="o">=</span> <span class="n">is_observable</span>
@@ -254,10 +255,10 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">is_observable</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get info is the island was observable</span>
 <span class="sd">        :return: List of is_obsevable booleans</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_observable</span>
 
     <span class="nd">@is_observable</span><span class="o">.</span><span class="n">setter</span>
@@ -267,73 +268,73 @@
 <div class="viewcode-block" id="StateEstimationConvergenceReport.get_bad_data_detected">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.StateEstimation.html#VeraGridEngine.Simulations.StateEstimation.state_stimation_driver.StateEstimationConvergenceReport.get_bad_data_detected">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_bad_data_detected</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get bad data detection results</span>
 <span class="sd">        :return: List of bad data detection results</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">bad_data_detected</span></div>
 
 
 <div class="viewcode-block" id="StateEstimationConvergenceReport.get_unobservable_buses">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.StateEstimation.html#VeraGridEngine.Simulations.StateEstimation.state_stimation_driver.StateEstimationConvergenceReport.get_unobservable_buses">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_unobservable_buses</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">unobservable_buses</span></div>
 
 
 <div class="viewcode-block" id="StateEstimationConvergenceReport.get_bus_contribution">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.StateEstimation.html#VeraGridEngine.Simulations.StateEstimation.state_stimation_driver.StateEstimationConvergenceReport.get_bus_contribution">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_bus_contribution</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">bus_contribution</span></div>
 
 
 <div class="viewcode-block" id="StateEstimationConvergenceReport.get_pseudo_measurements">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.StateEstimation.html#VeraGridEngine.Simulations.StateEstimation.state_stimation_driver.StateEstimationConvergenceReport.get_pseudo_measurements">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_pseudo_measurements</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">pseudo_measurements</span></div>
 
 
 <div class="viewcode-block" id="StateEstimationConvergenceReport.add_unobservable_buses">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.StateEstimation.html#VeraGridEngine.Simulations.StateEstimation.state_stimation_driver.StateEstimationConvergenceReport.add_unobservable_buses">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">add_unobservable_buses</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">unobservable_buses</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :param unobservable_buses:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">unobservable_buses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">unobservable_buses</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="StateEstimationConvergenceReport.add_bus_contribution">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.StateEstimation.html#VeraGridEngine.Simulations.StateEstimation.state_stimation_driver.StateEstimationConvergenceReport.add_bus_contribution">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">add_bus_contribution</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bus_contribution</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :param bus_contribution:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">bus_contribution</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bus_contribution</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="StateEstimationConvergenceReport.add_pseudo_measurements">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.StateEstimation.html#VeraGridEngine.Simulations.StateEstimation.state_stimation_driver.StateEstimationConvergenceReport.add_pseudo_measurements">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">add_pseudo_measurements</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">se_input</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :param se_input:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">se_input</span><span class="o">.</span><span class="n">p_inj</span><span class="p">:</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">PseudoMeasurement</span><span class="p">):</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">pseudo_measurements</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">m</span><span class="p">)</span></div>
@@ -342,21 +343,21 @@
 <div class="viewcode-block" id="StateEstimationConvergenceReport.add_measurement_profile">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.StateEstimation.html#VeraGridEngine.Simulations.StateEstimation.state_stimation_driver.StateEstimationConvergenceReport.add_measurement_profile">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">add_measurement_profile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">meas_profile</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :param meas_profile:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">measurement_profile</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">meas_profile</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="StateEstimationConvergenceReport.get_measurement_profile">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.StateEstimation.html#VeraGridEngine.Simulations.StateEstimation.state_stimation_driver.StateEstimationConvergenceReport.get_measurement_profile">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_measurement_profile</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">measurement_profile</span></div>
 </div>
 
@@ -365,16 +366,16 @@
 <div class="viewcode-block" id="StateEstimationDriver">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.StateEstimation.html#VeraGridEngine.Simulations.StateEstimation.state_stimation_driver.StateEstimationDriver">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">StateEstimationDriver</span><span class="p">(</span><span class="n">DriverTemplate</span><span class="p">):</span>
-    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;options&quot;</span><span class="p">,)</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"options"</span><span class="p">,)</span>
 
-    <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;State estimation&#39;</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s1">'State estimation'</span>
     <span class="n">tpe</span> <span class="o">=</span> <span class="n">SimulationTypes</span><span class="o">.</span><span class="n">StateEstimation_run</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">circuit</span><span class="p">:</span> <span class="n">MultiCircuit</span><span class="p">,</span> <span class="n">options</span><span class="p">:</span> <span class="n">StateEstimationOptions</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Constructor</span>
 <span class="sd">        :param circuit: circuit object</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="n">DriverTemplate</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">grid</span><span class="o">=</span><span class="n">circuit</span><span class="p">)</span>
 
@@ -386,10 +387,10 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.StateEstimation.html#VeraGridEngine.Simulations.StateEstimation.state_stimation_driver.StateEstimationDriver.collect_measurements">[docs]</a>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">collect_measurements</span><span class="p">(</span><span class="n">circuit</span><span class="p">:</span> <span class="n">MultiCircuit</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StateEstimationInput</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Form the input from the circuit measurements</span>
 <span class="sd">        :return: nothing, the input object is stored in this class</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">se_input</span> <span class="o">=</span> <span class="n">StateEstimationInput</span><span class="p">()</span>
 
         <span class="c1"># bus measurements</span>
@@ -457,12 +458,12 @@
 <div class="viewcode-block" id="StateEstimationDriver.run">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.StateEstimation.html#VeraGridEngine.Simulations.StateEstimation.state_stimation_driver.StateEstimationDriver.run">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Run state estimation</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">tic</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s2">&quot;Compiling and configuring...&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s2">"Compiling and configuring..."</span><span class="p">)</span>
         <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">buses</span><span class="p">)</span>
         <span class="n">m</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">get_branch_number</span><span class="p">(</span><span class="n">add_vsc</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                                         <span class="n">add_hvdc</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
@@ -635,9 +636,9 @@
                                                       <span class="n">fixed_slack</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">fixed_slack</span><span class="p">,</span>
                                                       <span class="n">logger</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="p">)</span>
             <span class="k">elif</span> <span class="n">SolverType</span><span class="o">.</span><span class="n">NoSolver</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Solver_Type is not defined explicitly to run observability analysis only&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Solver_Type is not defined explicitly to run observability analysis only"</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;State Estimation solver type not recognized: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"State Estimation solver type not recognized: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
             <span class="c1"># we need to switch is_observable back to True in case the pseudo measurements were added and SE converged</span>
             <span class="c1"># if not is_observable and self.options.add_pseudo_measurements and solution.converged:</span>

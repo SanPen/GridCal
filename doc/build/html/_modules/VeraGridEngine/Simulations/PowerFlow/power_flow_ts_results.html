@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Simulations.PowerFlow.power_flow_ts_results &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Simulations.PowerFlow.power_flow_ts_results &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/license.html">📜 License</a></li>
@@ -127,90 +128,90 @@
 <span class="k">class</span><span class="w"> </span><span class="nc">PowerFlowTimeSeriesResults</span><span class="p">(</span><span class="n">ResultsTemplate</span><span class="p">):</span>
 
     <span class="n">LOCAL_RESULTS_DECLARATIONS</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;bus_names&#39;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">StrVec</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
-        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;branch_names&#39;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">StrVec</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
-        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;hvdc_names&#39;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">StrVec</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
-        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;vsc_names&#39;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">StrVec</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
-        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;gen_names&#39;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">StrVec</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
-        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;batt_names&#39;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">StrVec</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
-        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;sh_names&#39;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">StrVec</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
-        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;bus_types&#39;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">IntVec</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
-        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;time_array&#39;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">DateVec</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
-        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;F&#39;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">IntVec</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
-        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;T&#39;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">IntVec</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
-        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;hvdc_F&#39;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">IntVec</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
-        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;hvdc_T&#39;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">IntVec</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
-        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;bus_area_indices&#39;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">IntVec</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
-        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;area_names&#39;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">IntVec</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
-        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;S&#39;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">CxMat</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
-        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;voltage&#39;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">CxMat</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
-        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;Sf&#39;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">CxMat</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
-        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;St&#39;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">CxMat</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
-        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;If&#39;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">CxMat</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
-        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;It&#39;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">CxMat</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
-        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;tap_module&#39;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">Mat</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
-        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;tap_angle&#39;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">Mat</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
-        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;Vbranch&#39;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">CxMat</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
-        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;loading&#39;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">CxMat</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
-        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;losses&#39;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">CxMat</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
-        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;hvdc_losses&#39;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">Mat</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
-        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;hvdc_Pf&#39;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">Mat</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
-        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;hvdc_Pt&#39;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">Mat</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
-        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;hvdc_loading&#39;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">Mat</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
-        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;losses_vsc&#39;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">Mat</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
-        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;Pf_vsc&#39;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">Mat</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
-        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;Pfn_vsc&#39;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">Mat</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
-        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;St_vsc&#39;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">CxMat</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
-        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;If_vsc&#39;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">Mat</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
-        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;It_vsc&#39;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">CxMat</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
-        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;loading_vsc&#39;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">Mat</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
-        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;gen_p&#39;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">Mat</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
-        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;gen_q&#39;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">Mat</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
-        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;battery_p&#39;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">Mat</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
-        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;battery_q&#39;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">Mat</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
-        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;shunt_q&#39;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">Mat</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
-        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;error_values&#39;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">Vec</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
-        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;converged_values&#39;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">BoolVec</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'bus_names'</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">StrVec</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'branch_names'</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">StrVec</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'hvdc_names'</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">StrVec</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'vsc_names'</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">StrVec</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'gen_names'</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">StrVec</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'batt_names'</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">StrVec</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'sh_names'</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">StrVec</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'bus_types'</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">IntVec</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'time_array'</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">DateVec</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'F'</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">IntVec</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'T'</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">IntVec</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'hvdc_F'</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">IntVec</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'hvdc_T'</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">IntVec</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'bus_area_indices'</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">IntVec</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'area_names'</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">IntVec</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'S'</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">CxMat</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'voltage'</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">CxMat</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'Sf'</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">CxMat</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'St'</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">CxMat</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'If'</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">CxMat</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'It'</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">CxMat</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'tap_module'</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">Mat</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'tap_angle'</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">Mat</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'Vbranch'</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">CxMat</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'loading'</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">CxMat</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'losses'</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">CxMat</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'hvdc_losses'</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">Mat</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'hvdc_Pf'</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">Mat</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'hvdc_Pt'</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">Mat</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'hvdc_loading'</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">Mat</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'losses_vsc'</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">Mat</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'Pf_vsc'</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">Mat</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'Pfn_vsc'</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">Mat</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'St_vsc'</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">CxMat</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'If_vsc'</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">Mat</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'It_vsc'</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">CxMat</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'loading_vsc'</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">Mat</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'gen_p'</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">Mat</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'gen_q'</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">Mat</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'battery_p'</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">Mat</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'battery_q'</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">Mat</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'shunt_q'</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">Mat</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'error_values'</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">Vec</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'converged_values'</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">BoolVec</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
     <span class="p">)</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;bus_names&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;branch_names&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;hvdc_names&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;vsc_names&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;gen_names&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;batt_names&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;sh_names&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;bus_types&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;voltage&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;S&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Sf&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;St&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;If&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;It&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;tap_module&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;tap_angle&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Vbranch&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;loading&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;losses&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;hvdc_losses&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;hvdc_Pf&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;hvdc_Pt&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;hvdc_loading&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Pf_vsc&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Pfn_vsc&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;St_vsc&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;If_vsc&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;It_vsc&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;loading_vsc&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;losses_vsc&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;gen_p&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;gen_q&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;battery_p&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;battery_q&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;shunt_q&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;error_values&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;converged_values&quot;</span><span class="p">,</span>
+        <span class="s2">"bus_names"</span><span class="p">,</span>
+        <span class="s2">"branch_names"</span><span class="p">,</span>
+        <span class="s2">"hvdc_names"</span><span class="p">,</span>
+        <span class="s2">"vsc_names"</span><span class="p">,</span>
+        <span class="s2">"gen_names"</span><span class="p">,</span>
+        <span class="s2">"batt_names"</span><span class="p">,</span>
+        <span class="s2">"sh_names"</span><span class="p">,</span>
+        <span class="s2">"bus_types"</span><span class="p">,</span>
+        <span class="s2">"voltage"</span><span class="p">,</span>
+        <span class="s2">"S"</span><span class="p">,</span>
+        <span class="s2">"Sf"</span><span class="p">,</span>
+        <span class="s2">"St"</span><span class="p">,</span>
+        <span class="s2">"If"</span><span class="p">,</span>
+        <span class="s2">"It"</span><span class="p">,</span>
+        <span class="s2">"tap_module"</span><span class="p">,</span>
+        <span class="s2">"tap_angle"</span><span class="p">,</span>
+        <span class="s2">"Vbranch"</span><span class="p">,</span>
+        <span class="s2">"loading"</span><span class="p">,</span>
+        <span class="s2">"losses"</span><span class="p">,</span>
+        <span class="s2">"hvdc_losses"</span><span class="p">,</span>
+        <span class="s2">"hvdc_Pf"</span><span class="p">,</span>
+        <span class="s2">"hvdc_Pt"</span><span class="p">,</span>
+        <span class="s2">"hvdc_loading"</span><span class="p">,</span>
+        <span class="s2">"Pf_vsc"</span><span class="p">,</span>
+        <span class="s2">"Pfn_vsc"</span><span class="p">,</span>
+        <span class="s2">"St_vsc"</span><span class="p">,</span>
+        <span class="s2">"If_vsc"</span><span class="p">,</span>
+        <span class="s2">"It_vsc"</span><span class="p">,</span>
+        <span class="s2">"loading_vsc"</span><span class="p">,</span>
+        <span class="s2">"losses_vsc"</span><span class="p">,</span>
+        <span class="s2">"gen_p"</span><span class="p">,</span>
+        <span class="s2">"gen_q"</span><span class="p">,</span>
+        <span class="s2">"battery_p"</span><span class="p">,</span>
+        <span class="s2">"battery_q"</span><span class="p">,</span>
+        <span class="s2">"shunt_q"</span><span class="p">,</span>
+        <span class="s2">"error_values"</span><span class="p">,</span>
+        <span class="s2">"converged_values"</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
@@ -232,7 +233,7 @@
                  <span class="n">sh_names</span><span class="p">:</span> <span class="n">StrVec</span><span class="p">,</span>
                  <span class="n">area_names</span><span class="p">:</span> <span class="n">StrVec</span><span class="p">,</span>
                  <span class="n">clustering_results</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">ClusteringResults</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :param n: Number of buses.</span>
 <span class="sd">        :param m: Number of AC branches.</span>
@@ -252,9 +253,9 @@
 <span class="sd">        :param sh_names: Shunt-name vector.</span>
 <span class="sd">        :param area_names: Area-name vector.</span>
 <span class="sd">        :param clustering_results: Optional clustering metadata.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">ResultsTemplate</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
-                                 <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Power flow time series&#39;</span><span class="p">,</span>
+                                 <span class="n">name</span><span class="o">=</span><span class="s1">'Power flow time series'</span><span class="p">,</span>
                                  <span class="n">available_results</span><span class="o">=</span><span class="p">{</span>
                                      <span class="n">ResultTypes</span><span class="o">.</span><span class="n">BusResults</span><span class="p">:</span> <span class="p">[</span>
                                          <span class="n">ResultTypes</span><span class="o">.</span><span class="n">BusVoltageModule</span><span class="p">,</span>
@@ -383,22 +384,22 @@
 <div class="viewcode-block" id="PowerFlowTimeSeriesResults.apply_new_time_series_rates">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow.html#VeraGridEngine.Simulations.PowerFlow.power_flow_ts_results.PowerFlowTimeSeriesResults.apply_new_time_series_rates">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">apply_new_time_series_rates</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nc</span><span class="p">:</span> <span class="n">NumericalCircuit</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Recompute the loading with new rates</span>
 
 <span class="sd">        :param nc: NumericalCircuit instance.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">loading</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Sf</span> <span class="o">/</span> <span class="p">(</span><span class="n">nc</span><span class="o">.</span><span class="n">passive_branch_data</span><span class="o">.</span><span class="n">rates</span> <span class="o">+</span> <span class="mf">1e-9</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="PowerFlowTimeSeriesResults.fill_circuit_info">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow.html#VeraGridEngine.Simulations.PowerFlow.power_flow_ts_results.PowerFlowTimeSeriesResults.fill_circuit_info">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">fill_circuit_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">grid</span><span class="p">:</span> <span class="n">MultiCircuit</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :param grid:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">area_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">elm</span><span class="p">:</span> <span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">elm</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">grid</span><span class="o">.</span><span class="n">get_areas</span><span class="p">())}</span>
         <span class="n">bus_dict</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">get_bus_index_dict</span><span class="p">()</span>
 
@@ -423,12 +424,12 @@
 <div class="viewcode-block" id="PowerFlowTimeSeriesResults.set_at">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow.html#VeraGridEngine.Simulations.PowerFlow.power_flow_ts_results.PowerFlowTimeSeriesResults.set_at">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">set_at</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">results</span><span class="p">:</span> <span class="n">PowerFlowResults</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Store one snapshot power-flow solution into a time position.</span>
 
 <span class="sd">        :param t: Time index.</span>
 <span class="sd">        :param results: Snapshot power-flow results.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">voltage</span><span class="p">[</span><span class="n">t</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">voltage</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">S</span><span class="p">[</span><span class="n">t</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">Sbus</span>
@@ -466,14 +467,14 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow.html#VeraGridEngine.Simulations.PowerFlow.power_flow_ts_results.PowerFlowTimeSeriesResults.merge_if">[docs]</a>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">merge_if</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">arr</span><span class="p">,</span> <span class="n">ind</span><span class="p">,</span> <span class="n">cols</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        @param df:</span>
 <span class="sd">        @param arr:</span>
 <span class="sd">        @param ind:</span>
 <span class="sd">        @param cols:</span>
 <span class="sd">        @return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">obj</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">arr</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">ind</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="n">cols</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">df</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">df</span> <span class="o">=</span> <span class="n">obj</span>
@@ -486,11 +487,11 @@
 <div class="viewcode-block" id="PowerFlowTimeSeriesResults.to_json">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow.html#VeraGridEngine.Simulations.PowerFlow.power_flow_ts_results.PowerFlowTimeSeriesResults.to_json">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">to_json</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fname</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Export as json</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">output_file</span><span class="p">:</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="s2">"w"</span><span class="p">)</span> <span class="k">as</span> <span class="n">output_file</span><span class="p">:</span>
             <span class="n">json_str</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_dict</span><span class="p">())</span>
             <span class="n">output_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">json_str</span><span class="p">)</span></div>
 
@@ -498,25 +499,25 @@
 <div class="viewcode-block" id="PowerFlowTimeSeriesResults.get_ordered_area_names">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow.html#VeraGridEngine.Simulations.PowerFlow.power_flow_ts_results.PowerFlowTimeSeriesResults.get_ordered_area_names">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_ordered_area_names</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">na</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">area_names</span><span class="p">)</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">na</span> <span class="o">*</span> <span class="n">na</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="p">[</span><span class="s1">''</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">na</span> <span class="o">*</span> <span class="n">na</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">a</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">area_names</span><span class="p">):</span>
             <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">area_names</span><span class="p">):</span>
-                <span class="n">x</span><span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="n">na</span> <span class="o">+</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">a</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">b</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="n">x</span><span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="n">na</span> <span class="o">+</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">a</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">b</span><span class="si">}</span><span class="s2">"</span>
         <span class="k">return</span> <span class="n">x</span></div>
 
 
 <div class="viewcode-block" id="PowerFlowTimeSeriesResults.get_inter_area_flows">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow.html#VeraGridEngine.Simulations.PowerFlow.power_flow_ts_results.PowerFlowTimeSeriesResults.get_inter_area_flows">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_inter_area_flows</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">na</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">area_names</span><span class="p">)</span>
         <span class="n">nt</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">time_array</span><span class="p">)</span>
         <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nt</span><span class="p">,</span> <span class="n">na</span> <span class="o">*</span> <span class="n">na</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">)</span>
@@ -541,11 +542,11 @@
 <div class="viewcode-block" id="PowerFlowTimeSeriesResults.get_branch_values_per_area">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow.html#VeraGridEngine.Simulations.PowerFlow.power_flow_ts_results.PowerFlowTimeSeriesResults.get_branch_values_per_area">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_branch_values_per_area</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">branch_values</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Mat</span><span class="p">,</span> <span class="n">CxMat</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">Mat</span><span class="p">,</span> <span class="n">CxMat</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :param branch_values:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">na</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">area_names</span><span class="p">)</span>
         <span class="n">nt</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">time_array</span><span class="p">)</span>
         <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nt</span><span class="p">,</span> <span class="n">na</span> <span class="o">*</span> <span class="n">na</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">branch_values</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
@@ -561,11 +562,11 @@
 <div class="viewcode-block" id="PowerFlowTimeSeriesResults.get_hvdc_values_per_area">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow.html#VeraGridEngine.Simulations.PowerFlow.power_flow_ts_results.PowerFlowTimeSeriesResults.get_hvdc_values_per_area">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_hvdc_values_per_area</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hvdc_values</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :param hvdc_values:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">na</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">area_names</span><span class="p">)</span>
         <span class="n">nt</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">time_array</span><span class="p">)</span>
         <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nt</span><span class="p">,</span> <span class="n">na</span> <span class="o">*</span> <span class="n">na</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">hvdc_values</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
@@ -581,12 +582,12 @@
 <div class="viewcode-block" id="PowerFlowTimeSeriesResults.get_bus_values_per_area">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow.html#VeraGridEngine.Simulations.PowerFlow.power_flow_ts_results.PowerFlowTimeSeriesResults.get_bus_values_per_area">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_bus_values_per_area</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bus_values</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Mat</span><span class="p">,</span> <span class="n">CxMat</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">Mat</span><span class="p">,</span> <span class="n">CxMat</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Aggregate bus-related time-series values per area.</span>
 
 <span class="sd">        :param bus_values: Time-series bus values with shape ``(nt, nbus)``.</span>
 <span class="sd">        :return: Area-aggregated values with shape ``(nt, n_area)``.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">na</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">area_names</span><span class="p">)</span>
         <span class="n">nt</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">time_array</span><span class="p">)</span>
         <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nt</span><span class="p">,</span> <span class="n">na</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">bus_values</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
@@ -603,11 +604,11 @@
 <div class="viewcode-block" id="PowerFlowTimeSeriesResults.mdl">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow.html#VeraGridEngine.Simulations.PowerFlow.power_flow_ts_results.PowerFlowTimeSeriesResults.mdl">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">mdl</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">result_type</span><span class="p">:</span> <span class="n">ResultTypes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ResultsTable</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :param result_type:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="k">if</span> <span class="n">result_type</span> <span class="o">==</span> <span class="n">ResultTypes</span><span class="o">.</span><span class="n">BusVoltageModule</span><span class="p">:</span>
 
@@ -617,8 +618,8 @@
                                 <span class="n">columns</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">bus_names</span><span class="p">,</span>
                                 <span class="n">cols_device_type</span><span class="o">=</span><span class="n">DeviceType</span><span class="o">.</span><span class="n">BusDevice</span><span class="p">,</span>
                                 <span class="n">title</span><span class="o">=</span><span class="n">result_type</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
-                                <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;(p.u.)&#39;</span><span class="p">,</span>
-                                <span class="n">units</span><span class="o">=</span><span class="s1">&#39;(p.u.)&#39;</span><span class="p">)</span>
+                                <span class="n">ylabel</span><span class="o">=</span><span class="s1">'(p.u.)'</span><span class="p">,</span>
+                                <span class="n">units</span><span class="o">=</span><span class="s1">'(p.u.)'</span><span class="p">)</span>
 
         <span class="k">elif</span> <span class="n">result_type</span> <span class="o">==</span> <span class="n">ResultTypes</span><span class="o">.</span><span class="n">BusVoltageAngle</span><span class="p">:</span>
 
@@ -628,8 +629,8 @@
                                 <span class="n">columns</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">bus_names</span><span class="p">,</span>
                                 <span class="n">cols_device_type</span><span class="o">=</span><span class="n">DeviceType</span><span class="o">.</span><span class="n">BusDevice</span><span class="p">,</span>
                                 <span class="n">title</span><span class="o">=</span><span class="n">result_type</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
-                                <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;(deg)&#39;</span><span class="p">,</span>
-                                <span class="n">units</span><span class="o">=</span><span class="s1">&#39;(deg)&#39;</span><span class="p">)</span>
+                                <span class="n">ylabel</span><span class="o">=</span><span class="s1">'(deg)'</span><span class="p">,</span>
+                                <span class="n">units</span><span class="o">=</span><span class="s1">'(deg)'</span><span class="p">)</span>
 
         <span class="k">elif</span> <span class="n">result_type</span> <span class="o">==</span> <span class="n">ResultTypes</span><span class="o">.</span><span class="n">BusVoltagePolarPlot</span><span class="p">:</span>
             <span class="n">vm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">voltage</span><span class="p">)</span>
@@ -640,8 +641,8 @@
             <span class="n">data</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
 
             <span class="k">for</span> <span class="n">bus_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">bus_names</span><span class="p">:</span>
-                <span class="n">module_columns</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">bus_name</span><span class="si">}</span><span class="s2"> |V|&quot;</span><span class="p">)</span>
-                <span class="n">angle_columns</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">bus_name</span><span class="si">}</span><span class="s2"> angle (deg)&quot;</span><span class="p">)</span>
+                <span class="n">module_columns</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">bus_name</span><span class="si">}</span><span class="s2"> |V|"</span><span class="p">)</span>
+                <span class="n">angle_columns</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">bus_name</span><span class="si">}</span><span class="s2"> angle (deg)"</span><span class="p">)</span>
 
             <span class="n">column_names</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">module_columns</span> <span class="o">+</span> <span class="n">angle_columns</span><span class="p">)</span>
             <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">vm</span><span class="p">,</span> <span class="n">va</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
@@ -653,9 +654,9 @@
                                 <span class="n">columns</span><span class="o">=</span><span class="n">column_names</span><span class="p">,</span>
                                 <span class="n">cols_device_type</span><span class="o">=</span><span class="n">DeviceType</span><span class="o">.</span><span class="n">NoDevice</span><span class="p">,</span>
                                 <span class="n">title</span><span class="o">=</span><span class="n">result_type</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
-                                <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;(p.u., deg)&#39;</span><span class="p">,</span>
+                                <span class="n">ylabel</span><span class="o">=</span><span class="s1">'(p.u., deg)'</span><span class="p">,</span>
                                 <span class="n">plot_type</span><span class="o">=</span><span class="n">ResultTablePlotType</span><span class="o">.</span><span class="n">POLAR</span><span class="p">,</span>
-                                <span class="n">units</span><span class="o">=</span><span class="s1">&#39;(p.u., deg)&#39;</span><span class="p">)</span>
+                                <span class="n">units</span><span class="o">=</span><span class="s1">'(p.u., deg)'</span><span class="p">)</span>
 
         <span class="k">elif</span> <span class="n">result_type</span> <span class="o">==</span> <span class="n">ResultTypes</span><span class="o">.</span><span class="n">BusActivePower</span><span class="p">:</span>
 
@@ -665,8 +666,8 @@
                                 <span class="n">columns</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">bus_names</span><span class="p">,</span>
                                 <span class="n">cols_device_type</span><span class="o">=</span><span class="n">DeviceType</span><span class="o">.</span><span class="n">BusDevice</span><span class="p">,</span>
                                 <span class="n">title</span><span class="o">=</span><span class="n">result_type</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
-                                <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;(MW)&#39;</span><span class="p">,</span>
-                                <span class="n">units</span><span class="o">=</span><span class="s1">&#39;(MW)&#39;</span><span class="p">)</span>
+                                <span class="n">ylabel</span><span class="o">=</span><span class="s1">'(MW)'</span><span class="p">,</span>
+                                <span class="n">units</span><span class="o">=</span><span class="s1">'(MW)'</span><span class="p">)</span>
 
         <span class="k">elif</span> <span class="n">result_type</span> <span class="o">==</span> <span class="n">ResultTypes</span><span class="o">.</span><span class="n">BusReactivePower</span><span class="p">:</span>
 
@@ -676,8 +677,8 @@
                                 <span class="n">columns</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">bus_names</span><span class="p">,</span>
                                 <span class="n">cols_device_type</span><span class="o">=</span><span class="n">DeviceType</span><span class="o">.</span><span class="n">BusDevice</span><span class="p">,</span>
                                 <span class="n">title</span><span class="o">=</span><span class="n">result_type</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
-                                <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;(MVAr)&#39;</span><span class="p">,</span>
-                                <span class="n">units</span><span class="o">=</span><span class="s1">&#39;(MVAr)&#39;</span><span class="p">)</span>
+                                <span class="n">ylabel</span><span class="o">=</span><span class="s1">'(MVAr)'</span><span class="p">,</span>
+                                <span class="n">units</span><span class="o">=</span><span class="s1">'(MVAr)'</span><span class="p">)</span>
 
         <span class="k">elif</span> <span class="n">result_type</span> <span class="o">==</span> <span class="n">ResultTypes</span><span class="o">.</span><span class="n">BranchActivePowerFrom</span><span class="p">:</span>
 
@@ -687,8 +688,8 @@
                                 <span class="n">columns</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">branch_names</span><span class="p">,</span>
                                 <span class="n">cols_device_type</span><span class="o">=</span><span class="n">DeviceType</span><span class="o">.</span><span class="n">BranchDevice</span><span class="p">,</span>
                                 <span class="n">title</span><span class="o">=</span><span class="n">result_type</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
-                                <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;(MW)&#39;</span><span class="p">,</span>
-                                <span class="n">units</span><span class="o">=</span><span class="s1">&#39;(MW)&#39;</span><span class="p">)</span>
+                                <span class="n">ylabel</span><span class="o">=</span><span class="s1">'(MW)'</span><span class="p">,</span>
+                                <span class="n">units</span><span class="o">=</span><span class="s1">'(MW)'</span><span class="p">)</span>
 
         <span class="k">elif</span> <span class="n">result_type</span> <span class="o">==</span> <span class="n">ResultTypes</span><span class="o">.</span><span class="n">BranchReactivePowerFrom</span><span class="p">:</span>
 
@@ -698,8 +699,8 @@
                                 <span class="n">columns</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">branch_names</span><span class="p">,</span>
                                 <span class="n">cols_device_type</span><span class="o">=</span><span class="n">DeviceType</span><span class="o">.</span><span class="n">BranchDevice</span><span class="p">,</span>
                                 <span class="n">title</span><span class="o">=</span><span class="n">result_type</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
-                                <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;(MVAr)&#39;</span><span class="p">,</span>
-                                <span class="n">units</span><span class="o">=</span><span class="s1">&#39;(MVAr)&#39;</span><span class="p">)</span>
+                                <span class="n">ylabel</span><span class="o">=</span><span class="s1">'(MVAr)'</span><span class="p">,</span>
+                                <span class="n">units</span><span class="o">=</span><span class="s1">'(MVAr)'</span><span class="p">)</span>
 
         <span class="k">elif</span> <span class="n">result_type</span> <span class="o">==</span> <span class="n">ResultTypes</span><span class="o">.</span><span class="n">BranchActivePowerTo</span><span class="p">:</span>
 
@@ -709,8 +710,8 @@
                                 <span class="n">columns</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">branch_names</span><span class="p">,</span>
                                 <span class="n">cols_device_type</span><span class="o">=</span><span class="n">DeviceType</span><span class="o">.</span><span class="n">BranchDevice</span><span class="p">,</span>
                                 <span class="n">title</span><span class="o">=</span><span class="n">result_type</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
-                                <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;(MW)&#39;</span><span class="p">,</span>
-                                <span class="n">units</span><span class="o">=</span><span class="s1">&#39;(MW)&#39;</span><span class="p">)</span>
+                                <span class="n">ylabel</span><span class="o">=</span><span class="s1">'(MW)'</span><span class="p">,</span>
+                                <span class="n">units</span><span class="o">=</span><span class="s1">'(MW)'</span><span class="p">)</span>
 
         <span class="k">elif</span> <span class="n">result_type</span> <span class="o">==</span> <span class="n">ResultTypes</span><span class="o">.</span><span class="n">BranchReactivePowerTo</span><span class="p">:</span>
 
@@ -720,8 +721,8 @@
                                 <span class="n">columns</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">branch_names</span><span class="p">,</span>
                                 <span class="n">cols_device_type</span><span class="o">=</span><span class="n">DeviceType</span><span class="o">.</span><span class="n">BranchDevice</span><span class="p">,</span>
                                 <span class="n">title</span><span class="o">=</span><span class="n">result_type</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
-                                <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;(MVAr)&#39;</span><span class="p">,</span>
-                                <span class="n">units</span><span class="o">=</span><span class="s1">&#39;(MVAr)&#39;</span><span class="p">)</span>
+                                <span class="n">ylabel</span><span class="o">=</span><span class="s1">'(MVAr)'</span><span class="p">,</span>
+                                <span class="n">units</span><span class="o">=</span><span class="s1">'(MVAr)'</span><span class="p">)</span>
 
         <span class="k">elif</span> <span class="n">result_type</span> <span class="o">==</span> <span class="n">ResultTypes</span><span class="o">.</span><span class="n">BranchActiveCurrentFrom</span><span class="p">:</span>
 
@@ -731,8 +732,8 @@
                                 <span class="n">columns</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">branch_names</span><span class="p">,</span>
                                 <span class="n">cols_device_type</span><span class="o">=</span><span class="n">DeviceType</span><span class="o">.</span><span class="n">BranchDevice</span><span class="p">,</span>
                                 <span class="n">title</span><span class="o">=</span><span class="n">result_type</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
-                                <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;(p.u.)&#39;</span><span class="p">,</span>
-                                <span class="n">units</span><span class="o">=</span><span class="s1">&#39;(p.u.)&#39;</span><span class="p">)</span>
+                                <span class="n">ylabel</span><span class="o">=</span><span class="s1">'(p.u.)'</span><span class="p">,</span>
+                                <span class="n">units</span><span class="o">=</span><span class="s1">'(p.u.)'</span><span class="p">)</span>
 
         <span class="k">elif</span> <span class="n">result_type</span> <span class="o">==</span> <span class="n">ResultTypes</span><span class="o">.</span><span class="n">BranchReactiveCurrentFrom</span><span class="p">:</span>
 
@@ -742,8 +743,8 @@
                                 <span class="n">columns</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">branch_names</span><span class="p">,</span>
                                 <span class="n">cols_device_type</span><span class="o">=</span><span class="n">DeviceType</span><span class="o">.</span><span class="n">BranchDevice</span><span class="p">,</span>
                                 <span class="n">title</span><span class="o">=</span><span class="n">result_type</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
-                                <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;(p.u.)&#39;</span><span class="p">,</span>
-                                <span class="n">units</span><span class="o">=</span><span class="s1">&#39;(p.u.)&#39;</span><span class="p">)</span>
+                                <span class="n">ylabel</span><span class="o">=</span><span class="s1">'(p.u.)'</span><span class="p">,</span>
+                                <span class="n">units</span><span class="o">=</span><span class="s1">'(p.u.)'</span><span class="p">)</span>
 
         <span class="k">elif</span> <span class="n">result_type</span> <span class="o">==</span> <span class="n">ResultTypes</span><span class="o">.</span><span class="n">BranchActiveCurrentTo</span><span class="p">:</span>
 
@@ -753,8 +754,8 @@
                                 <span class="n">columns</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">branch_names</span><span class="p">,</span>
                                 <span class="n">cols_device_type</span><span class="o">=</span><span class="n">DeviceType</span><span class="o">.</span><span class="n">BranchDevice</span><span class="p">,</span>
                                 <span class="n">title</span><span class="o">=</span><span class="n">result_type</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
-                                <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;(p.u.)&#39;</span><span class="p">,</span>
-                                <span class="n">units</span><span class="o">=</span><span class="s1">&#39;(p.u.)&#39;</span><span class="p">)</span>
+                                <span class="n">ylabel</span><span class="o">=</span><span class="s1">'(p.u.)'</span><span class="p">,</span>
+                                <span class="n">units</span><span class="o">=</span><span class="s1">'(p.u.)'</span><span class="p">)</span>
 
         <span class="k">elif</span> <span class="n">result_type</span> <span class="o">==</span> <span class="n">ResultTypes</span><span class="o">.</span><span class="n">BranchReactiveCurrentTo</span><span class="p">:</span>
 
@@ -764,8 +765,8 @@
                                 <span class="n">columns</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">branch_names</span><span class="p">,</span>
                                 <span class="n">cols_device_type</span><span class="o">=</span><span class="n">DeviceType</span><span class="o">.</span><span class="n">BranchDevice</span><span class="p">,</span>
                                 <span class="n">title</span><span class="o">=</span><span class="n">result_type</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
-                                <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;(p.u.)&#39;</span><span class="p">,</span>
-                                <span class="n">units</span><span class="o">=</span><span class="s1">&#39;(p.u.)&#39;</span><span class="p">)</span>
+                                <span class="n">ylabel</span><span class="o">=</span><span class="s1">'(p.u.)'</span><span class="p">,</span>
+                                <span class="n">units</span><span class="o">=</span><span class="s1">'(p.u.)'</span><span class="p">)</span>
 
         <span class="k">elif</span> <span class="n">result_type</span> <span class="o">==</span> <span class="n">ResultTypes</span><span class="o">.</span><span class="n">BranchTapModule</span><span class="p">:</span>
 
@@ -775,8 +776,8 @@
                                 <span class="n">columns</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">branch_names</span><span class="p">,</span>
                                 <span class="n">cols_device_type</span><span class="o">=</span><span class="n">DeviceType</span><span class="o">.</span><span class="n">BranchDevice</span><span class="p">,</span>
                                 <span class="n">title</span><span class="o">=</span><span class="n">result_type</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
-                                <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;(p.u.)&#39;</span><span class="p">,</span>
-                                <span class="n">units</span><span class="o">=</span><span class="s1">&#39;(p.u.)&#39;</span><span class="p">)</span>
+                                <span class="n">ylabel</span><span class="o">=</span><span class="s1">'(p.u.)'</span><span class="p">,</span>
+                                <span class="n">units</span><span class="o">=</span><span class="s1">'(p.u.)'</span><span class="p">)</span>
 
         <span class="k">elif</span> <span class="n">result_type</span> <span class="o">==</span> <span class="n">ResultTypes</span><span class="o">.</span><span class="n">BranchTapAngle</span><span class="p">:</span>
 
@@ -786,8 +787,8 @@
                                 <span class="n">columns</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">branch_names</span><span class="p">,</span>
                                 <span class="n">cols_device_type</span><span class="o">=</span><span class="n">DeviceType</span><span class="o">.</span><span class="n">BranchDevice</span><span class="p">,</span>
                                 <span class="n">title</span><span class="o">=</span><span class="n">result_type</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
-                                <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;(deg)&#39;</span><span class="p">,</span>
-                                <span class="n">units</span><span class="o">=</span><span class="s1">&#39;(deg)&#39;</span><span class="p">)</span>
+                                <span class="n">ylabel</span><span class="o">=</span><span class="s1">'(deg)'</span><span class="p">,</span>
+                                <span class="n">units</span><span class="o">=</span><span class="s1">'(deg)'</span><span class="p">)</span>
 
         <span class="k">elif</span> <span class="n">result_type</span> <span class="o">==</span> <span class="n">ResultTypes</span><span class="o">.</span><span class="n">BranchLoading</span><span class="p">:</span>
 
@@ -797,8 +798,8 @@
                                 <span class="n">columns</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">branch_names</span><span class="p">,</span>
                                 <span class="n">cols_device_type</span><span class="o">=</span><span class="n">DeviceType</span><span class="o">.</span><span class="n">BranchDevice</span><span class="p">,</span>
                                 <span class="n">title</span><span class="o">=</span><span class="n">result_type</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
-                                <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;(%)&#39;</span><span class="p">,</span>
-                                <span class="n">units</span><span class="o">=</span><span class="s1">&#39;(%)&#39;</span><span class="p">)</span>
+                                <span class="n">ylabel</span><span class="o">=</span><span class="s1">'(%)'</span><span class="p">,</span>
+                                <span class="n">units</span><span class="o">=</span><span class="s1">'(%)'</span><span class="p">)</span>
 
         <span class="k">elif</span> <span class="n">result_type</span> <span class="o">==</span> <span class="n">ResultTypes</span><span class="o">.</span><span class="n">BranchActiveLosses</span><span class="p">:</span>
 
@@ -808,8 +809,8 @@
                                 <span class="n">columns</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">branch_names</span><span class="p">,</span>
                                 <span class="n">cols_device_type</span><span class="o">=</span><span class="n">DeviceType</span><span class="o">.</span><span class="n">BranchDevice</span><span class="p">,</span>
                                 <span class="n">title</span><span class="o">=</span><span class="n">result_type</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
-                                <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;(MW)&#39;</span><span class="p">,</span>
-                                <span class="n">units</span><span class="o">=</span><span class="s1">&#39;(MW)&#39;</span><span class="p">)</span>
+                                <span class="n">ylabel</span><span class="o">=</span><span class="s1">'(MW)'</span><span class="p">,</span>
+                                <span class="n">units</span><span class="o">=</span><span class="s1">'(MW)'</span><span class="p">)</span>
 
         <span class="k">elif</span> <span class="n">result_type</span> <span class="o">==</span> <span class="n">ResultTypes</span><span class="o">.</span><span class="n">BranchReactiveLosses</span><span class="p">:</span>
 
@@ -819,8 +820,8 @@
                                 <span class="n">columns</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">branch_names</span><span class="p">,</span>
                                 <span class="n">cols_device_type</span><span class="o">=</span><span class="n">DeviceType</span><span class="o">.</span><span class="n">BranchDevice</span><span class="p">,</span>
                                 <span class="n">title</span><span class="o">=</span><span class="n">result_type</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
-                                <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;(MVAr)&#39;</span><span class="p">,</span>
-                                <span class="n">units</span><span class="o">=</span><span class="s1">&#39;(MVAr)&#39;</span><span class="p">)</span>
+                                <span class="n">ylabel</span><span class="o">=</span><span class="s1">'(MVAr)'</span><span class="p">,</span>
+                                <span class="n">units</span><span class="o">=</span><span class="s1">'(MVAr)'</span><span class="p">)</span>
 
         <span class="k">elif</span> <span class="n">result_type</span> <span class="o">==</span> <span class="n">ResultTypes</span><span class="o">.</span><span class="n">BranchActiveLossesPercentage</span><span class="p">:</span>
 
@@ -830,8 +831,8 @@
                                 <span class="n">columns</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">branch_names</span><span class="p">,</span>
                                 <span class="n">cols_device_type</span><span class="o">=</span><span class="n">DeviceType</span><span class="o">.</span><span class="n">BranchDevice</span><span class="p">,</span>
                                 <span class="n">title</span><span class="o">=</span><span class="n">result_type</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
-                                <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;(%)&#39;</span><span class="p">,</span>
-                                <span class="n">units</span><span class="o">=</span><span class="s1">&#39;(%)&#39;</span><span class="p">)</span>
+                                <span class="n">ylabel</span><span class="o">=</span><span class="s1">'(%)'</span><span class="p">,</span>
+                                <span class="n">units</span><span class="o">=</span><span class="s1">'(%)'</span><span class="p">)</span>
 
         <span class="k">elif</span> <span class="n">result_type</span> <span class="o">==</span> <span class="n">ResultTypes</span><span class="o">.</span><span class="n">BranchVoltage</span><span class="p">:</span>
 
@@ -841,8 +842,8 @@
                                 <span class="n">columns</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">branch_names</span><span class="p">,</span>
                                 <span class="n">cols_device_type</span><span class="o">=</span><span class="n">DeviceType</span><span class="o">.</span><span class="n">BranchDevice</span><span class="p">,</span>
                                 <span class="n">title</span><span class="o">=</span><span class="n">result_type</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
-                                <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;(p.u.)&#39;</span><span class="p">,</span>
-                                <span class="n">units</span><span class="o">=</span><span class="s1">&#39;(p.u.)&#39;</span><span class="p">)</span>
+                                <span class="n">ylabel</span><span class="o">=</span><span class="s1">'(p.u.)'</span><span class="p">,</span>
+                                <span class="n">units</span><span class="o">=</span><span class="s1">'(p.u.)'</span><span class="p">)</span>
 
         <span class="k">elif</span> <span class="n">result_type</span> <span class="o">==</span> <span class="n">ResultTypes</span><span class="o">.</span><span class="n">BranchAngles</span><span class="p">:</span>
 
@@ -852,19 +853,19 @@
                                 <span class="n">columns</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">branch_names</span><span class="p">,</span>
                                 <span class="n">cols_device_type</span><span class="o">=</span><span class="n">DeviceType</span><span class="o">.</span><span class="n">BranchDevice</span><span class="p">,</span>
                                 <span class="n">title</span><span class="o">=</span><span class="n">result_type</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
-                                <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;(deg)&#39;</span><span class="p">,</span>
-                                <span class="n">units</span><span class="o">=</span><span class="s1">&#39;(deg)&#39;</span><span class="p">)</span>
+                                <span class="n">ylabel</span><span class="o">=</span><span class="s1">'(deg)'</span><span class="p">,</span>
+                                <span class="n">units</span><span class="o">=</span><span class="s1">'(deg)'</span><span class="p">)</span>
 
         <span class="k">elif</span> <span class="n">result_type</span> <span class="o">==</span> <span class="n">ResultTypes</span><span class="o">.</span><span class="n">SimulationError</span><span class="p">:</span>
 
             <span class="k">return</span> <span class="n">ResultsTable</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">error_values</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
                                 <span class="n">index</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">time_array</span><span class="p">),</span>
                                 <span class="n">idx_device_type</span><span class="o">=</span><span class="n">DeviceType</span><span class="o">.</span><span class="n">TimeDevice</span><span class="p">,</span>
-                                <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Error&#39;</span><span class="p">],</span>
+                                <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">'Error'</span><span class="p">],</span>
                                 <span class="n">cols_device_type</span><span class="o">=</span><span class="n">DeviceType</span><span class="o">.</span><span class="n">NoDevice</span><span class="p">,</span>
                                 <span class="n">title</span><span class="o">=</span><span class="n">result_type</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
-                                <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;(p.u.)&#39;</span><span class="p">,</span>
-                                <span class="n">units</span><span class="o">=</span><span class="s1">&#39;(p.u.)&#39;</span><span class="p">)</span>
+                                <span class="n">ylabel</span><span class="o">=</span><span class="s1">'(p.u.)'</span><span class="p">,</span>
+                                <span class="n">units</span><span class="o">=</span><span class="s1">'(p.u.)'</span><span class="p">)</span>
 
         <span class="k">elif</span> <span class="n">result_type</span> <span class="o">==</span> <span class="n">ResultTypes</span><span class="o">.</span><span class="n">HvdcLosses</span><span class="p">:</span>
 
@@ -874,8 +875,8 @@
                                 <span class="n">columns</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">hvdc_names</span><span class="p">,</span>
                                 <span class="n">cols_device_type</span><span class="o">=</span><span class="n">DeviceType</span><span class="o">.</span><span class="n">HVDCLineDevice</span><span class="p">,</span>
                                 <span class="n">title</span><span class="o">=</span><span class="n">result_type</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
-                                <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;(MW)&#39;</span><span class="p">,</span>
-                                <span class="n">units</span><span class="o">=</span><span class="s1">&#39;(MW)&#39;</span><span class="p">)</span>
+                                <span class="n">ylabel</span><span class="o">=</span><span class="s1">'(MW)'</span><span class="p">,</span>
+                                <span class="n">units</span><span class="o">=</span><span class="s1">'(MW)'</span><span class="p">)</span>
 
         <span class="k">elif</span> <span class="n">result_type</span> <span class="o">==</span> <span class="n">ResultTypes</span><span class="o">.</span><span class="n">HvdcPowerFrom</span><span class="p">:</span>
 
@@ -885,8 +886,8 @@
                                 <span class="n">columns</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">hvdc_names</span><span class="p">,</span>
                                 <span class="n">cols_device_type</span><span class="o">=</span><span class="n">DeviceType</span><span class="o">.</span><span class="n">HVDCLineDevice</span><span class="p">,</span>
                                 <span class="n">title</span><span class="o">=</span><span class="n">result_type</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
-                                <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;(MW)&#39;</span><span class="p">,</span>
-                                <span class="n">units</span><span class="o">=</span><span class="s1">&#39;(MW)&#39;</span><span class="p">)</span>
+                                <span class="n">ylabel</span><span class="o">=</span><span class="s1">'(MW)'</span><span class="p">,</span>
+                                <span class="n">units</span><span class="o">=</span><span class="s1">'(MW)'</span><span class="p">)</span>
 
         <span class="k">elif</span> <span class="n">result_type</span> <span class="o">==</span> <span class="n">ResultTypes</span><span class="o">.</span><span class="n">HvdcPowerTo</span><span class="p">:</span>
 
@@ -896,8 +897,8 @@
                                 <span class="n">columns</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">hvdc_names</span><span class="p">,</span>
                                 <span class="n">cols_device_type</span><span class="o">=</span><span class="n">DeviceType</span><span class="o">.</span><span class="n">HVDCLineDevice</span><span class="p">,</span>
                                 <span class="n">title</span><span class="o">=</span><span class="n">result_type</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
-                                <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;(MW)&#39;</span><span class="p">,</span>
-                                <span class="n">units</span><span class="o">=</span><span class="s1">&#39;(MW)&#39;</span><span class="p">)</span>
+                                <span class="n">ylabel</span><span class="o">=</span><span class="s1">'(MW)'</span><span class="p">,</span>
+                                <span class="n">units</span><span class="o">=</span><span class="s1">'(MW)'</span><span class="p">)</span>
 
         <span class="k">elif</span> <span class="n">result_type</span> <span class="o">==</span> <span class="n">ResultTypes</span><span class="o">.</span><span class="n">VscLosses</span><span class="p">:</span>
 
@@ -907,8 +908,8 @@
                                 <span class="n">columns</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">vsc_names</span><span class="p">,</span>
                                 <span class="n">cols_device_type</span><span class="o">=</span><span class="n">DeviceType</span><span class="o">.</span><span class="n">VscDevice</span><span class="p">,</span>
                                 <span class="n">title</span><span class="o">=</span><span class="n">result_type</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
-                                <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;(MW)&#39;</span><span class="p">,</span>
-                                <span class="n">units</span><span class="o">=</span><span class="s1">&#39;(MW)&#39;</span><span class="p">)</span>
+                                <span class="n">ylabel</span><span class="o">=</span><span class="s1">'(MW)'</span><span class="p">,</span>
+                                <span class="n">units</span><span class="o">=</span><span class="s1">'(MW)'</span><span class="p">)</span>
 
         <span class="k">elif</span> <span class="n">result_type</span> <span class="o">==</span> <span class="n">ResultTypes</span><span class="o">.</span><span class="n">VscPowerFromPositive</span><span class="p">:</span>
 
@@ -918,8 +919,8 @@
                                 <span class="n">columns</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">vsc_names</span><span class="p">,</span>
                                 <span class="n">cols_device_type</span><span class="o">=</span><span class="n">DeviceType</span><span class="o">.</span><span class="n">VscDevice</span><span class="p">,</span>
                                 <span class="n">title</span><span class="o">=</span><span class="n">result_type</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
-                                <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;(MW)&#39;</span><span class="p">,</span>
-                                <span class="n">units</span><span class="o">=</span><span class="s1">&#39;(MW)&#39;</span><span class="p">)</span>
+                                <span class="n">ylabel</span><span class="o">=</span><span class="s1">'(MW)'</span><span class="p">,</span>
+                                <span class="n">units</span><span class="o">=</span><span class="s1">'(MW)'</span><span class="p">)</span>
 
         <span class="k">elif</span> <span class="n">result_type</span> <span class="o">==</span> <span class="n">ResultTypes</span><span class="o">.</span><span class="n">VscPowerFromNegative</span><span class="p">:</span>
 
@@ -929,8 +930,8 @@
                                 <span class="n">columns</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">vsc_names</span><span class="p">,</span>
                                 <span class="n">cols_device_type</span><span class="o">=</span><span class="n">DeviceType</span><span class="o">.</span><span class="n">VscDevice</span><span class="p">,</span>
                                 <span class="n">title</span><span class="o">=</span><span class="n">result_type</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
-                                <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;(MW)&#39;</span><span class="p">,</span>
-                                <span class="n">units</span><span class="o">=</span><span class="s1">&#39;(MW)&#39;</span><span class="p">)</span>
+                                <span class="n">ylabel</span><span class="o">=</span><span class="s1">'(MW)'</span><span class="p">,</span>
+                                <span class="n">units</span><span class="o">=</span><span class="s1">'(MW)'</span><span class="p">)</span>
 
         <span class="k">elif</span> <span class="n">result_type</span> <span class="o">==</span> <span class="n">ResultTypes</span><span class="o">.</span><span class="n">VscPowerTo</span><span class="p">:</span>
 
@@ -940,8 +941,8 @@
                                 <span class="n">columns</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">vsc_names</span><span class="p">,</span>
                                 <span class="n">cols_device_type</span><span class="o">=</span><span class="n">DeviceType</span><span class="o">.</span><span class="n">VscDevice</span><span class="p">,</span>
                                 <span class="n">title</span><span class="o">=</span><span class="n">result_type</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
-                                <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;(MW)&#39;</span><span class="p">,</span>
-                                <span class="n">units</span><span class="o">=</span><span class="s1">&#39;(MW)&#39;</span><span class="p">)</span>
+                                <span class="n">ylabel</span><span class="o">=</span><span class="s1">'(MW)'</span><span class="p">,</span>
+                                <span class="n">units</span><span class="o">=</span><span class="s1">'(MW)'</span><span class="p">)</span>
 
         <span class="k">elif</span> <span class="n">result_type</span> <span class="o">==</span> <span class="n">ResultTypes</span><span class="o">.</span><span class="n">InterAreaExchange</span><span class="p">:</span>
 
@@ -951,8 +952,8 @@
                                 <span class="n">columns</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">get_ordered_area_names</span><span class="p">(),</span>
                                 <span class="n">cols_device_type</span><span class="o">=</span><span class="n">DeviceType</span><span class="o">.</span><span class="n">AreaDevice</span><span class="p">,</span>
                                 <span class="n">title</span><span class="o">=</span><span class="n">result_type</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
-                                <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;(MW)&#39;</span><span class="p">,</span>
-                                <span class="n">units</span><span class="o">=</span><span class="s1">&#39;(MW)&#39;</span><span class="p">)</span>
+                                <span class="n">ylabel</span><span class="o">=</span><span class="s1">'(MW)'</span><span class="p">,</span>
+                                <span class="n">units</span><span class="o">=</span><span class="s1">'(MW)'</span><span class="p">)</span>
 
         <span class="k">elif</span> <span class="n">result_type</span> <span class="o">==</span> <span class="n">ResultTypes</span><span class="o">.</span><span class="n">LossesPercentPerArea</span><span class="p">:</span>
             <span class="n">Pf</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_branch_values_per_area</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Sf</span><span class="o">.</span><span class="n">real</span><span class="p">))</span>
@@ -969,8 +970,8 @@
                                 <span class="n">columns</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">get_ordered_area_names</span><span class="p">(),</span>
                                 <span class="n">cols_device_type</span><span class="o">=</span><span class="n">DeviceType</span><span class="o">.</span><span class="n">AreaDevice</span><span class="p">,</span>
                                 <span class="n">title</span><span class="o">=</span><span class="n">result_type</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
-                                <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;(%)&#39;</span><span class="p">,</span>
-                                <span class="n">units</span><span class="o">=</span><span class="s1">&#39;(%)&#39;</span><span class="p">)</span>
+                                <span class="n">ylabel</span><span class="o">=</span><span class="s1">'(%)'</span><span class="p">,</span>
+                                <span class="n">units</span><span class="o">=</span><span class="s1">'(%)'</span><span class="p">)</span>
 
         <span class="k">elif</span> <span class="n">result_type</span> <span class="o">==</span> <span class="n">ResultTypes</span><span class="o">.</span><span class="n">LossesPerGenPerArea</span><span class="p">:</span>
             <span class="n">gen_bus</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">S</span><span class="o">.</span><span class="n">real</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
@@ -998,8 +999,8 @@
                                 <span class="n">columns</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">area_names</span><span class="p">),</span>
                                 <span class="n">cols_device_type</span><span class="o">=</span><span class="n">DeviceType</span><span class="o">.</span><span class="n">AreaDevice</span><span class="p">,</span>
                                 <span class="n">title</span><span class="o">=</span><span class="n">result_type</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
-                                <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;(%)&#39;</span><span class="p">,</span>
-                                <span class="n">units</span><span class="o">=</span><span class="s1">&#39;(%)&#39;</span><span class="p">)</span>
+                                <span class="n">ylabel</span><span class="o">=</span><span class="s1">'(%)'</span><span class="p">,</span>
+                                <span class="n">units</span><span class="o">=</span><span class="s1">'(%)'</span><span class="p">)</span>
 
         <span class="k">elif</span> <span class="n">result_type</span> <span class="o">==</span> <span class="n">ResultTypes</span><span class="o">.</span><span class="n">LossesPerArea</span><span class="p">:</span>
 
@@ -1012,8 +1013,8 @@
                                 <span class="n">columns</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">get_ordered_area_names</span><span class="p">(),</span>
                                 <span class="n">cols_device_type</span><span class="o">=</span><span class="n">DeviceType</span><span class="o">.</span><span class="n">AreaDevice</span><span class="p">,</span>
                                 <span class="n">title</span><span class="o">=</span><span class="n">result_type</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
-                                <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;(MW)&#39;</span><span class="p">,</span>
-                                <span class="n">units</span><span class="o">=</span><span class="s1">&#39;(MW)&#39;</span><span class="p">)</span>
+                                <span class="n">ylabel</span><span class="o">=</span><span class="s1">'(MW)'</span><span class="p">,</span>
+                                <span class="n">units</span><span class="o">=</span><span class="s1">'(MW)'</span><span class="p">)</span>
 
         <span class="k">elif</span> <span class="n">result_type</span> <span class="o">==</span> <span class="n">ResultTypes</span><span class="o">.</span><span class="n">ActivePowerFlowPerArea</span><span class="p">:</span>
 
@@ -1026,8 +1027,8 @@
                                 <span class="n">columns</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">get_ordered_area_names</span><span class="p">(),</span>
                                 <span class="n">cols_device_type</span><span class="o">=</span><span class="n">DeviceType</span><span class="o">.</span><span class="n">AreaDevice</span><span class="p">,</span>
                                 <span class="n">title</span><span class="o">=</span><span class="n">result_type</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
-                                <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;(MW)&#39;</span><span class="p">,</span>
-                                <span class="n">units</span><span class="o">=</span><span class="s1">&#39;(MW)&#39;</span><span class="p">)</span>
+                                <span class="n">ylabel</span><span class="o">=</span><span class="s1">'(MW)'</span><span class="p">,</span>
+                                <span class="n">units</span><span class="o">=</span><span class="s1">'(MW)'</span><span class="p">)</span>
 
         <span class="k">elif</span> <span class="n">result_type</span> <span class="o">==</span> <span class="n">ResultTypes</span><span class="o">.</span><span class="n">GeneratorPower</span><span class="p">:</span>
 
@@ -1037,8 +1038,8 @@
                                 <span class="n">columns</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">gen_names</span><span class="p">,</span>
                                 <span class="n">cols_device_type</span><span class="o">=</span><span class="n">DeviceType</span><span class="o">.</span><span class="n">GeneratorDevice</span><span class="p">,</span>
                                 <span class="n">title</span><span class="o">=</span><span class="n">result_type</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
-                                <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;(MW)&#39;</span><span class="p">,</span>
-                                <span class="n">units</span><span class="o">=</span><span class="s1">&#39;(MW)&#39;</span><span class="p">)</span>
+                                <span class="n">ylabel</span><span class="o">=</span><span class="s1">'(MW)'</span><span class="p">,</span>
+                                <span class="n">units</span><span class="o">=</span><span class="s1">'(MW)'</span><span class="p">)</span>
 
         <span class="k">elif</span> <span class="n">result_type</span> <span class="o">==</span> <span class="n">ResultTypes</span><span class="o">.</span><span class="n">GeneratorReactivePower</span><span class="p">:</span>
 
@@ -1048,8 +1049,8 @@
                                 <span class="n">columns</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">gen_names</span><span class="p">,</span>
                                 <span class="n">cols_device_type</span><span class="o">=</span><span class="n">DeviceType</span><span class="o">.</span><span class="n">GeneratorDevice</span><span class="p">,</span>
                                 <span class="n">title</span><span class="o">=</span><span class="n">result_type</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
-                                <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;(MVAr)&#39;</span><span class="p">,</span>
-                                <span class="n">units</span><span class="o">=</span><span class="s1">&#39;(MVAr)&#39;</span><span class="p">)</span>
+                                <span class="n">ylabel</span><span class="o">=</span><span class="s1">'(MVAr)'</span><span class="p">,</span>
+                                <span class="n">units</span><span class="o">=</span><span class="s1">'(MVAr)'</span><span class="p">)</span>
 
         <span class="k">elif</span> <span class="n">result_type</span> <span class="o">==</span> <span class="n">ResultTypes</span><span class="o">.</span><span class="n">BatteryPower</span><span class="p">:</span>
 
@@ -1059,8 +1060,8 @@
                                 <span class="n">columns</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">batt_names</span><span class="p">,</span>
                                 <span class="n">cols_device_type</span><span class="o">=</span><span class="n">DeviceType</span><span class="o">.</span><span class="n">BatteryDevice</span><span class="p">,</span>
                                 <span class="n">title</span><span class="o">=</span><span class="n">result_type</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
-                                <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;(MW)&#39;</span><span class="p">,</span>
-                                <span class="n">units</span><span class="o">=</span><span class="s1">&#39;(MW)&#39;</span><span class="p">)</span>
+                                <span class="n">ylabel</span><span class="o">=</span><span class="s1">'(MW)'</span><span class="p">,</span>
+                                <span class="n">units</span><span class="o">=</span><span class="s1">'(MW)'</span><span class="p">)</span>
 
         <span class="k">elif</span> <span class="n">result_type</span> <span class="o">==</span> <span class="n">ResultTypes</span><span class="o">.</span><span class="n">BatteryReactivePower</span><span class="p">:</span>
 
@@ -1070,8 +1071,8 @@
                                 <span class="n">columns</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">batt_names</span><span class="p">,</span>
                                 <span class="n">cols_device_type</span><span class="o">=</span><span class="n">DeviceType</span><span class="o">.</span><span class="n">BatteryDevice</span><span class="p">,</span>
                                 <span class="n">title</span><span class="o">=</span><span class="n">result_type</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
-                                <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;(MVAr)&#39;</span><span class="p">,</span>
-                                <span class="n">units</span><span class="o">=</span><span class="s1">&#39;(MVAr)&#39;</span><span class="p">)</span>
+                                <span class="n">ylabel</span><span class="o">=</span><span class="s1">'(MVAr)'</span><span class="p">,</span>
+                                <span class="n">units</span><span class="o">=</span><span class="s1">'(MVAr)'</span><span class="p">)</span>
 
         <span class="k">elif</span> <span class="n">result_type</span> <span class="o">==</span> <span class="n">ResultTypes</span><span class="o">.</span><span class="n">ShuntReactivePower</span><span class="p">:</span>
 
@@ -1081,11 +1082,11 @@
                                 <span class="n">columns</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sh_names</span><span class="p">,</span>
                                 <span class="n">cols_device_type</span><span class="o">=</span><span class="n">DeviceType</span><span class="o">.</span><span class="n">ShuntLikeDevice</span><span class="p">,</span>
                                 <span class="n">title</span><span class="o">=</span><span class="n">result_type</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
-                                <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;(MVAr)&#39;</span><span class="p">,</span>
-                                <span class="n">units</span><span class="o">=</span><span class="s1">&#39;(MVAr)&#39;</span><span class="p">)</span>
+                                <span class="n">ylabel</span><span class="o">=</span><span class="s1">'(MVAr)'</span><span class="p">,</span>
+                                <span class="n">units</span><span class="o">=</span><span class="s1">'(MVAr)'</span><span class="p">)</span>
 
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Result type not understood:&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">result_type</span><span class="p">))</span></div>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">'Result type not understood:'</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">result_type</span><span class="p">))</span></div>
 </div>
 
 </pre></div>

@@ -7,12 +7,15 @@ from __future__ import annotations
 
 import re
 import datetime
-from typing import List, AnyStr, Dict
+from pathlib import Path
+from typing import List, AnyStr, Dict, Sequence, Callable
 
 from VeraGridEngine.IO.raw.raw_writer_comment_map import comment_version_map
 from VeraGridEngine.Utils.charatcter_detection import detect_character_encoding
 from VeraGridEngine.basic_structures import Logger
 from VeraGridEngine.IO.raw.psse_circuit import PsseCircuit
+from VeraGridEngine.IO.raw.psse_auxiliary import BusInputMode
+from VeraGridEngine.IO.raw.versioned.base.seq import Sequence35Layout
 from VeraGridEngine.IO.raw.versioned.v29.area import RawAreaV29
 from VeraGridEngine.IO.raw.versioned.v29.zone import RawZoneV29
 from VeraGridEngine.IO.raw.versioned.v29.bus import RawBusV29
@@ -538,13 +541,22 @@ def parse_substation_data_group(
         )
 
 
-def read_raw(filename, text_func=None, progress_func=None, logger=Logger()) -> PsseCircuit:
+def read_raw(filename: str | Path,
+             text_func: Callable[[str], None] | None = None,
+             progress_func: Callable[[float], None] | None = None,
+             logger: Logger = Logger(),
+             auxiliary_files: Sequence[str | Path] | None = None,
+             layout_35: Sequence35Layout = Sequence35Layout.V35_2,
+             bus_mode: BusInputMode = BusInputMode.NUMBERS) -> PsseCircuit:
     """
 
     :param filename:
     :param text_func:
     :param progress_func:
     :param logger:
+    :param auxiliary_files: Explicitly selected auxiliary paths, read in supplied order after RAW.
+    :param layout_35: SEQ 35.0/35.1 versus 35.2 layout; applies only to circuit REV 35.
+    :param bus_mode: Initial bus-reference mode for the ordered auxiliary inputs.
     :return:
     """
     """
@@ -948,6 +960,15 @@ def read_raw(filename, text_func=None, progress_func=None, logger=Logger()) -> P
     # check all primary keys
     grid.check_primary_keys(logger)
 
+    # Auxiliary versions are chosen only after the RAW header establishes REV.
+    if auxiliary_files is not None:
+        grid.auxiliary_bus_mode = bus_mode
+        for auxiliary_file in auxiliary_files:
+            grid.read_auxiliary_file(auxiliary_file, layout_35=layout_35)
+        logger += grid.auxiliary_logger
+    else:
+        pass
+
     return grid
 
 
@@ -1039,6 +1060,7 @@ def write_raw(file_name: str, psse_model: PsseCircuit, version=33) -> Logger:
         psse_model.owners.append(ow)
 
     logger = Logger()
+    psse_model.warn_auxiliary_omission(logger)
     with open(file_name, "w", encoding="utf-8") as w:
 
         comment_map = None

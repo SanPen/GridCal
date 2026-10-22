@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Simulations.SmallSignalStabilityRms.small_signal_driver &mdash; VeraGrid 6.7.13 documentation</title>
+  <title>VeraGridEngine.Simulations.SmallSignalStabilityRms.small_signal_driver &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=16fbabd8"></script>
+      <script src="../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -135,14 +135,14 @@
 <div class="viewcode-block" id="compute_state_matrix">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SmallSignalStabilityRms.html#VeraGridEngine.Simulations.SmallSignalStabilityRms.small_signal_driver.compute_state_matrix">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">compute_state_matrix</span><span class="p">(</span><span class="n">problem</span><span class="p">:</span> <span class="n">RmsProblemTemplate</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">dx</span><span class="p">:</span> <span class="n">Vec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Mat</span><span class="p">,</span> <span class="n">Mat</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Small Signal Stability analysis state matrix computation.</span>
 <span class="sd">    Handles rank-deficient (singular) Jacobian matrices using SVD-based pseudo-inverse.</span>
 <span class="sd">    :param problem: RmsProblemTemplate</span>
 <span class="sd">    :param x: Vec. Variables value at assessment time</span>
 <span class="sd">    :param dx: Vec. Derivatives value at assessment time</span>
 <span class="sd">    :return</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">h</span> <span class="o">=</span> <span class="n">problem</span><span class="o">.</span><span class="n">get_dt_value</span><span class="p">()</span>
     <span class="c1"># h = 0.001</span>
     <span class="n">fx</span><span class="p">:</span> <span class="n">sp</span><span class="o">.</span><span class="n">csc_matrix</span> <span class="o">=</span> <span class="n">problem</span><span class="o">.</span><span class="n">get_j11</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dx</span><span class="p">,</span> <span class="n">h</span><span class="p">)</span><span class="o">.</span><span class="n">tocsc</span><span class="p">()</span>  <span class="c1"># ∂f/∂x</span>
@@ -183,16 +183,16 @@
                         <span class="n">gy_lu</span> <span class="o">=</span> <span class="n">spla</span><span class="o">.</span><span class="n">splu</span><span class="p">(</span><span class="n">gy</span><span class="p">)</span>
                     <span class="k">except</span> <span class="ne">RuntimeError</span> <span class="k">as</span> <span class="n">constrained_factorization_error</span><span class="p">:</span>
                         <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-                            <span class="s2">&quot;The algebraic Jacobian remains singular after fixing the voltage-angle reference. &quot;</span>
-                            <span class="s2">&quot;The dense all-modes reduction is not valid for this RMS model. &quot;</span>
-                            <span class="s2">&quot;Select a positive number of modes to use the sparse DAE eigensolver.&quot;</span>
+                            <span class="s2">"The algebraic Jacobian remains singular after fixing the voltage-angle reference. "</span>
+                            <span class="s2">"The dense all-modes reduction is not valid for this RMS model. "</span>
+                            <span class="s2">"Select a positive number of modes to use the sparse DAE eigensolver."</span>
                         <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">constrained_factorization_error</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Invalid RMS small-signal angle-reference indices&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">factorization_error</span>
+                    <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">"Invalid RMS small-signal angle-reference indices"</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">factorization_error</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-                    <span class="s2">&quot;The algebraic Jacobian is singular and the RMS problem has no voltage-angle reference. &quot;</span>
-                    <span class="s2">&quot;The dense all-modes reduction cannot be constructed.&quot;</span>
+                    <span class="s2">"The algebraic Jacobian is singular and the RMS problem has no voltage-angle reference. "</span>
+                    <span class="s2">"The dense all-modes reduction cannot be constructed."</span>
                 <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">factorization_error</span>
 
         <span class="n">gy_inv_gx</span> <span class="o">=</span> <span class="n">gy_lu</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">gx</span><span class="o">.</span><span class="n">toarray</span><span class="p">())</span>
@@ -223,13 +223,13 @@
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">compute_participation_factors</span><span class="p">(</span><span class="n">v</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
                                   <span class="n">w</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Calculates normalized participation factors correctly for both dense and sparse.</span>
 <span class="sd">    Compatible with strict Numba (without keep dims).</span>
 <span class="sd">    :param v: right eigenvectors (columns) - should be complex128</span>
 <span class="sd">    :param w: left eigenvectors (columns) - should be complex128</span>
 <span class="sd">    :return PF_norm: Return normalized participation factors</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">n_rows</span> <span class="o">=</span> <span class="n">v</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">k</span> <span class="o">=</span> <span class="n">v</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
 
@@ -268,7 +268,7 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">compute_participation_factors_generalized</span><span class="p">(</span><span class="n">v</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
                                               <span class="n">w</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
                                               <span class="n">E</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">sp</span><span class="o">.</span><span class="n">spmatrix</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Participation factors for generalized eigenproblems A x = lambda E x.</span>
 
 <span class="sd">    Assumes:</span>
@@ -281,12 +281,10 @@
 
 <span class="sd">        w_i^T E v_i = 1</span>
 
-<span class="sd">    and computes:</span>
-
-<span class="sd">        p_ki = |v_ki (w_i^T E)_k|</span>
+<span class="sd">    and computes ``p_ki = |v_ki (w_i^T E)_k|``.</span>
 
 <span class="sd">    The returned participation factors are column-normalized.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">v_c</span> <span class="o">=</span> <span class="n">v</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">complex128</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
     <span class="n">w_c</span> <span class="o">=</span> <span class="n">w</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">complex128</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 
@@ -325,11 +323,11 @@
 <div class="viewcode-block" id="select_eigs_without_conjugates">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SmallSignalStabilityRms.html#VeraGridEngine.Simulations.SmallSignalStabilityRms.small_signal_driver.select_eigs_without_conjugates">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">select_eigs_without_conjugates</span><span class="p">(</span><span class="n">eigenvalues</span><span class="p">:</span> <span class="n">Vec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Select oscillatory modes. Conjugate modes appear only once in the selection.</span>
 <span class="sd">    :param eigenvalues: row np array with modes</span>
 <span class="sd">    :return: row np array with only the positive complex conjugate modes</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">eig_list</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
     <span class="n">seen</span><span class="p">:</span> <span class="nb">set</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
     <span class="n">tol</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-12</span>
@@ -354,12 +352,12 @@
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">compute_damping_ratios_and_frequencies</span><span class="p">(</span><span class="n">eigenvalues</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
                                            <span class="n">eig_no_conjugates</span><span class="p">:</span> <span class="n">Vec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Vec</span><span class="p">,</span> <span class="n">Vec</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    :param eigenvalues: row np array with modes</span>
 <span class="sd">    :param eig_no_conjugates: row np array with only the positive complex conjugate modes</span>
 <span class="sd">    :return: damping_ratios: list with damping ratios for the positive complex conjugate modes. Nan for other modes</span>
 <span class="sd">    :return: conjugate_frequencies: list with oscillation frequencies for the positive complex conjugate modes. Nan for other modes</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">damping_ratios</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">eigenvalues</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
     <span class="n">conjugate_frequencies</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">eigenvalues</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
     <span class="n">tol</span> <span class="o">=</span> <span class="mf">1e-12</span>
@@ -399,7 +397,7 @@
                                      <span class="n">x</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
                                      <span class="n">dx</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
                                      <span class="n">verbose</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Vec</span><span class="p">,</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">Mat</span><span class="p">,</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">Mat</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Run small signal stability analysis using dense matrices calculations. The operation returns all the eigenvalues.</span>
 <span class="sd">    :param problem: RmsProblemTemplate</span>
 <span class="sd">    :param x: Vec. Variables value at assessment time</span>
@@ -410,7 +408,7 @@
 <span class="sd">    :return damping_ratios: Vec. Damping ratios of oscillatory modes.</span>
 <span class="sd">    :return conjugate_freq: Vec. Frequency of oscillatory modes.</span>
 <span class="sd">    :return A_orig: Mat. Original state matrix</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="c1"># We obtain the balanced matrix</span>
 
@@ -449,8 +447,8 @@
     <span class="n">damping_ratios</span><span class="p">,</span> <span class="n">conjugate_freq</span> <span class="o">=</span> <span class="n">compute_damping_ratios_and_frequencies</span><span class="p">(</span><span class="n">eigenvalues</span><span class="p">,</span> <span class="n">eig_no_conjugates</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Eigenvalues:&quot;</span><span class="p">,</span> <span class="n">eigenvalues</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Participation Factors:&quot;</span><span class="p">,</span> <span class="n">participation_factors</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"Eigenvalues:"</span><span class="p">,</span> <span class="n">eigenvalues</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"Participation Factors:"</span><span class="p">,</span> <span class="n">participation_factors</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">eigenvalues</span><span class="p">,</span><span class="n">v</span><span class="p">,</span> <span class="n">participation_factors</span><span class="p">,</span> <span class="n">damping_ratios</span><span class="p">,</span> <span class="n">conjugate_freq</span><span class="p">,</span> <span class="n">A_orig</span><span class="p">,</span> <span class="kc">None</span></div>
 
@@ -463,7 +461,7 @@
                                       <span class="n">dx</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
                                       <span class="n">k</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
                                       <span class="n">verbose</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Vec</span><span class="p">,</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">Mat</span><span class="p">,</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">Mat</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Run small signal stability analysis using sparse matrices calculations. The operation returns k eigenvalues.</span>
 <span class="sd">    :param problem: RmsProblemTemplate</span>
 <span class="sd">    :param x: Vec. Variables value at assessment time</span>
@@ -475,7 +473,7 @@
 <span class="sd">    :return damping_ratios: Vec. Damping ratios of oscillatory modes.</span>
 <span class="sd">    :return conjugate_freq: Vec. Frequency of oscillatory modes.</span>
 <span class="sd">    :return A_orig: Mat. Original state matrix</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">t0</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
     <span class="n">A_static</span> <span class="o">=</span> <span class="n">problem</span><span class="o">.</span><span class="n">get_static_state_matrix</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dx</span><span class="p">)</span>
@@ -513,13 +511,13 @@
         <span class="c1"># and recover the original eigenvalues after inverse iteration.</span>
         <span class="n">shift_diagonal</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">J_aug</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
         <span class="n">shift_diagonal</span><span class="p">[:</span><span class="n">n_states</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>
-        <span class="n">state_shift_matrix</span><span class="p">:</span> <span class="n">sp</span><span class="o">.</span><span class="n">csc_matrix</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">diags</span><span class="p">(</span><span class="n">shift_diagonal</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;csc&quot;</span><span class="p">)</span>
-        <span class="n">full_shift_matrix</span><span class="p">:</span> <span class="n">sp</span><span class="o">.</span><span class="n">csc_matrix</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">J_aug</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;csc&quot;</span><span class="p">)</span>
+        <span class="n">state_shift_matrix</span><span class="p">:</span> <span class="n">sp</span><span class="o">.</span><span class="n">csc_matrix</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">diags</span><span class="p">(</span><span class="n">shift_diagonal</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">"csc"</span><span class="p">)</span>
+        <span class="n">full_shift_matrix</span><span class="p">:</span> <span class="n">sp</span><span class="o">.</span><span class="n">csc_matrix</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">J_aug</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">format</span><span class="o">=</span><span class="s2">"csc"</span><span class="p">)</span>
         <span class="n">descriptor_sigmas</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0e-8</span><span class="p">,</span> <span class="mf">1.0e-7</span><span class="p">,</span> <span class="mf">1.0e-6</span><span class="p">,</span> <span class="mf">1.0e-5</span><span class="p">,</span> <span class="mf">1.0e-4</span><span class="p">,</span> <span class="mf">1.0e-3</span><span class="p">)</span>
         <span class="n">regularization_sigmas</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0e-5</span><span class="p">,</span> <span class="mf">1.0e-4</span><span class="p">,</span> <span class="mf">1.0e-3</span><span class="p">,</span> <span class="mf">1.0e-2</span><span class="p">,</span> <span class="mf">1.0e-1</span><span class="p">)</span>
         <span class="n">shift_strategies</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">sp</span><span class="o">.</span><span class="n">csc_matrix</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="o">...</span><span class="p">]]]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
-        <span class="n">shift_strategies</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s2">&quot;descriptor&quot;</span><span class="p">,</span> <span class="n">state_shift_matrix</span><span class="p">,</span> <span class="n">descriptor_sigmas</span><span class="p">))</span>
-        <span class="n">shift_strategies</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s2">&quot;full regularization&quot;</span><span class="p">,</span> <span class="n">full_shift_matrix</span><span class="p">,</span> <span class="n">regularization_sigmas</span><span class="p">))</span>
+        <span class="n">shift_strategies</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s2">"descriptor"</span><span class="p">,</span> <span class="n">state_shift_matrix</span><span class="p">,</span> <span class="n">descriptor_sigmas</span><span class="p">))</span>
+        <span class="n">shift_strategies</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s2">"full regularization"</span><span class="p">,</span> <span class="n">full_shift_matrix</span><span class="p">,</span> <span class="n">regularization_sigmas</span><span class="p">))</span>
         <span class="n">eig_ok</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="n">last_error</span><span class="p">:</span> <span class="ne">RuntimeError</span> <span class="o">|</span> <span class="ne">ValueError</span> <span class="o">|</span> <span class="n">spla</span><span class="o">.</span><span class="n">ArpackNoConvergence</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 
@@ -541,8 +539,8 @@
                         <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">complex128</span><span class="p">,</span>
                     <span class="p">)</span>
 
-                    <span class="n">mu_R</span><span class="p">,</span> <span class="n">v_raw</span> <span class="o">=</span> <span class="n">spla</span><span class="o">.</span><span class="n">eigs</span><span class="p">(</span><span class="n">inv_a_op</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">k_search</span><span class="p">,</span> <span class="n">which</span><span class="o">=</span><span class="s2">&quot;LM&quot;</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-10</span><span class="p">)</span>
-                    <span class="n">mu_L</span><span class="p">,</span> <span class="n">w_raw</span> <span class="o">=</span> <span class="n">spla</span><span class="o">.</span><span class="n">eigs</span><span class="p">(</span><span class="n">inv_a_op</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">k_search</span><span class="p">,</span> <span class="n">which</span><span class="o">=</span><span class="s2">&quot;LM&quot;</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-10</span><span class="p">)</span>
+                    <span class="n">mu_R</span><span class="p">,</span> <span class="n">v_raw</span> <span class="o">=</span> <span class="n">spla</span><span class="o">.</span><span class="n">eigs</span><span class="p">(</span><span class="n">inv_a_op</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">k_search</span><span class="p">,</span> <span class="n">which</span><span class="o">=</span><span class="s2">"LM"</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-10</span><span class="p">)</span>
+                    <span class="n">mu_L</span><span class="p">,</span> <span class="n">w_raw</span> <span class="o">=</span> <span class="n">spla</span><span class="o">.</span><span class="n">eigs</span><span class="p">(</span><span class="n">inv_a_op</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">k_search</span><span class="p">,</span> <span class="n">which</span><span class="o">=</span><span class="s2">"LM"</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-10</span><span class="p">)</span>
 
                     <span class="c1"># Filter algebraic noise: mu -&gt; 0 represents lambda -&gt; infinity.</span>
                     <span class="n">tol_mu</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0e-8</span>
@@ -561,21 +559,21 @@
                             <span class="ow">or</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">eigenvalues_L</span><span class="p">))</span>
                             <span class="ow">or</span> <span class="n">v_valid</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span>
                             <span class="ow">or</span> <span class="n">w_valid</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
-                        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;ARPACK returned empty or non-finite standard eigenvalues&quot;</span><span class="p">)</span>
+                        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"ARPACK returned empty or non-finite standard eigenvalues"</span><span class="p">)</span>
                     <span class="k">else</span><span class="p">:</span>
                         <span class="k">pass</span>
 
                     <span class="n">eig_ok</span> <span class="o">=</span> <span class="kc">True</span>
                     <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-                        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Sparse standard </span><span class="si">{</span><span class="n">shift_name</span><span class="si">}</span><span class="s2"> shift-invert converged with sigma=</span><span class="si">{</span><span class="n">sigma</span><span class="si">:</span><span class="s2">.1e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Sparse standard </span><span class="si">{</span><span class="n">shift_name</span><span class="si">}</span><span class="s2"> shift-invert converged with sigma=</span><span class="si">{</span><span class="n">sigma</span><span class="si">:</span><span class="s2">.1e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
                     <span class="k">else</span><span class="p">:</span>
                         <span class="k">pass</span>
                     <span class="k">break</span>
                 <span class="k">except</span> <span class="p">(</span><span class="ne">RuntimeError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">,</span> <span class="n">spla</span><span class="o">.</span><span class="n">ArpackNoConvergence</span><span class="p">)</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span>
                     <span class="n">last_error</span> <span class="o">=</span> <span class="n">error</span>
                     <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-                        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Sparse standard </span><span class="si">{</span><span class="n">shift_name</span><span class="si">}</span><span class="s2"> shift-invert failed &quot;</span>
-                              <span class="sa">f</span><span class="s2">&quot;with sigma=</span><span class="si">{</span><span class="n">sigma</span><span class="si">:</span><span class="s2">.1e</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">error</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Sparse standard </span><span class="si">{</span><span class="n">shift_name</span><span class="si">}</span><span class="s2"> shift-invert failed "</span>
+                              <span class="sa">f</span><span class="s2">"with sigma=</span><span class="si">{</span><span class="n">sigma</span><span class="si">:</span><span class="s2">.1e</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">error</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
                     <span class="k">else</span><span class="p">:</span>
                         <span class="k">pass</span>
 
@@ -587,7 +585,7 @@
         <span class="k">if</span> <span class="n">eig_ok</span><span class="p">:</span>
             <span class="k">pass</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Sparse standard eigensolver failed with all sigma candidates: </span><span class="si">{</span><span class="n">last_error</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Sparse standard eigensolver failed with all sigma candidates: </span><span class="si">{</span><span class="n">last_error</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="c1"># Sparse generalized shift-invert using custom LinearOperator.</span>
         <span class="n">E_raw</span> <span class="o">=</span> <span class="n">problem</span><span class="o">.</span><span class="n">get_E_matrix</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dx</span><span class="p">)</span>
@@ -621,8 +619,8 @@
                                              <span class="n">rmatvec</span><span class="o">=</span><span class="n">op_methods</span><span class="o">.</span><span class="n">rmatvec</span><span class="p">,</span>
                                              <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">complex128</span><span class="p">)</span>
 
-                <span class="n">mu_R</span><span class="p">,</span> <span class="n">v_raw</span> <span class="o">=</span> <span class="n">spla</span><span class="o">.</span><span class="n">eigs</span><span class="p">(</span><span class="n">inv_op</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">k_search</span><span class="p">,</span> <span class="n">which</span><span class="o">=</span><span class="s2">&quot;LM&quot;</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-10</span><span class="p">)</span>
-                <span class="n">mu_L</span><span class="p">,</span> <span class="n">w_raw</span> <span class="o">=</span> <span class="n">spla</span><span class="o">.</span><span class="n">eigs</span><span class="p">(</span><span class="n">inv_op</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">k_search</span><span class="p">,</span> <span class="n">which</span><span class="o">=</span><span class="s2">&quot;LM&quot;</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-10</span><span class="p">)</span>
+                <span class="n">mu_R</span><span class="p">,</span> <span class="n">v_raw</span> <span class="o">=</span> <span class="n">spla</span><span class="o">.</span><span class="n">eigs</span><span class="p">(</span><span class="n">inv_op</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">k_search</span><span class="p">,</span> <span class="n">which</span><span class="o">=</span><span class="s2">"LM"</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-10</span><span class="p">)</span>
+                <span class="n">mu_L</span><span class="p">,</span> <span class="n">w_raw</span> <span class="o">=</span> <span class="n">spla</span><span class="o">.</span><span class="n">eigs</span><span class="p">(</span><span class="n">inv_op</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">k_search</span><span class="p">,</span> <span class="n">which</span><span class="o">=</span><span class="s2">"LM"</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-10</span><span class="p">)</span>
 
                 <span class="n">tol_mu</span> <span class="o">=</span> <span class="mf">1e-8</span>
                 <span class="n">valid_mask_R</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">mu_R</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">mu_R</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">tol_mu</span><span class="p">)</span>
@@ -642,25 +640,25 @@
                         <span class="ow">or</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">eigenvalues_L</span><span class="p">))</span>
                         <span class="ow">or</span> <span class="n">v_valid</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span>
                         <span class="ow">or</span> <span class="n">w_valid</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
-                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;ARPACK returned empty or non-finite generalized eigenvalues&quot;</span><span class="p">)</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"ARPACK returned empty or non-finite generalized eigenvalues"</span><span class="p">)</span>
 
                 <span class="n">eig_ok</span> <span class="o">=</span> <span class="kc">True</span>
                 <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Sparse generalized shift-invert eigs converged with sigma=</span><span class="si">{</span><span class="n">sigma</span><span class="si">:</span><span class="s2">.1e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Sparse generalized shift-invert eigs converged with sigma=</span><span class="si">{</span><span class="n">sigma</span><span class="si">:</span><span class="s2">.1e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
                 <span class="k">break</span>
             <span class="k">except</span> <span class="p">(</span><span class="ne">RuntimeError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">)</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
                 <span class="n">last_err</span> <span class="o">=</span> <span class="n">err</span>
                 <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Sparse generalized shift-invert eigs failed with sigma=</span><span class="si">{</span><span class="n">sigma</span><span class="si">:</span><span class="s2">.1e</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">err</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Sparse generalized shift-invert eigs failed with sigma=</span><span class="si">{</span><span class="n">sigma</span><span class="si">:</span><span class="s2">.1e</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">err</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="n">eig_ok</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Sparse generalized eigensolver failed with all sigma candidates: </span><span class="si">{</span><span class="n">last_err</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Sparse generalized eigensolver failed with all sigma candidates: </span><span class="si">{</span><span class="n">last_err</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
     <span class="c1"># 5. STRICT MATCHING</span>
     <span class="c1"># To avoid Arnoldi asymmetries, we use a metric that combines Re and Im.</span>
     <span class="c1"># We sort from lowest to highest natural frequency.</span>
-    <span class="n">order_R</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">eigenvalues_R</span><span class="o">.</span><span class="n">imag</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">eigenvalues_R</span><span class="o">.</span><span class="n">real</span><span class="p">),</span> <span class="n">kind</span><span class="o">=</span><span class="s2">&quot;stable&quot;</span><span class="p">)</span>
-    <span class="n">order_L</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">eigenvalues_L</span><span class="o">.</span><span class="n">imag</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">eigenvalues_L</span><span class="o">.</span><span class="n">real</span><span class="p">),</span> <span class="n">kind</span><span class="o">=</span><span class="s2">&quot;stable&quot;</span><span class="p">)</span>
+    <span class="n">order_R</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">eigenvalues_R</span><span class="o">.</span><span class="n">imag</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">eigenvalues_R</span><span class="o">.</span><span class="n">real</span><span class="p">),</span> <span class="n">kind</span><span class="o">=</span><span class="s2">"stable"</span><span class="p">)</span>
+    <span class="n">order_L</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">eigenvalues_L</span><span class="o">.</span><span class="n">imag</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">eigenvalues_L</span><span class="o">.</span><span class="n">real</span><span class="p">),</span> <span class="n">kind</span><span class="o">=</span><span class="s2">"stable"</span><span class="p">)</span>
 
     <span class="n">eigenvalues_R</span> <span class="o">=</span> <span class="n">eigenvalues_R</span><span class="p">[</span><span class="n">order_R</span><span class="p">]</span>
 
@@ -695,7 +693,7 @@
     <span class="n">damping_ratios</span><span class="p">,</span> <span class="n">conjugate_freq</span> <span class="o">=</span> <span class="n">compute_damping_ratios_and_frequencies</span><span class="p">(</span><span class="n">eigenvalues</span><span class="p">,</span> <span class="n">eig_no_conjugates</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Sparse SSS Math Time: </span><span class="si">{</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">t0</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">1000</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> ms&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Sparse SSS Math Time: </span><span class="si">{</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">t0</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">1000</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> ms"</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">eigenvalues</span><span class="p">,</span> <span class="n">v_valid</span><span class="p">,</span> <span class="n">participation_factors</span><span class="p">,</span> <span class="n">damping_ratios</span><span class="p">,</span> <span class="n">conjugate_freq</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="kc">None</span></div>
 
@@ -704,11 +702,11 @@
 <div class="viewcode-block" id="SparseGeneralizedShiftInvertMethods">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SmallSignalStabilityRms.html#VeraGridEngine.Simulations.SmallSignalStabilityRms.small_signal_driver.SparseGeneralizedShiftInvertMethods">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">SparseGeneralizedShiftInvertMethods</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Helper class to hold the matvec and rmatvec operations for the Sparse LinearOperator for </span>
 <span class="sd">    generalized eigenvalues.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;n_states&#39;</span><span class="p">,</span> <span class="s1">&#39;total_size&#39;</span><span class="p">,</span> <span class="s1">&#39;J_aug_lu&#39;</span><span class="p">,</span> <span class="s1">&#39;E&#39;</span><span class="p">]</span>
+<span class="sd">    """</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'n_states'</span><span class="p">,</span> <span class="s1">'total_size'</span><span class="p">,</span> <span class="s1">'J_aug_lu'</span><span class="p">,</span> <span class="s1">'E'</span><span class="p">]</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_states</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">total_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">J_aug_lu</span><span class="p">,</span> <span class="n">E</span><span class="p">:</span> <span class="n">sp</span><span class="o">.</span><span class="n">spmatrix</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">n_states</span> <span class="o">=</span> <span class="n">n_states</span>
@@ -738,8 +736,8 @@
         <span class="n">rhs_r</span><span class="p">[:</span><span class="bp">self</span><span class="o">.</span><span class="n">n_states</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">real</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
         <span class="n">rhs_i</span><span class="p">[:</span><span class="bp">self</span><span class="o">.</span><span class="n">n_states</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">imag</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
 
-        <span class="n">sol_r</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">J_aug_lu</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">rhs_r</span><span class="p">,</span> <span class="n">trans</span><span class="o">=</span><span class="s1">&#39;T&#39;</span><span class="p">)</span>
-        <span class="n">sol_i</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">J_aug_lu</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">rhs_i</span><span class="p">,</span> <span class="n">trans</span><span class="o">=</span><span class="s1">&#39;T&#39;</span><span class="p">)</span>
+        <span class="n">sol_r</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">J_aug_lu</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">rhs_r</span><span class="p">,</span> <span class="n">trans</span><span class="o">=</span><span class="s1">'T'</span><span class="p">)</span>
+        <span class="n">sol_i</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">J_aug_lu</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">rhs_i</span><span class="p">,</span> <span class="n">trans</span><span class="o">=</span><span class="s1">'T'</span><span class="p">)</span>
         <span class="n">sol</span> <span class="o">=</span> <span class="n">sol_r</span><span class="p">[:</span><span class="bp">self</span><span class="o">.</span><span class="n">n_states</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="n">sol_i</span><span class="p">[:</span><span class="bp">self</span><span class="o">.</span><span class="n">n_states</span><span class="p">]</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">E</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">sol</span></div>
 </div>
@@ -749,13 +747,13 @@
 <div class="viewcode-block" id="SparseShiftAndInvertMethods">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SmallSignalStabilityRms.html#VeraGridEngine.Simulations.SmallSignalStabilityRms.small_signal_driver.SparseShiftAndInvertMethods">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">SparseShiftAndInvertMethods</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Helper class to hold the matvec and rmatvec operations for the Sparse LinearOperator.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;n_states&#39;</span><span class="p">,</span> <span class="s1">&#39;total_size&#39;</span><span class="p">,</span> <span class="s1">&#39;J_aug_lu&#39;</span><span class="p">]</span>
+<span class="sd">    """</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'n_states'</span><span class="p">,</span> <span class="s1">'total_size'</span><span class="p">,</span> <span class="s1">'J_aug_lu'</span><span class="p">]</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_states</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">total_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">J_aug_lu</span><span class="p">:</span> <span class="n">spla</span><span class="o">.</span><span class="n">SuperLU</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Constructor for SparseShiftAndInvertMethods.</span>
 
 <span class="sd">        :param n_states: Number of state variables.</span>
@@ -764,7 +762,7 @@
 <span class="sd">        :type total_size: int</span>
 <span class="sd">        :param J_aug_lu: SuperLU factorized augmented Jacobian matrix.</span>
 <span class="sd">        :type J_aug_lu: spla.SuperLU</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">n_states</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">n_states</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">total_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">total_size</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">J_aug_lu</span><span class="p">:</span> <span class="n">spla</span><span class="o">.</span><span class="n">SuperLU</span> <span class="o">=</span> <span class="n">J_aug_lu</span>
@@ -772,13 +770,13 @@
 <div class="viewcode-block" id="SparseShiftAndInvertMethods.matvec">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SmallSignalStabilityRms.html#VeraGridEngine.Simulations.SmallSignalStabilityRms.small_signal_driver.SparseShiftAndInvertMethods.matvec">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">matvec</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">Vec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Matrix-vector multiplication.</span>
 
 <span class="sd">        :param b: Input vector.</span>
 <span class="sd">        :type b: Vec</span>
 <span class="sd">        :return: Result vector.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># SuperLU owns a real factorization while ARPACK may request a complex</span>
         <span class="c1"># operator product.  Solve both components explicitly to preserve the</span>
         <span class="c1"># imaginary part of Arnoldi vectors.</span>
@@ -794,20 +792,20 @@
 <div class="viewcode-block" id="SparseShiftAndInvertMethods.rmatvec">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SmallSignalStabilityRms.html#VeraGridEngine.Simulations.SmallSignalStabilityRms.small_signal_driver.SparseShiftAndInvertMethods.rmatvec">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">rmatvec</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">Vec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Adjoint matrix-vector multiplication.</span>
 
 <span class="sd">        :param b: Input vector.</span>
 <span class="sd">        :type b: Vec</span>
 <span class="sd">        :return: Result vector.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">rhs_real</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">total_size</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
         <span class="n">rhs_imag</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">total_size</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
         <span class="n">rhs_real</span><span class="p">[:</span><span class="bp">self</span><span class="o">.</span><span class="n">n_states</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">b</span><span class="o">.</span><span class="n">real</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
         <span class="n">rhs_imag</span><span class="p">[:</span><span class="bp">self</span><span class="o">.</span><span class="n">n_states</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">b</span><span class="o">.</span><span class="n">imag</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
         <span class="n">solver</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">J_aug_lu</span>
-        <span class="n">solution_real</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">=</span> <span class="n">solver</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">rhs_real</span><span class="p">,</span> <span class="n">trans</span><span class="o">=</span><span class="s1">&#39;T&#39;</span><span class="p">)</span>
-        <span class="n">solution_imag</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">=</span> <span class="n">solver</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">rhs_imag</span><span class="p">,</span> <span class="n">trans</span><span class="o">=</span><span class="s1">&#39;T&#39;</span><span class="p">)</span>
+        <span class="n">solution_real</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">=</span> <span class="n">solver</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">rhs_real</span><span class="p">,</span> <span class="n">trans</span><span class="o">=</span><span class="s1">'T'</span><span class="p">)</span>
+        <span class="n">solution_imag</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">=</span> <span class="n">solver</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">rhs_imag</span><span class="p">,</span> <span class="n">trans</span><span class="o">=</span><span class="s1">'T'</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">solution_real</span><span class="p">[:</span><span class="bp">self</span><span class="o">.</span><span class="n">n_states</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="n">solution_imag</span><span class="p">[:</span><span class="bp">self</span><span class="o">.</span><span class="n">n_states</span><span class="p">]</span></div>
 </div>
@@ -817,20 +815,20 @@
 <div class="viewcode-block" id="SmallSignalStabilityRmsDriver">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SmallSignalStabilityRms.html#VeraGridEngine.Simulations.SmallSignalStabilityRms.small_signal_driver.SmallSignalStabilityRmsDriver">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">SmallSignalStabilityRmsDriver</span><span class="p">(</span><span class="n">DriverTemplate</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Small Signal Stability RMS driver</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span>
-        <span class="s1">&#39;problem&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;sss_options&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;assessment_time&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;k&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;rms_options&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;integration_methods_dict&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;results&#39;</span><span class="p">,</span>
+        <span class="s1">'problem'</span><span class="p">,</span>
+        <span class="s1">'sss_options'</span><span class="p">,</span>
+        <span class="s1">'assessment_time'</span><span class="p">,</span>
+        <span class="s1">'k'</span><span class="p">,</span>
+        <span class="s1">'rms_options'</span><span class="p">,</span>
+        <span class="s1">'integration_methods_dict'</span><span class="p">,</span>
+        <span class="s1">'results'</span><span class="p">,</span>
     <span class="p">]</span>
 
-    <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;Small Signal Stability Simulation&#39;</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s1">'Small Signal Stability Simulation'</span>
     <span class="n">tpe</span> <span class="o">=</span> <span class="n">SimulationTypes</span><span class="o">.</span><span class="n">RmsSmallSignal_run</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
@@ -840,14 +838,14 @@
                  <span class="n">pf_results</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">PowerFlowResults</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">engine</span><span class="p">:</span> <span class="n">EngineType</span> <span class="o">=</span> <span class="n">EngineType</span><span class="o">.</span><span class="n">VeraGrid</span><span class="p">):</span>
 
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        DynamicDriver class constructor for Small Signal stability analysis</span>
 <span class="sd">        :param grid: MultiCircuit instance</span>
 <span class="sd">        :param rms_options: RmsOptions instance</span>
 <span class="sd">        :param sss_options: SmallSignalOptions instance</span>
 <span class="sd">        :param pf_results: PowerFlowResults</span>
 <span class="sd">        :param engine: EngineType (i.e., EngineType.VeraGrid) (optional)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="n">DriverTemplate</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">grid</span><span class="o">=</span><span class="n">grid</span><span class="p">,</span> <span class="n">engine</span><span class="o">=</span><span class="n">engine</span><span class="p">)</span>
 
@@ -859,7 +857,7 @@
             <span class="n">RmsSmallSignalStabilityOptions</span><span class="p">()</span> <span class="k">if</span> <span class="n">sss_options</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">sss_options</span>
         <span class="p">)</span>
 
-        <span class="n">events_group</span> <span class="o">=</span> <span class="n">RmsEventsGroup</span><span class="p">(</span><span class="s2">&quot;simulation1&quot;</span><span class="p">)</span>
+        <span class="n">events_group</span> <span class="o">=</span> <span class="n">RmsEventsGroup</span><span class="p">(</span><span class="s2">"simulation1"</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">problem</span> <span class="o">=</span> <span class="n">RmsProblemDae</span><span class="p">(</span><span class="n">grid</span><span class="o">=</span><span class="n">grid</span><span class="p">,</span>
                                      <span class="n">options</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">rms_options</span><span class="p">,</span>
@@ -888,13 +886,13 @@
 <div class="viewcode-block" id="SmallSignalStabilityRmsDriver.run">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SmallSignalStabilityRms.html#VeraGridEngine.Simulations.SmallSignalStabilityRms.small_signal_driver.SmallSignalStabilityRmsDriver.run">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Main function to initialize and run the system simulation.</span>
 
 <span class="sd">        This function sets up logging, starts the dynamic simulation, and</span>
 <span class="sd">        logs the outcome. It handles and logs any exceptions raised during execution.</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># Run the dynamic simulation</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">run_small_signal_stability</span><span class="p">()</span></div>
 
@@ -902,16 +900,16 @@
 <div class="viewcode-block" id="SmallSignalStabilityRmsDriver.run_small_signal_stability">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SmallSignalStabilityRms.html#VeraGridEngine.Simulations.SmallSignalStabilityRms.small_signal_driver.SmallSignalStabilityRmsDriver.run_small_signal_stability">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">run_small_signal_stability</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Performs the numerical integration using the chosen method and the small signal stability assessment.</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">tic</span><span class="p">()</span>
 
         <span class="c1"># Start the progress sequence before preparing the linearization point so</span>
         <span class="c1"># the GUI immediately reflects that the small-signal study is running.</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">report_progress</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s2">&quot;Preparing the RMS small-signal stability analysis...&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s2">"Preparing the RMS small-signal stability analysis..."</span><span class="p">)</span>
 
         <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">problem</span><span class="o">.</span><span class="n">get_x0</span><span class="p">()</span>
         <span class="n">dx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
@@ -922,7 +920,7 @@
             <span class="c1"># exact operating point requested for the subsequent linearization.</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">report_progress</span><span class="p">(</span><span class="mf">10.0</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;Simulating the RMS model up to the assessment time (</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">assessment_time</span><span class="si">:</span><span class="s2">g</span><span class="si">}</span><span class="s2"> s)...&quot;</span>
+                <span class="sa">f</span><span class="s2">"Simulating the RMS model up to the assessment time (</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">assessment_time</span><span class="si">:</span><span class="s2">g</span><span class="si">}</span><span class="s2"> s)..."</span>
             <span class="p">)</span>
 
             <span class="n">solver</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">integration_methods_dict</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">rms_options</span><span class="o">.</span><span class="n">integration_method</span><span class="p">](</span>
@@ -940,7 +938,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="c1"># Without a requested assessment time, the initialized RMS state is</span>
             <span class="c1"># already the operating point used to build the small-signal model.</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s2">&quot;Using the initialized RMS operating point...&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s2">"Using the initialized RMS operating point..."</span><span class="p">)</span>
 
         <span class="c1"># Both operating-point paths converge here before the modal calculation.</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">report_progress</span><span class="p">(</span><span class="mf">55.0</span><span class="p">)</span>
@@ -950,7 +948,7 @@
             <span class="c1"># The dense solver returns the complete modal spectrum when all</span>
             <span class="c1"># system modes have been requested.</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">report_progress</span><span class="p">(</span><span class="mf">60.0</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s2">&quot;Computing the complete RMS small-signal modal spectrum...&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s2">"Computing the complete RMS small-signal modal spectrum..."</span><span class="p">)</span>
             <span class="p">(</span><span class="n">eigenvalues</span><span class="p">,</span>
              <span class="n">right_eigenvectors</span><span class="p">,</span>
              <span class="n">participation_factors</span><span class="p">,</span>
@@ -965,7 +963,7 @@
             <span class="c1"># The sparse solver targets only the requested modes and avoids the</span>
             <span class="c1"># cost of a complete decomposition for larger RMS systems.</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">report_progress</span><span class="p">(</span><span class="mf">60.0</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Computing </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">k</span><span class="si">}</span><span class="s2"> RMS small-signal modes with the sparse eigensolver...&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Computing </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">k</span><span class="si">}</span><span class="s2"> RMS small-signal modes with the sparse eigensolver..."</span><span class="p">)</span>
             <span class="p">(</span><span class="n">eigenvalues</span><span class="p">,</span>
              <span class="n">right_eigenvectors</span><span class="p">,</span>
              <span class="n">participation_factors</span><span class="p">,</span>
@@ -980,7 +978,7 @@
         <span class="c1"># Package the modal quantities only after the eigensolver has completed,</span>
         <span class="c1"># keeping the final part of the progress range for result construction.</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">report_progress</span><span class="p">(</span><span class="mf">90.0</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s2">&quot;Building the RMS small-signal stability results...&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s2">"Building the RMS small-signal stability results..."</span><span class="p">)</span>
         <span class="n">state_vars</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">problem</span><span class="o">.</span><span class="n">state_vars</span>
         <span class="n">algebraic_vars</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">problem</span><span class="o">.</span><span class="n">algebraic_vars</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">:</span> <span class="n">SmallSignalStabilityRmsResults</span> <span class="o">=</span> <span class="n">SmallSignalStabilityRmsResults</span><span class="p">(</span>
@@ -996,7 +994,7 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">toc</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">report_progress</span><span class="p">(</span><span class="mf">100.0</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s2">&quot;RMS small-signal stability analysis completed.&quot;</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s2">"RMS small-signal stability analysis completed."</span><span class="p">)</span></div>
 </div>
 
 </pre></div>

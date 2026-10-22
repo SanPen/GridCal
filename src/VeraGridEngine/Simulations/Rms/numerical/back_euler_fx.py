@@ -13,7 +13,8 @@ from VeraGridEngine.Simulations.Rms.problems.rms_problem_template import (
     project_initial_algebraic_state,
     solve_rms_newton_correction,
 )
-from VeraGridEngine.Utils.Sparse.csc import pack_4_by_4_scipy
+from VeraGridEngine.Simulations.Rms.numerical.implicit_jacobian_assembler import ImplicitJacobianAssembler
+from VeraGridEngine.Utils.NumericalMethods.external_sparse_solver_interface import SparseLinearSolverBackendProvider
 from VeraGridEngine.basic_structures import Vec, Mat
 
 
@@ -31,6 +32,8 @@ class BackEulerImplicitIntegration:
         "y",
         "tol",
         "_cancel_checker",
+        "_sparse_solver_backend_provider",
+        "_jacobian_assembler",
         "_timings",
     )
 
@@ -41,7 +44,8 @@ class BackEulerImplicitIntegration:
                  h: float,
                  max_iter: int,
                  tolerance: float = 1e-7,
-                 cancel_checker: Callable[[], bool] | None = None) -> None:
+                 cancel_checker: Callable[[], bool] | None = None,
+                 sparse_solver_backend_provider: SparseLinearSolverBackendProvider | None = None) -> None:
         """
         Initializes an object to solve a given DAE (Differential-Algebraic Equation) problem using numerical
         methods. This constructor sets up the time grid and prepares storage for results.
@@ -55,12 +59,15 @@ class BackEulerImplicitIntegration:
         :type t_end: float
         :param h: The time step size to be used for the simulation.
         :type h: float
-        :param max_iter: The maximum number of iterations for internal solver routines or convergence tests.
+        :param max_iter: Maximum local Newton corrections; also the iteration
+            limit passed to the existing initial projection.
         :type max_iter: int
         :param tolerance: Non-linear residual tolerance used by the Newton loop.
         :type tolerance: float
         :param cancel_checker: Optional cancellation callback checked at each macro time step.
         :type cancel_checker: Callable[[], bool] | None
+        :param sparse_solver_backend_provider: Sparse LU provider for the Newton corrections; None keeps SciPy spsolve.
+        :type sparse_solver_backend_provider: SparseLinearSolverBackendProvider | None
         :return: None
         :rtype: None
         """
@@ -77,6 +84,9 @@ class BackEulerImplicitIntegration:
         self.y: Mat = np.empty((self.steps + 1, self.problem.get_all_vars_number()))
         self.tol: float = tolerance
         self._cancel_checker: Callable[[], bool] | None = cancel_checker
+        self._sparse_solver_backend_provider: SparseLinearSolverBackendProvider | None = sparse_solver_backend_provider
+        # The implicit Jacobian is assembled on a packed pattern reused across Newton corrections.
+        self._jacobian_assembler: ImplicitJacobianAssembler = ImplicitJacobianAssembler()
 
     def _rhs_implicit(self,
                       x: Vec,
@@ -144,20 +154,20 @@ class BackEulerImplicitIntegration:
         j22_val: csc_matrix = self.problem.get_j22(x, dx, h)
         self._timings["jac_j22_time"] += time.time() - t0
 
-        I = sp.eye(m=self.problem.get_states_number(), n=self.problem.get_states_number())
-        j11: sp.csc_matrix = (I - h * j11_val).tocsc()
-        j12: sp.csc_matrix = - h * j12_val
-        j21: sp.csc_matrix = j21_val
-        j22: sp.csc_matrix = j22_val
-
-        J = pack_4_by_4_scipy(j11, j12, j21, j22)
+        # Same matrix as pack_4_by_4_scipy((I - h*J11).tocsc(), -h*J12, J21, J22), without rebuilding its pattern.
+        J: sp.csc_matrix = self._jacobian_assembler.assemble(self.problem.get_states_number(), h,
+                                                            j11_val, j12_val, j21_val, j22_val)
 
         return J
 
-    def simulate(self):
-        """
+    def simulate(self) -> tuple[Vec, Mat, bool, bool]:
+        """Integrate accepted local steps with a bounded Newton correction count.
 
-        :return:
+        The final allowed correction is checked against the configured strict
+        tolerance. Failed steps expose only initial and completed macro samples.
+
+        :return: Matching time/state prefixes, initial projection status and
+            convergence status of the requested trajectory.
         """
         converged: bool = False
         completed_samples: int = 1
@@ -302,11 +312,22 @@ class BackEulerImplicitIntegration:
                     else:
                         pass
 
-                    n_iter = 0
+                    n_iter: int = 0
                     substep_converged = state_event_retry_time is not None
-                    tol = self.tol
+                    tol: float = self.tol
 
-                    while not substep_converged and n_iter < self.max_iter_0:
+                    # Validate the last corrected point, even when no further
+                    # correction is permitted, before resolving the FMI boundary.
+                    while not substep_converged:
+                        if not np.all(np.isfinite(x_new)):
+                            self.problem.logger.add_error(
+                                msg=(f"Non-finite RMS candidate at {t_curr:g} s "
+                                     f"(macro step {step_idx + 1}); the failed step is omitted."),
+                                device="BackEulerImplicitIntegration",
+                            )
+                            break
+                        else:
+                            pass
                         if step_idx == 0 and is_first_local_step:
                             dx = dx0.copy()
                         else:
@@ -317,10 +338,34 @@ class BackEulerImplicitIntegration:
                         rhs_end = time.time()
                         timings["rhs_time"] += rhs_end - rhs_start
 
+                        # A full finite residual is required before either
+                        # acceptance or a Jacobian evaluation can be safe.
+                        if not np.all(np.isfinite(rhs)):
+                            self.problem.logger.add_error(
+                                msg=(f"Non-finite RMS residual at {t_curr:g} s "
+                                     f"(macro step {step_idx + 1}); the failed step is omitted."),
+                                device="BackEulerImplicitIntegration",
+                            )
+                            break
+                        else:
+                            pass
                         residual = np.linalg.norm(rhs, np.inf)
                         substep_converged = residual < tol
 
                         if not substep_converged:
+                            # The residual check consumes no correction budget;
+                            # never assemble a Jacobian after that budget is spent.
+                            if n_iter >= self.max_iter_0:
+                                self.problem.logger.add_error(
+                                    msg=(f"RMS Newton correction budget exhausted at {t_curr:g} s "
+                                         f"(macro step {step_idx + 1}); the failed step is omitted."),
+                                    device="BackEulerImplicitIntegration",
+                                    value=residual,
+                                    expected_value=tol,
+                                )
+                                break
+                            else:
+                                pass
                             solved = False
                             jac_start = time.time()
                             Jf = self._jacobian_implicit(x_new, dx, h_eff)
@@ -339,6 +384,7 @@ class BackEulerImplicitIntegration:
                                 jacobian=Jf,
                                 residual=rhs,
                                 reference_column=reference_column,
+                                sparse_solver_backend_provider=self._sparse_solver_backend_provider,
                             )
                             linear_end = time.time()
                             timings["linear_solver_time"] += linear_end - linear_start
@@ -392,6 +438,17 @@ class BackEulerImplicitIntegration:
                             if _dmax > 1.0:
                                 delta = delta * (1.0 / _dmax)
                             x_new += delta
+                            # Finite operands can overflow during the correction;
+                            # reject before presenting this point to FMI ME inputs.
+                            if not np.all(np.isfinite(x_new)):
+                                self.problem.logger.add_error(
+                                    msg=(f"Non-finite corrected RMS candidate at {t_curr:g} s "
+                                         f"(macro step {step_idx + 1}); the failed step is omitted."),
+                                    device="BackEulerImplicitIntegration",
+                                )
+                                break
+                            else:
+                                pass
                             if has_fmu_me:
                                 # Replace the candidate with outputs evaluated
                                 # from the corrected network iterate before the

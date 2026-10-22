@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Simulations.Rms.rms_driver &mdash; VeraGrid 6.7.13 documentation</title>
+  <title>VeraGridEngine.Simulations.Rms.rms_driver &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=16fbabd8"></script>
+      <script src="../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -135,13 +135,13 @@
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_collect_rms_group_parameter_values</span><span class="p">(</span><span class="n">problem</span><span class="p">:</span> <span class="n">RmsProblemDae</span> <span class="o">|</span> <span class="n">RmsProblemDaeVec</span><span class="p">,</span>
                                         <span class="n">grid</span><span class="p">:</span> <span class="n">MultiCircuit</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Export one event-group parameter snapshot from the RMS problem.</span>
 
 <span class="sd">    :param problem: Solved RMS problem instance.</span>
 <span class="sd">    :param grid: Circuit containing the configured RMS model parameters.</span>
 <span class="sd">    :return: Parameter scalar map keyed by ``device_idtag:param_name``.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">parameter_values</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="n">collect_declared_dynamic_parameter_values</span><span class="p">(</span>
         <span class="n">grid</span><span class="o">=</span><span class="n">grid</span><span class="p">,</span>
         <span class="n">simulation_type</span><span class="o">=</span><span class="n">PlotSimulationType</span><span class="o">.</span><span class="n">RMS</span><span class="p">,</span>
@@ -160,7 +160,7 @@
             <span class="n">parameter_var</span> <span class="o">=</span> <span class="n">problem</span><span class="o">.</span><span class="n">_variable_parameters</span><span class="p">[</span><span class="n">parameter_index</span><span class="p">]</span>
             <span class="n">device_idtag</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">problem</span><span class="o">.</span><span class="n">_event_parameter_device_idtags</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">parameter_var</span><span class="o">.</span><span class="n">uid</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">device_idtag</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">parameter_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">device_idtag</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;:&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">parameter_var</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+                <span class="n">parameter_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">device_idtag</span><span class="p">)</span> <span class="o">+</span> <span class="s2">":"</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">parameter_var</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
                 <span class="n">parameter_values</span><span class="p">[</span><span class="n">parameter_key</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">problem</span><span class="o">.</span><span class="n">_variable_parameters_values</span><span class="p">[</span><span class="n">parameter_index</span><span class="p">])</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">pass</span>
@@ -174,30 +174,30 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.Rms.html#VeraGridEngine.Simulations.Rms.rms_driver.RmsSimulationDriver">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">RmsSimulationDriver</span><span class="p">(</span><span class="n">DriverTemplate</span><span class="p">):</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;pf_results&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;options&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;problem&quot;</span><span class="p">,</span>
+        <span class="s2">"pf_results"</span><span class="p">,</span>
+        <span class="s2">"options"</span><span class="p">,</span>
+        <span class="s2">"problem"</span><span class="p">,</span>
     <span class="p">)</span>
 
-    <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;Rms Simulation&#39;</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s1">'Rms Simulation'</span>
     <span class="n">tpe</span> <span class="o">=</span> <span class="n">SimulationTypes</span><span class="o">.</span><span class="n">RmsDynamic_run</span>
 
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Dynamic wrapper to use with Qt</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                  <span class="n">grid</span><span class="p">:</span> <span class="n">MultiCircuit</span><span class="p">,</span>
                  <span class="n">options</span><span class="p">:</span> <span class="n">RmsOptions</span><span class="p">,</span>
                  <span class="n">pf_results</span><span class="p">:</span> <span class="n">PowerFlowResults</span><span class="p">,</span>
                  <span class="n">engine</span><span class="p">:</span> <span class="n">EngineType</span> <span class="o">=</span> <span class="n">EngineType</span><span class="o">.</span><span class="n">VeraGrid</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        DynamicDriver class constructor</span>
 <span class="sd">        :param grid: MultiCircuit instance</span>
 <span class="sd">        :param options: RmsOptions instance</span>
 <span class="sd">        :param pf_results: PowerFlowResults</span>
 <span class="sd">        :param engine: EngineType (i.e., EngineType.VeraGrid) (optional)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="n">DriverTemplate</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">grid</span><span class="o">=</span><span class="n">grid</span><span class="p">,</span> <span class="n">engine</span><span class="o">=</span><span class="n">engine</span><span class="p">)</span>
 
@@ -213,13 +213,13 @@
 <div class="viewcode-block" id="RmsSimulationDriver.run">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.Rms.html#VeraGridEngine.Simulations.Rms.rms_driver.RmsSimulationDriver.run">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Main function to initialize and run the system simulation.</span>
 
 <span class="sd">        This function sets up logging, starts the dynamic simulation, and</span>
 <span class="sd">        logs the outcome. It handles and logs any exceptions raised during execution.</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># Run the dynamic simulation</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">run_time_simulation</span><span class="p">()</span></div>
 
@@ -227,10 +227,10 @@
 <div class="viewcode-block" id="RmsSimulationDriver.run_time_simulation">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.Rms.html#VeraGridEngine.Simulations.Rms.rms_driver.RmsSimulationDriver.run_time_simulation">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">run_time_simulation</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Performs the numerical integration using the chosen method.</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">progress_signal</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
 
@@ -248,7 +248,7 @@
         <span class="c1"># self.options.problem_type = RmsProblemTypes.PowerBalanceFullVectorized</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_cancel</span><span class="p">():</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s2">&quot;Cancelled!&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s2">"Cancelled!"</span><span class="p">)</span>
             <span class="k">return</span>
 
         <span class="n">problem</span> <span class="o">=</span> <span class="n">build_rms_problem</span><span class="p">(</span>
@@ -261,7 +261,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">problem</span> <span class="o">=</span> <span class="n">problem</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_cancel</span><span class="p">():</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s2">&quot;Cancelled!&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s2">"Cancelled!"</span><span class="p">)</span>
             <span class="k">return</span>
 
         <span class="c1"># The results container keeps the full declared event-group layout so</span>
@@ -285,31 +285,31 @@
         <span class="k">for</span> <span class="n">group_idx</span><span class="p">,</span> <span class="n">rms_events_group</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">rms_events_groups</span><span class="p">):</span>
 
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_cancel</span><span class="p">():</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s2">&quot;Cancelled!&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s2">"Cancelled!"</span><span class="p">)</span>
                 <span class="k">return</span>
 
             <span class="k">if</span> <span class="n">rms_events_group</span><span class="o">.</span><span class="n">active</span><span class="p">:</span>
 
-                <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s2">&quot;Simulating RMS event group &quot;</span> <span class="o">+</span> <span class="n">rms_events_group</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s2">"Simulating RMS event group "</span> <span class="o">+</span> <span class="n">rms_events_group</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
 
                 <span class="bp">self</span><span class="o">.</span><span class="n">progress_signal</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
 
-                <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s2">&quot;Simulating RMS event group &quot;</span> <span class="o">+</span> <span class="n">rms_events_group</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s2">"Simulating RMS event group "</span> <span class="o">+</span> <span class="n">rms_events_group</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
                 <span class="n">problem</span><span class="o">.</span><span class="n">set_events_group</span><span class="p">(</span><span class="n">rms_events_group</span><span class="o">=</span><span class="n">rms_events_group</span><span class="p">)</span>
                 <span class="n">problem</span><span class="o">.</span><span class="n">reset_boundary_update_state</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
 
-                <span class="c1"># DaeTrapezoidal = &quot;DAE_Trapezoidal&quot;</span>
-                <span class="c1"># DaeBackEuler = &quot;DAE_BackEuler&quot;</span>
-                <span class="c1"># DaeBDF2 = &quot;DAE_bdf2&quot;</span>
-                <span class="c1"># DaeContinuous = &quot;DAE_Continuous&quot;</span>
-                <span class="c1"># OdeRungeKutta4 = &quot;ODE_Runge_Kutta 4&quot;</span>
-                <span class="c1"># OdeEuler = &quot;ODE_Euler&quot;</span>
+                <span class="c1"># DaeTrapezoidal = "DAE_Trapezoidal"</span>
+                <span class="c1"># DaeBackEuler = "DAE_BackEuler"</span>
+                <span class="c1"># DaeBDF2 = "DAE_bdf2"</span>
+                <span class="c1"># DaeContinuous = "DAE_Continuous"</span>
+                <span class="c1"># OdeRungeKutta4 = "ODE_Runge_Kutta 4"</span>
+                <span class="c1"># OdeEuler = "ODE_Euler"</span>
 
                 <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">integration_method</span> <span class="o">==</span> <span class="n">DynamicIntegrationMethod</span><span class="o">.</span><span class="n">DaeBackEuler</span><span class="p">:</span>
 
                     <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span>
-                        <span class="sa">f</span><span class="s2">&quot;Simulating RMS event group  </span><span class="si">{</span><span class="n">rms_events_group</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> with &quot;</span>
-                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">integration_method</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">&quot;</span>
+                        <span class="sa">f</span><span class="s2">"Simulating RMS event group  </span><span class="si">{</span><span class="n">rms_events_group</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> with "</span>
+                        <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">integration_method</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">"</span>
                     <span class="p">)</span>
 
                     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">problem_type</span> <span class="o">==</span> <span class="n">RmsProblemTypes</span><span class="o">.</span><span class="n">PowerBalance</span><span class="p">:</span>
@@ -346,10 +346,10 @@
                         <span class="p">)</span>
 
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="s2">&quot;Falling back to DAE-BackEuler method&quot;</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="s2">"Falling back to DAE-BackEuler method"</span><span class="p">)</span>
 
                     <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span>
-                        <span class="sa">f</span><span class="s2">&quot;Simulating RMS event group  </span><span class="si">{</span><span class="n">rms_events_group</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> with back euler as fallback&quot;</span>
+                        <span class="sa">f</span><span class="s2">"Simulating RMS event group  </span><span class="si">{</span><span class="n">rms_events_group</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> with back euler as fallback"</span>
                     <span class="p">)</span>
 
                     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">problem_type</span> <span class="o">==</span> <span class="n">RmsProblemTypes</span><span class="o">.</span><span class="n">PowerBalance</span><span class="p">:</span>
@@ -416,10 +416,10 @@
                     <span class="k">else</span><span class="p">:</span>
                         <span class="k">pass</span>
                 <span class="n">_t_end</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
-                <span class="c1"># print(f&quot;RMS simulation time: {_t_end - _t_start:.4f} s&quot;)</span>
+                <span class="c1"># print(f"RMS simulation time: {_t_end - _t_start:.4f} s")</span>
 
                 <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_cancel</span><span class="p">():</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s2">&quot;Cancelled!&quot;</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s2">"Cancelled!"</span><span class="p">)</span>
                     <span class="k">return</span>
 
                 <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">converged</span><span class="p">[</span><span class="n">group_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">converged</span>
@@ -435,19 +435,19 @@
                 <span class="p">)</span>
 
                 <span class="k">if</span> <span class="ow">not</span> <span class="n">well_initialized</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s2">&quot;Not well initialized&quot;</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">rms_events_group</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s2">"Not well initialized"</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">rms_events_group</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
 
                 <span class="k">if</span> <span class="ow">not</span> <span class="n">converged</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span>
-                        <span class="sa">f</span><span class="s2">&quot;RMS stopped after </span><span class="si">{</span><span class="n">sample_count</span><span class="si">}</span><span class="s2"> accepted samples; &quot;</span>
-                        <span class="sa">f</span><span class="s2">&quot;last completed time is </span><span class="si">{</span><span class="n">t</span><span class="p">[</span><span class="n">sample_count</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">]</span><span class="si">:</span><span class="s2">g</span><span class="si">}</span><span class="s2"> s&quot;</span><span class="p">,</span>
+                        <span class="sa">f</span><span class="s2">"RMS stopped after </span><span class="si">{</span><span class="n">sample_count</span><span class="si">}</span><span class="s2"> accepted samples; "</span>
+                        <span class="sa">f</span><span class="s2">"last completed time is </span><span class="si">{</span><span class="n">t</span><span class="p">[</span><span class="n">sample_count</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">]</span><span class="si">:</span><span class="s2">g</span><span class="si">}</span><span class="s2"> s"</span><span class="p">,</span>
                         <span class="n">device</span><span class="o">=</span><span class="n">rms_events_group</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
                     <span class="p">)</span>
 
                 <span class="bp">self</span><span class="o">.</span><span class="n">progress_signal</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="mi">90</span><span class="p">)</span>
 
             <span class="k">else</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="n">rms_events_group</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s2">&quot; skipped&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="n">rms_events_group</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s2">" skipped"</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">progress_signal</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span></div>
 </div>

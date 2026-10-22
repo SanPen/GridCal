@@ -10,7 +10,7 @@ import shutil
 import tempfile
 import os
 
-from VeraGridEngine.IO.fmu.compiler import FmuBinaryInterface, Compiler, compile_fmu_shared_library
+from VeraGridEngine.IO.fmu.compiler import Compiler, compile_fmu_shared_library
 from VeraGridEngine.enumerations import FmiVersion
 from VeraGridEngine.IO.fmu.config import ExportConfig
 from VeraGridEngine.IO.fmu.expression import ExprToCVisitor
@@ -532,15 +532,12 @@ def build_shared_library(
     source_root: Path = source_dir / "src"
     if cfg.fmi_version == FmiVersion.FMI_1_0:
         runtime_name: str = "runtime_fmi1.c"
-        interface: FmuBinaryInterface = FmuBinaryInterface.FMI_ONE_MODEL_EXCHANGE
     else:
         if cfg.fmi_version == FmiVersion.FMI_2_0:
             runtime_name = "runtime_fmi2.c"
-            interface = FmuBinaryInterface.FMI_TWO_MODEL_EXCHANGE
         else:
             if cfg.fmi_version == FmiVersion.FMI_3_0:
                 runtime_name = "runtime_fmi3.c"
-                interface = FmuBinaryInterface.FMI_THREE_MODEL_EXCHANGE
             else:
                 raise NotImplementedError(
                     f"FMI {cfg.fmi_version.value} Model Exchange build is not implemented"
@@ -558,11 +555,5 @@ def build_shared_library(
         source_files=source_files,
         include_directories=include_directories,
         output_path=output_path,
-        interface=interface,
-        model_identifier=(
-            cfg.model_identifier
-            if cfg.fmi_version == FmiVersion.FMI_1_0
-            else None
-        ),
         compiler=compiler,
     )

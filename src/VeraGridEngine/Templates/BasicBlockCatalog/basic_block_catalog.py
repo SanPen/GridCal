@@ -277,10 +277,19 @@ def build_basic_block_catalog_functional_description(record: BasicBlockCatalogSt
     else:
         family = ""
 
+    # The inertia-scaled integrator is mechanically meaningful even though the
+    # source catalogue stored it beside generic transfer functions.
+    if template_key == "1_2hs":
+        description: str = "Integrates accelerating torque or power with the inertia scaling 1/(2H)."
+    elif template_key == "s_w0_2_s_2":
+        description = (
+            "Applies the undamped resonant transfer function s/(w0² + s²) "
+            "at the configurable natural frequency w0."
+        )
     # Elementary functions are described by their mathematical operation.
-    if family == "Elementary Functions":
+    elif family == "Elementary Functions":
         if template_key == "equal":
-            description: str = "Compares two input signals and outputs one when they are equal, otherwise zero."
+            description = "Compares two input signals and outputs one when they are equal, otherwise zero."
         elif template_key == "abs":
             description = "Returns the absolute value of the input signal."
         elif template_key == "ceil":

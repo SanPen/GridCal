@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Simulations.NTC.ntc_driver &mdash; VeraGrid 6.7.13 documentation</title>
+  <title>VeraGridEngine.Simulations.NTC.ntc_driver &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=16fbabd8"></script>
+      <script src="../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -108,7 +108,7 @@
 <span class="c1"># file, You can obtain one at https://mozilla.org/MPL/2.0/.  </span>
 <span class="c1"># SPDX-License-Identifier: MPL-2.0</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Devices.multi_circuit</span><span class="w"> </span><span class="kn">import</span> <span class="n">MultiCircuit</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Devices.Events.contingency_group</span><span class="w"> </span><span class="kn">import</span> <span class="n">ContingencyGroup</span>
@@ -127,19 +127,19 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.NTC.html#VeraGridEngine.Simulations.NTC.ntc_driver.select_ntc_contingency_groups">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">select_ntc_contingency_groups</span><span class="p">(</span><span class="n">grid</span><span class="p">:</span> <span class="n">MultiCircuit</span><span class="p">,</span>
                                   <span class="n">selected</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">ContingencyGroup</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">ContingencyGroup</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Resolve the same active contingency selection for both NTC drivers.</span>
+<span class="w">    </span><span class="sd">"""Resolve the same active contingency selection for both NTC drivers.</span>
 
 <span class="sd">    :param grid: Circuit supplying the default contingency groups.</span>
 <span class="sd">    :param selected: Explicit selection; an empty list selects all active groups.</span>
 <span class="sd">    :return: Active groups in their original selection order.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">candidates</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">ContingencyGroup</span><span class="p">]</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">selected</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
         <span class="n">candidates</span> <span class="o">=</span> <span class="n">selected</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">candidates</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">get_contingency_groups</span><span class="p">()</span>
 
-    <span class="c1"># Allocate once, filter by activity, and convert to the formulation&#39;s list API.</span>
+    <span class="c1"># Allocate once, filter by activity, and convert to the formulation's list API.</span>
     <span class="n">group</span><span class="p">:</span> <span class="n">ContingencyGroup</span>
     <span class="n">active</span><span class="p">:</span> <span class="n">BoolVec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fromiter</span><span class="p">((</span><span class="n">group</span><span class="o">.</span><span class="n">active</span> <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">candidates</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">,</span> <span class="n">count</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">candidates</span><span class="p">))</span>
     <span class="n">groups</span><span class="p">:</span> <span class="n">ObjVec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">candidates</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">)</span>
@@ -150,13 +150,13 @@
 <div class="viewcode-block" id="collect_phase_shifter_indices">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.NTC.html#VeraGridEngine.Simulations.NTC.ntc_driver.collect_phase_shifter_indices">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">collect_phase_shifter_indices</span><span class="p">(</span><span class="n">grid</span><span class="p">:</span> <span class="n">MultiCircuit</span><span class="p">,</span> <span class="n">time_indices</span><span class="p">:</span> <span class="n">IntVec</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">IntVec</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Select branches with phase-angle control in any simulated operating point.</span>
 
 <span class="sd">    :param grid: circuit whose branch order matches the NTC results</span>
 <span class="sd">    :param time_indices: simulated original time indices, or None for a snapshot</span>
 <span class="sd">    :return: branch indices to expose in the control columns</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># Use configuration rather than nonzero angles: an optimized angle can be zero.</span>
     <span class="n">selected</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">grid</span><span class="o">.</span><span class="n">get_branch_number</span><span class="p">(),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
     <span class="n">branch_index</span><span class="p">:</span> <span class="nb">int</span>
@@ -177,7 +177,7 @@
 <div class="viewcode-block" id="collect_contingency_group_device_names">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.NTC.html#VeraGridEngine.Simulations.NTC.ntc_driver.collect_contingency_group_device_names">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">collect_contingency_group_device_names</span><span class="p">(</span><span class="n">grid</span><span class="p">:</span> <span class="n">MultiCircuit</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ObjVec</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Join the device names of every contingency that belongs to each group.</span>
 
 <span class="sd">    The order matches ``grid.get_contingency_group_names()``. The report uses this</span>
@@ -185,7 +185,7 @@
 
 <span class="sd">    :param grid: circuit that owns the contingency groups and contingency objects</span>
 <span class="sd">    :return: object array of joined device names, one entry per group</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">groups</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">get_contingency_groups</span><span class="p">()</span>
     <span class="n">group_dict</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">get_contingency_group_dict</span><span class="p">()</span>
     <span class="n">n_g</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">groups</span><span class="p">)</span>
@@ -194,13 +194,13 @@
     <span class="k">for</span> <span class="n">i_g</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_g</span><span class="p">):</span>
         <span class="n">cnt_list</span> <span class="o">=</span> <span class="n">group_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">groups</span><span class="p">[</span><span class="n">i_g</span><span class="p">]</span><span class="o">.</span><span class="n">idtag</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">cnt_list</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">names</span><span class="p">[</span><span class="n">i_g</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+            <span class="n">names</span><span class="p">[</span><span class="n">i_g</span><span class="p">]</span> <span class="o">=</span> <span class="s2">""</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">parts</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
             <span class="n">i_c</span><span class="p">:</span> <span class="nb">int</span>
             <span class="k">for</span> <span class="n">i_c</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">cnt_list</span><span class="p">)):</span>
                 <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cnt_list</span><span class="p">[</span><span class="n">i_c</span><span class="p">]</span><span class="o">.</span><span class="n">device_name</span><span class="p">)</span>
-            <span class="n">names</span><span class="p">[</span><span class="n">i_g</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span>
+            <span class="n">names</span><span class="p">[</span><span class="n">i_g</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"; "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">names</span></div>
 
 
@@ -209,21 +209,21 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.NTC.html#VeraGridEngine.Simulations.NTC.ntc_driver.OptimalNetTransferCapacityDriver">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">OptimalNetTransferCapacityDriver</span><span class="p">(</span><span class="n">DriverTemplate</span><span class="p">):</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;options&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;all_solved&quot;</span><span class="p">,</span>
+        <span class="s2">"options"</span><span class="p">,</span>
+        <span class="s2">"all_solved"</span><span class="p">,</span>
     <span class="p">)</span>
 
-    <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;Optimal net transfer capacity&#39;</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s1">'Optimal net transfer capacity'</span>
     <span class="n">tpe</span> <span class="o">=</span> <span class="n">SimulationTypes</span><span class="o">.</span><span class="n">OPF_NTC_run</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                  <span class="n">grid</span><span class="p">:</span> <span class="n">MultiCircuit</span><span class="p">,</span>
                  <span class="n">options</span><span class="p">:</span> <span class="n">OptimalNetTransferCapacityOptions</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        PowerFlowDriver class constructor</span>
 <span class="sd">        :param grid: MultiCircuit Object</span>
 <span class="sd">        :param options: OptimalNetTransferCapacityOptions</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">DriverTemplate</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">grid</span><span class="o">=</span><span class="n">grid</span><span class="p">)</span>
 
         <span class="c1"># Options to use</span>
@@ -236,29 +236,29 @@
 <div class="viewcode-block" id="OptimalNetTransferCapacityDriver.get_steps">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.NTC.html#VeraGridEngine.Simulations.NTC.ntc_driver.OptimalNetTransferCapacityDriver.get_steps">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_steps</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get time steps list of strings</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="nb">list</span><span class="p">()</span></div>
 
 
 <div class="viewcode-block" id="OptimalNetTransferCapacityDriver.opf">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.NTC.html#VeraGridEngine.Simulations.NTC.ntc_driver.OptimalNetTransferCapacityDriver.opf">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">opf</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OptimalNetTransferCapacityResults</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Run a power flow for every circuit</span>
 <span class="sd">        @return: OptimalPowerFlowResults object</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s1">&#39;Compiling...&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s1">'Compiling...'</span><span class="p">)</span>
 
         <span class="n">contingency_groups_used</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">ContingencyGroup</span><span class="p">]</span> <span class="o">=</span> <span class="n">select_ntc_contingency_groups</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">opf_options</span><span class="o">.</span><span class="n">contingency_groups_used</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">consider_contingencies</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Formulating NTC OPF (</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">contingency_groups_used</span><span class="p">)</span><span class="si">}</span><span class="s1"> contingency groups)...&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="sa">f</span><span class="s1">'Formulating NTC OPF (</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">contingency_groups_used</span><span class="p">)</span><span class="si">}</span><span class="s1"> contingency groups)...'</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s1">&#39;Formulating NTC OPF...&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s1">'Formulating NTC OPF...'</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">strict_formulation</span><span class="p">:</span>
             <span class="n">opf_vars</span><span class="p">,</span> <span class="n">model</span> <span class="o">=</span> <span class="n">run_linear_ntc_opf_strict</span><span class="p">(</span>
@@ -367,25 +367,13 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">worst_contingency_flow</span> <span class="o">=</span> <span class="n">opf_vars</span><span class="o">.</span><span class="n">branch_vars</span><span class="o">.</span><span class="n">worst_contingency_flow</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">worst_contingency_loading</span> <span class="o">=</span> <span class="n">opf_vars</span><span class="o">.</span><span class="n">branch_vars</span><span class="o">.</span><span class="n">worst_contingency_loading</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">alpha_n1_worst</span> <span class="o">=</span> <span class="n">opf_vars</span><span class="o">.</span><span class="n">branch_vars</span><span class="o">.</span><span class="n">alpha_n1_worst</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:]</span>
-        <span class="c1"># keep only the ties of rows the report can show</span>
-        <span class="n">tie</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span>
-        <span class="k">for</span> <span class="n">tie</span> <span class="ow">in</span> <span class="n">opf_vars</span><span class="o">.</span><span class="n">branch_vars</span><span class="o">.</span><span class="n">worst_contingency_ties</span><span class="p">:</span>
-            <span class="n">tie_branch</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">tie</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-            <span class="n">row_loading_pct</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">100.0</span> <span class="o">*</span> <span class="nb">max</span><span class="p">(</span>
-                <span class="nb">float</span><span class="p">(</span><span class="n">opf_vars</span><span class="o">.</span><span class="n">branch_vars</span><span class="o">.</span><span class="n">worst_contingency_loading</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">tie_branch</span><span class="p">]),</span>
-                <span class="nb">abs</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">opf_vars</span><span class="o">.</span><span class="n">branch_vars</span><span class="o">.</span><span class="n">loading</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">tie_branch</span><span class="p">])))</span>
-            <span class="k">if</span> <span class="p">(</span><span class="n">opf_vars</span><span class="o">.</span><span class="n">branch_vars</span><span class="o">.</span><span class="n">monitor_logic</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">tie_branch</span><span class="p">]</span>
-                    <span class="ow">and</span> <span class="n">row_loading_pct</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">loading_threshold_to_report</span><span class="p">):</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">worst_contingency_ties</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="mi">0</span><span class="p">,)</span> <span class="o">+</span> <span class="n">tie</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">pass</span>  <span class="c1"># the report never displays this branch</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">converged</span> <span class="o">=</span> <span class="n">opf_vars</span><span class="o">.</span><span class="n">acceptable_solution</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">opf_options</span><span class="o">.</span><span class="n">report_formulation</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">report_text</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">model_as_string</span><span class="p">()</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s1">&#39;Done!&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s1">'Done!'</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span></div>
 
@@ -393,11 +381,11 @@
 <div class="viewcode-block" id="OptimalNetTransferCapacityDriver.run">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.NTC.html#VeraGridEngine.Simulations.NTC.ntc_driver.OptimalNetTransferCapacityDriver.run">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Run this study</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">tic</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s2">&quot;Compiling and configuring...&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s2">"Compiling and configuring..."</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">opf</span><span class="p">()</span>
 

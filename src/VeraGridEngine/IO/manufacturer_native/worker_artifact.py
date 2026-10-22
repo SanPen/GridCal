@@ -83,19 +83,31 @@ class ManufacturerNativeWorkerPreparation:
         self.compiled: bool = compiled
 
 
-def _host_platform() -> IeeeCigreDllPlatform:
-    """Return the supported native worker platform for this process.
+def _host_platform(
+    platform: IeeeCigreDllPlatform | None = None,
+) -> IeeeCigreDllPlatform:
+    """Validate the requested worker architecture against the current host.
 
-    :return: Windows x64 or Linux x64 platform.
+    :param platform: Explicit target, or ``None`` for the native x64 worker.
+    :return: Native platform or Windows x86 on a Windows x64 host.
     """
+    host_platform: IeeeCigreDllPlatform
     if struct.calcsize("P") != 8:
         raise RuntimeError("Manufacturer native execution requires a 64-bit host")
     elif sys.platform == "win32":
-        return IeeeCigreDllPlatform.WINDOWS_X64
+        host_platform = IeeeCigreDllPlatform.WINDOWS_X64
     elif sys.platform.startswith("linux"):
-        return IeeeCigreDllPlatform.LINUX_X64
+        host_platform = IeeeCigreDllPlatform.LINUX_X64
     else:
         raise RuntimeError("Manufacturer native execution supports Windows x64 and Linux x64")
+    # A Windows x64 host can supervise a PE32 child; other cross-host targets
+    # must not silently inherit the native compiler and runtime assumptions.
+    if platform is None or platform == host_platform:
+        return host_platform
+    elif host_platform == IeeeCigreDllPlatform.WINDOWS_X64 and platform == IeeeCigreDllPlatform.WINDOWS_X86:
+        return platform
+    else:
+        raise ValueError("Manufacturer worker target is incompatible with the current host")
 
 
 def _worker_sources() -> tuple[Path, ...]:
@@ -157,7 +169,7 @@ def _compiler_arguments(
 ) -> tuple[str, ...]:
     """Build the exact ordered selected-provider argument sequence.
 
-    :param platform: Current supported host platform.
+    :param platform: Validated worker target architecture.
     :param sources: Reviewed worker source set.
     :param output_path: Private build output path.
     :param toolset: Authenticated selected-provider compiler contract.
@@ -167,7 +179,9 @@ def _compiler_arguments(
     source: Path
     for source in sources:
         platform_mismatch: bool = (
-            (source.name == "platform_windows.c" and platform != IeeeCigreDllPlatform.WINDOWS_X64)
+            (source.name == "platform_windows.c" and platform not in (
+                IeeeCigreDllPlatform.WINDOWS_X64, IeeeCigreDllPlatform.WINDOWS_X86,
+            ))
             or (source.name == "platform_linux.c" and platform != IeeeCigreDllPlatform.LINUX_X64)
         )
         if source.suffix == ".c" and not platform_mismatch:
@@ -175,6 +189,12 @@ def _compiler_arguments(
         else:
             pass
     arguments: list[str] = list(toolset.compiler_prefix_arguments)
+    if platform == IeeeCigreDllPlatform.WINDOWS_X86:
+        # Override the provider's native target explicitly while retaining its
+        # authenticated compiler, linker and support roots.
+        arguments.append("--target=i686-w64-windows-gnu")
+    else:
+        pass
     arguments.extend((
         "-std=c11", "-O2", "-Wall", "-Wextra", "-Werror",
         "-Wno-unused-command-line-argument",
@@ -213,7 +233,9 @@ def _cache_identity(
             "-std=c11", "-O2", "-Wall", "-Wextra", "-Werror",
             "-Wno-unused-command-line-argument",
             "-DVERAGRID_MANUFACTURER_WORKER=1",
-            "native" if platform == IeeeCigreDllPlatform.WINDOWS_X64 else "-ldl,-lm",
+            ("--target=i686-w64-windows-gnu"
+             if platform == IeeeCigreDllPlatform.WINDOWS_X86
+             else ("native" if platform == IeeeCigreDllPlatform.WINDOWS_X64 else "-ldl,-lm")),
         ],
     }
     identity_bytes: bytes = json.dumps(
@@ -344,12 +366,12 @@ def verify_manufacturer_native_worker(executable_path: Path,
                                       manifest_path: Path,
                                       expected_platform: IeeeCigreDllPlatform,
                                       expected_cache_key: str) -> ManufacturerNativeWorkerArtifact:
-    """Verify one cached executable and manifest before selection.
+    """Verify one prepared worker against its cache manifest and target.
 
     :param executable_path: Candidate worker executable.
-    :param manifest_path: Candidate immutable manifest.
+    :param manifest_path: Required external cache manifest.
     :param expected_platform: Required current host platform.
-    :param expected_cache_key: Required source/toolchain identity.
+    :param expected_cache_key: Required external source/toolchain/target identity.
     :return: Verified worker artifact.
     """
     cache_directory: Path = executable_path.parent
@@ -365,7 +387,12 @@ def verify_manufacturer_native_worker(executable_path: Path,
             pass
     if not executable_path.is_file() or executable_path.is_symlink():
         raise RuntimeError("Prepared manufacturer worker executable is missing")
-    elif not manifest_path.is_file() or manifest_path.is_symlink():
+    else:
+        pass
+    # Both architectures require source/toolchain cache identity. Missing
+    # metadata must never fall back to trusting an executable on its own.
+    executable_sha256: str = _file_sha256(executable_path)
+    if not manifest_path.is_file() or manifest_path.is_symlink():
         raise RuntimeError("Prepared manufacturer worker manifest is missing")
     else:
         manifest_raw: object = json.loads(manifest_path.read_text(encoding="utf-8"))
@@ -373,18 +400,19 @@ def verify_manufacturer_native_worker(executable_path: Path,
         raise TypeError("Prepared manufacturer worker manifest must be an object")
     else:
         manifest: dict[str, object] = manifest_raw
-    executable_sha256: str = _file_sha256(executable_path)
-    if expected_platform == IeeeCigreDllPlatform.WINDOWS_X86:
-        expected_schema: int = 1
-    else:
-        expected_schema = 2
     if (
-            manifest.get("schema", None) != expected_schema
+            manifest.get("schema", None) != 2
             or manifest.get("cache_key", None) != expected_cache_key
             or manifest.get("platform", None) != expected_platform.value
             or manifest.get("executable_sha256", None) != executable_sha256
     ):
         raise RuntimeError("Prepared manufacturer worker manifest identity differs")
+    else:
+        pass
+    if expected_platform == IeeeCigreDllPlatform.WINDOWS_X86:
+        # Preserve full PE32 header and dependency admission after replacing
+        # the packaged path; a matching digest alone does not prove ABI safety.
+        _inspect_native_binary(executable_path, expected_platform, 64 * 1024 * 1024)
     else:
         pass
     if expected_platform in (
@@ -423,51 +451,19 @@ def verify_manufacturer_native_worker(executable_path: Path,
     )
 
 
-def _packaged_windows_x86_cache_key(sources: tuple[Path, ...]) -> str:
-    """Compute the reviewed packaged PE32 worker identity.
-
-    :param sources: Common worker source set.
-    :return: Lowercase SHA-256 package identity.
-    """
-    # Bind the common sources to the reviewed PE32 target and local tool owner.
-    identity: bytes = (
-        b"veragrid-manufacturer-worker-windows-x86-v1\x00"
-        + bytes.fromhex(_source_digest(sources))
-        + b"i686-w64-windows-gnu\x00local_llvm\x00ld.lld"
-    )
-    return hashlib.sha256(identity).hexdigest()
-
-
-def resolve_packaged_windows_x86_worker() -> ManufacturerNativeWorkerArtifact:
-    """Resolve the reviewed common-protocol PE32 worker without compilation.
-
-    :return: Verified packaged worker for a Windows x64 parent.
-    """
-    if os.name != "nt" or struct.calcsize("P") != 8:
-        raise RuntimeError("Windows x86 worker execution requires a Windows x64 parent")
-    else:
-        sources: tuple[Path, ...] = _worker_sources()
-    cache_key: str = _packaged_windows_x86_cache_key(sources)
-    package_directory: Path = Path(__file__).resolve().parents[2] / "data" / "native_worker" / "windows_x86"
-    return verify_manufacturer_native_worker(
-        executable_path=package_directory / "veragrid-manufacturer-worker-x86.exe",
-        manifest_path=package_directory / "manifest.json",
-        expected_platform=IeeeCigreDllPlatform.WINDOWS_X86,
-        expected_cache_key=cache_key,
-    )
-
-
 def resolve_manufacturer_native_worker(
     selection: NativeCompilerSelection | None = None,
     prepare_if_missing: bool = False,
+    platform: IeeeCigreDllPlatform | None = None,
 ) -> ManufacturerNativeWorkerArtifact:
     """Verify the expected worker and optionally prepare a genuinely absent cache.
 
     :param selection: Explicit provider selection or saved external LLVM.
     :param prepare_if_missing: Compile only when no entry exists at the cache path.
-    :return: Verified cached artifact for the current x64 host.
+    :param platform: Explicit supported target, or the native host by default.
+    :return: Verified cached artifact for the selected worker target.
     """
-    platform: IeeeCigreDllPlatform = _host_platform()
+    platform = _host_platform(platform)
     sources: tuple[Path, ...] = _worker_sources()
     if selection is None:
         saved_selection: NativeCompilerSelection | None = load_saved_local_llvm_selection()
@@ -493,6 +489,7 @@ def resolve_manufacturer_native_worker(
         if prepare_if_missing:
             preparation: ManufacturerNativeWorkerPreparation = prepare_manufacturer_native_runtime(
                 selection=resolved_selection,
+                platform=platform,
             )
             if preparation.artifact.cache_key == cache_key:
                 return preparation.artifact
@@ -505,18 +502,20 @@ def resolve_manufacturer_native_worker(
 def prepare_manufacturer_native_runtime(
     timeout_seconds: float = 60.0,
     selection: NativeCompilerSelection | None = None,
+    platform: IeeeCigreDllPlatform | None = None,
 ) -> ManufacturerNativeWorkerPreparation:
-    """Compile and atomically cache the reviewed host-x64 worker when absent.
+    """Compile and atomically cache the reviewed target worker when absent.
 
     :param timeout_seconds: Finite lock and compiler deadline.
     :param selection: Explicit provider selection or saved external LLVM.
+    :param platform: Explicit supported target, or the native host by default.
     :return: Verified artifact plus whether compilation occurred.
     """
     if not math.isfinite(timeout_seconds) or timeout_seconds <= 0.0 or timeout_seconds > 300.0:
         raise ValueError("Manufacturer worker preparation timeout must be in (0, 300]")
     else:
         pass
-    platform: IeeeCigreDllPlatform = _host_platform()
+    platform = _host_platform(platform)
     sources: tuple[Path, ...] = _worker_sources()
     if selection is None:
         saved_selection: NativeCompilerSelection | None = load_saved_local_llvm_selection()

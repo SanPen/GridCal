@@ -12,11 +12,13 @@ from VeraGridEngine.Devices.Branches.overhead_line_type import OverheadLineType
 from VeraGridEngine.Devices.Branches.line import Line
 from VeraGridEngine.Devices.Branches.sequence_line_type import SequenceLineType
 from VeraGridEngine.Devices.Branches.underground_line_type import UndergroundLineType
+from VeraGridEngine.Devices.Branches.underground_cable_type import UndergroundCableType
 from VeraGridEngine.Devices.Branches.wire import Wire
 from VeraGridEngine.Devices.multi_circuit import MultiCircuit
 from VeraGridEngine.Devices.Substation.bus import Bus
 from VeraGridEngine.IO.file_open import FileOpen
 from VeraGridEngine.IO.file_save import FileSave
+from tests.Devices.test_underground_cable_type import build_pf_606_cable, build_pf_606_system
 
 
 @pytest.mark.parametrize("voltage,base_power,length", ((132.0, 100.0, 3.7), (33.0, 50.0, 0.15)))
@@ -322,13 +324,74 @@ def test_sequence_line_type_builds_shunt_matrix_from_capacitance() -> None:
     np.testing.assert_allclose(template.y_nabc, expected_y)
 
 
-def test_underground_line_type_exposes_physical_phase_matrices() -> None:
+@pytest.mark.parametrize("from_ratio,to_ratio", ((1.0, 1.0), (0.97, 1.0), (1.0, 0.97)))
+def test_underground_line_type_exposes_physical_phase_matrices(from_ratio: float, to_ratio: float) -> None:
+    """Keep provider matrices and scalar losses on the connected from base.
+
+    :param from_ratio: From terminal voltage divided by the catalogue voltage.
+    :param to_ratio: To terminal voltage divided by the catalogue voltage.
+    :return: None.
+    """
     template = UndergroundLineType(R=0.1, X=0.4, B=12.0,
                                    R0=0.3, X0=1.2, B0=6.0)
     expected_z = _expected_phase_matrix(0.1 + 0.4j, 0.3 + 1.2j)
     expected_y = _expected_phase_matrix(12.0e-6j, 6.0e-6j)
 
     _assert_template_matrix_contract(template, expected_z, expected_y)
+
+    # Reuse physical cable geometry with real dielectric loss, independently of
+    # the scalar API (which exposes R/X/B but does not return conductance).
+    cable: UndergroundCableType = build_pf_606_cable()
+    cable.main_insulation_loss_tangent = 0.02
+    physical: UndergroundLineType = build_pf_606_system(cable=cable)
+    physical.Vnom = 15.0
+    lossless: UndergroundLineType = UndergroundLineType(Vnom=15.0, R=0.1, X=0.4, B=12.0,
+                                                       R0=0.3, X0=1.2, B0=6.0)
+    tower: OverheadLineType = OverheadLineType(Vnom=15.0)
+    wire: Wire = Wire(r=0.1, max_current=0.5, diameter=12.0)
+    phase: int
+    for phase in range(3):
+        tower.add_wire_relationship(wire=wire, xpos=float(phase), ypos=10.0, phase=phase + 1)
+    tower.compute()
+    assert tower.is_computed()
+    provider: UndergroundLineType | OverheadLineType
+    for provider in (physical, lossless, tower):
+        grid: MultiCircuit = MultiCircuit(Sbase=100.0)
+        source: Bus = grid.add_bus(Bus(Vnom=15.0 * from_ratio))
+        target: Bus = grid.add_bus(Bus(Vnom=15.0 * to_ratio))
+        line: Line = Line(bus_from=source, bus_to=target, length=3.7,
+                          r2=0.17, x2=0.23, b2=0.031, g2=0.007)
+        grid.add_line(line)
+        # A nonzero previous provider must not leak its G into known zero data.
+        previous: SequenceLineType = SequenceLineType(Vnom=15.0, R=0.1, X=0.4, G=30.0, G0=20.0)
+        line.apply_template(obj=previous, Sbase=100.0, freq=60.0, decimals_rounding=16)
+        assert line.G > 0.0 and line.G0 > 0.0
+        untouched: np.ndarray = np.array((line.R2, line.X2, line.B2, line.G2))
+        line.apply_template(obj=provider, Sbase=100.0, freq=60.0)
+        zbase: float = source.Vnom * source.Vnom / 100.0
+        np.testing.assert_allclose(line.ys.values[1:, 1:] / zbase,
+                                   np.linalg.inv(provider.z_nabc * line.length), rtol=1e-10, atol=1e-12)
+        np.testing.assert_allclose(line.ysh.values[1:, 1:] * 1e-6 / zbase,
+                                   provider.y_nabc * line.length, rtol=1e-10, atol=1e-12)
+        if provider.y_seq is not None:
+            np.testing.assert_allclose((line.G, line.G0),
+                                       provider.y_seq.diagonal()[np.array((1, 0))].real * line.length * zbase,
+                                       rtol=1e-10, atol=1e-12)
+        else:
+            assert line.G == 0.0 and line.G0 == 0.0
+        if isinstance(provider, OverheadLineType):
+            expected_rate: float = provider.Imax[0] * max(source.Vnom, target.Vnom) * np.sqrt(3.0)
+        else:
+            expected_rate = provider.Imax * max(source.Vnom, target.Vnom) * np.sqrt(3.0)
+        assert line.rate == pytest.approx(expected_rate)
+        np.testing.assert_array_equal((line.R2, line.X2, line.B2, line.G2), untouched)
+        # Reapplication leaves the physical matrices and provider identity stable.
+        series_before: np.ndarray = line.ys.values.copy()
+        shunt_before: np.ndarray = line.ysh.values.copy()
+        line.apply_template(obj=provider, Sbase=100.0, freq=60.0)
+        np.testing.assert_array_equal(line.ys.values, series_before)
+        np.testing.assert_array_equal(line.ysh.values, shunt_before)
+        assert line.template is provider
 
 
 def test_underground_line_type_builds_shunt_matrix_from_capacitance() -> None:
@@ -599,3 +662,55 @@ def test_line_change_base_rejects_invalid_bases(old_base: float, new_base: float
     np.testing.assert_array_equal(after, before)
     np.testing.assert_array_equal(line.ys.values, series_before)
     np.testing.assert_array_equal(line.ysh.values, shunt_before)
+
+
+@pytest.mark.parametrize("voltage_ratio", (0.97, 1.0, 1.03))
+@pytest.mark.parametrize("power_ratio", (0.5, 1.0, 2.0))
+def test_line_voltage_reference_change_preserves_custom_matrices(voltage_ratio: float, power_ratio: float) -> None:
+    """Preserve SI values and custom storage under complete base conversion.
+
+    :param voltage_ratio: Requested voltage divided by the existing reference.
+    :param power_ratio: Requested three-phase power divided by the existing base.
+    :return: None.
+    """
+    line: Line = Line(r=0.01, x=0.1, g=0.003, b=0.002,
+                      r0=0.02, x0=0.2, g0=0.005, b0=0.004,
+                      r2=0.03, x2=0.3, g2=0.007, b2=0.006)
+    line.disable_auto_updates()
+    series: AdmittanceMatrix = AdmittanceMatrix(size=4)
+    shunt: AdmittanceMatrix = AdmittanceMatrix(size=4)
+    series.values[:] = np.arange(16).reshape(4, 4) + 2j * np.eye(4)
+    shunt.values[:] = np.eye(4) * (3 + 4j)
+    series.phN = True
+    shunt.phN = True
+    line.ys = series
+    line.ysh = shunt
+    original_z: np.ndarray = np.array((complex(line.R, line.X), complex(line.R0, line.X0), complex(line.R2, line.X2)))
+    original_y: np.ndarray = np.array((complex(line.G, line.B), complex(line.G0, line.B0), complex(line.G2, line.B2)))
+    original_series: np.ndarray = series.values.copy()
+    original_shunt: np.ndarray = shunt.values.copy()
+    series_array: np.ndarray = series.values
+    shunt_array: np.ndarray = shunt.values
+    line.change_base(100.0, 100.0 * power_ratio, 132.0, 132.0 * voltage_ratio)
+    zbase_ratio: float = voltage_ratio * voltage_ratio / power_ratio
+    np.testing.assert_allclose(np.array((complex(line.R, line.X), complex(line.R0, line.X0), complex(line.R2, line.X2))) * zbase_ratio,
+                               original_z, rtol=1e-12, atol=1e-12)
+    np.testing.assert_allclose(np.array((complex(line.G, line.B), complex(line.G0, line.B0), complex(line.G2, line.B2))) / zbase_ratio,
+                               original_y, rtol=1e-12, atol=1e-12)
+    np.testing.assert_allclose(series.values / zbase_ratio, original_series, rtol=1e-12, atol=1e-12)
+    np.testing.assert_allclose(shunt.values / zbase_ratio, original_shunt, rtol=1e-12, atol=1e-12)
+    assert line.ys is series and line.ysh is shunt
+    assert series.values is series_array and shunt.values is shunt_array
+    assert series.phN and shunt.phN
+    # Invalid bases and nonrepresentable transformed values cannot partly mutate.
+    before: np.ndarray = np.array((line.R, line.X, line.G, line.B, line.R0, line.X0, line.G0, line.B0, line.R2, line.X2, line.G2, line.B2))
+    series_before: np.ndarray = series.values.copy()
+    shunt_before: np.ndarray = shunt.values.copy()
+    old_voltage: float
+    new_voltage: float
+    for old_voltage, new_voltage in ((0.0, 132.0), (132.0, -1.0), (np.nan, 132.0),
+                                     (132.0, np.inf), (1e308, 1e-308), (1e-308, 1e308)):
+        line.change_base(100.0, 100.0, old_voltage, new_voltage)
+        np.testing.assert_array_equal((line.R, line.X, line.G, line.B, line.R0, line.X0, line.G0, line.B0, line.R2, line.X2, line.G2, line.B2), before)
+        np.testing.assert_array_equal(series.values, series_before)
+        np.testing.assert_array_equal(shunt.values, shunt_before)

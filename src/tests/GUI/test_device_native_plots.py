@@ -316,9 +316,9 @@ def test_graphic_device_tab_groups_profiles_and_opf_results_by_unit(
     assert plot_dialogue.ui.plotTabs.count() == 2
     assert plot_dialogue.ui.seriesTreeWidget.topLevelItemCount() == 2
     opf_unit_group.child(0).setCheckState(0, QtCore.Qt.CheckState.Checked)
-    assert len(plot_dialogue.get_current_chart()._series) == 1
+    assert len(plot_dialogue.get_current_chart()._series) == 4
     assert (opf_unit_group.child(0).foreground(0).color()
-            == plot_dialogue.get_current_chart().get_series_color(0))
+            == plot_dialogue.get_current_chart().get_series_color(3))
     assert plot_dialogue.ui.seriesTreeWidget.topLevelItemCount() == 2
 
     plot_dialogue.reject()

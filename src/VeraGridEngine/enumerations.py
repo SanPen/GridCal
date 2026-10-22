@@ -939,6 +939,7 @@ class NativeCompilerFramework(Enum):
     """Native compiler providers supported by VeraGrid build consumers."""
 
     LOCAL_LLVM = "local_llvm"
+    PYGSLV = "pygslv"
 
     def __str__(self) -> str:
         """Return the enum value as text."""
@@ -1222,33 +1223,6 @@ class FmuSourceKind(str, Enum):
         """Parse an enum member by name, returning unknown input unchanged."""
         try:
             return FmuSourceKind[s]
-        except KeyError:
-            return s
-
-
-class FmuBinaryInterface(Enum):
-    """Native FMI binary entry-point family required by one FMU."""
-
-    FMI_ONE_CO_SIMULATION = "fmi_one_co_simulation"
-    FMI_ONE_MODEL_EXCHANGE = "fmi_one_model_exchange"
-    FMI_TWO_CO_SIMULATION = "fmi_two_co_simulation"
-    FMI_TWO_MODEL_EXCHANGE = "fmi_two_model_exchange"
-    FMI_THREE_CO_SIMULATION = "fmi_three_co_simulation"
-    FMI_THREE_MODEL_EXCHANGE = "fmi_three_model_exchange"
-
-    def __str__(self) -> str:
-        """Return the enum value as text."""
-        return str(self.value)
-
-    def __repr__(self) -> str:
-        """Return the enum value representation."""
-        return str(self)
-
-    @staticmethod
-    def argparse(s: str) -> Enum | str:
-        """Parse an enum member by name, returning unknown input unchanged."""
-        try:
-            return FmuBinaryInterface[s]
         except KeyError:
             return s
 
@@ -3859,11 +3833,13 @@ class SparseSolver(Enum):
     """
     ILU = 'ILU'
     KLU = 'KLU'
+    CLU = 'CLU'
     SuperLU = 'SuperLU'
     Pardiso = 'Pardiso'
     GMRES = 'GMRES'
     UMFPACK = 'UmfPack'
     UMFPACKTriangular = 'UmfPackTriangular'
+    GSLV = 'GSLV'  # Native LU runtime of the licensed pygslv package (pygslv.sparse_lu)
 
     def __str__(self) -> str:
         """Return the enum value as text."""
@@ -4936,6 +4912,47 @@ class EmtSolverTypes(Enum):
         return list(enum_item.value for enum_item in cls)
 
 
+class ExpressionAffinity(Enum):
+    """
+    Structural dependence of a symbolic expression on the unknowns of a solve.
+
+    The values are labels only; the ordering CONSTANT < EXCITATION < AFFINE <
+    NONLINEAR used by the structural affinity analyzer is defined explicitly by
+    that analyzer and never derived from these values.
+    """
+    CONSTANT = "constant"  # Only epoch constants (numbers, constant parameters, step size)
+    EXCITATION = "excitation"  # Also time or runtime parameters, but no unknown
+    AFFINE = "affine"  # Affine in the unknowns with epoch-constant coefficients
+    NONLINEAR = "nonlinear"  # Anything else, including unsupported constructs
+
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
+
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
+        return str(self)
+
+
+class ResidualRowAffinityCode(IntEnum):
+    """
+    Versioned integer codes of ExpressionAffinity in exported residual row maps.
+
+    The values are part of the interchange schema veragrid-emt-residual-row-map-v1
+    and must never be renumbered.
+    """
+    __slots__ = tuple()
+
+    CONSTANT = 0
+    EXCITATION = 1
+    AFFINE = 2
+    NONLINEAR = 3
+
+    def __str__(self) -> str:
+        """Return the enum name as text."""
+        return str(self.name)
+
+
 class RmsProblemTypes(Enum):
     Tensygrid = "Tensygrid"
     PowerBalance = "RmsProblemDae"
@@ -5217,8 +5234,25 @@ class VarPowerFlowReferenceType(Enum):
     """
     VarPowerFlowReferenceType
     """
+    switch_closed_mode = "switch_closed_mode"
+    switch_seed_from_pf = "switch_seed_from_pf"
+    # Physical per-phase components exposed by passive EMT load models.
+    # Publishing any of these declares the model's complete R/L/C interface.
+    R_A = "R_A"
+    R_B = "R_B"
+    R_C = "R_C"
+    L_A = "L_A"
+    L_B = "L_B"
+    L_C = "L_C"
+    C_A = "C_A"
+    C_B = "C_B"
+    C_C = "C_C"
     NOTHING = "nothing"
     Vm = "Vm"  # Bus voltage module in p.u.
+    Vm_A = "Vm_A"  # Solved phase-A voltage magnitude in p.u.
+    Vm_B = "Vm_B"  # Solved phase-B voltage magnitude in p.u.
+    Vm_C = "Vm_C"  # Solved phase-C voltage magnitude in p.u.
+    VmSizing = "VmSizing"  # EMT component sizing: positive PF or declared nominal at zero; initialization only.
     Va = "Va"  # Bus voltage angle in rad
     Vmf = "Vmf"  # Bus voltage module in p.u.
     Vaf = "Vaf"  # Bus voltage angle in rad
@@ -5226,6 +5260,8 @@ class VarPowerFlowReferenceType(Enum):
     Vat = "Vat"  # Bus voltage angle in rad
     P = "P"  # Bus active power in p.u.
     Q = "Q"  # Bus reactive power in p.u.
+    Pe = "Pe"  # EMT converter measured active power in p.u.
+    Qe = "Qe"  # EMT converter measured reactive power in p.u.
     Pf = "Pf"  # Branch active power from in p.u.
     Qf = "Qf"  # Branch reactive power from in p.u.
     Pt = "Pt"  # Branch active power to in p.u.
@@ -5447,6 +5483,15 @@ class VarPowerFlowReferenceType(Enum):
             return s
 
 
+class TheveninSourceVoltageMode(str, Enum):
+    """Internal voltage capability of a grounded passive ABC source."""
+
+    __slots__ = ()
+
+    Balanced = "Balanced internal voltage"
+    Phase = "Per-phase internal voltage"
+
+
 class ParamPowerFlowReferenceType(Enum):
     """
     ParamPowerFlowReferenceType
@@ -5658,6 +5703,8 @@ class ParamPowerFlowReferenceType(Enum):
     R1 = "R1"
     X1 = "X1"
     X0 = "X0"
+    thevenin_source_r0_pu = "thevenin_source_r0_pu"
+    thevenin_source_x0_pu = "thevenin_source_x0_pu"
     freq = "freq"  # corresponds to Var("frequ")
     vf = "vf"
     tm0 = "tm0"
@@ -6490,6 +6537,92 @@ class ExactMathematicalValue(Enum):
         return float(self.value[1])
 
 
+class IntegratorScalingMode(Enum):
+    """Select how an integrator scales its input before integration."""
+
+    UNIT = "Unit (1/s)"
+    GAIN = "Gain (K/s)"
+    TIME_CONSTANT = "Time constant (1/(sT))"
+
+
+class IntegratorHoldMode(Enum):
+    """Select whether an integrator exposes an external hold signal."""
+
+    NONE = "No hold input"
+    SIGNAL = "Hold signal"
+
+
+class IntegratorResetMode(Enum):
+    """Select the state value applied when an integrator reset rises."""
+
+    NONE = "No reset"
+    INITIAL_STATE = "Reset to initial state"
+    SIGNAL = "Reset to external signal"
+
+
+class IntegratorSaturationMode(Enum):
+    """Select the optional output saturation applied to an integrator."""
+
+    NONE = "No output saturation"
+    LOWER = "Lower output bound"
+    UPPER = "Upper output bound"
+    BOTH = "Lower and upper output bounds"
+    SYMMETRIC = "Symmetric output bound"
+
+
+class IntegratorBoundSource(Enum):
+    """Select whether integrator output bounds are parameters or signals."""
+
+    PARAMETER = "Parameter"
+    SIGNAL = "Signal input"
+
+
+class IntegratorPortRole(Enum):
+    """Identify one configurable-integrator port independently of its variable name."""
+
+    INPUT = "Input signal"
+    HOLD = "Hold signal"
+    RESET_VALUE = "Reset value signal"
+    RESET = "Reset trigger signal"
+    LOWER_BOUND = "Lower-bound signal"
+    UPPER_BOUND = "Upper-bound signal"
+    SYMMETRIC_BOUND = "Symmetric-bound signal"
+    OUTPUT = "Output signal"
+
+
+class DerivativeOrder(Enum):
+    """Select the order of a configurable filtered derivative."""
+
+    FIRST = "First order"
+    SECOND = "Second order"
+
+
+class DerivativeScalingMode(Enum):
+    """Select the numerator scaling of a configurable filtered derivative."""
+
+    UNIT = "Unit (s)"
+    GAIN = "Gain (K s)"
+    TIME_CONSTANT = "Washout (T s)"
+    GAIN_TIME_CONSTANT = "Gain washout (K T s)"
+    GAIN_DERIVATIVE_TIME = "Independent derivative time (K Td s)"
+
+
+class DerivativeInactiveBehavior(Enum):
+    """Select how a filtered derivative handles a non-positive denominator time."""
+
+    STRICT = "Use T directly"
+    ZERO_OUTPUT = "Freeze state and output zero"
+    BYPASS_INPUT = "Freeze state and bypass input"
+    FALLBACK_TIME = "Use fallback time constant"
+
+
+class DerivativePortRole(Enum):
+    """Identify a configurable-derivative port independently of its variable name."""
+
+    INPUT = "Input signal"
+    OUTPUT = "Output signal"
+
+
 class BlockType(Enum):
     """
     this class contains the existing types of blocks
@@ -6514,6 +6647,8 @@ class BlockType(Enum):
     PRODUCT = "PRODUCT"
     ABS = "Abs"
     INTEGRATOR = "Integrator"
+    STARTUP_FREEZE_INTEGRATOR = "Integrator with startup freeze"
+    DERIVATIVE = "Derivative"
     POWER = "Power"
     SIN = "Sin"
     COS = "Cos"
@@ -7049,6 +7184,11 @@ class InternationalStandardModel(Enum):
     GOVSTEAM1 = 'govsteam1'
     GOVSTEAMEU = 'govsteameu'
     IEEEG1 = 'ieeeg1'
+    IEEEG1D = 'ieeeg1d'
+    DEGOV = 'degov'
+    DEGOV1 = 'degov1'
+    DEGOV1D = 'degov1d'
+    LCFB1 = 'lcfb1'
     IEEEG2 = 'ieeeg2'
     IEEET1 = 'ieeet1'
     IEEEX2 = 'ieeex2'
@@ -7109,10 +7249,79 @@ class InternationalStandardModel(Enum):
     CIMW = 'cimw'
     GENSAL = 'gensal'
     GENROU = 'genrou'
+    GENTRA = 'gentra'
+    GENROE = 'genroe'
+    GENSAE = 'gensae'
+    IEEET2 = 'ieeet2'
+    IEEEX1 = 'ieeex1'
+    ESDC1A = 'esdc1a'
+    EXDC2 = 'exdc2'
+    ESAC5A = 'esac5a'
+    ESAC8B = 'esac8b'
+    DC2C = 'dc2c'
+    IEEET3 = 'ieeet3'
+    IEEEX3 = 'ieeex3'
+    ESST1A = 'esst1a'
+    BUDCZT = 'budczt'
+    EXST2A = 'exst2a'
+    ESST2A = 'esst2a'
+    EXAC4 = 'exac4'
+    EXAC1A = 'exac1a'
+    ESAC1A = 'esac1a'
+    EXAC2 = 'exac2'
+    EXAC3 = 'exac3'
+    EXBAS = 'exbas'
+    IEET1A = 'ieet1a'
+    IEET1B = 'ieet1b'
+    EXNI = 'exni'
+    EXPIC1 = 'expic1'
+    IEEET4 = 'ieeet4'
+    IEEET5 = 'ieeet5'
+    IEEEX4 = 'ieeex4'
+    IEET5A = 'ieet5a'
+    ESAC2A = 'esac2a'
+    ESAC3A = 'esac3a'
+    ESAC4A = 'esac4a'
+    AC2C = 'ac2c'
+    AC5C = 'ac5c'
+    AC4C = 'ac4c'
+    DC3A = 'dc3a'
+    DC4B = 'dc4b'
+    DC4C = 'dc4c'
     GGOV1 = 'ggov1'
+    GGOV1D = 'ggov1d'
     HYGOV = 'hygov'
+    HYGOVD = 'hygovd'
+    HYGOV2 = 'hygov2'
+    HYGOV2D = 'hygov2d'
+    PIDGOV = 'pidgov'
+    PIDGOVD = 'pidgovd'
     IEEL = 'ieel'
     TGOV1 = 'tgov1'
+    TGOV1D = 'tgov1d'
+    GAST = 'gast'
+    GASTD = 'gastd'
+    IEESGO = 'ieesgo'
+    IEESGOD = 'ieesgod'
+    IEEEG3 = 'ieeeg3'
+    IEEEG3D = 'ieeeg3d'
+    STAB1 = 'stab1'
+    STAB2A = 'stab2a'
+    STAB3 = 'stab3'
+    STAB4 = 'stab4'
+    STABNI = 'stabni'
+    IVOST = 'ivost'
+    IVOGO = 'ivogo'
+    IEEEST = 'ieeest'
+    IEE2ST = 'iee2st'
+    COMP = 'comp'
+    COMPCC = 'compcc'
+    CCOMP4A = 'ccomp4a'
+    REMCMP = 'remcmp'
+    MNLEX1 = 'mnlex1'
+    MNLEX2 = 'mnlex2'
+    MNLEX3 = 'mnlex3'
+    EXST2 = 'exst2'
 
     def __str__(self) -> str:
         """Return the enum value as text."""

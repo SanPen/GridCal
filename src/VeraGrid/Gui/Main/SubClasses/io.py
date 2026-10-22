@@ -34,7 +34,7 @@ from VeraGrid.Gui.FileDialogues.PsseDialogue.psse_export import PsseExportDialog
 from VeraGrid.Gui.FileDialogues.PsseDialogue.psse_import import PsseImportDialogue
 from VeraGridEngine.Devices.multi_circuit import MultiCircuit
 from VeraGridEngine.Devices.multiverse import MultiVerse, ScenarioNode
-from VeraGridEngine.Compilers.circuit_to_pgm import PGM_AVAILABLE
+from VeraGridEngine.Compilers.circuit_to_pgm import PGM_AVAILABLE, PGM_UNAVAILABLE_REASON
 from VeraGridEngine.IO.file_save import FileSavingOptions
 from VeraGridEngine.IO.file_open import determine_file_type, FileOpen
 from VeraGridEngine.basic_structures import Logger
@@ -45,6 +45,7 @@ from VeraGridEngine.Compilers.Gslv.activation import install_gslv_license
 from VeraGrid.Gui.CatalogueElementsDialogue.catalogue_elements_dialogue import CatalogueElementsSelectionDialogue
 from VeraGrid.Gui.FmuTemplateEditor.fmu_template_editor import FmuTemplateEditorDialog
 from VeraGrid.Gui.ManufacturerNativeImporter.manufacturer_native_importer import ManufacturerNativeImporterDialog
+from VeraGridEngine.IO.manufacturer_native.worker_artifact import ManufacturerNativeWorkerArtifact
 from VeraGridEngine.Devices.Dynamic.fmu_template import FmuTemplate
 
 
@@ -206,17 +207,20 @@ class IoMain(ScenariosMain):
         else:
             pass
 
-    def import_oem_manufacturer_native_model(self) -> None:
+    def import_oem_manufacturer_native_model(
+            self, worker_artifact: ManufacturerNativeWorkerArtifact | None = None) -> None:
         """
         Import one manufacturer supplied IEEE/CIGRE DLL or shared library.
 
         The established importer qualifies the binary in an isolated worker
         and updates the circuit only after all contract checks succeed.
 
+        :param worker_artifact: Optional prepared worker for native qualification.
         :return: None.
         """
         dialog: ManufacturerNativeImporterDialog = ManufacturerNativeImporterDialog(
             assets=self.circuit,
+            worker_artifact=worker_artifact,
             parent=self,
         )
         dialog_result: int = exec_dialog_safely(dialog=dialog)
@@ -1958,7 +1962,9 @@ class IoMain(ScenariosMain):
                     )
                 )
         else:
-            self.show_warning_toast(self.tr("Power Grid Models not installed :/"))
+            self.show_warning_toast(self.tr("Power Grid Model unavailable: {reason}").format(
+                reason=PGM_UNAVAILABLE_REASON
+            ))
 
     def export_json(self) -> None:
         """

@@ -29,11 +29,11 @@ class MapColours:
         """
         values: tuple[str, ...]
         if style == MapStyle.Dark:
-            values = ('#242424', '#111b25', '#23312a', '#2e2e2e', '#383838',
-                      '#555555', '#88806b', '#777777', '#d3d3d3', '#242424')
+            values = ('#202224', '#15191c', '#202224', '#202224', '#202224',
+                      '#303438', '#363c41', '#454b50', '#8b949c', '#202224')
         elif style == MapStyle.Light:
-            values = ('#f7f7f5', '#d4dadc', '#e2e8df', '#eeeeec', '#dededb',
-                      '#ffffff', '#b9b9b6', '#aaaaaa', '#555555', '#ffffff')
+            values = ('#fafafa', '#e5eaed', '#fafafa', '#fafafa', '#fafafa',
+                      '#e2e5e7', '#dedfe0', '#c5cacf', '#6f7982', '#fafafa')
         else:
             values = ('#f3efdf', '#abcddd', '#c9ddba', '#e8e3d8', '#d6cbbd',
                       '#ffffff', '#e7bc72', '#a59ba5', '#454545', '#faf8ef')
@@ -124,7 +124,7 @@ def geometry_path(geometry: dict[str, Any], scale: float,
 class VectorTileRenderer:
     """Render keyless OpenFreeMap data to the existing Qt tile cache format."""
 
-    __slots__ = ('colours',)
+    __slots__ = ('colours', 'style')
 
     def __init__(self, style: MapStyle) -> None:
         """
@@ -133,6 +133,7 @@ class VectorTileRenderer:
         :param style: Colour, light or dark basemap.
         """
         self.colours: MapColours = MapColours(style)
+        self.style: MapStyle = style
 
     def render(self, payload: bytes, level: int, source_level: int,
                x: int, y: int) -> bytes:
@@ -156,9 +157,15 @@ class VectorTileRenderer:
         offset_y: float = float((y % factor) * 256)
         try:
             # Draw broad surfaces before roads and boundaries, then add labels.
+            layer_names: tuple[str, ...]
+            if self.style == MapStyle.Colour:
+                layer_names = ('landcover', 'landuse', 'park', 'water', 'waterway',
+                               'building', 'aeroway', 'transportation', 'boundary')
+            else:
+                # Quiet backgrounds leave visual emphasis to the electrical grid.
+                layer_names = ('water', 'transportation', 'boundary')
             layer_name: str
-            for layer_name in ('landcover', 'landuse', 'park', 'water', 'waterway',
-                               'building', 'aeroway', 'transportation', 'boundary'):
+            for layer_name in layer_names:
                 layer: dict[str, Any] | None = layers.get(layer_name, None)
                 if layer is not None:
                     extent: int = layer.get('extent', 4096)
@@ -201,9 +208,21 @@ class VectorTileRenderer:
         geometry: dict[str, Any] = feature.get('geometry', dict())
         properties: dict[str, Any] = feature.get('properties', dict())
         feature_class: str = properties.get('class', '')
+        if self.style != MapStyle.Colour:
+            # Hide local roads, ferries and administrative detail before building paths.
+            if layer_name == 'transportation' and feature_class not in ('motorway', 'trunk', 'primary'):
+                return
+            elif layer_name == 'boundary' and (properties.get('admin_level', 2) != 2
+                                                or properties.get('maritime', 0) == 1):
+                return
+            else:
+                pass
+        else:
+            pass
         path: QPainterPath = geometry_path(geometry, scale, offset_x, offset_y)
         bounds: QRectF = QRectF(-8.0, -8.0, 272.0, 272.0)
-        if path.isEmpty() or not path.boundingRect().intersects(bounds):
+        # Straight horizontal or vertical roads have zero-area bounds before stroking.
+        if path.isEmpty() or not path.boundingRect().adjusted(-1.0, -1.0, 1.0, 1.0).intersects(bounds):
             return
         else:
             pass
@@ -228,6 +247,10 @@ class VectorTileRenderer:
         elif layer_name == 'boundary':
             colour = self.colours.border
             width = 0.6
+        else:
+            pass
+        if self.style != MapStyle.Colour:
+            width = min(width, 0.8)
         else:
             pass
         geometry_type: str = geometry.get('type', '')
@@ -256,8 +279,9 @@ class VectorTileRenderer:
         # shortcut: labels collide per tile, use a viewport label pass if cross-tile placement is required.
         occupied: list[QRectF] = [QRectF() for _ in range(128)]
         count: int = 0
+        label_layers: tuple[str, ...] = ('place', 'water_name', 'transportation_name') if self.style == MapStyle.Colour else ('place',)
         layer_name: str
-        for layer_name in ('place', 'water_name', 'transportation_name'):
+        for layer_name in label_layers:
             layer: dict[str, Any] | None = layers.get(layer_name, None)
             if layer is not None and (layer_name != 'transportation_name' or level >= 14):
                 extent: int = layer.get('extent', 4096)
@@ -271,7 +295,12 @@ class VectorTileRenderer:
                 for feature in features:
                     properties: dict[str, Any] = feature.get('properties', dict())
                     name: Any = properties.get('name:latin', properties.get('name', ''))
-                    if isinstance(name, str) and 0 < len(name) <= 80 and count < len(occupied):
+                    feature_class: str = properties.get('class', '')
+                    show_label: bool = (self.style == MapStyle.Colour
+                                        or (feature_class == 'country' and level <= 7)
+                                        or (feature_class in ('state', 'city') and level >= 5)
+                                        or (feature_class == 'town' and level >= 10))
+                    if show_label and isinstance(name, str) and 0 < len(name) <= 80 and count < len(occupied):
                         geometry: dict[str, Any] = feature.get('geometry', dict())
                         coordinates: list[Any] = geometry.get('coordinates', list())
                         anchor: QPointF | None = None

@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Simulations.StateEstimation.observability_analysis &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Simulations.StateEstimation.observability_analysis &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/license.html">📜 License</a></li>
@@ -138,11 +139,11 @@
                                                           <span class="n">do_profiling_of_measurements</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
                                                           <span class="n">include_line_measurements_on_both_ends</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
                                                           <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Fast decoupled WLS state estimator using LU decomposition based observability analysis</span>
 <span class="sd">    Active power -&gt; angles</span>
 <span class="sd">    Reactive power -&gt; voltage magnitudes</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">logger</span> <span class="o">=</span> <span class="n">logger</span> <span class="k">if</span> <span class="n">logger</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">Logger</span><span class="p">()</span>
     <span class="n">V</span> <span class="o">=</span> <span class="n">nc</span><span class="o">.</span><span class="n">bus_data</span><span class="o">.</span><span class="n">Vbus</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
     <span class="c1"># Identify non-slack buses</span>
@@ -155,41 +156,41 @@
     <span class="n">measurement_ids</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># (category_name, api_object)</span>
 
     <span class="k">for</span> <span class="n">meas</span> <span class="ow">in</span> <span class="n">se_input</span><span class="o">.</span><span class="n">p_inj</span><span class="p">:</span>
-        <span class="n">measurement_types</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;P&quot;</span><span class="p">)</span>
-        <span class="n">measurement_ids</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s2">&quot;p_inj&quot;</span><span class="p">,</span> <span class="n">meas</span><span class="o">.</span><span class="n">device</span><span class="p">))</span>
+        <span class="n">measurement_types</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"P"</span><span class="p">)</span>
+        <span class="n">measurement_ids</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s2">"p_inj"</span><span class="p">,</span> <span class="n">meas</span><span class="o">.</span><span class="n">device</span><span class="p">))</span>
     <span class="k">for</span> <span class="n">meas</span> <span class="ow">in</span> <span class="n">se_input</span><span class="o">.</span><span class="n">q_inj</span><span class="p">:</span>
-        <span class="n">measurement_types</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Q&quot;</span><span class="p">)</span>
-        <span class="n">measurement_ids</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s2">&quot;q_inj&quot;</span><span class="p">,</span> <span class="n">meas</span><span class="o">.</span><span class="n">device</span><span class="p">))</span>
+        <span class="n">measurement_types</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"Q"</span><span class="p">)</span>
+        <span class="n">measurement_ids</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s2">"q_inj"</span><span class="p">,</span> <span class="n">meas</span><span class="o">.</span><span class="n">device</span><span class="p">))</span>
     <span class="k">for</span> <span class="n">meas</span> <span class="ow">in</span> <span class="n">se_input</span><span class="o">.</span><span class="n">pg_inj</span><span class="p">:</span>
-        <span class="n">measurement_types</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;P&quot;</span><span class="p">)</span>
-        <span class="n">measurement_ids</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s2">&quot;pg_inj&quot;</span><span class="p">,</span> <span class="n">meas</span><span class="o">.</span><span class="n">device</span><span class="p">))</span>
+        <span class="n">measurement_types</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"P"</span><span class="p">)</span>
+        <span class="n">measurement_ids</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s2">"pg_inj"</span><span class="p">,</span> <span class="n">meas</span><span class="o">.</span><span class="n">device</span><span class="p">))</span>
     <span class="k">for</span> <span class="n">meas</span> <span class="ow">in</span> <span class="n">se_input</span><span class="o">.</span><span class="n">qg_inj</span><span class="p">:</span>
-        <span class="n">measurement_types</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Q&quot;</span><span class="p">)</span>
-        <span class="n">measurement_ids</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s2">&quot;qg_inj&quot;</span><span class="p">,</span> <span class="n">meas</span><span class="o">.</span><span class="n">device</span><span class="p">))</span>
+        <span class="n">measurement_types</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"Q"</span><span class="p">)</span>
+        <span class="n">measurement_ids</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s2">"qg_inj"</span><span class="p">,</span> <span class="n">meas</span><span class="o">.</span><span class="n">device</span><span class="p">))</span>
     <span class="k">for</span> <span class="n">meas</span> <span class="ow">in</span> <span class="n">se_input</span><span class="o">.</span><span class="n">pf_value</span><span class="p">:</span>
-        <span class="n">measurement_types</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;P&quot;</span><span class="p">)</span>
-        <span class="n">measurement_ids</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s2">&quot;pf_value&quot;</span><span class="p">,</span> <span class="n">meas</span><span class="o">.</span><span class="n">device</span><span class="p">))</span>
+        <span class="n">measurement_types</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"P"</span><span class="p">)</span>
+        <span class="n">measurement_ids</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s2">"pf_value"</span><span class="p">,</span> <span class="n">meas</span><span class="o">.</span><span class="n">device</span><span class="p">))</span>
     <span class="k">for</span> <span class="n">meas</span> <span class="ow">in</span> <span class="n">se_input</span><span class="o">.</span><span class="n">pt_value</span><span class="p">:</span>
-        <span class="n">measurement_types</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;P&quot;</span><span class="p">)</span>
-        <span class="n">measurement_ids</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s2">&quot;pt_value&quot;</span><span class="p">,</span> <span class="n">meas</span><span class="o">.</span><span class="n">device</span><span class="p">))</span>
+        <span class="n">measurement_types</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"P"</span><span class="p">)</span>
+        <span class="n">measurement_ids</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s2">"pt_value"</span><span class="p">,</span> <span class="n">meas</span><span class="o">.</span><span class="n">device</span><span class="p">))</span>
     <span class="k">for</span> <span class="n">meas</span> <span class="ow">in</span> <span class="n">se_input</span><span class="o">.</span><span class="n">qf_value</span><span class="p">:</span>
-        <span class="n">measurement_types</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Q&quot;</span><span class="p">)</span>
-        <span class="n">measurement_ids</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s2">&quot;qf_value&quot;</span><span class="p">,</span> <span class="n">meas</span><span class="o">.</span><span class="n">device</span><span class="p">))</span>
+        <span class="n">measurement_types</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"Q"</span><span class="p">)</span>
+        <span class="n">measurement_ids</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s2">"qf_value"</span><span class="p">,</span> <span class="n">meas</span><span class="o">.</span><span class="n">device</span><span class="p">))</span>
     <span class="k">for</span> <span class="n">meas</span> <span class="ow">in</span> <span class="n">se_input</span><span class="o">.</span><span class="n">qt_value</span><span class="p">:</span>
-        <span class="n">measurement_types</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Q&quot;</span><span class="p">)</span>
-        <span class="n">measurement_ids</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s2">&quot;qt_value&quot;</span><span class="p">,</span> <span class="n">meas</span><span class="o">.</span><span class="n">device</span><span class="p">))</span>
+        <span class="n">measurement_types</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"Q"</span><span class="p">)</span>
+        <span class="n">measurement_ids</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s2">"qt_value"</span><span class="p">,</span> <span class="n">meas</span><span class="o">.</span><span class="n">device</span><span class="p">))</span>
     <span class="k">for</span> <span class="n">meas</span> <span class="ow">in</span> <span class="n">se_input</span><span class="o">.</span><span class="n">if_value</span><span class="p">:</span>
-        <span class="n">measurement_types</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;I&quot;</span><span class="p">)</span>
-        <span class="n">measurement_ids</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s2">&quot;if_value&quot;</span><span class="p">,</span> <span class="n">meas</span><span class="o">.</span><span class="n">device</span><span class="p">))</span>
+        <span class="n">measurement_types</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"I"</span><span class="p">)</span>
+        <span class="n">measurement_ids</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s2">"if_value"</span><span class="p">,</span> <span class="n">meas</span><span class="o">.</span><span class="n">device</span><span class="p">))</span>
     <span class="k">for</span> <span class="n">meas</span> <span class="ow">in</span> <span class="n">se_input</span><span class="o">.</span><span class="n">it_value</span><span class="p">:</span>
-        <span class="n">measurement_types</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;I&quot;</span><span class="p">)</span>
-        <span class="n">measurement_ids</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s2">&quot;it_value&quot;</span><span class="p">,</span> <span class="n">meas</span><span class="o">.</span><span class="n">device</span><span class="p">))</span>
+        <span class="n">measurement_types</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"I"</span><span class="p">)</span>
+        <span class="n">measurement_ids</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s2">"it_value"</span><span class="p">,</span> <span class="n">meas</span><span class="o">.</span><span class="n">device</span><span class="p">))</span>
     <span class="k">for</span> <span class="n">meas</span> <span class="ow">in</span> <span class="n">se_input</span><span class="o">.</span><span class="n">vm_value</span><span class="p">:</span>
-        <span class="n">measurement_types</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;V&quot;</span><span class="p">)</span>
-        <span class="n">measurement_ids</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s2">&quot;vm_value&quot;</span><span class="p">,</span> <span class="n">meas</span><span class="o">.</span><span class="n">device</span><span class="p">))</span>
+        <span class="n">measurement_types</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"V"</span><span class="p">)</span>
+        <span class="n">measurement_ids</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s2">"vm_value"</span><span class="p">,</span> <span class="n">meas</span><span class="o">.</span><span class="n">device</span><span class="p">))</span>
     <span class="k">for</span> <span class="n">meas</span> <span class="ow">in</span> <span class="n">se_input</span><span class="o">.</span><span class="n">va_value</span><span class="p">:</span>
-        <span class="n">measurement_types</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;V&quot;</span><span class="p">)</span>
-        <span class="n">measurement_ids</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s2">&quot;va_value&quot;</span><span class="p">,</span> <span class="n">meas</span><span class="o">.</span><span class="n">device</span><span class="p">))</span>
+        <span class="n">measurement_types</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"V"</span><span class="p">)</span>
+        <span class="n">measurement_ids</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s2">"va_value"</span><span class="p">,</span> <span class="n">meas</span><span class="o">.</span><span class="n">device</span><span class="p">))</span>
 
     <span class="n">measurement_types</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">measurement_types</span><span class="p">)</span>
     <span class="n">measurement_ids</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">measurement_ids</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">)</span>
@@ -198,7 +199,7 @@
     <span class="n">measurement_types</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">measurement_types</span><span class="p">)</span>
 
     <span class="c1"># Create indices for active and reactive measurements</span>
-    <span class="n">a_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">measurement_types</span> <span class="o">==</span> <span class="s2">&quot;P&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>  <span class="c1"># Active power measurements</span>
+    <span class="n">a_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">measurement_types</span> <span class="o">==</span> <span class="s2">"P"</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>  <span class="c1"># Active power measurements</span>
     <span class="n">load_per_bus</span> <span class="o">=</span> <span class="n">nc</span><span class="o">.</span><span class="n">load_data</span><span class="o">.</span><span class="n">get_injections_per_bus</span><span class="p">()</span> <span class="o">/</span> <span class="n">nc</span><span class="o">.</span><span class="n">Sbase</span>
     <span class="n">H</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">Scalc</span> <span class="o">=</span> <span class="n">Jacobian_SE</span><span class="p">(</span><span class="n">Ybus</span><span class="p">,</span> <span class="n">Yf</span><span class="p">,</span> <span class="n">Yt</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">F</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">Cf</span><span class="p">,</span> <span class="n">Ct</span><span class="p">,</span>
                               <span class="n">se_input</span><span class="p">,</span> <span class="n">non_slack_buses</span><span class="p">,</span> <span class="n">load_per_bus</span><span class="p">,</span> <span class="n">fixed_slack</span><span class="p">)</span>
@@ -211,7 +212,7 @@
     <span class="n">n</span> <span class="o">=</span> <span class="n">Ga</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
     <span class="k">if</span> <span class="n">rank</span> <span class="o">==</span> <span class="n">n</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="s2">&quot;System is fully observable&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="s2">"System is fully observable"</span><span class="p">)</span>
         <span class="c1"># Here we can continue with measurement profiling (classification</span>
         <span class="c1"># The idea is to find out which measurement set is critical, which has local redundancy and which has global</span>
         <span class="c1"># redundancy</span>
@@ -219,28 +220,28 @@
         <span class="c1"># To do this we must remove one measurement at a time and check observability again, if rank decreases</span>
         <span class="c1"># meas is critical.Local and/or Global redundancy will be based oon graph theoritic observability</span>
         <span class="k">if</span> <span class="n">do_profiling_of_measurements</span><span class="p">:</span>
-            <span class="n">r_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">measurement_types</span> <span class="o">==</span> <span class="s2">&quot;Q&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-            <span class="n">v_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">measurement_types</span> <span class="o">==</span> <span class="s2">&quot;V&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-            <span class="n">i_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">measurement_types</span> <span class="o">==</span> <span class="s2">&quot;I&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">r_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">measurement_types</span> <span class="o">==</span> <span class="s2">"Q"</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">v_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">measurement_types</span> <span class="o">==</span> <span class="s2">"V"</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">i_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">measurement_types</span> <span class="o">==</span> <span class="s2">"I"</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
             <span class="n">Hr</span> <span class="o">=</span> <span class="n">H</span><span class="o">.</span><span class="n">tocsr</span><span class="p">()[</span><span class="n">r_idx</span><span class="p">,</span> <span class="n">n_non_slack</span><span class="p">:]</span>
             <span class="n">Hv</span> <span class="o">=</span> <span class="n">H</span><span class="o">.</span><span class="n">tocsr</span><span class="p">()[</span><span class="n">v_idx</span><span class="p">,</span> <span class="p">:]</span>
             <span class="n">Hi</span> <span class="o">=</span> <span class="n">H</span><span class="o">.</span><span class="n">tocsr</span><span class="p">()[</span><span class="n">i_idx</span><span class="p">,</span> <span class="p">:]</span>
             <span class="n">measurement_profile</span> <span class="o">=</span> <span class="n">parallel_measurement_profiling</span><span class="p">(</span><span class="n">Ha</span><span class="p">,</span> <span class="n">Hr</span><span class="p">,</span> <span class="n">Hv</span><span class="p">,</span> <span class="n">Hi</span><span class="p">,</span> <span class="n">measurement_ids</span><span class="p">,</span> <span class="n">a_idx</span><span class="p">,</span> <span class="n">r_idx</span><span class="p">,</span> <span class="n">v_idx</span><span class="p">,</span>
                                                                  <span class="n">i_idx</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
             <span class="n">bus_status</span> <span class="o">=</span> <span class="n">bus_observability_profile</span><span class="p">(</span><span class="n">measurement_profile</span><span class="p">)</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="s2">&quot;Measurement profiling completed&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="s2">"Measurement profiling completed"</span><span class="p">)</span>
             <span class="k">return</span> <span class="kc">True</span><span class="p">,</span> <span class="p">[],</span> <span class="n">measurement_profile</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">bus_contrib</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="c1"># Observable but no profiling</span>
             <span class="k">return</span> <span class="kc">True</span><span class="p">,</span> <span class="p">[],</span> <span class="kc">None</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">bus_contrib</span>
 
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s2">&quot;System is NOT fully observable&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s2">"System is NOT fully observable"</span><span class="p">)</span>
         <span class="c1"># find unobservable directions</span>
         <span class="n">U</span><span class="p">,</span> <span class="n">S</span><span class="p">,</span> <span class="n">Vt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">svd</span><span class="p">(</span><span class="n">Ga</span><span class="o">.</span><span class="n">toarray</span><span class="p">())</span>
         <span class="n">null_mask</span> <span class="o">=</span> <span class="n">S</span> <span class="o">&lt;</span> <span class="mf">1e-9</span>
         <span class="n">nullspace</span> <span class="o">=</span> <span class="n">Vt</span><span class="o">.</span><span class="n">T</span><span class="p">[:,</span> <span class="n">null_mask</span><span class="p">]</span>  <span class="c1"># basis vectors</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="s2">&quot;Nullspace dimension:&quot;</span><span class="p">,</span> <span class="n">nullspace</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="s2">"Nullspace dimension:"</span><span class="p">,</span> <span class="n">nullspace</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
 
         <span class="c1"># map nullspace to buses ---</span>
         <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">bus</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">non_slack_buses</span><span class="p">):</span>
@@ -251,9 +252,9 @@
         <span class="c1"># sort buses by contribution (highest = most unobservable)</span>
         <span class="n">sorted_buses</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">bus_contrib</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">kv</span><span class="p">:</span> <span class="n">kv</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-        <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="s2">&quot;Bus observability contributions (higher = more unobservable):&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="s2">"Bus observability contributions (higher = more unobservable):"</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">bus</span><span class="p">,</span> <span class="n">score</span> <span class="ow">in</span> <span class="n">sorted_buses</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Bus </span><span class="si">{</span><span class="n">bus</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">score</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Bus </span><span class="si">{</span><span class="n">bus</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">score</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
             <span class="c1"># return list of unobservable buses with contribution &gt; threshold</span>
             <span class="k">if</span> <span class="n">score</span> <span class="o">&gt;</span> <span class="n">tolerance_for_observability_score</span><span class="p">:</span>
                 <span class="n">unobservable_buses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bus</span><span class="p">)</span>
@@ -265,9 +266,9 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.StateEstimation.html#VeraGridEngine.Simulations.StateEstimation.observability_analysis.parallel_measurement_profiling">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">parallel_measurement_profiling</span><span class="p">(</span><span class="n">Ha</span><span class="p">,</span> <span class="n">Hr</span><span class="p">,</span> <span class="n">Hv</span><span class="p">,</span> <span class="n">Hi</span><span class="p">,</span> <span class="n">measurement_ids</span><span class="p">,</span> <span class="n">a_idx</span><span class="p">,</span> <span class="n">r_idx</span><span class="p">,</span> <span class="n">v_idx</span><span class="p">,</span> <span class="n">i_idx</span><span class="p">,</span>
                                    <span class="n">include_line_measurements_on_both_ends</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Parallel execution of all 4 measurement profiling strategies.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># Prepare arguments for parallel processing</span>
     <span class="n">args_list</span> <span class="o">=</span> <span class="p">[</span>
         <span class="p">(</span><span class="n">Ha</span><span class="p">,</span> <span class="n">measurement_ids</span><span class="p">[</span><span class="n">a_idx</span><span class="p">],</span> <span class="n">include_line_measurements_on_both_ends</span><span class="p">),</span>
@@ -276,7 +277,7 @@
         <span class="p">(</span><span class="n">Hi</span><span class="p">,</span> <span class="n">measurement_ids</span><span class="p">[</span><span class="n">i_idx</span><span class="p">],</span> <span class="n">include_line_measurements_on_both_ends</span><span class="p">)</span>
     <span class="p">]</span>
 
-    <span class="n">strategies</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;active&quot;</span><span class="p">,</span> <span class="s2">&quot;reactive&quot;</span><span class="p">,</span> <span class="s2">&quot;voltage&quot;</span><span class="p">,</span> <span class="s2">&quot;current&quot;</span><span class="p">]</span>
+    <span class="n">strategies</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"active"</span><span class="p">,</span> <span class="s2">"reactive"</span><span class="p">,</span> <span class="s2">"voltage"</span><span class="p">,</span> <span class="s2">"current"</span><span class="p">]</span>
     <span class="n">results</span> <span class="o">=</span> <span class="p">{}</span>
 
     <span class="c1"># Use ProcessPoolExecutor for true parallel execution</span>
@@ -293,7 +294,7 @@
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">results</span><span class="p">[</span><span class="n">strategy</span><span class="p">]</span> <span class="o">=</span> <span class="n">future</span><span class="o">.</span><span class="n">result</span><span class="p">()</span>
             <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error processing </span><span class="si">{</span><span class="n">strategy</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Error processing </span><span class="si">{</span><span class="n">strategy</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
                 <span class="n">results</span><span class="p">[</span><span class="n">strategy</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
 
     <span class="k">return</span> <span class="n">results</span></div>
@@ -306,9 +307,9 @@
                                                    <span class="n">Ybus</span><span class="p">:</span> <span class="nb">object</span><span class="p">,</span> <span class="n">Cf</span><span class="p">:</span> <span class="nb">object</span><span class="p">,</span> <span class="n">Ct</span><span class="p">:</span> <span class="nb">object</span><span class="p">,</span>
                                                    <span class="n">sigma_pseudo_meas_value</span><span class="p">:</span> <span class="nb">object</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">Sbase</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
                                                    <span class="n">logger</span><span class="p">:</span> <span class="nb">object</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StateEstimationInput</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Full preprocessing: detect unobservable buses and add pseudo-measurements</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># Step 1: create neighbours from connectivity matrices once per island</span>
     <span class="n">neighbors</span> <span class="o">=</span> <span class="n">build_neighbors</span><span class="p">(</span><span class="n">Cf</span><span class="p">,</span> <span class="n">Ct</span><span class="p">)</span>
     <span class="c1"># Step 2: add pseudo-measurements</span>
@@ -330,21 +331,21 @@
 <div class="viewcode-block" id="profile_measurements">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.StateEstimation.html#VeraGridEngine.Simulations.StateEstimation.observability_analysis.profile_measurements">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">profile_measurements</span><span class="p">(</span><span class="n">Hsub</span><span class="p">,</span> <span class="n">ids</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-9</span><span class="p">,</span> <span class="n">include_line_measurements_on_both_ends</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Condition	            System rank	            Local rank	            Classification</span>
 <span class="sd">    Rank drops system-wide	    ↓	                    –	                Critical</span>
 <span class="sd">    System rank full           full	                   full	                Locally redundant</span>
 <span class="sd">    (local rank unchanged)</span>
 <span class="sd">    System rank full	       full                 	↓	                Globally redundant</span>
 <span class="sd">    ( local rank ↓)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">n</span> <span class="o">=</span> <span class="n">Hsub</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
     <span class="n">prof</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="c1"># Ensure IDs are tuples for hashable dict keys</span>
     <span class="n">ids</span> <span class="o">=</span> <span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">id_</span><span class="p">)</span> <span class="k">for</span> <span class="n">id_</span> <span class="ow">in</span> <span class="n">ids</span><span class="p">]</span>
     <span class="n">groups</span> <span class="o">=</span> <span class="n">build_local_groups</span><span class="p">(</span><span class="n">ids</span><span class="p">,</span> <span class="n">include_line_measurements_on_both_ends</span><span class="o">=</span><span class="n">include_line_measurements_on_both_ends</span><span class="p">)</span>
-    <span class="c1"># Convert Hsub to dense once if it&#39;s sparse</span>
-    <span class="n">H_dense</span> <span class="o">=</span> <span class="n">Hsub</span><span class="o">.</span><span class="n">toarray</span><span class="p">()</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">Hsub</span><span class="p">,</span> <span class="s2">&quot;toarray&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="n">Hsub</span>
+    <span class="c1"># Convert Hsub to dense once if it's sparse</span>
+    <span class="n">H_dense</span> <span class="o">=</span> <span class="n">Hsub</span><span class="o">.</span><span class="n">toarray</span><span class="p">()</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">Hsub</span><span class="p">,</span> <span class="s2">"toarray"</span><span class="p">)</span> <span class="k">else</span> <span class="n">Hsub</span>
     <span class="c1"># Precompute G = H.T @ H once</span>
     <span class="n">G</span> <span class="o">=</span> <span class="n">H_dense</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">H_dense</span>
     <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">meas_id</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">ids</span><span class="p">):</span>
@@ -360,17 +361,17 @@
         <span class="n">G_reduced</span> <span class="o">=</span> <span class="n">G</span> <span class="o">-</span> <span class="n">h_i</span> <span class="o">@</span> <span class="n">h_i</span><span class="o">.</span><span class="n">T</span>
         <span class="n">rank_reduced</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">matrix_rank</span><span class="p">(</span><span class="n">G_reduced</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="n">tol</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">rank_reduced</span> <span class="o">&lt;</span> <span class="n">n</span><span class="p">:</span>
-            <span class="n">prof</span><span class="p">[</span><span class="n">meas_id</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;critical&quot;</span>
+            <span class="n">prof</span><span class="p">[</span><span class="n">meas_id</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"critical"</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="c1"># --- Redundant: distinguish local vs global ---</span>
             <span class="p">(</span><span class="n">cat</span><span class="p">,</span> <span class="n">api_obj</span><span class="p">)</span> <span class="o">=</span> <span class="n">meas_id</span>
             <span class="c1"># Determine the correct key</span>
-            <span class="k">if</span> <span class="n">cat</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;pf_value&quot;</span><span class="p">,</span> <span class="s2">&quot;qf_value&quot;</span><span class="p">,</span> <span class="s2">&quot;if_value&quot;</span><span class="p">]:</span>
-                <span class="n">key</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;bus_</span><span class="si">{</span><span class="n">api_obj</span><span class="o">.</span><span class="n">bus_from</span><span class="si">}</span><span class="s2">&quot;</span>
-            <span class="k">elif</span> <span class="n">cat</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;pt_value&quot;</span><span class="p">,</span> <span class="s2">&quot;qt_value&quot;</span><span class="p">,</span> <span class="s2">&quot;it_value&quot;</span><span class="p">]:</span>
-                <span class="n">key</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;bus_</span><span class="si">{</span><span class="n">api_obj</span><span class="o">.</span><span class="n">bus_to</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="k">if</span> <span class="n">cat</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">"pf_value"</span><span class="p">,</span> <span class="s2">"qf_value"</span><span class="p">,</span> <span class="s2">"if_value"</span><span class="p">]:</span>
+                <span class="n">key</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"bus_</span><span class="si">{</span><span class="n">api_obj</span><span class="o">.</span><span class="n">bus_from</span><span class="si">}</span><span class="s2">"</span>
+            <span class="k">elif</span> <span class="n">cat</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">"pt_value"</span><span class="p">,</span> <span class="s2">"qt_value"</span><span class="p">,</span> <span class="s2">"it_value"</span><span class="p">]:</span>
+                <span class="n">key</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"bus_</span><span class="si">{</span><span class="n">api_obj</span><span class="o">.</span><span class="n">bus_to</span><span class="si">}</span><span class="s2">"</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">key</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;bus_</span><span class="si">{</span><span class="n">api_obj</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="n">key</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"bus_</span><span class="si">{</span><span class="n">api_obj</span><span class="si">}</span><span class="s2">"</span>
 
             <span class="n">related_idxs</span> <span class="o">=</span> <span class="n">groups</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
 
@@ -382,13 +383,13 @@
                 <span class="n">rank_local_minus_one</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">matrix_rank</span><span class="p">(</span><span class="n">H_local_reduced</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="n">tol</span><span class="p">)</span>
                 <span class="n">redundancy_type</span> <span class="o">=</span> <span class="n">classify_redundancy</span><span class="p">(</span><span class="n">H_dense</span><span class="p">,</span> <span class="n">idx</span><span class="p">,</span> <span class="n">tol</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">rank_local</span> <span class="o">==</span> <span class="n">rank_local_minus_one</span><span class="p">:</span>
-                    <span class="n">prof</span><span class="p">[</span><span class="n">meas_id</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;locally redundant (</span><span class="si">{</span><span class="n">redundancy_type</span><span class="si">}</span><span class="s2">)&quot;</span>
+                    <span class="n">prof</span><span class="p">[</span><span class="n">meas_id</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"locally redundant (</span><span class="si">{</span><span class="n">redundancy_type</span><span class="si">}</span><span class="s2">)"</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="n">prof</span><span class="p">[</span><span class="n">meas_id</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;globally redundant (</span><span class="si">{</span><span class="n">redundancy_type</span><span class="si">}</span><span class="s2">)&quot;</span>
+                    <span class="n">prof</span><span class="p">[</span><span class="n">meas_id</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"globally redundant (</span><span class="si">{</span><span class="n">redundancy_type</span><span class="si">}</span><span class="s2">)"</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="c1"># Only one measurement in the group → global redundancy</span>
                 <span class="n">redundancy_type</span> <span class="o">=</span> <span class="n">classify_redundancy</span><span class="p">(</span><span class="n">H_dense</span><span class="p">,</span> <span class="n">idx</span><span class="p">,</span> <span class="n">tol</span><span class="p">)</span>
-                <span class="n">prof</span><span class="p">[</span><span class="n">meas_id</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;globally redundant (</span><span class="si">{</span><span class="n">redundancy_type</span><span class="si">}</span><span class="s2">)&quot;</span>
+                <span class="n">prof</span><span class="p">[</span><span class="n">meas_id</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"globally redundant (</span><span class="si">{</span><span class="n">redundancy_type</span><span class="si">}</span><span class="s2">)"</span>
 
     <span class="k">return</span> <span class="n">prof</span></div>
 
@@ -397,16 +398,16 @@
 <div class="viewcode-block" id="profile_measurements_ultrafast">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.StateEstimation.html#VeraGridEngine.Simulations.StateEstimation.observability_analysis.profile_measurements_ultrafast">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">profile_measurements_ultrafast</span><span class="p">(</span><span class="n">Hsub</span><span class="p">,</span> <span class="n">ids</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-9</span><span class="p">,</span> <span class="n">include_line_measurements_on_both_ends</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Ultra-fast version with identical results to original.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">n</span> <span class="o">=</span> <span class="n">Hsub</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
     <span class="n">prof</span> <span class="o">=</span> <span class="p">{}</span>
 
     <span class="n">ids</span> <span class="o">=</span> <span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">id_</span><span class="p">)</span> <span class="k">for</span> <span class="n">id_</span> <span class="ow">in</span> <span class="n">ids</span><span class="p">]</span>
     <span class="n">groups</span> <span class="o">=</span> <span class="n">build_local_groups</span><span class="p">(</span><span class="n">ids</span><span class="p">,</span> <span class="n">include_line_measurements_on_both_ends</span><span class="o">=</span><span class="n">include_line_measurements_on_both_ends</span><span class="p">)</span>
 
-    <span class="n">H_dense</span> <span class="o">=</span> <span class="n">Hsub</span><span class="o">.</span><span class="n">toarray</span><span class="p">()</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">Hsub</span><span class="p">,</span> <span class="s2">&quot;toarray&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="n">Hsub</span>
+    <span class="n">H_dense</span> <span class="o">=</span> <span class="n">Hsub</span><span class="o">.</span><span class="n">toarray</span><span class="p">()</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">Hsub</span><span class="p">,</span> <span class="s2">"toarray"</span><span class="p">)</span> <span class="k">else</span> <span class="n">Hsub</span>
     <span class="n">G</span> <span class="o">=</span> <span class="n">H_dense</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">H_dense</span>
 
     <span class="c1"># Precompute SVD for smart criticality screening</span>
@@ -422,9 +423,9 @@
     <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">indices</span> <span class="ow">in</span> <span class="n">groups</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
         <span class="n">H_local</span> <span class="o">=</span> <span class="n">H_dense</span><span class="p">[</span><span class="n">indices</span><span class="p">,</span> <span class="p">:]</span>
         <span class="n">group_cache</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s1">&#39;indices&#39;</span><span class="p">:</span> <span class="n">indices</span><span class="p">,</span>
-            <span class="s1">&#39;local_rank&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">matrix_rank</span><span class="p">(</span><span class="n">H_local</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="n">tol</span><span class="p">),</span>
-            <span class="s1">&#39;H_local&#39;</span><span class="p">:</span> <span class="n">H_local</span>
+            <span class="s1">'indices'</span><span class="p">:</span> <span class="n">indices</span><span class="p">,</span>
+            <span class="s1">'local_rank'</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">matrix_rank</span><span class="p">(</span><span class="n">H_local</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="n">tol</span><span class="p">),</span>
+            <span class="s1">'H_local'</span><span class="p">:</span> <span class="n">H_local</span>
         <span class="p">}</span>
 
     <span class="c1"># Process measurements</span>
@@ -436,39 +437,39 @@
             <span class="n">h_i</span> <span class="o">=</span> <span class="n">H_dense</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
             <span class="n">G_reduced</span> <span class="o">=</span> <span class="n">G</span> <span class="o">-</span> <span class="n">h_i</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">h_i</span>
             <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">matrix_rank</span><span class="p">(</span><span class="n">G_reduced</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="n">tol</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">n</span><span class="p">:</span>
-                <span class="n">prof</span><span class="p">[</span><span class="n">meas_id</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;critical&quot;</span>
+                <span class="n">prof</span><span class="p">[</span><span class="n">meas_id</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"critical"</span>
                 <span class="k">continue</span>
 
         <span class="c1"># Redundancy classification</span>
         <span class="p">(</span><span class="n">cat</span><span class="p">,</span> <span class="n">api_obj</span><span class="p">)</span> <span class="o">=</span> <span class="n">meas_id</span>
 
-        <span class="k">if</span> <span class="n">cat</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;pf_value&quot;</span><span class="p">,</span> <span class="s2">&quot;qf_value&quot;</span><span class="p">,</span> <span class="s2">&quot;if_value&quot;</span><span class="p">]:</span>
-            <span class="n">key</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;bus_</span><span class="si">{</span><span class="n">api_obj</span><span class="o">.</span><span class="n">bus_from</span><span class="si">}</span><span class="s2">&quot;</span>
-        <span class="k">elif</span> <span class="n">cat</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;pt_value&quot;</span><span class="p">,</span> <span class="s2">&quot;qt_value&quot;</span><span class="p">,</span> <span class="s2">&quot;it_value&quot;</span><span class="p">]:</span>
-            <span class="n">key</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;bus_</span><span class="si">{</span><span class="n">api_obj</span><span class="o">.</span><span class="n">bus_to</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">if</span> <span class="n">cat</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">"pf_value"</span><span class="p">,</span> <span class="s2">"qf_value"</span><span class="p">,</span> <span class="s2">"if_value"</span><span class="p">]:</span>
+            <span class="n">key</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"bus_</span><span class="si">{</span><span class="n">api_obj</span><span class="o">.</span><span class="n">bus_from</span><span class="si">}</span><span class="s2">"</span>
+        <span class="k">elif</span> <span class="n">cat</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">"pt_value"</span><span class="p">,</span> <span class="s2">"qt_value"</span><span class="p">,</span> <span class="s2">"it_value"</span><span class="p">]:</span>
+            <span class="n">key</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"bus_</span><span class="si">{</span><span class="n">api_obj</span><span class="o">.</span><span class="n">bus_to</span><span class="si">}</span><span class="s2">"</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">key</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;bus_</span><span class="si">{</span><span class="n">api_obj</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="n">key</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"bus_</span><span class="si">{</span><span class="n">api_obj</span><span class="si">}</span><span class="s2">"</span>
 
         <span class="n">group_data</span> <span class="o">=</span> <span class="n">group_cache</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
-        <span class="n">related_idxs</span> <span class="o">=</span> <span class="n">group_data</span><span class="p">[</span><span class="s1">&#39;indices&#39;</span><span class="p">]</span>
+        <span class="n">related_idxs</span> <span class="o">=</span> <span class="n">group_data</span><span class="p">[</span><span class="s1">'indices'</span><span class="p">]</span>
 
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">related_idxs</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
             <span class="c1"># Find position and remove current measurement</span>
             <span class="n">pos</span> <span class="o">=</span> <span class="n">related_idxs</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
             <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">related_idxs</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
             <span class="n">mask</span><span class="p">[</span><span class="n">pos</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
-            <span class="n">H_local_reduced</span> <span class="o">=</span> <span class="n">group_data</span><span class="p">[</span><span class="s1">&#39;H_local&#39;</span><span class="p">][</span><span class="n">mask</span><span class="p">,</span> <span class="p">:]</span>
+            <span class="n">H_local_reduced</span> <span class="o">=</span> <span class="n">group_data</span><span class="p">[</span><span class="s1">'H_local'</span><span class="p">][</span><span class="n">mask</span><span class="p">,</span> <span class="p">:]</span>
 
             <span class="n">rank_local_reduced</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">matrix_rank</span><span class="p">(</span><span class="n">H_local_reduced</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="n">tol</span><span class="p">)</span>
             <span class="n">redundancy_type</span> <span class="o">=</span> <span class="n">classify_redundancy</span><span class="p">(</span><span class="n">H_dense</span><span class="p">,</span> <span class="n">idx</span><span class="p">,</span> <span class="n">tol</span><span class="p">)</span>
 
-            <span class="k">if</span> <span class="n">group_data</span><span class="p">[</span><span class="s1">&#39;local_rank&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">rank_local_reduced</span><span class="p">:</span>
-                <span class="n">prof</span><span class="p">[</span><span class="n">meas_id</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;locally redundant (</span><span class="si">{</span><span class="n">redundancy_type</span><span class="si">}</span><span class="s2">)&quot;</span>
+            <span class="k">if</span> <span class="n">group_data</span><span class="p">[</span><span class="s1">'local_rank'</span><span class="p">]</span> <span class="o">==</span> <span class="n">rank_local_reduced</span><span class="p">:</span>
+                <span class="n">prof</span><span class="p">[</span><span class="n">meas_id</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"locally redundant (</span><span class="si">{</span><span class="n">redundancy_type</span><span class="si">}</span><span class="s2">)"</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">prof</span><span class="p">[</span><span class="n">meas_id</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;globally redundant (</span><span class="si">{</span><span class="n">redundancy_type</span><span class="si">}</span><span class="s2">)&quot;</span>
+                <span class="n">prof</span><span class="p">[</span><span class="n">meas_id</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"globally redundant (</span><span class="si">{</span><span class="n">redundancy_type</span><span class="si">}</span><span class="s2">)"</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">redundancy_type</span> <span class="o">=</span> <span class="n">classify_redundancy</span><span class="p">(</span><span class="n">H_dense</span><span class="p">,</span> <span class="n">idx</span><span class="p">,</span> <span class="n">tol</span><span class="p">)</span>
-            <span class="n">prof</span><span class="p">[</span><span class="n">meas_id</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;globally redundant (</span><span class="si">{</span><span class="n">redundancy_type</span><span class="si">}</span><span class="s2">)&quot;</span>
+            <span class="n">prof</span><span class="p">[</span><span class="n">meas_id</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"globally redundant (</span><span class="si">{</span><span class="n">redundancy_type</span><span class="si">}</span><span class="s2">)"</span>
 
     <span class="k">return</span> <span class="n">prof</span></div>
 
@@ -481,24 +482,24 @@
 
     <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="p">(</span><span class="n">cat</span><span class="p">,</span> <span class="n">api_obj</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">measurement_ids</span><span class="p">):</span>
         <span class="c1"># Bus measurements</span>
-        <span class="k">if</span> <span class="n">cat</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;p_inj&quot;</span><span class="p">,</span> <span class="s2">&quot;q_inj&quot;</span><span class="p">,</span> <span class="s2">&quot;pg_inj&quot;</span><span class="p">,</span> <span class="s2">&quot;qg_inj&quot;</span><span class="p">,</span> <span class="s2">&quot;vm_value&quot;</span><span class="p">,</span> <span class="s2">&quot;va_value&quot;</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="n">cat</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">"p_inj"</span><span class="p">,</span> <span class="s2">"q_inj"</span><span class="p">,</span> <span class="s2">"pg_inj"</span><span class="p">,</span> <span class="s2">"qg_inj"</span><span class="p">,</span> <span class="s2">"vm_value"</span><span class="p">,</span> <span class="s2">"va_value"</span><span class="p">]:</span>
             <span class="n">bus</span> <span class="o">=</span> <span class="n">api_obj</span>  <span class="c1"># for bus measurements, api_object itself identifies the bus</span>
-            <span class="n">groups</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;bus_</span><span class="si">{</span><span class="n">bus</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
+            <span class="n">groups</span><span class="p">[</span><span class="sa">f</span><span class="s2">"bus_</span><span class="si">{</span><span class="n">bus</span><span class="si">}</span><span class="s2">"</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
 
         <span class="c1"># Line/transformer flow measurements</span>
-        <span class="k">elif</span> <span class="n">cat</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;pf_value&quot;</span><span class="p">,</span> <span class="s2">&quot;qf_value&quot;</span><span class="p">,</span> <span class="s2">&quot;pt_value&quot;</span><span class="p">,</span> <span class="s2">&quot;qt_value&quot;</span><span class="p">,</span> <span class="s2">&quot;if_value&quot;</span><span class="p">,</span> <span class="s2">&quot;it_value&quot;</span><span class="p">]:</span>
+        <span class="k">elif</span> <span class="n">cat</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">"pf_value"</span><span class="p">,</span> <span class="s2">"qf_value"</span><span class="p">,</span> <span class="s2">"pt_value"</span><span class="p">,</span> <span class="s2">"qt_value"</span><span class="p">,</span> <span class="s2">"if_value"</span><span class="p">,</span> <span class="s2">"it_value"</span><span class="p">]:</span>
             <span class="c1"># Decide which bus side this measurement belongs to</span>
             <span class="k">if</span> <span class="n">include_line_measurements_on_both_ends</span><span class="p">:</span>
                 <span class="n">bus_from</span> <span class="o">=</span> <span class="n">api_obj</span><span class="o">.</span><span class="n">bus_from</span>
                 <span class="n">bus_to</span> <span class="o">=</span> <span class="n">api_obj</span><span class="o">.</span><span class="n">bus_to</span>
-                <span class="n">groups</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;bus_</span><span class="si">{</span><span class="n">bus_from</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
-                <span class="n">groups</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;bus_</span><span class="si">{</span><span class="n">bus_to</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
+                <span class="n">groups</span><span class="p">[</span><span class="sa">f</span><span class="s2">"bus_</span><span class="si">{</span><span class="n">bus_from</span><span class="si">}</span><span class="s2">"</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
+                <span class="n">groups</span><span class="p">[</span><span class="sa">f</span><span class="s2">"bus_</span><span class="si">{</span><span class="n">bus_to</span><span class="si">}</span><span class="s2">"</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">cat</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;pf_value&quot;</span><span class="p">,</span> <span class="s2">&quot;qf_value&quot;</span><span class="p">,</span> <span class="s2">&quot;if_value&quot;</span><span class="p">]:</span>
+                <span class="k">if</span> <span class="n">cat</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">"pf_value"</span><span class="p">,</span> <span class="s2">"qf_value"</span><span class="p">,</span> <span class="s2">"if_value"</span><span class="p">]:</span>
                     <span class="n">bus</span> <span class="o">=</span> <span class="n">api_obj</span><span class="o">.</span><span class="n">bus_from</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">bus</span> <span class="o">=</span> <span class="n">api_obj</span><span class="o">.</span><span class="n">bus_to</span>
-                <span class="n">groups</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;bus_</span><span class="si">{</span><span class="n">bus</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
+                <span class="n">groups</span><span class="p">[</span><span class="sa">f</span><span class="s2">"bus_</span><span class="si">{</span><span class="n">bus</span><span class="si">}</span><span class="s2">"</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">groups</span></div>
 
@@ -507,10 +508,10 @@
 <div class="viewcode-block" id="bus_observability_profile">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.StateEstimation.html#VeraGridEngine.Simulations.StateEstimation.observability_analysis.bus_observability_profile">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">bus_observability_profile</span><span class="p">(</span><span class="n">measurement_profile</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Convert measurement_profile (from profile_measurements) into a nested dict:</span>
 <span class="sd">    {measurement_type: {bus: worst_status}}</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">bus_status_per_type</span> <span class="o">=</span> <span class="p">{}</span>
 
     <span class="k">for</span> <span class="n">meas_type</span><span class="p">,</span> <span class="n">prof_dict</span> <span class="ow">in</span> <span class="n">measurement_profile</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
@@ -518,23 +519,23 @@
 
         <span class="k">for</span> <span class="p">(</span><span class="n">cat</span><span class="p">,</span> <span class="n">api_obj</span><span class="p">),</span> <span class="n">status</span> <span class="ow">in</span> <span class="n">prof_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="c1"># Determine which bus this measurement belongs to</span>
-            <span class="k">if</span> <span class="n">cat</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;pf_value&quot;</span><span class="p">,</span> <span class="s2">&quot;qf_value&quot;</span><span class="p">,</span> <span class="s2">&quot;if_value&quot;</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">cat</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">"pf_value"</span><span class="p">,</span> <span class="s2">"qf_value"</span><span class="p">,</span> <span class="s2">"if_value"</span><span class="p">]:</span>
                 <span class="n">bus</span> <span class="o">=</span> <span class="n">api_obj</span><span class="o">.</span><span class="n">bus_from</span>
-            <span class="k">elif</span> <span class="n">cat</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;pt_value&quot;</span><span class="p">,</span> <span class="s2">&quot;qt_value&quot;</span><span class="p">,</span> <span class="s2">&quot;it_value&quot;</span><span class="p">]:</span>
+            <span class="k">elif</span> <span class="n">cat</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">"pt_value"</span><span class="p">,</span> <span class="s2">"qt_value"</span><span class="p">,</span> <span class="s2">"it_value"</span><span class="p">]:</span>
                 <span class="n">bus</span> <span class="o">=</span> <span class="n">api_obj</span><span class="o">.</span><span class="n">bus_to</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">bus</span> <span class="o">=</span> <span class="n">api_obj</span>  <span class="c1"># bus measurement</span>
 
             <span class="n">bus_profile</span><span class="p">[</span><span class="n">bus</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">status</span><span class="p">)</span>
 
-        <span class="c1"># Aggregate: pick the &quot;worst&quot; status for the bus</span>
+        <span class="c1"># Aggregate: pick the "worst" status for the bus</span>
         <span class="k">def</span><span class="w"> </span><span class="nf">worst_status</span><span class="p">(</span><span class="n">status_list</span><span class="p">):</span>
-            <span class="k">if</span> <span class="s2">&quot;critical&quot;</span> <span class="ow">in</span> <span class="n">status_list</span><span class="p">:</span>
-                <span class="k">return</span> <span class="s2">&quot;critical&quot;</span>
-            <span class="k">elif</span> <span class="s2">&quot;globally redundant&quot;</span> <span class="ow">in</span> <span class="n">status_list</span><span class="p">:</span>
-                <span class="k">return</span> <span class="s2">&quot;globally redundant&quot;</span>
+            <span class="k">if</span> <span class="s2">"critical"</span> <span class="ow">in</span> <span class="n">status_list</span><span class="p">:</span>
+                <span class="k">return</span> <span class="s2">"critical"</span>
+            <span class="k">elif</span> <span class="s2">"globally redundant"</span> <span class="ow">in</span> <span class="n">status_list</span><span class="p">:</span>
+                <span class="k">return</span> <span class="s2">"globally redundant"</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">return</span> <span class="s2">&quot;locally redundant&quot;</span>
+                <span class="k">return</span> <span class="s2">"locally redundant"</span>
 
         <span class="n">bus_status_per_type</span><span class="p">[</span><span class="n">meas_type</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="n">bus</span><span class="p">:</span> <span class="n">worst_status</span><span class="p">(</span><span class="n">statuses</span><span class="p">)</span> <span class="k">for</span> <span class="n">bus</span><span class="p">,</span> <span class="n">statuses</span> <span class="ow">in</span> <span class="n">bus_profile</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
 
@@ -548,31 +549,31 @@
 <div class="viewcode-block" id="classify_redundancy">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.StateEstimation.html#VeraGridEngine.Simulations.StateEstimation.observability_analysis.classify_redundancy">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">classify_redundancy</span><span class="p">(</span><span class="n">H</span><span class="p">,</span> <span class="n">idx</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-9</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Classify redundant measurement into none/single/multiple redundancy.&quot;&quot;&quot;</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Classify redundant measurement into none/single/multiple redundancy."""</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Take the measurement’s row h_i.Remove it from the Jacobian H_rest.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">h_i</span> <span class="o">=</span> <span class="n">H</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># row vector = the measurement we test</span>
     <span class="n">H_rest</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">H</span><span class="p">,</span> <span class="n">idx</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>  <span class="c1"># all other measurements</span>
 
     <span class="c1"># Least squares to check dependence</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Try to express h_i as a linear combination of the others (least-squares fit).residual_norm tells us how well </span>
-<span class="sd">    it can be reconstructed: If residual is large, it means h_i is not redundant at all → &quot;none&quot;. If residual is tiny, </span>
+<span class="sd">    it can be reconstructed: If residual is large, it means h_i is not redundant at all → "none". If residual is tiny, </span>
 <span class="sd">    then h_i lies in the span of others → it’s redundant</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">coeffs</span><span class="p">,</span> <span class="n">residuals</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">lstsq</span><span class="p">(</span><span class="n">H_rest</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">h_i</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">rcond</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
     <span class="n">residual_norm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">h_i</span> <span class="o">-</span> <span class="n">coeffs</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">H_rest</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">residual_norm</span> <span class="o">&gt;</span> <span class="n">tol</span><span class="p">:</span>
-        <span class="k">return</span> <span class="s2">&quot;none&quot;</span>
+        <span class="k">return</span> <span class="s2">"none"</span>
     <span class="k">else</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Count how many coefficients in that linear combination are significant. If only 1 other measurement explains</span>
-<span class="sd">         h_i → &quot;single redundancy&quot;.If it needs multiple others together → &quot;multiple redundancy&quot;.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">         h_i → "single redundancy".If it needs multiple others together → "multiple redundancy".</span>
+<span class="sd">        """</span>
         <span class="n">nnz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">coeffs</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">1e-6</span><span class="p">)</span>
-        <span class="k">return</span> <span class="s2">&quot;single&quot;</span> <span class="k">if</span> <span class="n">nnz</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="s2">&quot;multiple&quot;</span></div>
+        <span class="k">return</span> <span class="s2">"single"</span> <span class="k">if</span> <span class="n">nnz</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="s2">"multiple"</span></div>
 
 </pre></div>
 

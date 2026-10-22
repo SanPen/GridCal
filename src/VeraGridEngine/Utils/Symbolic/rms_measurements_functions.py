@@ -15,22 +15,22 @@ from VeraGridEngine.Utils.Symbolic.symbolic import Const, Expr, Var
 from VeraGridEngine.enumerations import BlockType, VarPowerFlowReferenceType
 from VeraGridEngine.Devices.types import ALL_DEV_TYPES
 
-measurement_vars_dict = {"dc_bus": {BlockType.MEASUREMENTS_VOLTAGE_FROM_DC: [VarPowerFlowReferenceType.UR, VarPowerFlowReferenceType.U,
-                                                                             VarPowerFlowReferenceType.URf, VarPowerFlowReferenceType.Uf,
-                                                                             VarPowerFlowReferenceType.URt, VarPowerFlowReferenceType.Ut],
-                                    BlockType.MEASUREMENTS_CURRENT_FROM_DC: [VarPowerFlowReferenceType.I_DC,
+measurement_vars_dict_rms = {"dc_bus": {BlockType.MEASUREMENTS_VOLTAGE_FROM_DC: [VarPowerFlowReferenceType.UR, VarPowerFlowReferenceType.U,
+                                                                                 VarPowerFlowReferenceType.URf, VarPowerFlowReferenceType.Uf,
+                                                                                 VarPowerFlowReferenceType.URt, VarPowerFlowReferenceType.Ut],
+                                        BlockType.MEASUREMENTS_CURRENT_FROM_DC: [VarPowerFlowReferenceType.I_DC,
                                                                             VarPowerFlowReferenceType.If_dc,
                                                                             VarPowerFlowReferenceType.It_dc],
-                                    BlockType.MEASUREMENTS_VOLTAGE_ANGLE: [VarPowerFlowReferenceType.Vdc,
+                                        BlockType.MEASUREMENTS_VOLTAGE_ANGLE: [VarPowerFlowReferenceType.Vdc,
                                                                           VarPowerFlowReferenceType.Vf_dc,
                                                                           VarPowerFlowReferenceType.Vt_dc],
-                                    BlockType.MEASUREMENTS_P_Q: [VarPowerFlowReferenceType.P,
+                                        BlockType.MEASUREMENTS_P_Q: [VarPowerFlowReferenceType.P,
                                                                  VarPowerFlowReferenceType.Pf,
                                                                  VarPowerFlowReferenceType.Pt]
 
-                                    },
+                                        },
 
-                         "a_c_bus": {BlockType.MEASUREMENTS_VOLTAGE_FROM_POLAR: [VarPowerFlowReferenceType.U, VarPowerFlowReferenceType.Uf, VarPowerFlowReferenceType.Ut,
+                             "a_c_bus": {BlockType.MEASUREMENTS_VOLTAGE_FROM_POLAR: [VarPowerFlowReferenceType.U, VarPowerFlowReferenceType.Uf, VarPowerFlowReferenceType.Ut,
                                                                              VarPowerFlowReferenceType.UR, VarPowerFlowReferenceType.UI,
                                                                              VarPowerFlowReferenceType.URf, VarPowerFlowReferenceType.UIf,
                                                                              VarPowerFlowReferenceType.URt, VarPowerFlowReferenceType.UIt,
@@ -64,6 +64,14 @@ measurement_vars_dict = {"dc_bus": {BlockType.MEASUREMENTS_VOLTAGE_FROM_DC: [Var
                                                                   VarPowerFlowReferenceType.Qt]
                                      }}
 
+measurement_vars_dict_emt= {"dc_bus": {},
+                             "a_c_bus": {BlockType.MEASUREMENTS_VOLTAGE_ANGLE: [VarPowerFlowReferenceType.Vm,
+                                                                            VarPowerFlowReferenceType.Va,
+                                                                            VarPowerFlowReferenceType.Vmf,
+                                                                            VarPowerFlowReferenceType.Vaf,
+                                                                            VarPowerFlowReferenceType.Vmt,
+                                                                            VarPowerFlowReferenceType.Vat],}}
+
 def find_measurements_for_inputs_group(bus: ALL_DEV_TYPES, inputs: List[Var]) -> List[BlockType]:
     """
     returns the types of measurements blocks needed and input variables sorted by type
@@ -76,10 +84,10 @@ def find_measurements_for_inputs_group(bus: ALL_DEV_TYPES, inputs: List[Var]) ->
     :rtype:
     """
     if bus.is_dc:
-        needed_measurements_type: List[BlockType] = allocate_vars_in_corresponding_measurements_type(inputs, measurement_vars_dict['dc_bus'])
+        needed_measurements_type: List[BlockType] = allocate_vars_in_corresponding_measurements_type(inputs, measurement_vars_dict_rms['dc_bus'])
 
     else:
-        needed_measurements_type: List[BlockType] = allocate_vars_in_corresponding_measurements_type(inputs, measurement_vars_dict['a_c_bus'])
+        needed_measurements_type: List[BlockType] = allocate_vars_in_corresponding_measurements_type(inputs, measurement_vars_dict_rms['a_c_bus'])
 
     return needed_measurements_type
 

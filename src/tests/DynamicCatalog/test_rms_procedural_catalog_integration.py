@@ -8,15 +8,22 @@ from VeraGridEngine.Devices.Dynamic.var_factory import VarFactory
 from VeraGridEngine.Devices.Events.rms_event import RmsEvent
 from VeraGridEngine.Devices.Events.rms_events_group import RmsEventsGroup
 from VeraGridEngine.Simulations.Rms.numerical.back_euler_fx import BackEulerImplicitIntegration
+from VeraGridEngine.Simulations.Rms.numerical.back_euler_fx_vectorized import BackEulerImplicitIntegrationVec
+from VeraGridEngine.Simulations.Rms.numerical.back_euler_fx_full_vectorized import BackEulerImplicitIntegrationFullVec
 from VeraGridEngine.Simulations.Rms.rms_options import RmsOptions
 from VeraGridEngine.Simulations.Rms.problems.rms_problem_dae import RmsProblemDae
+from VeraGridEngine.Simulations.Rms.problems.rms_problem_dae_vectorized import RmsProblemDaeVec
+from VeraGridEngine.Simulations.Rms.problems.rms_problem_dae_full_vectorized import RmsProblemDaeFullVec
 from VeraGridEngine.Utils.Symbolic.bus_rms_template import initialize_bus_rms
 from VeraGridEngine.Templates.Rms.genqec_exc_gov_sat_template import get_complete_generator_template_rms
 from VeraGridEngine.Templates.Rms.line_rms_template import get_line_rms_template
 from VeraGridEngine.Templates.BasicBlockCatalog import get_basic_block_catalog_descriptor_by_key
 from VeraGridEngine.Templates.BasicBlockCatalog import load_basic_block_catalog_template
 from VeraGridEngine.Utils.Symbolic.block import Block
-from VeraGridEngine.Utils.procedural_logic import build_boundary_updater_from_block
+from VeraGridEngine.Utils.Symbolic.jit_compiler import ProceduralExpressionCompiler
+from VeraGridEngine.Utils.procedural_logic import (
+    BlockProceduralLogicUpdater, ProceduralExpressionMode, build_boundary_updater_from_block,
+)
 from VeraGridEngine.Utils.Symbolic.symbolic import Var
 from VeraGridEngine.enumerations import DeviceType
 from VeraGridEngine.enumerations import DynamicIntegrationMethod
@@ -154,7 +161,10 @@ def test_rms_update_variable_params_applies_catalog_procedural_logic() -> None:
     problem._continuous_runtime_events = dict()
     problem._scheduled_mode_events = dict()
     problem._mode_event_cursor = dict()
-    problem._block_boundary_updater = build_boundary_updater_from_block(problem)
+    problem._block_boundary_updater = build_boundary_updater_from_block(
+        problem=problem,
+        expression_mode=ProceduralExpressionMode.Interpreted,
+    )
 
     RmsProblemDae.update_variable_params(problem, t=0.0, x_snapshot=np.zeros(len(ordered_vars), dtype=float))
 
@@ -162,7 +172,15 @@ def test_rms_update_variable_params_applies_catalog_procedural_logic() -> None:
     assert problem._variable_parameters_values[1] == 1.0
 
 
-def test_rms_catalog_procedural_logic_changes_load_output_during_real_simulation() -> None:
+@pytest.mark.parametrize("problem_class", (RmsProblemDae, RmsProblemDaeVec, RmsProblemDaeFullVec))
+def test_rms_catalog_procedural_logic_changes_load_output_during_real_simulation(
+        problem_class: type[RmsProblemDae] | type[RmsProblemDaeVec] | type[RmsProblemDaeFullVec],
+) -> None:
+    """Apply a catalog event through each assembler's compiled procedural path.
+
+    :param problem_class: RMS formulation paired with its matching integrator.
+    :return: None.
+    """
     grid = gce.MultiCircuit(Sbase=100, fbase=50.0)
 
     bus0 = gce.Bus(name="Bus0", Vnom=10, is_slack=True)
@@ -249,16 +267,28 @@ def test_rms_catalog_procedural_logic_changes_load_output_during_real_simulation
         max_iter=1000,
         verbose=0,
     )
-    problem = RmsProblemDae(grid=grid, options=rms_options, pf_results=pf_results)
+    problem: RmsProblemDae | RmsProblemDaeVec | RmsProblemDaeFullVec = problem_class(
+        grid=grid, options=rms_options, pf_results=pf_results,
+    )
     problem.set_events_group(events_group)
 
-    solver = BackEulerImplicitIntegration(
-        problem=problem,
-        t0=0.0,
-        t_end=rms_options.simulation_time,
-        h=rms_options.time_step,
-        max_iter=rms_options.max_iter,
-    )
+    # Each formulation exposes the numerical interface of its matching solver.
+    solver: BackEulerImplicitIntegration | BackEulerImplicitIntegrationVec | BackEulerImplicitIntegrationFullVec
+    if isinstance(problem, RmsProblemDaeVec):
+        solver = BackEulerImplicitIntegrationVec(
+            problem=problem, t0=0.0, t_end=rms_options.simulation_time,
+            h=rms_options.time_step, max_iter=rms_options.max_iter,
+        )
+    elif isinstance(problem, RmsProblemDaeFullVec):
+        solver = BackEulerImplicitIntegrationFullVec(
+            problem=problem, t0=0.0, t_end=rms_options.simulation_time,
+            h=rms_options.time_step, max_iter=rms_options.max_iter,
+        )
+    else:
+        solver = BackEulerImplicitIntegration(
+            problem=problem, t0=0.0, t_end=rms_options.simulation_time,
+            h=rms_options.time_step, max_iter=rms_options.max_iter,
+        )
 
     time_s, state_traj, well_initialized, converged = solver.simulate()
 
@@ -275,3 +305,20 @@ def test_rms_catalog_procedural_logic_changes_load_output_during_real_simulation
 
     mode_idx = problem.uid2idx_event_params[enable_mode.uid]
     assert problem._variable_parameters_values[mode_idx] == 0.0
+
+    # Switching event groups rebuilds compiler snapshots for a fresh run.
+    compiled_times: np.ndarray = time_s.copy()
+    compiled_states: np.ndarray = state_traj.copy()
+    original_compiler: ProceduralExpressionCompiler = problem.get_procedural_expression_compiler()
+    problem.set_events_group(None)
+    problem.set_events_group(events_group)
+    assert problem.get_procedural_expression_compiler() is not original_compiler
+    interpreted: BlockProceduralLogicUpdater | None = build_boundary_updater_from_block(
+        problem=problem, expression_mode=ProceduralExpressionMode.Interpreted,
+    )
+    problem._procedural_logic_updater = interpreted
+    problem._block_boundary_updater = interpreted
+    time_s, state_traj, well_initialized, converged = solver.simulate()
+    assert converged
+    np.testing.assert_allclose(time_s, compiled_times, atol=1e-12, rtol=0)
+    np.testing.assert_allclose(state_traj, compiled_states, atol=1e-9, rtol=1e-9)

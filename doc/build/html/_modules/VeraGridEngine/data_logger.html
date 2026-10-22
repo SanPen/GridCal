@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.data_logger &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.data_logger &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../md_source/license.html">📜 License</a></li>
@@ -114,14 +115,14 @@
 <div class="viewcode-block" id="DataLogSeverity">
 <a class="viewcode-back" href="../../rst_source/api/auto/VeraGridEngine.html#VeraGridEngine.data_logger.DataLogSeverity">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">DataLogSeverity</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    DataLogSeverity</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
-    <span class="n">Error</span> <span class="o">=</span> <span class="s1">&#39;Error&#39;</span>
-    <span class="ne">Warning</span> <span class="o">=</span> <span class="s1">&#39;Warning&#39;</span>
-    <span class="n">Information</span> <span class="o">=</span> <span class="s1">&#39;Information&#39;</span>
-    <span class="n">Divergence</span> <span class="o">=</span> <span class="s1">&#39;Divergence&#39;</span>
+    <span class="n">Error</span> <span class="o">=</span> <span class="s1">'Error'</span>
+    <span class="ne">Warning</span> <span class="o">=</span> <span class="s1">'Warning'</span>
+    <span class="n">Information</span> <span class="o">=</span> <span class="s1">'Information'</span>
+    <span class="n">Divergence</span> <span class="o">=</span> <span class="s1">'Divergence'</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span>
@@ -159,25 +160,25 @@
 <div class="viewcode-block" id="DataLogEntry">
 <a class="viewcode-back" href="../../rst_source/api/auto/VeraGridEngine.html#VeraGridEngine.data_logger.DataLogEntry">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">DataLogEntry</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    DataLogEntry</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;time&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;msg&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;severity&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;device&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;device_class&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;property_name&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;value&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;expected_value&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;comment&quot;</span><span class="p">,</span>
+        <span class="s2">"time"</span><span class="p">,</span>
+        <span class="s2">"msg"</span><span class="p">,</span>
+        <span class="s2">"severity"</span><span class="p">,</span>
+        <span class="s2">"device"</span><span class="p">,</span>
+        <span class="s2">"device_class"</span><span class="p">,</span>
+        <span class="s2">"property_name"</span><span class="p">,</span>
+        <span class="s2">"value"</span><span class="p">,</span>
+        <span class="s2">"expected_value"</span><span class="p">,</span>
+        <span class="s2">"comment"</span><span class="p">,</span>
     <span class="p">)</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">severity</span><span class="p">:</span> <span class="n">DataLogSeverity</span> <span class="o">=</span> <span class="n">DataLogSeverity</span><span class="o">.</span><span class="n">Information</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">device_class</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
-                 <span class="n">property_name</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">expected_value</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">comment</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">time</span> <span class="o">=</span> <span class="s2">&quot;{date:%H:%M:%S}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">date</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">())</span>  <span class="c1"># might use %Y/%m/%d %H:%M:%S</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="o">=</span><span class="s2">""</span><span class="p">,</span> <span class="n">severity</span><span class="p">:</span> <span class="n">DataLogSeverity</span> <span class="o">=</span> <span class="n">DataLogSeverity</span><span class="o">.</span><span class="n">Information</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">""</span><span class="p">,</span> <span class="n">device_class</span><span class="o">=</span><span class="s2">""</span><span class="p">,</span>
+                 <span class="n">property_name</span><span class="o">=</span><span class="s1">''</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="s2">""</span><span class="p">,</span> <span class="n">expected_value</span><span class="o">=</span><span class="s2">""</span><span class="p">,</span> <span class="n">comment</span><span class="o">=</span><span class="s2">""</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">time</span> <span class="o">=</span> <span class="s2">"{date:%H:%M:%S}"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">date</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">())</span>  <span class="c1"># might use %Y/%m/%d %H:%M:%S</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">msg</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">severity</span><span class="p">:</span> <span class="n">DataLogSeverity</span> <span class="o">=</span> <span class="n">severity</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">device</span> <span class="o">=</span> <span class="n">device</span>
@@ -190,16 +191,16 @@
 <div class="viewcode-block" id="DataLogEntry.to_list">
 <a class="viewcode-back" href="../../rst_source/api/auto/VeraGridEngine.html#VeraGridEngine.data_logger.DataLogEntry.to_list">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">to_list</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get list of arguments</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">time</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">severity</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">msg</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">device_class</span><span class="p">,</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">property_name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">expected_value</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">comment</span><span class="p">]</span></div>
 
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="s2">&quot;</span><span class="si">{0}</span><span class="s2"> </span><span class="si">{1}</span><span class="s2">: </span><span class="si">{2}</span><span class="s2"> </span><span class="si">{3}</span><span class="s2"> </span><span class="si">{4}</span><span class="s2"> </span><span class="si">{5}</span><span class="s2"> </span><span class="si">{6}</span><span class="s2"> </span><span class="si">{7}</span><span class="s2"> </span><span class="si">{8}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">time</span><span class="p">,</span>
+        <span class="k">return</span> <span class="s2">"</span><span class="si">{0}</span><span class="s2"> </span><span class="si">{1}</span><span class="s2">: </span><span class="si">{2}</span><span class="s2"> </span><span class="si">{3}</span><span class="s2"> </span><span class="si">{4}</span><span class="s2"> </span><span class="si">{5}</span><span class="s2"> </span><span class="si">{6}</span><span class="s2"> </span><span class="si">{7}</span><span class="s2"> </span><span class="si">{8}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">time</span><span class="p">,</span>
                                                              <span class="bp">self</span><span class="o">.</span><span class="n">severity</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
                                                              <span class="bp">self</span><span class="o">.</span><span class="n">msg</span><span class="p">,</span>
                                                              <span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">,</span>
@@ -229,16 +230,16 @@
 <div class="viewcode-block" id="DataLogger">
 <a class="viewcode-back" href="../../rst_source/api/auto/VeraGridEngine.html#VeraGridEngine.data_logger.DataLogger">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">DataLogger</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    DataLogger</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
-    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;entries&quot;</span><span class="p">,</span> <span class="s2">&quot;debug_entries&quot;</span><span class="p">)</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"entries"</span><span class="p">,</span> <span class="s2">"debug_entries"</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Constructor</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">entries</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">DataLogEntry</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">debug_entries</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
@@ -246,10 +247,10 @@
 <div class="viewcode-block" id="DataLogger.get_message">
 <a class="viewcode-back" href="../../rst_source/api/auto/VeraGridEngine.html#VeraGridEngine.data_logger.DataLogger.get_message">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_message</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get a diagnostic message</span>
 <span class="sd">        :return: message</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">n_warning</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="n">n_error</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="n">n_info</span> <span class="o">=</span> <span class="mi">0</span>
@@ -262,36 +263,36 @@
             <span class="k">elif</span> <span class="n">m</span><span class="o">.</span><span class="n">severity</span> <span class="o">==</span> <span class="n">DataLogSeverity</span><span class="o">.</span><span class="n">Information</span><span class="p">:</span>
                 <span class="n">n_info</span> <span class="o">+=</span> <span class="mi">1</span>
 
-        <span class="k">return</span> <span class="s2">&quot;There were </span><span class="si">{}</span><span class="s2"> errors, </span><span class="si">{}</span><span class="s2"> warnings and </span><span class="si">{}</span><span class="s2"> info logs.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">n_error</span><span class="p">,</span> <span class="n">n_warning</span><span class="p">,</span> <span class="n">n_info</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="s2">"There were </span><span class="si">{}</span><span class="s2"> errors, </span><span class="si">{}</span><span class="s2"> warnings and </span><span class="si">{}</span><span class="s2"> info logs."</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">n_error</span><span class="p">,</span> <span class="n">n_warning</span><span class="p">,</span> <span class="n">n_info</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="DataLogger.add_debug">
 <a class="viewcode-back" href="../../rst_source/api/auto/VeraGridEngine.html#VeraGridEngine.data_logger.DataLogger.add_debug">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">add_debug</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :param args: </span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">debug_entries</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">args</span><span class="p">]))</span></div>
+<span class="sd">        """</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">debug_entries</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">" "</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">args</span><span class="p">]))</span></div>
 
 
 <div class="viewcode-block" id="DataLogger.append">
 <a class="viewcode-back" href="../../rst_source/api/auto/VeraGridEngine.html#VeraGridEngine.data_logger.DataLogger.append">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">append</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">txt</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :param txt:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">entries</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">DataLogEntry</span><span class="p">(</span><span class="n">txt</span><span class="p">))</span></div>
 
 
 <div class="viewcode-block" id="DataLogger.has_logs">
 <a class="viewcode-back" href="../../rst_source/api/auto/VeraGridEngine.html#VeraGridEngine.data_logger.DataLogger.has_logs">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">has_logs</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Has logs?</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">entries</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span></div>
 
 
@@ -299,13 +300,13 @@
 <a class="viewcode-back" href="../../rst_source/api/auto/VeraGridEngine.html#VeraGridEngine.data_logger.DataLogger.add_info">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">add_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                  <span class="n">msg</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-                 <span class="n">device</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-                 <span class="n">device_class</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-                 <span class="n">device_property</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
-                 <span class="n">value</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-                 <span class="n">expected_value</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-                 <span class="n">comment</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+                 <span class="n">device</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">,</span>
+                 <span class="n">device_class</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">,</span>
+                 <span class="n">device_property</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">''</span><span class="p">,</span>
+                 <span class="n">value</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="s2">""</span><span class="p">,</span>
+                 <span class="n">expected_value</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="s2">""</span><span class="p">,</span>
+                 <span class="n">comment</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :param msg:</span>
 <span class="sd">        :param device:</span>
@@ -315,7 +316,7 @@
 <span class="sd">        :param expected_value:</span>
 <span class="sd">        :param comment:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">entries</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">DataLogEntry</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">msg</span><span class="p">),</span>
                                          <span class="n">severity</span><span class="o">=</span><span class="n">DataLogSeverity</span><span class="o">.</span><span class="n">Information</span><span class="p">,</span>
                                          <span class="n">device</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">device</span><span class="p">),</span>
@@ -330,13 +331,13 @@
 <a class="viewcode-back" href="../../rst_source/api/auto/VeraGridEngine.html#VeraGridEngine.data_logger.DataLogger.add_warning">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">add_warning</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                     <span class="n">msg</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-                    <span class="n">device</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-                    <span class="n">device_class</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-                    <span class="n">device_property</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
-                    <span class="n">value</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-                    <span class="n">expected_value</span><span class="p">:</span> <span class="nb">str</span><span class="o">|</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-                    <span class="n">comment</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+                    <span class="n">device</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">,</span>
+                    <span class="n">device_class</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">,</span>
+                    <span class="n">device_property</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">''</span><span class="p">,</span>
+                    <span class="n">value</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="s2">""</span><span class="p">,</span>
+                    <span class="n">expected_value</span><span class="p">:</span> <span class="nb">str</span><span class="o">|</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="s2">""</span><span class="p">,</span>
+                    <span class="n">comment</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :param msg:</span>
 <span class="sd">        :param device:</span>
@@ -346,7 +347,7 @@
 <span class="sd">        :param expected_value:</span>
 <span class="sd">        :param comment:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">entries</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">DataLogEntry</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">msg</span><span class="p">),</span>
                                          <span class="n">severity</span><span class="o">=</span><span class="n">DataLogSeverity</span><span class="o">.</span><span class="n">Warning</span><span class="p">,</span>
                                          <span class="n">device</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">device</span><span class="p">),</span>
@@ -361,13 +362,13 @@
 <a class="viewcode-back" href="../../rst_source/api/auto/VeraGridEngine.html#VeraGridEngine.data_logger.DataLogger.add_error">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">add_error</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                   <span class="n">msg</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-                  <span class="n">device</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-                  <span class="n">device_class</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-                  <span class="n">device_property</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
-                  <span class="n">value</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-                  <span class="n">expected_value</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-                  <span class="n">comment</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+                  <span class="n">device</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">,</span>
+                  <span class="n">device_class</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">,</span>
+                  <span class="n">device_property</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">''</span><span class="p">,</span>
+                  <span class="n">value</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="s2">""</span><span class="p">,</span>
+                  <span class="n">expected_value</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="s2">""</span><span class="p">,</span>
+                  <span class="n">comment</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :param msg:</span>
 <span class="sd">        :param device:</span>
@@ -377,7 +378,7 @@
 <span class="sd">        :param expected_value:</span>
 <span class="sd">        :param comment:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">entries</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">DataLogEntry</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">msg</span><span class="p">),</span>
                                          <span class="n">severity</span><span class="o">=</span><span class="n">DataLogSeverity</span><span class="o">.</span><span class="n">Error</span><span class="p">,</span>
                                          <span class="n">device</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">device</span><span class="p">),</span>
@@ -390,8 +391,8 @@
 
 <div class="viewcode-block" id="DataLogger.add_divergence">
 <a class="viewcode-back" href="../../rst_source/api/auto/VeraGridEngine.html#VeraGridEngine.data_logger.DataLogger.add_divergence">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">add_divergence</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">device_class</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">device_property</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">expected_value</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_divergence</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">""</span><span class="p">,</span> <span class="n">device_class</span><span class="o">=</span><span class="s2">""</span><span class="p">,</span> <span class="n">device_property</span><span class="o">=</span><span class="s1">''</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">expected_value</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :param msg:</span>
 <span class="sd">        :param device:</span>
@@ -401,7 +402,7 @@
 <span class="sd">        :param expected_value:</span>
 <span class="sd">        :param tol:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">value</span> <span class="o">-</span> <span class="n">expected_value</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">tol</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">entries</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">DataLogEntry</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">msg</span><span class="p">),</span>
@@ -415,9 +416,9 @@
 
 <div class="viewcode-block" id="DataLogger.add">
 <a class="viewcode-back" href="../../rst_source/api/auto/VeraGridEngine.html#VeraGridEngine.data_logger.DataLogger.add">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">severity</span><span class="p">:</span> <span class="n">DataLogSeverity</span> <span class="o">=</span> <span class="n">DataLogSeverity</span><span class="o">.</span><span class="n">Error</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">device_class</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
-            <span class="n">device_property</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">expected_value</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">severity</span><span class="p">:</span> <span class="n">DataLogSeverity</span> <span class="o">=</span> <span class="n">DataLogSeverity</span><span class="o">.</span><span class="n">Error</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">""</span><span class="p">,</span> <span class="n">device_class</span><span class="o">=</span><span class="s2">""</span><span class="p">,</span>
+            <span class="n">device_property</span><span class="o">=</span><span class="s1">''</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="s2">""</span><span class="p">,</span> <span class="n">expected_value</span><span class="o">=</span><span class="s2">""</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :param msg:</span>
 <span class="sd">        :param severity:</span>
@@ -427,7 +428,7 @@
 <span class="sd">        :param value:</span>
 <span class="sd">        :param expected_value:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">entries</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">DataLogEntry</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">msg</span><span class="p">),</span>
                                          <span class="n">severity</span><span class="o">=</span><span class="n">severity</span><span class="p">,</span>
                                          <span class="n">device</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">device</span><span class="p">),</span>
@@ -440,10 +441,10 @@
 <div class="viewcode-block" id="DataLogger.to_dict">
 <a class="viewcode-back" href="../../rst_source/api/auto/VeraGridEngine.html#VeraGridEngine.data_logger.DataLogger.to_dict">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the logs sorted by severity and message</span>
 <span class="sd">        :return: Dictionary[Dictionary[List[time, device, value, expected value]]]</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">by_severity</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
 
         <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">entries</span><span class="p">:</span>
@@ -468,47 +469,47 @@
 <div class="viewcode-block" id="DataLogger.to_df">
 <a class="viewcode-back" href="../../rst_source/api/auto/VeraGridEngine.html#VeraGridEngine.data_logger.DataLogger.to_df">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">to_df</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get DataFrame</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 
         <span class="n">data</span> <span class="o">=</span> <span class="p">[</span><span class="n">e</span><span class="o">.</span><span class="n">to_list</span><span class="p">()</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">entries</span><span class="p">]</span>
-        <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Time&#39;</span><span class="p">,</span> <span class="s1">&#39;Severity&#39;</span><span class="p">,</span> <span class="s1">&#39;Message&#39;</span><span class="p">,</span> <span class="s1">&#39;Device&#39;</span><span class="p">,</span> <span class="s1">&#39;Property&#39;</span><span class="p">,</span>
-                                              <span class="s1">&#39;Class&#39;</span><span class="p">,</span> <span class="s1">&#39;Value&#39;</span><span class="p">,</span> <span class="s1">&#39;Expected value&#39;</span><span class="p">,</span> <span class="s1">&#39;Comment&#39;</span><span class="p">])</span>
-        <span class="n">df</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s1">&#39;Time&#39;</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">'Time'</span><span class="p">,</span> <span class="s1">'Severity'</span><span class="p">,</span> <span class="s1">'Message'</span><span class="p">,</span> <span class="s1">'Device'</span><span class="p">,</span> <span class="s1">'Property'</span><span class="p">,</span>
+                                              <span class="s1">'Class'</span><span class="p">,</span> <span class="s1">'Value'</span><span class="p">,</span> <span class="s1">'Expected value'</span><span class="p">,</span> <span class="s1">'Comment'</span><span class="p">])</span>
+        <span class="n">df</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s1">'Time'</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">df</span></div>
 
 
 <div class="viewcode-block" id="DataLogger.to_csv">
 <a class="viewcode-back" href="../../rst_source/api/auto/VeraGridEngine.html#VeraGridEngine.data_logger.DataLogger.to_csv">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">to_csv</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fname</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Save to CSV file</span>
 <span class="sd">        :param fname: name of the file</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">to_df</span><span class="p">()</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="DataLogger.to_xlsx">
 <a class="viewcode-back" href="../../rst_source/api/auto/VeraGridEngine.html#VeraGridEngine.data_logger.DataLogger.to_xlsx">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">to_xlsx</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fname</span><span class="p">,</span> <span class="n">sheet_name</span><span class="o">=</span><span class="s1">&#39;Logs&#39;</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">to_xlsx</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fname</span><span class="p">,</span> <span class="n">sheet_name</span><span class="o">=</span><span class="s1">'Logs'</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Save to excel file</span>
 <span class="sd">        :param fname: filename</span>
 <span class="sd">        :param sheet_name: sheet name</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">to_df</span><span class="p">()</span><span class="o">.</span><span class="n">to_excel</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">sheet_name</span><span class="o">=</span><span class="n">sheet_name</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="DataLogger.get_logger">
 <a class="viewcode-back" href="../../rst_source/api/auto/VeraGridEngine.html#VeraGridEngine.data_logger.DataLogger.get_logger">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_logger</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Logger</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Convert logger entries</span>
 <span class="sd">        :return: List of LogEntry</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">logger</span> <span class="o">=</span> <span class="n">Logger</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">entries</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">entries</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">to_normal_entry</span><span class="p">())</span>
@@ -516,37 +517,37 @@
 
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        To string</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">val</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+<span class="sd">        """</span>
+        <span class="n">val</span> <span class="o">=</span> <span class="s1">''</span>
         <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">entries</span><span class="p">:</span>
-            <span class="n">val</span> <span class="o">+=</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span>
+            <span class="n">val</span> <span class="o">+=</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="o">+</span> <span class="s1">'</span><span class="se">\n</span><span class="s1">'</span>
         <span class="k">return</span> <span class="n">val</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        get [index] implementation</span>
 <span class="sd">        :param key: integer</span>
 <span class="sd">        :return: message, severity</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">entries</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        set [index] implementation</span>
 <span class="sd">        :param idx: integer</span>
 <span class="sd">        :param value: string message</span>
 <span class="sd">        :return: Nothing</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">entries</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="fm">__iadd__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="s2">&quot;DataLogger&quot;</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__iadd__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="s2">"DataLogger"</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        += implementation</span>
 <span class="sd">        :param other:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="k">if</span> <span class="n">other</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">entries</span> <span class="o">+=</span> <span class="n">other</span><span class="o">.</span><span class="n">entries</span>
@@ -558,9 +559,9 @@
 <div class="viewcode-block" id="DataLogger.size">
 <a class="viewcode-back" href="../../rst_source/api/auto/VeraGridEngine.html#VeraGridEngine.data_logger.DataLogger.size">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">size</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get size</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">entries</span><span class="p">)</span></div>
 </div>
 

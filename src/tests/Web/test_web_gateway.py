@@ -6,6 +6,8 @@ from __future__ import annotations
 
 import time
 from typing import Dict, Any, List, Optional
+from collections.abc import Generator
+from VeraGridServer.settings import settings as server_settings
 from fastapi.testclient import TestClient
 import httpx
 import pytest
@@ -22,6 +24,23 @@ from VeraGridWeb.proxy import (
     pipe_client_to_backend,
     pipe_backend_to_client,
 )
+
+
+@pytest.fixture
+def circuit_client() -> Generator[TestClient, None, None]:
+    """Access the circuit routes on their owning server.
+
+    :return: Authenticated server client.
+    """
+    previous_password: str = server_settings.this_password
+    server_settings.this_password = "web-circuit-test-key"
+    client: TestClient = TestClient(server_app, headers={"API-Key": "web-circuit-test-key"})
+    try:
+        yield client
+    finally:
+        server_app.state.circuit_sessions.clear()
+        server_settings.this_password = previous_password
+        client.close()
 
 
 def test_web_gateway_settings_configuration() -> None:
@@ -81,6 +100,10 @@ def test_web_gateway_settings_configuration() -> None:
     # 8. Test removing non-existent backend
     non_existent_removed: bool = settings.remove_backend(backend_url="http://10.0.0.99:8000")
     assert non_existent_removed is False
+    settings.set_backends(backends=list(["http://primary:8000", "http://worker:8001"]))
+    assert settings.model_server_url == "http://primary:8000"
+    settings.remove_backend(backend_url="http://primary:8000")
+    assert settings.model_server_url == "http://primary:8000"
 
 
 def test_session_router_mappings_and_path_extraction() -> None:
@@ -169,6 +192,7 @@ def test_web_gateway_static_assets_serving() -> None:
     css_files: List[str] = list([
         "/app/css/style.css",
         "/app/vendor/maplibre/maplibre-gl.css",
+        "/app/vendor/tabulator/tabulator_midnight.min.css",
     ])
     for css_url in css_files:
         css_resp = client.get(css_url)
@@ -183,6 +207,8 @@ def test_web_gateway_static_assets_serving() -> None:
         "/app/js/equipment_table.js",
         "/app/js/simulation_panel.js",
         "/app/vendor/maplibre/maplibre-gl.js",
+        "/app/vendor/tabulator/tabulator_esm.min.mjs",
+        "/app/vendor/joint/joint-core.mjs",
     ])
     for js_url in js_files:
         js_resp = client.get(js_url)
@@ -231,14 +257,14 @@ def test_web_gateway_backends_management_api() -> None:
     assert unreg_not_found.status_code == 400
 
 
-def test_veragrid_web_circuit_endpoints_and_gis_map() -> None:
+def test_veragrid_web_circuit_endpoints_and_gis_map(circuit_client: TestClient) -> None:
     """
     Verify VeraGridWeb endpoints for creating circuits, loading demos, generating schematic diagrams,
     and GeoJSON GIS maps.
 
     :return: None.
     """
-    client: TestClient = TestClient(web_app)
+    client: TestClient = circuit_client
 
     # 1. Create blank circuit
     create_resp = client.post("/api/circuits/new", json=dict({"name": "Web Test Grid"}))
@@ -276,25 +302,25 @@ def test_veragrid_web_circuit_endpoints_and_gis_map() -> None:
     assert len(map_data.get("features", list())) > 0
 
     # 6. Query equipment devices list
-    table_resp = client.get(f"/api/circuits/{demo_session_id}/devices/Bus")
+    table_resp = client.get(f"/api/circuits/{demo_session_id}/objects/BusDevice")
     assert table_resp.status_code == 200
-    devices_list: List[Dict[str, Any]] = table_resp.json()
+    devices_list: List[Dict[str, Any]] = table_resp.json()["rows"]
     assert isinstance(devices_list, list)
     assert len(devices_list) > 0
-    assert "name" in devices_list[0]
+    assert "name" in devices_list[0]["values"]
 
     # 7. Clean up sessions
     client.delete(f"/api/circuits/{session_id}")
     client.delete(f"/api/circuits/{demo_session_id}")
 
 
-def test_veragrid_web_power_flow_simulation_execution() -> None:
+def test_veragrid_web_power_flow_simulation_execution(circuit_client: TestClient) -> None:
     """
     Verify starting PowerFlow calculations, checking status, and extracting results on VeraGridWeb.
 
     :return: None.
     """
-    client: TestClient = TestClient(web_app)
+    client: TestClient = circuit_client
 
     # 1. Load demo circuit
     demo_resp = client.post("/api/circuits/demo/honduras")
@@ -336,26 +362,35 @@ def test_veragrid_web_power_flow_simulation_execution() -> None:
     client.delete(f"/api/circuits/{session_id}")
 
 
-def test_web_gateway_backend_unreachable_502_error() -> None:
+def refuse_backend_connection(request: httpx.Request) -> httpx.Response:
+    """Simulate an unreachable backend independently of running local services.
+
+    :param request: Outbound backend request.
+    :return: Never returns; the connection fails.
     """
-    Verify that VeraGridWeb returns HTTP 502 with informative JSON error when a proxied route fails.
+    raise httpx.ConnectError("Connection refused", request=request)
+
+
+@pytest.mark.anyio
+async def test_web_gateway_backend_unreachable_502_error() -> None:
+    """Return actionable HTTP 502 JSON when the model server is unavailable.
 
     :return: None.
     """
-    # 1. Point http_client to an unreachable port with immediate failure
-    web_app.state.http_client = httpx.AsyncClient(
-        base_url="http://127.0.0.1:59999",
-        timeout=0.1,
-    )
-
-    client: TestClient = TestClient(web_app)
-
-    # 2. Make request through gateway catch-all proxy route
-    error_resp = client.get("/api/unregistered_cluster_backend_target")
-    assert error_resp.status_code == 502
-    error_data: Dict[str, Any] = error_resp.json()
-    assert "detail" in error_data
-    assert "Backend unavailable" in error_data["detail"]
+    previous_client: Any = web_app.state._state.get("http_client", None)
+    async with httpx.AsyncClient(transport=httpx.MockTransport(refuse_backend_connection)) as backend_client:
+        web_app.state.http_client = backend_client
+        try:
+            async with httpx.AsyncClient(transport=httpx.ASGITransport(app=web_app), base_url="http://web") as browser:
+                response: httpx.Response = await browser.get("/api/unregistered_cluster_backend_target")
+                assert response.status_code == 502
+                detail: str = response.json()["detail"]
+                assert "Backend unavailable" in detail
+                assert "Start VeraGridServer" in detail
+                assert "--server-url" in detail
+                assert "--server-api-key" in detail
+        finally:
+            web_app.state.http_client = previous_client
 
 
 @pytest.mark.anyio
@@ -541,17 +576,17 @@ async def test_websocket_forwarding_pipes() -> None:
     assert client_ws_target.get_sent_bytes()[0] == b"raw_frame"
 
 
-def test_veragrid_web_gis_map_simulation_results_enrichment() -> None:
+def test_veragrid_web_gis_map_simulation_results_enrichment(circuit_client: TestClient) -> None:
     """
     Verify that PowerFlow simulation results provide valid branch loading, complex flows,
     and bus voltages matching the GeoJSON features used for GIS map recoloring.
 
     :return: None.
     """
-    client: TestClient = TestClient(web_app)
+    client: TestClient = circuit_client
 
     # 1. Verify that HTML shell contains the map legend container
-    html_resp = client.get("/app/")
+    html_resp = TestClient(web_app).get("/app/")
     assert html_resp.status_code == 200
     assert 'id="map-legend"' in html_resp.text
     assert "Branch Loading" in html_resp.text

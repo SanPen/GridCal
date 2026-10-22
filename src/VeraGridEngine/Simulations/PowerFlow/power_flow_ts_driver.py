@@ -10,9 +10,12 @@ from VeraGridEngine.Devices.multi_circuit import MultiCircuit
 from VeraGridEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from VeraGridEngine.Simulations.driver_template import TimeSeriesDriverTemplate
 from VeraGridEngine.Simulations.Clustering.clustering_results import ClusteringResults
+from VeraGridEngine.Simulations.NTC.ntc_ts_driver import NtcOperatingPoints
+from VeraGridEngine.Simulations.OPF.opf_results import OptimalPowerFlowResults
+from VeraGridEngine.Simulations.OPF.opf_ts_results import OptimalPowerFlowTimeSeriesResults
 import VeraGridEngine.Simulations.PowerFlow.power_flow_worker as pf_worker
 from VeraGridEngine.Compilers.circuit_to_pgm import pgm_pf
-from VeraGridEngine.Compilers.Gslv.activation import GSLV_AVAILABLE
+from VeraGridEngine.Compilers.Gslv.activation import GSLV_AVAILABLE, GSLV_UNAVAILABLE_REASON
 from VeraGridEngine.Compilers.Gslv.Simulations.power_flow import gslv_pf, translate_gslv_pf_time_series_results
 from VeraGridEngine.basic_structures import IntVec
 from VeraGridEngine.enumerations import EngineType, SimulationTypes
@@ -22,6 +25,7 @@ class PowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
     __slots__ = (
         "options",
         "opf_time_series_results",
+        "ntc_operating_points",
     )
 
     tpe = SimulationTypes.PowerFlowTimeSeries_run
@@ -33,7 +37,8 @@ class PowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
                  time_indices: Union[IntVec, None] = None,
                  opf_time_series_results=None,
                  clustering_results: Union[ClusteringResults, None] = None,
-                 engine: EngineType = EngineType.VeraGrid):
+                 engine: EngineType = EngineType.VeraGrid,
+                 ntc_operating_points: NtcOperatingPoints | None = None):
         """
         PowerFlowTimeSeries constructor
         :param grid: MultiCircuit instance
@@ -42,6 +47,7 @@ class PowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
         :param opf_time_series_results: ClusteringResults instance (optional)
         :param clustering_results: ClusteringResults instance (optional)
         :param engine: Calculation engine to use
+        :param ntc_operating_points: NTC time series operating points to reproduce
         """
         TimeSeriesDriverTemplate.__init__(
             self,
@@ -54,6 +60,7 @@ class PowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
         self.options = PowerFlowOptions() if options is None else options
 
         self.opf_time_series_results = opf_time_series_results
+        self.ntc_operating_points: NtcOperatingPoints | None = ntc_operating_points
 
         n = grid.get_bus_number()
 
@@ -122,11 +129,18 @@ class PowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
             self.report_text('Time series at ' + str(self.grid.time_profile[t]) + '...')
             self.report_progress2(it, len(time_indices))
 
+            # the NTC operating point of this step, if any, or else the OPF results
+            opf_results: OptimalPowerFlowResults | OptimalPowerFlowTimeSeriesResults | None
+            if self.ntc_operating_points is not None:
+                opf_results = self.ntc_operating_points.get_at(int(t))
+            else:
+                opf_results = self.opf_time_series_results
+
             # run power flow
             pf_res = pf_worker.multi_island_pf(multi_circuit=self.grid,
                                                t=t,
                                                options=self.options,
-                                               opf_results=self.opf_time_series_results,
+                                               opf_results=opf_results,
                                                bus_dict=bus_dict,
                                                areas_dict=areas_dict)
 
@@ -169,7 +183,7 @@ class PowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
 
         if self.engine == EngineType.GSLV and not GSLV_AVAILABLE:
             self.engine = EngineType.VeraGrid
-            self.logger.add_warning('Failed back to VeraGrid')
+            self.logger.add_warning(f'GSLV unavailable: {GSLV_UNAVAILABLE_REASON}; falling back to VeraGrid')
 
         if self.engine == EngineType.VeraGrid:
             self.results = self.run_single_thread(time_indices=self.time_indices)

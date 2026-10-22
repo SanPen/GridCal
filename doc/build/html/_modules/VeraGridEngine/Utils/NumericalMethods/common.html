@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Utils.NumericalMethods.common &mdash; VeraGrid 6.7.13 documentation</title>
+  <title>VeraGridEngine.Utils.NumericalMethods.common &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=16fbabd8"></script>
+      <script src="../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -117,14 +117,14 @@
 <div class="viewcode-block" id="fortescue_012_to_abc">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.NumericalMethods.html#VeraGridEngine.Utils.NumericalMethods.common.fortescue_012_to_abc">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">fortescue_012_to_abc</span><span class="p">(</span><span class="n">z0</span><span class="p">:</span> <span class="nb">complex</span><span class="p">,</span> <span class="n">z1</span><span class="p">:</span> <span class="nb">complex</span><span class="p">,</span> <span class="n">z2</span><span class="p">:</span> <span class="nb">complex</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CxMat</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Convert a diagonal sequence operator to phase coordinates.</span>
 
 <span class="sd">    :param z0: Zero-sequence coefficient</span>
 <span class="sd">    :param z1: Positive-sequence coefficient</span>
 <span class="sd">    :param z2: Negative-sequence coefficient</span>
 <span class="sd">    :return: ABC matrix</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">a</span><span class="p">:</span> <span class="nb">complex</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">3</span><span class="p">)</span>
     <span class="n">Zabc</span><span class="p">:</span> <span class="n">CxMat</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>
         <span class="p">[</span><span class="n">z0</span> <span class="o">+</span> <span class="n">z1</span> <span class="o">+</span> <span class="n">z2</span><span class="p">,</span> <span class="n">z0</span> <span class="o">+</span> <span class="n">a</span> <span class="o">*</span> <span class="n">z1</span> <span class="o">+</span> <span class="n">a</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">z2</span><span class="p">,</span> <span class="n">z0</span> <span class="o">+</span> <span class="n">a</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">z1</span> <span class="o">+</span> <span class="n">a</span> <span class="o">*</span> <span class="n">z2</span><span class="p">],</span>
@@ -138,13 +138,13 @@
 <div class="viewcode-block" id="check_function_and_args">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.NumericalMethods.html#VeraGridEngine.Utils.NumericalMethods.common.check_function_and_args">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">check_function_and_args</span><span class="p">(</span><span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">n_used_for_solver</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Checks if the number of supplied arguments matches the function signature</span>
 <span class="sd">    :param func: Function pointer</span>
 <span class="sd">    :param args: tuple of arguments to be passed before the mandatory arguments used by the numerical method</span>
 <span class="sd">    :param n_used_for_solver: Number of mandatory arguments used by the numerical method</span>
 <span class="sd">    :return: ok?</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">n_args</span> <span class="o">=</span> <span class="n">func</span><span class="o">.</span><span class="vm">__code__</span><span class="o">.</span><span class="n">co_argcount</span>
 
     <span class="k">return</span> <span class="n">n_args</span> <span class="o">==</span> <span class="n">n_used_for_solver</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span></div>
@@ -155,11 +155,11 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.NumericalMethods.html#VeraGridEngine.Utils.NumericalMethods.common.max_abs">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">max_abs</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">Vec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute max abs efficiently</span>
 <span class="sd">    :param x:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">max_val</span> <span class="o">=</span> <span class="mf">0.0</span>
     <span class="k">for</span> <span class="n">x_val</span> <span class="ow">in</span> <span class="n">x</span><span class="p">:</span>
         <span class="n">x_abs</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">x_val</span><span class="p">)</span>
@@ -174,11 +174,11 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.NumericalMethods.html#VeraGridEngine.Utils.NumericalMethods.common.norm">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">norm</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">Vec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute max abs efficiently</span>
 <span class="sd">    :param x:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">x_sum</span> <span class="o">=</span> <span class="mf">0.0</span>
     <span class="k">for</span> <span class="n">x_val</span> <span class="ow">in</span> <span class="n">x</span><span class="p">:</span>
         <span class="n">x_sum</span> <span class="o">+=</span> <span class="n">x_val</span> <span class="o">*</span> <span class="n">x_val</span>
@@ -190,13 +190,13 @@
 <div class="viewcode-block" id="compute_L">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.NumericalMethods.html#VeraGridEngine.Utils.NumericalMethods.common.compute_L">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">compute_L</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">J</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    1/2 · ||f + J @ h||</span>
 <span class="sd">    :param h: some vector</span>
 <span class="sd">    :param f: f vector</span>
 <span class="sd">    :param J: Jacobian of f</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">v</span> <span class="o">=</span> <span class="n">f</span> <span class="o">+</span> <span class="n">J</span> <span class="o">@</span> <span class="n">h</span>
     <span class="k">return</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">v</span> <span class="o">@</span> <span class="n">v</span><span class="p">)</span></div>
 
@@ -206,19 +206,19 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.NumericalMethods.html#VeraGridEngine.Utils.NumericalMethods.common.ConvexFunctionResult">[docs]</a>
 <span class="nd">@dataclass</span><span class="p">(</span><span class="n">slots</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">ConvexFunctionResult</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Result of the convex function evaluated iterativelly for a given method</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">f</span><span class="p">:</span> <span class="n">Vec</span>  <span class="c1"># function increment of the equalities</span>
     <span class="n">J</span><span class="p">:</span> <span class="n">CscMat</span>  <span class="c1"># Jacobian matrix</span>
 
 <div class="viewcode-block" id="ConvexFunctionResult.compute_f_error">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.NumericalMethods.html#VeraGridEngine.Utils.NumericalMethods.common.ConvexFunctionResult.compute_f_error">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">compute_f_error</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Compute the error of the increments g</span>
 <span class="sd">        :return: max(abs(G))</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">max_abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">f</span><span class="p">)</span></div>
 </div>
 
@@ -229,9 +229,9 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.NumericalMethods.html#VeraGridEngine.Utils.NumericalMethods.common.ConvexMethodResult">[docs]</a>
 <span class="nd">@dataclass</span><span class="p">(</span><span class="n">slots</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">ConvexMethodResult</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Iterative convex method result</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">x</span><span class="p">:</span> <span class="n">Vec</span>  <span class="c1"># x solution</span>
     <span class="n">error</span><span class="p">:</span> <span class="nb">float</span>  <span class="c1"># method error</span>
     <span class="n">converged</span><span class="p">:</span> <span class="nb">bool</span>  <span class="c1"># converged?</span>
@@ -243,14 +243,14 @@
 <div class="viewcode-block" id="ConvexMethodResult.print_info">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.NumericalMethods.html#VeraGridEngine.Utils.NumericalMethods.common.ConvexMethodResult.print_info">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">print_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Print information about the ConvexMethodResult</span>
 <span class="sd">        :return: </span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Iterations:</span><span class="se">\t</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">iterations</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Converged:</span><span class="se">\t</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">converged</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Error:</span><span class="se">\t</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">error</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Elapsed:</span><span class="se">\t</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">elapsed</span><span class="p">,</span> <span class="s1">&#39;s&#39;</span><span class="p">)</span></div>
+<span class="sd">        """</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"Iterations:</span><span class="se">\t</span><span class="s2">"</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">iterations</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"Converged:</span><span class="se">\t</span><span class="s2">"</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">converged</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"Error:</span><span class="se">\t</span><span class="s2">"</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">error</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"Elapsed:</span><span class="se">\t</span><span class="s2">"</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">elapsed</span><span class="p">,</span> <span class="s1">'s'</span><span class="p">)</span></div>
 </div>
 
 
@@ -259,12 +259,12 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.NumericalMethods.html#VeraGridEngine.Utils.NumericalMethods.common.find_closest_number">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">find_closest_number</span><span class="p">(</span><span class="n">arr</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Find the closest number that exists in array</span>
 <span class="sd">    :param arr: Array to be searched (must be sorted from min to max)</span>
 <span class="sd">    :param target: Value to search for</span>
 <span class="sd">    :return: index in the array, Closes adjusted or truncated value</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
         <span class="c1"># nothing to do</span>
         <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">target</span>
@@ -283,7 +283,7 @@
 
         <span class="k">if</span> <span class="n">val</span> <span class="o">&lt;=</span> <span class="n">prev</span><span class="p">:</span>
             <span class="c1"># test that the values strictly increase</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;The array must be monotonically increasing&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">"The array must be monotonically increasing"</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">prev</span> <span class="o">&lt;</span> <span class="n">target</span> <span class="o">&lt;=</span> <span class="n">val</span><span class="p">:</span>
             <span class="c1"># the value is within the interval</span>
@@ -310,12 +310,12 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.NumericalMethods.html#VeraGridEngine.Utils.NumericalMethods.common.make_lookup">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">make_lookup</span><span class="p">(</span><span class="n">size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">indices</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">IntVec</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Create a lookup array</span>
 <span class="sd">    :param size: Size of the thing (i.e. number of buses)</span>
 <span class="sd">    :param indices: indices to map (i.e. pq indices)</span>
-<span class="sd">    :return: lookup array, -1 at the indices that do not match with the &quot;indices&quot; input array</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    :return: lookup array, -1 at the indices that do not match with the "indices" input array</span>
+<span class="sd">    """</span>
     <span class="n">lookup</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">size</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
     <span class="n">lookup</span><span class="p">[</span><span class="n">indices</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">indices</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">lookup</span></div>
@@ -326,12 +326,12 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.NumericalMethods.html#VeraGridEngine.Utils.NumericalMethods.common.make_complex">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">make_complex</span><span class="p">(</span><span class="n">r</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">i</span><span class="p">:</span> <span class="n">Vec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CxVec</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Fastest way to create complex arrays</span>
 <span class="sd">    :param r:</span>
 <span class="sd">    :param i:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">r</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
     <span class="n">res</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">r</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">complex128</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">r</span><span class="p">)):</span>

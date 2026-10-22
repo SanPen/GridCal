@@ -40,15 +40,20 @@ def _get_pf_phase_current_components_from_power(
     """
     Reconstruct the phase-current phasor components from PF power and voltage references.
 
-    :param p_phase: Active power for the phase.
-    :param q_phase: Reactive power for the phase.
-    :param v_real: Real part of the phase-voltage phasor.
-    :param v_imag: Imaginary part of the phase-voltage phasor.
-    :return: Tuple ``(i_real, i_imag)`` with the RMS current phasor components.
+    Phase power uses the total three-phase system power base. With conventional
+    phase-voltage and phase-current bases, ``I_phase = 3 * conj(S_phase / V_phase)``.
+
+    :param p_phase: Phase active power in pu on the total three-phase power base.
+    :param q_phase: Phase reactive power in pu on the total three-phase power base.
+    :param v_real: Real RMS voltage component in pu on the phase-voltage base.
+    :param v_imag: Imaginary RMS voltage component in pu on the phase-voltage base.
+    :return: Tuple ``(i_real, i_imag)`` in pu on the conventional phase-current base.
     """
     voltage_sq: sym.Expr = v_real * v_real + v_imag * v_imag
-    i_real: sym.Expr = (p_phase * v_real + q_phase * v_imag) / voltage_sq
-    i_imag: sym.Expr = (p_phase * v_imag - q_phase * v_real) / voltage_sq
+    # Convert both current quadratures before the generator's sequence projection.
+    # Canonical PF phase powers are fractions of total Sbase, not phase Sbase.
+    i_real: sym.Expr = 3.0 * (p_phase * v_real + q_phase * v_imag) / voltage_sq
+    i_imag: sym.Expr = 3.0 * (p_phase * v_imag - q_phase * v_real) / voltage_sq
     return i_real, i_imag
 
 
@@ -106,20 +111,25 @@ def get_pf_positive_sequence_init_refs(
     """
     Compute generator initialization references from PF voltage and power inputs.
 
-    :param v_a: Instantaneous phase-A voltage at ``t = 0``.
-    :param v_b: Instantaneous phase-B voltage at ``t = 0``.
-    :param v_c: Instantaneous phase-C voltage at ``t = 0``.
+    Phase powers use total three-phase Sbase; voltage and reconstructed current
+    use their conventional phase bases. The references retain only positive
+    sequence and do not describe the full ABC operating point under unbalance.
+
+    :param v_a: Instantaneous phase-A voltage in pu on the phase base at ``t = 0``.
+    :param v_b: Instantaneous phase-B voltage in pu on the phase base at ``t = 0``.
+    :param v_c: Instantaneous phase-C voltage in pu on the phase base at ``t = 0``.
     :param d_v_a: Instantaneous derivative of phase-A voltage at ``t = 0``.
     :param d_v_b: Instantaneous derivative of phase-B voltage at ``t = 0``.
     :param d_v_c: Instantaneous derivative of phase-C voltage at ``t = 0``.
-    :param p_a: Active power in phase A.
-    :param q_a: Reactive power in phase A.
-    :param p_b: Active power in phase B.
-    :param q_b: Reactive power in phase B.
-    :param p_c: Active power in phase C.
-    :param q_c: Reactive power in phase C.
-    :param omega_base: Electrical base angular frequency.
-    :return: Tuple ``(phi_v, phi, vpk, ipk)``.
+    :param p_a: Phase-A active power in pu on total three-phase Sbase.
+    :param q_a: Phase-A reactive power in pu on total three-phase Sbase.
+    :param p_b: Phase-B active power in pu on total three-phase Sbase.
+    :param q_b: Phase-B reactive power in pu on total three-phase Sbase.
+    :param p_c: Phase-C active power in pu on total three-phase Sbase.
+    :param q_c: Phase-C reactive power in pu on total three-phase Sbase.
+    :param omega_base: Electrical base angular frequency in radians per second.
+    :return: Voltage angle, current angle relative to voltage (radians), and
+        positive-sequence voltage/current peaks in pu on their phase bases.
     """
     v_a_real: sym.Expr
     v_a_imag: sym.Expr
@@ -992,8 +1002,7 @@ def get_generator_sauer_pai_type_emt_template(vf: VarFactory, name: str = "sauer
       and entering the network.
     - internal magnetic/electrical equations are written in Milano's physical d-q axes.
     - zero sequence is retained explicitly and represented as a stator-only homopolar
-      branch:
-            psi_0 + x0 * i_0 = 0
+      branch defined by ``psi_0 + x0 * i_0 = 0``.
 
     Angles
     ------
@@ -1194,7 +1203,21 @@ def get_generator_sauer_pai_type_emt_template(vf: VarFactory, name: str = "sauer
         q_c=q_C,
         omega_base=omega_b,
     )
-    ipk_init = 3.0 * ipk_init
+
+    # PF3 phase powers use the total three-phase power base. Reconstruct each
+    # instantaneous current before applying the machine's physical dq0 transform.
+    pf_phase_currents = []
+    for voltage, derivative, active_power, reactive_power in (
+            (v_A, d_v_A, p_A, q_A),
+            (v_B, d_v_B, p_B, q_B),
+            (v_C, d_v_C, p_C, q_C)):
+        voltage_real, voltage_imag = _get_pf_phase_voltage_components(
+            voltage, derivative, omega_b,
+        )
+        _, current_imag = _get_pf_phase_current_components_from_power(
+            active_power, reactive_power, voltage_real, voltage_imag,
+        )
+        pf_phase_currents.append(sym.sqrt(2.0) * current_imag)
 
 
     # ------------------------------------------------------------------
@@ -1374,23 +1397,43 @@ def get_generator_sauer_pai_type_emt_template(vf: VarFactory, name: str = "sauer
         + ra * ipk_init * sym.sin(phi_i_init)
         + xq * ipk_init * sym.cos(phi_i_init)
     )
+    phase_angles = (
+        theta_abs,
+        theta_abs - two_pi_over_3,
+        theta_abs + two_pi_over_3,
+    )
+    phase_voltages = (v_A, v_B, v_C)
+    pf_i_d = -(2.0 / 3.0) * sum(
+        sym.cos(angle) * current
+        for angle, current in zip(phase_angles, pf_phase_currents)
+    )
+    pf_i_q = (2.0 / 3.0) * sum(
+        sym.sin(angle) * current
+        for angle, current in zip(phase_angles, pf_phase_currents)
+    )
     templ.block.init_eqs = {
 
         omega: omega_s,
 
         theta_abs: sym.atan2(E_im, E_re),
-        # terminal dq0 values in Milano physical axes
-        v_d: vpk_init * sym.sin(theta_abs - phi_v_init),
-        v_q: vpk_init * sym.cos(theta_abs - phi_v_init),
-        v_0: c0,
+        # Match the implemented ABC-to-dq0 equations at the PF3 instant.
+        v_d: -(2.0 / 3.0) * sum(
+            sym.cos(angle) * voltage
+            for angle, voltage in zip(phase_angles, phase_voltages)
+        ),
+        v_q: (2.0 / 3.0) * sum(
+            sym.sin(angle) * voltage
+            for angle, voltage in zip(phase_angles, phase_voltages)
+        ),
+        v_0: (v_A + v_B + v_C) / 3.0,
 
-        i_d: ipk_init * sym.sin(theta_abs - phi_i_init),
-        i_q: ipk_init * sym.cos(theta_abs - phi_i_init),
+        i_d: pf_i_d,
+        i_q: pf_i_q,
+        i_0: sum(pf_phase_currents) / 3.0,
 
-        # PF initialization is typically balanced; keep zero-seq explicit but zero initially
-        i_0: c0,
-
-        # stator steady state from 15.9 with omega = 1 and dpsi/dt = 0
+        # Constant-dq seed with omega = 1 and dpsi/dt = 0. Under unbalance,
+        # these values match only the PF instant, not a periodic machine orbit;
+        # use the assembled periodic initializer to resolve that operating point.
         psi_d: v_q + ra * i_q,
         psi_q: -v_d - ra * i_d,
 
@@ -1404,12 +1447,12 @@ def get_generator_sauer_pai_type_emt_template(vf: VarFactory, name: str = "sauer
         e_dp: (xq - xqp) * i_q,
 
         psi_pp_d: (psi_d + xdpp * i_d - gamma_d1 * e_qp) / (c1 - gamma_d1),
-        psi_pp_q: -(xq - xl) * i_q,
+        psi_pp_q: (psi_q + xqpp * i_q + gamma_q1 * e_dp) / (c1 - gamma_q1),
 
         # abc current injection
-        i_A: i_q * sym.sin(theta_abs) - i_d * sym.cos(theta_abs) + i_0,
-        i_B: i_q * sym.sin(theta_abs - two_pi_over_3) - i_d * sym.cos(theta_abs - two_pi_over_3) + i_0,
-        i_C: i_q * sym.sin(theta_abs + two_pi_over_3) - i_d * sym.cos(theta_abs + two_pi_over_3) + i_0,
+        i_A: pf_phase_currents[0],
+        i_B: pf_phase_currents[1],
+        i_C: pf_phase_currents[2],
 
         IRPu: e_qp + (xd - xdp) * (
                 gamma_d1 * i_d - gamma_d2 * psi_pp_d + gamma_d2 * e_qp

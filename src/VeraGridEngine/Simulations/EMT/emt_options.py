@@ -35,8 +35,11 @@ class EmtOptions(OptionsTemplate):
         "init_ptc_dtau_min",
         "init_ptc_dtau_max",
         "init_ptc_max_iter",
+        "init_ptc_backward_euler_residual",
         "init_allow_state_equilibrium",
         "init_fix_pf_bus_voltages",
+        "init_fix_seeded_states",
+        "init_periodic_samples",
         "newton_compute_dense_cond",
         "newton_enable_fallback",
         "newton_enable_index1_check",
@@ -81,8 +84,11 @@ class EmtOptions(OptionsTemplate):
         GCProp(key="init_ptc_dtau_min", tpe=float),
         GCProp(key="init_ptc_dtau_max", tpe=float),
         GCProp(key="init_ptc_max_iter", tpe=int),
+        GCProp(key="init_ptc_backward_euler_residual", tpe=bool),
         GCProp(key="init_allow_state_equilibrium", tpe=bool),
         GCProp(key="init_fix_pf_bus_voltages", tpe=bool),
+        GCProp(key="init_fix_seeded_states", tpe=bool),
+        GCProp(key="init_periodic_samples", tpe=int),
         GCProp(key="newton_compute_dense_cond", tpe=bool),
         GCProp(key="newton_enable_fallback", tpe=bool),
         GCProp(key="newton_enable_index1_check", tpe=bool),
@@ -127,6 +133,7 @@ class EmtOptions(OptionsTemplate):
                  init_ptc_dtau_min: float = 1e-6,
                  init_ptc_dtau_max: float = 1e1,
                  init_ptc_max_iter: int = 60,
+                 init_ptc_backward_euler_residual: bool = False,
                  init_allow_state_equilibrium: bool = True,
                  init_fix_pf_bus_voltages: bool = False,
                  newton_compute_dense_cond: bool = False,
@@ -153,13 +160,24 @@ class EmtOptions(OptionsTemplate):
                  fmi_me_newton_relative_tolerance: float = 1e-8,
                  fmi_me_newton_max_iterations: int = 20,
                  fmi_me_max_continuous_states: int = 128,
-                 fmi_me_max_runtime_evaluations_per_step: int = 100000) -> None:
+                 fmi_me_max_runtime_evaluations_per_step: int = 100000,
+                 init_fix_seeded_states: bool = True,
+                 init_periodic_samples: int = 0) -> None:
         """
         EmtOptions
         :param time_step: time step of the simulations (s)
         :param simulation_time: simulation time (s)
         :param tolerance: Integration tolerance
         :param verbose: Verbosity level
+        :param init_fix_seeded_states: Keep seeded differential states fixed in the global
+            reduced initializer. If False, use their values as starting guesses and solve
+            their initialization equations (or equilibrium equations when allowed).
+            These instantaneous equations do not impose periodic steady state and may
+            contain dependent seed assignments. Does not change Explicit or device-local PTC.
+        :param init_periodic_samples: Zero uses instantaneous initialization. An odd value
+            >= 9 selects independent cycle constraints for native Newton/global PTC,
+            releasing all states and bus voltages regardless of init_fix_seeded_states.
+            Currently validated for smooth autonomous synchronous-machine Kundur models.
         :param fmi_state_event_time_tolerance: Absolute FMI ME event-time tolerance in seconds.
         :param fmi_state_event_max_iterations: Maximum FMI ME event bisections.
         :param fmi_me_newton_absolute_tolerance: Absolute scale used by the FMI ME Newton residual.
@@ -188,8 +206,11 @@ class EmtOptions(OptionsTemplate):
         self.init_ptc_dtau_min: float = init_ptc_dtau_min
         self.init_ptc_dtau_max: float = init_ptc_dtau_max
         self.init_ptc_max_iter: int = init_ptc_max_iter
+        self.init_ptc_backward_euler_residual: bool = init_ptc_backward_euler_residual
         self.init_allow_state_equilibrium: bool = init_allow_state_equilibrium
         self.init_fix_pf_bus_voltages: bool = init_fix_pf_bus_voltages
+        self.init_fix_seeded_states: bool = init_fix_seeded_states
+        self.init_periodic_samples: int = init_periodic_samples
         self.newton_compute_dense_cond = newton_compute_dense_cond
         self.newton_enable_fallback = newton_enable_fallback
         self.newton_enable_index1_check = newton_enable_index1_check

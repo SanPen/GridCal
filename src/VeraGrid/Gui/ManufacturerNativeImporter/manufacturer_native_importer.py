@@ -30,7 +30,9 @@ from VeraGridEngine.IO.manufacturer_native.model_info import (
 from VeraGridEngine.IO.manufacturer_native.model_info_codec import (
     decode_manufacturer_native_model_info,
 )
-from VeraGridEngine.IO.manufacturer_native.worker_artifact import prepare_manufacturer_native_runtime
+from VeraGridEngine.IO.manufacturer_native.worker_artifact import (
+    ManufacturerNativeWorkerArtifact, prepare_manufacturer_native_runtime,
+)
 from VeraGridEngine.IO.native_compiler.compiler_interface import NativeCompilerSelection
 from VeraGridEngine.IO.native_compiler.selected_interface import (
     load_saved_local_llvm_selection,
@@ -48,7 +50,7 @@ class ManufacturerNativeImporterDialog(QtWidgets.QDialog):
     """Import or extend one manufacturer supplied native model provider."""
 
     __slots__ = (
-        "_assets", "_provider", "_path_edit", "_interface_combo", "_platform_combo",
+        "_assets", "_provider", "_worker_artifact", "_path_edit", "_interface_combo", "_platform_combo",
         "_no_late_loading_check", "_instance_isolation_check", "_status_view",
         "_rebind_consumer_combo", "_rebind_destination_combo",
         "_input_mapping_edit", "_output_mapping_edit", "_parameter_mapping_edit",
@@ -58,16 +60,19 @@ class ManufacturerNativeImporterDialog(QtWidgets.QDialog):
     def __init__(self,
                  assets: Assets,
                  provider: Optional[ManufacturerNativeModel] = None,
-                 parent: Optional[QtWidgets.QWidget] = None) -> None:
+                 parent: Optional[QtWidgets.QWidget] = None,
+                 worker_artifact: ManufacturerNativeWorkerArtifact | None = None) -> None:
         """Build the native model import dialog.
 
         :param assets: Canonical circuit asset owner.
         :param provider: Existing provider when attaching another platform variant.
         :param parent: Optional parent widget.
+        :param worker_artifact: Optional prepared worker for native qualification.
         :return: None.
         """
         super().__init__(parent)
         self._assets: Assets = assets
+        self._worker_artifact: ManufacturerNativeWorkerArtifact | None = worker_artifact
         self._provider: Optional[ManufacturerNativeModel] = provider
         self._path_edit: QtWidgets.QLineEdit = QtWidgets.QLineEdit(self)
         self._interface_combo: QtWidgets.QComboBox = QtWidgets.QComboBox(self)
@@ -530,11 +535,10 @@ class ManufacturerNativeImporterDialog(QtWidgets.QDialog):
         is_new_import: bool = self._provider is None
         try:
             platform: IeeeCigreDllPlatform = self._selected_platform()
-            # The packaged Windows x86 worker is already qualified and must not
-            # force an unrelated host-x64 compiler download. Other native
-            # platforms prepare the host worker only after the analyst commits
-            # the import, keeping dialog open/cancel independent of a compiler.
-            if platform == IeeeCigreDllPlatform.WINDOWS_X86:
+            # A supplied worker needs no compiler discovery. Windows x86 worker
+            # resolution remains owned by the engine; other platforms select
+            # their compiler only after the analyst commits the import.
+            if self._worker_artifact is not None or platform == IeeeCigreDllPlatform.WINDOWS_X86:
                 compiler_selection: NativeCompilerSelection | None = None
             else:
                 compiler_selection = self._ensure_local_llvm_selection()
@@ -554,6 +558,7 @@ class ManufacturerNativeImporterDialog(QtWidgets.QDialog):
                     vendor_declares_no_late_loading=True,
                     vendor_declares_instance_isolation=self._instance_isolation_check.isChecked(),
                     compiler_selection=compiler_selection,
+                    worker_artifact=self._worker_artifact,
                 )
                 self._provider = provider
                 status: str = self.tr(
@@ -567,6 +572,7 @@ class ManufacturerNativeImporterDialog(QtWidgets.QDialog):
                     vendor_declares_no_late_loading=True,
                     vendor_declares_instance_isolation=self._instance_isolation_check.isChecked(),
                     compiler_selection=compiler_selection,
+                    worker_artifact=self._worker_artifact,
                 )
                 status = self.tr("Qualified and attached {platform}: {digest}").format(
                     platform=variant.platform.value,

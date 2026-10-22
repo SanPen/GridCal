@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Simulations.NTC.ntc_opf_strict &mdash; VeraGrid 6.7.13 documentation</title>
+  <title>VeraGridEngine.Simulations.NTC.ntc_opf_strict &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=16fbabd8"></script>
+      <script src="../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -108,10 +108,10 @@
 <span class="c1"># file, You can obtain one at https://mozilla.org/MPL/2.0/.</span>
 <span class="c1"># SPDX-License-Identifier: MPL-2.0</span>
 
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 <span class="sd">This file implements a DC-OPF for time series</span>
 <span class="sd">That means that solves the OPF problem for a complete time series at once</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
@@ -164,7 +164,7 @@
                                    <span class="n">structural_ntc</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
                                    <span class="n">ntc_load_rule</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
                                    <span class="n">rates</span><span class="p">:</span> <span class="n">Vec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">BoolVec</span><span class="p">,</span> <span class="n">ObjVec</span><span class="p">,</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">Vec</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Function to formulate branch monitor status due the given logic</span>
 <span class="sd">    :param monitor_only_sensitive_branches: boolean to apply sensitivity threshold to the monitorization logic.</span>
 <span class="sd">    :param monitor_only_ntc_load_rule_branches: boolean to apply ntc load rule to the monitorization logic.</span>
@@ -181,7 +181,7 @@
 <span class="sd">        - monitor_type: monitor type chosen depending on the rules</span>
 <span class="sd">        - branch_ntc_load_rule: branch minimum ntc to be considered as limiting element</span>
 <span class="sd">        - branch_zero_exchange_load: branch load for zero exchange situation.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="c1"># NTC min for considering as limiting element by CEP rule</span>
     <span class="n">branch_ntc_load_rule_n</span> <span class="o">=</span> <span class="n">ntc_load_rule</span> <span class="o">*</span> <span class="n">rates</span> <span class="o">/</span> <span class="p">(</span><span class="n">alpha</span> <span class="o">+</span> <span class="mf">1e-20</span><span class="p">)</span>
@@ -199,12 +199,12 @@
         <span class="n">monitor_by_sensitivity_n</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">base_flows</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
         <span class="n">monitor_by_sensitivity_n1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">base_flows</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
 
-    <span class="c1"># N &#39;and&#39; N-1 criteria</span>
+    <span class="c1"># N 'and' N-1 criteria</span>
     <span class="n">branch_zero_exchange_load</span> <span class="o">=</span> <span class="n">branch_zero_exchange_load_n</span> <span class="o">*</span> <span class="n">branch_zero_exchange_load_n1</span>
     <span class="n">branch_ntc_load_rule</span> <span class="o">=</span> <span class="n">branch_ntc_load_rule_n</span> <span class="o">*</span> <span class="n">branch_ntc_load_rule_n1</span>
     <span class="n">monitor_by_sensitivity</span> <span class="o">=</span> <span class="n">monitor_by_sensitivity_n</span> <span class="o">*</span> <span class="n">monitor_by_sensitivity_n1</span>
 
-    <span class="c1"># Avoid unrealistic ntc &amp;&amp; Exclude branches with &#39;interchange zero&#39; flows over CEP rule limit</span>
+    <span class="c1"># Avoid unrealistic ntc &amp;&amp; Exclude branches with 'interchange zero' flows over CEP rule limit</span>
     <span class="k">if</span> <span class="n">monitor_only_ntc_load_rule_branches</span><span class="p">:</span>
         <span class="n">monitor_by_unrealistic_ntc</span> <span class="o">=</span> <span class="n">branch_ntc_load_rule</span> <span class="o">&lt;=</span> <span class="n">structural_ntc</span>
         <span class="n">monitor_by_zero_exchange</span> <span class="o">=</span> <span class="n">branch_zero_exchange_load</span> <span class="o">&gt;=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">ntc_load_rule</span><span class="p">)</span>
@@ -227,15 +227,15 @@
                                          <span class="n">monitor_by_zero_exchange</span><span class="p">)):</span>
         <span class="n">res</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">a</span><span class="p">:</span>
-            <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;excluded by model&#39;</span><span class="p">)</span>
+            <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">'excluded by model'</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">b</span><span class="p">:</span>
-            <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;excluded by sensitivity&#39;</span><span class="p">)</span>
+            <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">'excluded by sensitivity'</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">c</span><span class="p">:</span>
-            <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;excluded by unrealistic ntc&#39;</span><span class="p">)</span>
+            <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">'excluded by unrealistic ntc'</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">d</span><span class="p">:</span>
-            <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;excluded by zero exchange&#39;</span><span class="p">)</span>
+            <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">'excluded by zero exchange'</span><span class="p">)</span>
 
-        <span class="n">monitor_type</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
+        <span class="n">monitor_type</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="s1">';'</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">monitor</span><span class="p">,</span> <span class="n">monitor_type</span><span class="p">,</span> <span class="n">branch_ntc_load_rule</span><span class="p">,</span> <span class="n">branch_zero_exchange_load</span></div>
 
@@ -250,7 +250,7 @@
                                        <span class="n">skip_generation_limits</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
                                        <span class="n">inf_value</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
                                        <span class="n">Sbase</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Vec</span><span class="p">,</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">Vec</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Get nodal power, nodal pmax and nodal pmin according to the transfer_method.</span>
 <span class="sd">    :param bus_data_t: BusData structure</span>
 <span class="sd">    :param gen_data_t: GenData structure</span>
@@ -260,7 +260,7 @@
 <span class="sd">    :param inf_value: infinity value. Ex 1e-20</span>
 <span class="sd">    :param Sbase: base power (100 MVA)</span>
 <span class="sd">    :return: nodal power (p.u.), pmax (p.u.), pmin(p.u.)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="c1"># get values per bus</span>
     <span class="n">gen_per_bus</span> <span class="o">=</span> <span class="n">gen_data_t</span><span class="o">.</span><span class="n">get_injections_per_bus</span><span class="p">()</span> <span class="o">/</span> <span class="n">Sbase</span>
@@ -319,7 +319,7 @@
         <span class="n">dispatchable_bus</span> <span class="o">=</span> <span class="n">load_data_t</span><span class="o">.</span><span class="n">get_array_per_bus</span><span class="p">(</span><span class="n">load_data_t</span><span class="o">.</span><span class="n">S</span><span class="o">.</span><span class="n">real</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">bool</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
 
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Undefined available transfer mode&#39;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">'Undefined available transfer mode'</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">p_ref</span> <span class="o">*</span> <span class="n">dispatchable_bus</span><span class="p">,</span> <span class="n">p_max</span><span class="p">,</span> <span class="n">p_min</span></div>
 
@@ -328,30 +328,30 @@
 <div class="viewcode-block" id="BusNtcVars">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.NTC.html#VeraGridEngine.Simulations.NTC.ntc_opf_strict.BusNtcVars">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">BusNtcVars</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Struct to store the bus related vars</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;angle_min&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;angle_max&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Va&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Vm&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;kirchhoff&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;shadow_prices&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;load_p&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Pinj&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Pbalance&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;delta_p&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;proportions&quot;</span><span class="p">,</span>
+        <span class="s2">"angle_min"</span><span class="p">,</span>
+        <span class="s2">"angle_max"</span><span class="p">,</span>
+        <span class="s2">"Va"</span><span class="p">,</span>
+        <span class="s2">"Vm"</span><span class="p">,</span>
+        <span class="s2">"kirchhoff"</span><span class="p">,</span>
+        <span class="s2">"shadow_prices"</span><span class="p">,</span>
+        <span class="s2">"load_p"</span><span class="p">,</span>
+        <span class="s2">"Pinj"</span><span class="p">,</span>
+        <span class="s2">"Pbalance"</span><span class="p">,</span>
+        <span class="s2">"delta_p"</span><span class="p">,</span>
+        <span class="s2">"proportions"</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nt</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">n_elm</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        BusVars structure</span>
 <span class="sd">        :param nt: Number of time steps</span>
 <span class="sd">        :param n_elm: Number of branches</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">angle_min</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">n_elm</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">angle_max</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">n_elm</span><span class="p">,</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">Va</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nt</span><span class="p">,</span> <span class="n">n_elm</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">)</span>
@@ -370,11 +370,11 @@
 
 <div class="viewcode-block" id="BusNtcVars.get_values">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.NTC.html#VeraGridEngine.Simulations.NTC.ntc_opf_strict.BusNtcVars.get_values">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">get_values</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Sbase</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">OrToolsLpModel</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;BusNtcVars&quot;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_values</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Sbase</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">OrToolsLpModel</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"BusNtcVars"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return an instance of this class where the arrays content are not LP vars but their value</span>
 <span class="sd">        :return: BusVars</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">nt</span><span class="p">,</span> <span class="n">n_elm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Va</span><span class="o">.</span><span class="n">shape</span>
         <span class="n">data</span> <span class="o">=</span> <span class="n">BusNtcVars</span><span class="p">(</span><span class="n">nt</span><span class="o">=</span><span class="n">nt</span><span class="p">,</span> <span class="n">n_elm</span><span class="o">=</span><span class="n">n_elm</span><span class="p">)</span>
 
@@ -407,36 +407,35 @@
 <div class="viewcode-block" id="BranchNtcVars">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.NTC.html#VeraGridEngine.Simulations.NTC.ntc_opf_strict.BranchNtcVars">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">BranchNtcVars</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Struct to store the branch related vars</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;flows&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;tap_angles&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;flow_constraints_ub&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;flow_constraints_lb&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;rates&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;contingency_rates&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;loading&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;alpha&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;monitor&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;monitor_logic&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;contingency_flow_data&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;inter_space_branches&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;worst_contingency_idx&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;worst_contingency_flow&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;worst_contingency_loading&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;alpha_n1_worst&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;worst_contingency_ties&quot;</span><span class="p">,</span>
+        <span class="s2">"flows"</span><span class="p">,</span>
+        <span class="s2">"tap_angles"</span><span class="p">,</span>
+        <span class="s2">"flow_constraints_ub"</span><span class="p">,</span>
+        <span class="s2">"flow_constraints_lb"</span><span class="p">,</span>
+        <span class="s2">"rates"</span><span class="p">,</span>
+        <span class="s2">"contingency_rates"</span><span class="p">,</span>
+        <span class="s2">"loading"</span><span class="p">,</span>
+        <span class="s2">"alpha"</span><span class="p">,</span>
+        <span class="s2">"monitor"</span><span class="p">,</span>
+        <span class="s2">"monitor_logic"</span><span class="p">,</span>
+        <span class="s2">"contingency_flow_data"</span><span class="p">,</span>
+        <span class="s2">"inter_space_branches"</span><span class="p">,</span>
+        <span class="s2">"worst_contingency_idx"</span><span class="p">,</span>
+        <span class="s2">"worst_contingency_flow"</span><span class="p">,</span>
+        <span class="s2">"worst_contingency_loading"</span><span class="p">,</span>
+        <span class="s2">"alpha_n1_worst"</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nt</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">n_elm</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        BranchVars structure</span>
 <span class="sd">        :param nt: Number of time steps</span>
 <span class="sd">        :param n_elm: Number of branches</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">flows</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nt</span><span class="p">,</span> <span class="n">n_elm</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">tap_angles</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nt</span><span class="p">,</span> <span class="n">n_elm</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">flow_constraints_ub</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nt</span><span class="p">,</span> <span class="n">n_elm</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">)</span>
@@ -461,18 +460,15 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">worst_contingency_loading</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nt</span><span class="p">,</span> <span class="n">n_elm</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">alpha_n1_worst</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nt</span><span class="p">,</span> <span class="n">n_elm</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
 
-        <span class="c1"># branch, group, N-1 flow (MW), N-1 loading (p.u.), alpha N-1 of the groups tied with the worst</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">worst_contingency_ties</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
-
 <div class="viewcode-block" id="BranchNtcVars.get_values">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.NTC.html#VeraGridEngine.Simulations.NTC.ntc_opf_strict.BranchNtcVars.get_values">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">get_values</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Sbase</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">OrToolsLpModel</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;BranchNtcVars&quot;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_values</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Sbase</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">OrToolsLpModel</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"BranchNtcVars"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return an instance of this class where the arrays content are not LP vars but their value</span>
 <span class="sd">        :param Sbase:</span>
 <span class="sd">        :param model:</span>
 <span class="sd">        :return: BranchVars</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">nt</span><span class="p">,</span> <span class="n">n_elm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">flows</span><span class="o">.</span><span class="n">shape</span>
         <span class="n">data</span> <span class="o">=</span> <span class="n">BranchNtcVars</span><span class="p">(</span><span class="n">nt</span><span class="o">=</span><span class="n">nt</span><span class="p">,</span> <span class="n">n_elm</span><span class="o">=</span><span class="n">n_elm</span><span class="p">)</span>
 
@@ -485,7 +481,6 @@
         <span class="n">data</span><span class="o">.</span><span class="n">worst_contingency_flow</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">worst_contingency_flow</span>
         <span class="n">data</span><span class="o">.</span><span class="n">worst_contingency_loading</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">worst_contingency_loading</span>
         <span class="n">data</span><span class="o">.</span><span class="n">alpha_n1_worst</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha_n1_worst</span>
-        <span class="n">data</span><span class="o">.</span><span class="n">worst_contingency_ties</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">worst_contingency_ties</span>
 
         <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nt</span><span class="p">):</span>
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_elm</span><span class="p">):</span>
@@ -515,7 +510,7 @@
                              <span class="n">flow_var</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">LpVar</span><span class="p">,</span> <span class="n">LpExp</span><span class="p">],</span>
                              <span class="n">neg_slack</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">LpVar</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                              <span class="n">pos_slack</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">LpVar</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Add contingency flow</span>
 <span class="sd">        :param t: time index</span>
 <span class="sd">        :param m: monitored index</span>
@@ -523,7 +518,7 @@
 <span class="sd">        :param flow_var: flow var</span>
 <span class="sd">        :param neg_slack: negative flow slack variable (accepted for interface compatibility, not stored)</span>
 <span class="sd">        :param pos_slack: positive flow slack variable (accepted for interface compatibility, not stored)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">contingency_flow_data</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">t</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">flow_var</span><span class="p">))</span></div>
 </div>
 
@@ -532,25 +527,25 @@
 <div class="viewcode-block" id="HvdcNtcVars">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.NTC.html#VeraGridEngine.Simulations.NTC.ntc_opf_strict.HvdcNtcVars">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">HvdcNtcVars</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Struct to store the generation vars</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;flows&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;z&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;y&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;rates&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;loading&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;inter_space_hvdc&quot;</span><span class="p">,</span>
+        <span class="s2">"flows"</span><span class="p">,</span>
+        <span class="s2">"z"</span><span class="p">,</span>
+        <span class="s2">"y"</span><span class="p">,</span>
+        <span class="s2">"rates"</span><span class="p">,</span>
+        <span class="s2">"loading"</span><span class="p">,</span>
+        <span class="s2">"inter_space_hvdc"</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nt</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">n_elm</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        GenerationVars structure</span>
 <span class="sd">        :param nt: Number of time steps</span>
 <span class="sd">        :param n_elm: Number of branches</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">flows</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nt</span><span class="p">,</span> <span class="n">n_elm</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nt</span><span class="p">,</span> <span class="n">n_elm</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nt</span><span class="p">,</span> <span class="n">n_elm</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">)</span>
@@ -562,11 +557,11 @@
 
 <div class="viewcode-block" id="HvdcNtcVars.get_values">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.NTC.html#VeraGridEngine.Simulations.NTC.ntc_opf_strict.HvdcNtcVars.get_values">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">get_values</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Sbase</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">OrToolsLpModel</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;HvdcNtcVars&quot;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_values</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Sbase</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">OrToolsLpModel</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"HvdcNtcVars"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return an instance of this class where the arrays content are not LP vars but their value</span>
 <span class="sd">        :return: HvdcVars</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">nt</span><span class="p">,</span> <span class="n">n_elm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">flows</span><span class="o">.</span><span class="n">shape</span>
         <span class="n">data</span> <span class="o">=</span> <span class="n">HvdcNtcVars</span><span class="p">(</span><span class="n">nt</span><span class="o">=</span><span class="n">nt</span><span class="p">,</span> <span class="n">n_elm</span><span class="o">=</span><span class="n">n_elm</span><span class="p">)</span>
         <span class="n">data</span><span class="o">.</span><span class="n">rates</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rates</span>
@@ -591,25 +586,25 @@
 <div class="viewcode-block" id="VscNtcVars">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.NTC.html#VeraGridEngine.Simulations.NTC.ntc_opf_strict.VscNtcVars">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">VscNtcVars</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Struct to store the VSC vars</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;flows&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;z&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;y&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;rates&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;loading&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;inter_space_vsc&quot;</span><span class="p">,</span>
+        <span class="s2">"flows"</span><span class="p">,</span>
+        <span class="s2">"z"</span><span class="p">,</span>
+        <span class="s2">"y"</span><span class="p">,</span>
+        <span class="s2">"rates"</span><span class="p">,</span>
+        <span class="s2">"loading"</span><span class="p">,</span>
+        <span class="s2">"inter_space_vsc"</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nt</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">n_elm</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        VscNtcVars structure</span>
 <span class="sd">        :param nt: Number of time steps</span>
 <span class="sd">        :param n_elm: Number of VSC</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">flows</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nt</span><span class="p">,</span> <span class="n">n_elm</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nt</span><span class="p">,</span> <span class="n">n_elm</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nt</span><span class="p">,</span> <span class="n">n_elm</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">)</span>
@@ -621,11 +616,11 @@
 
 <div class="viewcode-block" id="VscNtcVars.get_values">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.NTC.html#VeraGridEngine.Simulations.NTC.ntc_opf_strict.VscNtcVars.get_values">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">get_values</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Sbase</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">OrToolsLpModel</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;VscNtcVars&quot;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_values</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Sbase</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">OrToolsLpModel</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"VscNtcVars"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return an instance of this class where the arrays content are not LP vars but their value</span>
 <span class="sd">        :return: VscNtcVars</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">nt</span><span class="p">,</span> <span class="n">n_elm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">flows</span><span class="o">.</span><span class="n">shape</span>
         <span class="n">data</span> <span class="o">=</span> <span class="n">VscNtcVars</span><span class="p">(</span><span class="n">nt</span><span class="o">=</span><span class="n">nt</span><span class="p">,</span> <span class="n">n_elm</span><span class="o">=</span><span class="n">n_elm</span><span class="p">)</span>
         <span class="n">data</span><span class="o">.</span><span class="n">rates</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rates</span>
@@ -650,37 +645,37 @@
 <div class="viewcode-block" id="NtcVars">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.NTC.html#VeraGridEngine.Simulations.NTC.ntc_opf_strict.NtcVars">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">NtcVars</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Structure to host the opf variables</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;nt&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;nbus&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;ng&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;nb&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;nl&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;nbr&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;n_hvdc&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;n_vsc&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;model&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;acceptable_solution&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;bus_vars&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;branch_vars&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;hvdc_vars&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;vsc_vars&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;delta_1&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;delta_2&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;delta_sl_1&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;delta_sl_2&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;power_shift&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;structural_ntc&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;inter_area_flows&quot;</span><span class="p">,</span>
+        <span class="s2">"nt"</span><span class="p">,</span>
+        <span class="s2">"nbus"</span><span class="p">,</span>
+        <span class="s2">"ng"</span><span class="p">,</span>
+        <span class="s2">"nb"</span><span class="p">,</span>
+        <span class="s2">"nl"</span><span class="p">,</span>
+        <span class="s2">"nbr"</span><span class="p">,</span>
+        <span class="s2">"n_hvdc"</span><span class="p">,</span>
+        <span class="s2">"n_vsc"</span><span class="p">,</span>
+        <span class="s2">"model"</span><span class="p">,</span>
+        <span class="s2">"acceptable_solution"</span><span class="p">,</span>
+        <span class="s2">"bus_vars"</span><span class="p">,</span>
+        <span class="s2">"branch_vars"</span><span class="p">,</span>
+        <span class="s2">"hvdc_vars"</span><span class="p">,</span>
+        <span class="s2">"vsc_vars"</span><span class="p">,</span>
+        <span class="s2">"delta_1"</span><span class="p">,</span>
+        <span class="s2">"delta_2"</span><span class="p">,</span>
+        <span class="s2">"delta_sl_1"</span><span class="p">,</span>
+        <span class="s2">"delta_sl_2"</span><span class="p">,</span>
+        <span class="s2">"power_shift"</span><span class="p">,</span>
+        <span class="s2">"structural_ntc"</span><span class="p">,</span>
+        <span class="s2">"inter_area_flows"</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nt</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">nbus</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">ng</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">nb</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">nl</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">nbr</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">n_hvdc</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">n_vsc</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
                  <span class="n">model</span><span class="p">:</span> <span class="n">OrToolsLpModel</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Constructor</span>
 <span class="sd">        :param nt: number of time steps</span>
 <span class="sd">        :param nbus: number of nodes</span>
@@ -690,7 +685,7 @@
 <span class="sd">        :param nbr: number of branches</span>
 <span class="sd">        :param n_hvdc: number of HVDC</span>
 <span class="sd">        :param model: LpModel instance</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nt</span> <span class="o">=</span> <span class="n">nt</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nbus</span> <span class="o">=</span> <span class="n">nbus</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ng</span> <span class="o">=</span> <span class="n">ng</span>
@@ -722,13 +717,13 @@
 
 <div class="viewcode-block" id="NtcVars.get_values">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.NTC.html#VeraGridEngine.Simulations.NTC.ntc_opf_strict.NtcVars.get_values">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">get_values</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Sbase</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">OrToolsLpModel</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;NtcVars&quot;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_values</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Sbase</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">OrToolsLpModel</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"NtcVars"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return an instance of this class where the arrays content are not LP vars but their value</span>
 <span class="sd">        :param Sbase</span>
 <span class="sd">        :param model:</span>
 <span class="sd">        :return: OpfVars instance</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="n">data</span> <span class="o">=</span> <span class="n">NtcVars</span><span class="p">(</span><span class="n">nt</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nt</span><span class="p">,</span>
                        <span class="n">nbus</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nbus</span><span class="p">,</span>
@@ -765,10 +760,10 @@
 <div class="viewcode-block" id="NtcVars.get_voltages">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.NTC.html#VeraGridEngine.Simulations.NTC.ntc_opf_strict.NtcVars.get_voltages">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_voltages</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CxMat</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">bus_vars</span><span class="o">.</span><span class="n">Vm</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">bus_vars</span><span class="o">.</span><span class="n">Va</span><span class="p">)</span></div>
 
 
@@ -790,7 +785,7 @@
                    <span class="n">active_branch_data_t</span><span class="p">:</span> <span class="n">ActiveBranchData</span><span class="p">,</span>
                    <span class="n">hvdc_data_t</span><span class="p">:</span> <span class="n">HvdcData</span><span class="p">,</span>
                    <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Get the perfectly balanced base power</span>
 <span class="sd">    :param Sbase:</span>
 <span class="sd">    :param gen_data_t:</span>
@@ -800,7 +795,7 @@
 <span class="sd">    :param active_branch_data_t</span>
 <span class="sd">    :param logger:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># base power injections</span>
     <span class="n">gen_per_bus</span> <span class="o">=</span> <span class="n">gen_data_t</span><span class="o">.</span><span class="n">get_injections_per_bus</span><span class="p">()</span><span class="o">.</span><span class="n">real</span> <span class="o">/</span> <span class="n">Sbase</span>
     <span class="n">batt_per_bus</span> <span class="o">=</span> <span class="n">batt_data_t</span><span class="o">.</span><span class="n">get_injections_per_bus</span><span class="p">()</span><span class="o">.</span><span class="n">real</span> <span class="o">/</span> <span class="n">Sbase</span>
@@ -828,15 +823,15 @@
             <span class="n">share</span> <span class="o">=</span> <span class="n">gen_per_bus</span> <span class="o">/</span> <span class="n">gen_sum</span>
             <span class="n">gen_per_bus</span> <span class="o">-=</span> <span class="n">share</span> <span class="o">*</span> <span class="n">diff</span>  <span class="c1"># we make the generators balance the system</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Cannot balance the circumstance&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Cannot balance the circumstance"</span><span class="p">)</span>
 
         <span class="n">base_power</span> <span class="o">=</span> <span class="n">gen_per_bus</span> <span class="o">+</span> <span class="n">batt_per_bus</span> <span class="o">+</span> <span class="n">load_per_bus</span>
         <span class="n">new_diff</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">base_power</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">new_diff</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="mf">1e-10</span><span class="p">):</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s2">&quot;The base circumstance had to be balanced&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">diff</span><span class="p">,</span> <span class="n">expected_value</span><span class="o">=</span><span class="n">new_diff</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s2">"The base circumstance had to be balanced"</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">diff</span><span class="p">,</span> <span class="n">expected_value</span><span class="o">=</span><span class="n">new_diff</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Cannot balance the circumstance&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Cannot balance the circumstance"</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">base_power</span></div>
 
@@ -860,7 +855,7 @@
                                       <span class="n">ntc_vars</span><span class="p">:</span> <span class="n">NtcVars</span><span class="p">,</span>
                                       <span class="n">prob</span><span class="p">:</span> <span class="n">OrToolsLpModel</span><span class="p">,</span>
                                       <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Add MIP injections formulation</span>
 <span class="sd">    :param t: time step</span>
 <span class="sd">    :param Sbase: base power (100 MVA)</span>
@@ -871,15 +866,15 @@
 <span class="sd">    :param branch_data_t:</span>
 <span class="sd">    :param active_branch_data_t:</span>
 <span class="sd">    :param hvdc_data_t:</span>
-<span class="sd">    :param bus_a1_idx: bus indices within area &quot;from&quot;</span>
-<span class="sd">    :param bus_a2_idx: bus indices within area &quot;to&quot;</span>
+<span class="sd">    :param bus_a1_idx: bus indices within area "from"</span>
+<span class="sd">    :param bus_a2_idx: bus indices within area "to"</span>
 <span class="sd">    :param transfer_method: Exchange transfer method</span>
 <span class="sd">    :param skip_generation_limits: Skip generation limits?</span>
 <span class="sd">    :param ntc_vars: MIP variables structure</span>
 <span class="sd">    :param prob: MIP problem</span>
 <span class="sd">    :param logger: logger instance</span>
 <span class="sd">    :return objective function</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="c1"># base power injections</span>
     <span class="n">base_power</span> <span class="o">=</span> <span class="n">get_base_power</span><span class="p">(</span><span class="n">Sbase</span><span class="o">=</span><span class="n">Sbase</span><span class="p">,</span>
@@ -902,7 +897,7 @@
         <span class="n">Sbase</span><span class="o">=</span><span class="n">Sbase</span>
     <span class="p">)</span>
 
-    <span class="c1"># compute each area&#39;s share with sign (rounded)</span>
+    <span class="c1"># compute each area's share with sign (rounded)</span>
     <span class="n">proportions</span> <span class="o">=</span> <span class="n">get_exchange_proportions</span><span class="p">(</span>
         <span class="n">power</span><span class="o">=</span><span class="n">bus_pref_t</span><span class="p">,</span>
         <span class="n">bus_a1_idx</span><span class="o">=</span><span class="n">bus_a1_idx</span><span class="p">,</span>
@@ -915,11 +910,11 @@
     <span class="n">ntc_vars</span><span class="o">.</span><span class="n">bus_vars</span><span class="o">.</span><span class="n">proportions</span><span class="p">[</span><span class="n">t</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">proportions</span>
 
     <span class="n">f_obj</span> <span class="o">=</span> <span class="mf">0.0</span>
-    <span class="n">ntc_vars</span><span class="o">.</span><span class="n">delta_1</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="o">=</span> <span class="n">prob</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">lb</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">ub</span><span class="o">=</span><span class="n">prob</span><span class="o">.</span><span class="n">INFINITY</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;Delta_up_&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">t</span><span class="p">]))</span>
-    <span class="n">ntc_vars</span><span class="o">.</span><span class="n">delta_2</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="o">=</span> <span class="n">prob</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">lb</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">ub</span><span class="o">=</span><span class="n">prob</span><span class="o">.</span><span class="n">INFINITY</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;Delta_down_&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">t</span><span class="p">]))</span>
+    <span class="n">ntc_vars</span><span class="o">.</span><span class="n">delta_1</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="o">=</span> <span class="n">prob</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">lb</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">ub</span><span class="o">=</span><span class="n">prob</span><span class="o">.</span><span class="n">INFINITY</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">join</span><span class="p">(</span><span class="s2">"Delta_up_"</span><span class="p">,</span> <span class="p">[</span><span class="n">t</span><span class="p">]))</span>
+    <span class="n">ntc_vars</span><span class="o">.</span><span class="n">delta_2</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="o">=</span> <span class="n">prob</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">lb</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">ub</span><span class="o">=</span><span class="n">prob</span><span class="o">.</span><span class="n">INFINITY</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">join</span><span class="p">(</span><span class="s2">"Delta_down_"</span><span class="p">,</span> <span class="p">[</span><span class="n">t</span><span class="p">]))</span>
 
-    <span class="n">ntc_vars</span><span class="o">.</span><span class="n">delta_sl_1</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="o">=</span> <span class="n">prob</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">lb</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">ub</span><span class="o">=</span><span class="n">prob</span><span class="o">.</span><span class="n">INFINITY</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;DeltaSL_up_&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">t</span><span class="p">]))</span>
-    <span class="n">ntc_vars</span><span class="o">.</span><span class="n">delta_sl_2</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="o">=</span> <span class="n">prob</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">lb</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">ub</span><span class="o">=</span><span class="n">prob</span><span class="o">.</span><span class="n">INFINITY</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;DeltaSL_down_&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">t</span><span class="p">]))</span>
+    <span class="n">ntc_vars</span><span class="o">.</span><span class="n">delta_sl_1</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="o">=</span> <span class="n">prob</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">lb</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">ub</span><span class="o">=</span><span class="n">prob</span><span class="o">.</span><span class="n">INFINITY</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">join</span><span class="p">(</span><span class="s2">"DeltaSL_up_"</span><span class="p">,</span> <span class="p">[</span><span class="n">t</span><span class="p">]))</span>
+    <span class="n">ntc_vars</span><span class="o">.</span><span class="n">delta_sl_2</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="o">=</span> <span class="n">prob</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">lb</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">ub</span><span class="o">=</span><span class="n">prob</span><span class="o">.</span><span class="n">INFINITY</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">join</span><span class="p">(</span><span class="s2">"DeltaSL_down_"</span><span class="p">,</span> <span class="p">[</span><span class="n">t</span><span class="p">]))</span>
 
     <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">bus_a1_idx</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">bus_data_t</span><span class="o">.</span><span class="n">active</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="ow">and</span> <span class="n">proportions</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
@@ -934,7 +929,7 @@
     <span class="c1"># we have declared the deltas positive for the sending and receiving areas</span>
     <span class="n">prob</span><span class="o">.</span><span class="n">add_cst</span><span class="p">(</span>
         <span class="n">cst</span><span class="o">=</span><span class="n">ntc_vars</span><span class="o">.</span><span class="n">delta_1</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="o">-</span> <span class="n">ntc_vars</span><span class="o">.</span><span class="n">delta_sl_1</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="o">==</span> <span class="n">ntc_vars</span><span class="o">.</span><span class="n">delta_2</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="o">-</span> <span class="n">ntc_vars</span><span class="o">.</span><span class="n">delta_sl_2</span><span class="p">[</span><span class="n">t</span><span class="p">],</span>
-        <span class="n">name</span><span class="o">=</span><span class="n">join</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;deltas_equality_&#39;</span><span class="p">,</span> <span class="p">[</span><span class="n">t</span><span class="p">],</span> <span class="s2">&quot;_&quot;</span><span class="p">)</span>
+        <span class="n">name</span><span class="o">=</span><span class="n">join</span><span class="p">(</span><span class="sa">f</span><span class="s1">'deltas_equality_'</span><span class="p">,</span> <span class="p">[</span><span class="n">t</span><span class="p">],</span> <span class="s2">"_"</span><span class="p">)</span>
     <span class="p">)</span>
 
     <span class="c1"># now, formulate the final injections for all buses</span>
@@ -967,7 +962,7 @@
                                     <span class="n">structural_ntc</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
                                     <span class="n">ntc_load_rule</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
                                     <span class="n">inf</span><span class="o">=</span><span class="mf">1e20</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">LpExp</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Formulate the branches</span>
 <span class="sd">    :param t_idx: time index</span>
 <span class="sd">    :param Sbase: base power (100 MVA)</span>
@@ -984,7 +979,7 @@
 <span class="sd">    :param ntc_load_rule</span>
 <span class="sd">    :param inf: number considered infinite</span>
 <span class="sd">    :return objective function</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">f_obj</span> <span class="o">=</span> <span class="mf">0.0</span>
 
     <span class="c1"># for each branch</span>
@@ -1006,19 +1001,19 @@
                 <span class="n">branch_vars</span><span class="o">.</span><span class="n">flows</span><span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">m</span><span class="p">]</span> <span class="o">=</span> <span class="n">prob</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span>
                     <span class="n">lb</span><span class="o">=-</span><span class="n">inf</span><span class="p">,</span>
                     <span class="n">ub</span><span class="o">=</span><span class="n">inf</span><span class="p">,</span>
-                    <span class="n">name</span><span class="o">=</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;dc_flow_&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">m</span><span class="p">],</span> <span class="s2">&quot;_&quot;</span><span class="p">)</span>
+                    <span class="n">name</span><span class="o">=</span><span class="n">join</span><span class="p">(</span><span class="s2">"dc_flow_"</span><span class="p">,</span> <span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">m</span><span class="p">],</span> <span class="s2">"_"</span><span class="p">)</span>
                 <span class="p">)</span>
 
                 <span class="c1"># DC Branch</span>
                 <span class="c1"># compute the branch susceptance</span>
                 <span class="k">if</span> <span class="n">branch_data_t</span><span class="o">.</span><span class="n">R</span><span class="p">[</span><span class="n">m</span><span class="p">]</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
-                    <span class="n">bk</span> <span class="o">=</span> <span class="mf">1e-6</span>  <span class="c1"># setting a value too low will &quot;break&quot; the linear solver</span>
+                    <span class="n">bk</span> <span class="o">=</span> <span class="mf">1e-6</span>  <span class="c1"># setting a value too low will "break" the linear solver</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">bk</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="n">branch_data_t</span><span class="o">.</span><span class="n">R</span><span class="p">[</span><span class="n">m</span><span class="p">]</span>
 
                 <span class="n">prob</span><span class="o">.</span><span class="n">add_cst</span><span class="p">(</span>
                     <span class="n">cst</span><span class="o">=</span><span class="n">branch_vars</span><span class="o">.</span><span class="n">flows</span><span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">m</span><span class="p">]</span> <span class="o">==</span> <span class="n">bk</span> <span class="o">*</span> <span class="p">(</span><span class="n">bus_vars</span><span class="o">.</span><span class="n">Vm</span><span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">fr</span><span class="p">]</span> <span class="o">-</span> <span class="n">bus_vars</span><span class="o">.</span><span class="n">Vm</span><span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">to</span><span class="p">]),</span>
-                    <span class="n">name</span><span class="o">=</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;dc_flows_&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">m</span><span class="p">],</span> <span class="s2">&quot;_&quot;</span><span class="p">)</span>
+                    <span class="n">name</span><span class="o">=</span><span class="n">join</span><span class="p">(</span><span class="s2">"dc_flows_"</span><span class="p">,</span> <span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">m</span><span class="p">],</span> <span class="s2">"_"</span><span class="p">)</span>
                 <span class="p">)</span>
 
             <span class="k">else</span><span class="p">:</span>
@@ -1027,12 +1022,12 @@
                 <span class="n">branch_vars</span><span class="o">.</span><span class="n">flows</span><span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">m</span><span class="p">]</span> <span class="o">=</span> <span class="n">prob</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span>
                     <span class="n">lb</span><span class="o">=-</span><span class="n">inf</span><span class="p">,</span>
                     <span class="n">ub</span><span class="o">=</span><span class="n">inf</span><span class="p">,</span>
-                    <span class="n">name</span><span class="o">=</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;ac_flow_&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">m</span><span class="p">],</span> <span class="s2">&quot;_&quot;</span><span class="p">)</span>
+                    <span class="n">name</span><span class="o">=</span><span class="n">join</span><span class="p">(</span><span class="s2">"ac_flow_"</span><span class="p">,</span> <span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">m</span><span class="p">],</span> <span class="s2">"_"</span><span class="p">)</span>
                 <span class="p">)</span>
 
                 <span class="c1"># compute the branch susceptance</span>
                 <span class="k">if</span> <span class="n">branch_data_t</span><span class="o">.</span><span class="n">X</span><span class="p">[</span><span class="n">m</span><span class="p">]</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
-                    <span class="n">bk</span> <span class="o">=</span> <span class="mf">1e-6</span>  <span class="c1"># setting a value too low will &quot;break&quot; the linear solver</span>
+                    <span class="n">bk</span> <span class="o">=</span> <span class="mf">1e-6</span>  <span class="c1"># setting a value too low will "break" the linear solver</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">bk</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="n">branch_data_t</span><span class="o">.</span><span class="n">X</span><span class="p">[</span><span class="n">m</span><span class="p">]</span>
 
@@ -1044,7 +1039,7 @@
                     <span class="n">branch_vars</span><span class="o">.</span><span class="n">tap_angles</span><span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">m</span><span class="p">]</span> <span class="o">=</span> <span class="n">prob</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span>
                         <span class="n">lb</span><span class="o">=</span><span class="n">active_branch_data_t</span><span class="o">.</span><span class="n">tap_angle_min</span><span class="p">[</span><span class="n">m</span><span class="p">],</span>
                         <span class="n">ub</span><span class="o">=</span><span class="n">active_branch_data_t</span><span class="o">.</span><span class="n">tap_angle_max</span><span class="p">[</span><span class="n">m</span><span class="p">],</span>
-                        <span class="n">name</span><span class="o">=</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;tap_ang_&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">m</span><span class="p">],</span> <span class="s2">&quot;_&quot;</span><span class="p">)</span>
+                        <span class="n">name</span><span class="o">=</span><span class="n">join</span><span class="p">(</span><span class="s2">"tap_ang_"</span><span class="p">,</span> <span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">m</span><span class="p">],</span> <span class="s2">"_"</span><span class="p">)</span>
                     <span class="p">)</span>
 
                     <span class="c1"># is a phase shifter device (like phase shifter transformer or VSC with P control)</span>
@@ -1052,7 +1047,7 @@
                         <span class="n">cst</span><span class="o">=</span><span class="n">branch_vars</span><span class="o">.</span><span class="n">flows</span><span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">m</span><span class="p">]</span> <span class="o">==</span> <span class="n">bk</span> <span class="o">*</span> <span class="p">(</span><span class="n">bus_vars</span><span class="o">.</span><span class="n">Va</span><span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">fr</span><span class="p">]</span> <span class="o">-</span>
                                                                  <span class="n">bus_vars</span><span class="o">.</span><span class="n">Va</span><span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">to</span><span class="p">]</span> <span class="o">-</span>
                                                                  <span class="n">branch_vars</span><span class="o">.</span><span class="n">tap_angles</span><span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">m</span><span class="p">]),</span>
-                        <span class="n">name</span><span class="o">=</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;ac_flows_ps_&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">m</span><span class="p">],</span> <span class="s2">&quot;_&quot;</span><span class="p">)</span>
+                        <span class="n">name</span><span class="o">=</span><span class="n">join</span><span class="p">(</span><span class="s2">"ac_flows_ps_"</span><span class="p">,</span> <span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">m</span><span class="p">],</span> <span class="s2">"_"</span><span class="p">)</span>
                     <span class="p">)</span>
 
                 <span class="k">else</span><span class="p">:</span>
@@ -1065,13 +1060,13 @@
                             <span class="n">cst</span><span class="o">=</span><span class="n">branch_vars</span><span class="o">.</span><span class="n">flows</span><span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">m</span><span class="p">]</span> <span class="o">==</span> <span class="n">bk</span> <span class="o">*</span> <span class="p">(</span><span class="n">bus_vars</span><span class="o">.</span><span class="n">Va</span><span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">fr</span><span class="p">]</span> <span class="o">-</span>
                                                                      <span class="n">bus_vars</span><span class="o">.</span><span class="n">Va</span><span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">to</span><span class="p">]</span> <span class="o">-</span>
                                                                      <span class="n">branch_vars</span><span class="o">.</span><span class="n">tap_angles</span><span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">m</span><span class="p">]),</span>
-                            <span class="n">name</span><span class="o">=</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;ac_flow_ps_fix&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">m</span><span class="p">],</span> <span class="s2">&quot;_&quot;</span><span class="p">)</span>
+                            <span class="n">name</span><span class="o">=</span><span class="n">join</span><span class="p">(</span><span class="s2">"ac_flow_ps_fix"</span><span class="p">,</span> <span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">m</span><span class="p">],</span> <span class="s2">"_"</span><span class="p">)</span>
                         <span class="p">)</span>
                     <span class="k">else</span><span class="p">:</span>
                         <span class="c1"># rest of the branches with tau = 0</span>
                         <span class="n">prob</span><span class="o">.</span><span class="n">add_cst</span><span class="p">(</span>
                             <span class="n">cst</span><span class="o">=</span><span class="n">branch_vars</span><span class="o">.</span><span class="n">flows</span><span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">m</span><span class="p">]</span> <span class="o">==</span> <span class="n">bk</span> <span class="o">*</span> <span class="p">(</span><span class="n">bus_vars</span><span class="o">.</span><span class="n">Va</span><span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">fr</span><span class="p">]</span> <span class="o">-</span> <span class="n">bus_vars</span><span class="o">.</span><span class="n">Va</span><span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">to</span><span class="p">]),</span>
-                            <span class="n">name</span><span class="o">=</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;ac_flows_&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">m</span><span class="p">],</span> <span class="s2">&quot;_&quot;</span><span class="p">)</span>
+                            <span class="n">name</span><span class="o">=</span><span class="n">join</span><span class="p">(</span><span class="s2">"ac_flows_"</span><span class="p">,</span> <span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">m</span><span class="p">],</span> <span class="s2">"_"</span><span class="p">)</span>
                         <span class="p">)</span>
 
             <span class="c1"># We save in Pcalc the balance of the branch flows</span>
@@ -1080,7 +1075,7 @@
 
             <span class="c1"># Monitoring logic: Avoid unrealistic ntc flows over CEP rule limit in N condition</span>
             <span class="k">if</span> <span class="n">monitor_only_ntc_load_rule_branches</span><span class="p">:</span>
-<span class="w">                </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">                </span><span class="sd">"""</span>
 <span class="sd">                Calculo el porcentaje del ratio de la línea que se reserva al intercambio según la regla de ACER, </span>
 <span class="sd">                y paso dicho valor a la frontera, y si el valor es mayor que el máximo intercambio estructural </span>
 <span class="sd">                significa que la linea no puede limitar el intercambio</span>
@@ -1092,7 +1087,7 @@
 <span class="sd">                    0.7 * 1700 --&gt; 1190 mw para el intercambio</span>
 <span class="sd">                    1190 / 0.05 --&gt; 23.800 MW en la frontera en N</span>
 <span class="sd">                    23.800 &gt;&gt;&gt;&gt; 5200 --&gt; esta linea no puede ser declarada como limitante en la NTC en N.</span>
-<span class="sd">                   &quot;&quot;&quot;</span>
+<span class="sd">                   """</span>
                 <span class="n">monitor_by_load_rule_n</span> <span class="o">=</span> <span class="n">ntc_load_rule</span> <span class="o">*</span> <span class="n">branch_data_t</span><span class="o">.</span><span class="n">rates</span><span class="p">[</span><span class="n">m</span><span class="p">]</span> <span class="o">/</span> <span class="p">(</span><span class="n">alpha</span><span class="p">[</span><span class="n">m</span><span class="p">]</span> <span class="o">+</span> <span class="mf">1e-20</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">structural_ntc</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">monitor_by_load_rule_n</span> <span class="o">=</span> <span class="kc">True</span>
@@ -1141,7 +1136,7 @@
                                                   <span class="n">alpha_threshold</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
                                                   <span class="n">alpha_n1_abs</span><span class="p">:</span> <span class="n">Mat</span><span class="p">,</span>
                                                   <span class="n">prob</span><span class="p">:</span> <span class="n">OrToolsLpModel</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Formulate a single contingency with the preventive N-1 rule in the strict formulation</span>
 
 <span class="sd">    :param t_idx: time index being formulated</span>
@@ -1160,7 +1155,7 @@
 <span class="sd">    :param alpha_n1_abs: absolute N-1 exchange-sensitivity matrix indexed as (branch, outaged-branch)</span>
 <span class="sd">    :param prob: linear problem the constraints are added to</span>
 <span class="sd">    :return: always 0.0 </span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># iterate every branch; only those flagged by the mask and depending on variables are limited</span>
     <span class="k">for</span> <span class="n">m</span><span class="p">,</span> <span class="n">contingency_flow</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">contingency_flows</span><span class="p">):</span>
 
@@ -1194,11 +1189,11 @@
 
                 <span class="c1"># hard upper rate constraint</span>
                 <span class="n">prob</span><span class="o">.</span><span class="n">add_cst</span><span class="p">(</span><span class="n">cst</span><span class="o">=</span><span class="n">contingency_flow</span> <span class="o">&lt;=</span> <span class="n">branch_data_t</span><span class="o">.</span><span class="n">contingency_rates</span><span class="p">[</span><span class="n">m</span><span class="p">]</span> <span class="o">/</span> <span class="n">Sbase</span><span class="p">,</span>
-                             <span class="n">name</span><span class="o">=</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;br_cst_flow_upper_lim_&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">c</span><span class="p">]))</span>
+                             <span class="n">name</span><span class="o">=</span><span class="n">join</span><span class="p">(</span><span class="s2">"br_cst_flow_upper_lim_"</span><span class="p">,</span> <span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">c</span><span class="p">]))</span>
 
                 <span class="c1"># hard lower rate constraint</span>
                 <span class="n">prob</span><span class="o">.</span><span class="n">add_cst</span><span class="p">(</span><span class="n">cst</span><span class="o">=</span><span class="n">contingency_flow</span> <span class="o">&gt;=</span> <span class="o">-</span><span class="n">branch_data_t</span><span class="o">.</span><span class="n">contingency_rates</span><span class="p">[</span><span class="n">m</span><span class="p">]</span> <span class="o">/</span> <span class="n">Sbase</span><span class="p">,</span>
-                             <span class="n">name</span><span class="o">=</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;br_cst_flow_lower_lim_&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">c</span><span class="p">]))</span>
+                             <span class="n">name</span><span class="o">=</span><span class="n">join</span><span class="p">(</span><span class="s2">"br_cst_flow_lower_lim_"</span><span class="p">,</span> <span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">c</span><span class="p">]))</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="c1"># the branch is not monitored under this contingency: nothing to enforce</span>
                 <span class="k">pass</span>
@@ -1232,7 +1227,7 @@
                                                   <span class="n">hvdc_active</span><span class="p">:</span> <span class="n">BoolVec</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                                                   <span class="n">vsc_delta_store</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">LpVar</span><span class="p">]],</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                                                   <span class="n">hvdc_delta_store</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">LpVar</span><span class="p">]],</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Formulate the branches</span>
 <span class="sd">    :param t_idx: time index</span>
 <span class="sd">    :param Sbase: base power (100 MVA)</span>
@@ -1252,7 +1247,7 @@
 <span class="sd">    :param vsc_delta_store: per group index, the persistent VSC Δ variable dictionary</span>
 <span class="sd">    :param hvdc_delta_store: per group index, the persistent HVDC Δ variable dictionary</span>
 <span class="sd">    :return objective function</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">f_obj</span> <span class="o">=</span> <span class="mf">0.0</span>
 
     <span class="c1"># Branches that could possibly receive a post-contingency limit</span>
@@ -1286,7 +1281,7 @@
 
         <span class="k">if</span> <span class="n">corrective_contingencies</span><span class="p">:</span>
             <span class="c1"># corrective N-1: the converters may change their set-points after the outage (shared helper)</span>
-            <span class="c1"># note: &quot;f_obj = f_obj + ...&quot; copies the whole objective per contingency, making it slower</span>
+            <span class="c1"># note: "f_obj = f_obj + ..." copies the whole objective per contingency, making it slower</span>
             <span class="k">if</span> <span class="n">vsc_delta_store</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">vsc_deltas_c</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">LpVar</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
                 <span class="n">hvdc_deltas_c</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">LpVar</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
@@ -1313,6 +1308,9 @@
                 <span class="n">structural_ntc</span><span class="o">=</span><span class="n">structural_ntc</span><span class="p">,</span> <span class="n">ntc_load_rule</span><span class="o">=</span><span class="n">ntc_load_rule</span><span class="p">,</span>
                 <span class="n">alpha_threshold</span><span class="o">=</span><span class="n">alpha_threshold</span><span class="p">,</span> <span class="n">alpha_n1_abs</span><span class="o">=</span><span class="n">alpha_n1_abs</span><span class="p">,</span> <span class="n">prob</span><span class="o">=</span><span class="n">prob</span><span class="p">)</span>
 
+    <span class="c1"># copy the contingency rates</span>
+    <span class="n">branch_vars</span><span class="o">.</span><span class="n">contingency_rates</span><span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">branch_data_t</span><span class="o">.</span><span class="n">contingency_rates</span>
+
     <span class="k">return</span> <span class="n">f_obj</span></div>
 
 
@@ -1326,7 +1324,7 @@
                                 <span class="n">vars_bus</span><span class="p">:</span> <span class="n">BusNtcVars</span><span class="p">,</span>
                                 <span class="n">prob</span><span class="p">:</span> <span class="n">OrToolsLpModel</span><span class="p">,</span>
                                 <span class="n">saturate</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 
 <span class="sd">    :param t_idx:</span>
 <span class="sd">    :param Sbase:</span>
@@ -1336,7 +1334,7 @@
 <span class="sd">    :param prob:</span>
 <span class="sd">    :param saturate:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">f_obj</span> <span class="o">=</span> <span class="mf">0.0</span>
 
@@ -1362,7 +1360,7 @@
                         <span class="n">prob</span><span class="o">=</span><span class="n">prob</span><span class="p">,</span> <span class="n">t_idx</span><span class="o">=</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">m</span><span class="o">=</span><span class="n">m</span><span class="p">,</span> <span class="n">rate</span><span class="o">=</span><span class="n">hvdc_data_t</span><span class="o">.</span><span class="n">rates</span><span class="p">[</span><span class="n">m</span><span class="p">]</span> <span class="o">/</span> <span class="n">Sbase</span><span class="p">,</span>
                         <span class="n">P0</span><span class="o">=</span><span class="n">P0</span><span class="p">,</span> <span class="n">droop</span><span class="o">=</span><span class="n">droop</span><span class="p">,</span>
                         <span class="n">theta_f</span><span class="o">=</span><span class="n">vars_bus</span><span class="o">.</span><span class="n">Va</span><span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">fr</span><span class="p">],</span> <span class="n">theta_t</span><span class="o">=</span><span class="n">vars_bus</span><span class="o">.</span><span class="n">Va</span><span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">to</span><span class="p">],</span>
-                        <span class="n">base_name</span><span class="o">=</span><span class="s2">&quot;hvdc&quot;</span><span class="p">,</span>
+                        <span class="n">base_name</span><span class="o">=</span><span class="s2">"hvdc"</span><span class="p">,</span>
                         <span class="n">angle_range</span><span class="o">=</span><span class="p">(</span><span class="n">vars_bus</span><span class="o">.</span><span class="n">angle_min</span><span class="p">[</span><span class="n">fr</span><span class="p">]</span> <span class="o">-</span> <span class="n">vars_bus</span><span class="o">.</span><span class="n">angle_max</span><span class="p">[</span><span class="n">to</span><span class="p">],</span>
                                      <span class="n">vars_bus</span><span class="o">.</span><span class="n">angle_max</span><span class="p">[</span><span class="n">fr</span><span class="p">]</span> <span class="o">-</span> <span class="n">vars_bus</span><span class="o">.</span><span class="n">angle_min</span><span class="p">[</span><span class="n">to</span><span class="p">]))</span>
 
@@ -1375,14 +1373,14 @@
                     <span class="n">hvdc_vars</span><span class="o">.</span><span class="n">flows</span><span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">m</span><span class="p">]</span> <span class="o">=</span> <span class="n">prob</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span>
                         <span class="n">lb</span><span class="o">=-</span><span class="n">hvdc_data_t</span><span class="o">.</span><span class="n">rates</span><span class="p">[</span><span class="n">m</span><span class="p">]</span> <span class="o">/</span> <span class="n">Sbase</span><span class="p">,</span>
                         <span class="n">ub</span><span class="o">=</span><span class="n">hvdc_data_t</span><span class="o">.</span><span class="n">rates</span><span class="p">[</span><span class="n">m</span><span class="p">]</span> <span class="o">/</span> <span class="n">Sbase</span><span class="p">,</span>
-                        <span class="n">name</span><span class="o">=</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;hvdc_flow_&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">m</span><span class="p">],</span> <span class="s2">&quot;_&quot;</span><span class="p">)</span>
+                        <span class="n">name</span><span class="o">=</span><span class="n">join</span><span class="p">(</span><span class="s2">"hvdc_flow_"</span><span class="p">,</span> <span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">m</span><span class="p">],</span> <span class="s2">"_"</span><span class="p">)</span>
                     <span class="p">)</span>
 
                     <span class="c1"># flow = P0 + k · (theta_f - theta_t)</span>
                     <span class="n">prob</span><span class="o">.</span><span class="n">add_cst</span><span class="p">(</span>
                         <span class="n">cst</span><span class="o">=</span><span class="n">hvdc_vars</span><span class="o">.</span><span class="n">flows</span><span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">m</span><span class="p">]</span> <span class="o">==</span> <span class="n">P0</span> <span class="o">+</span> <span class="n">droop</span> <span class="o">*</span> <span class="p">(</span>
                                 <span class="n">vars_bus</span><span class="o">.</span><span class="n">Va</span><span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">fr</span><span class="p">]</span> <span class="o">-</span> <span class="n">vars_bus</span><span class="o">.</span><span class="n">Va</span><span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">to</span><span class="p">]),</span>
-                        <span class="n">name</span><span class="o">=</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;hvdc_flow_cst_&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">m</span><span class="p">],</span> <span class="s2">&quot;_&quot;</span><span class="p">)</span>
+                        <span class="n">name</span><span class="o">=</span><span class="n">join</span><span class="p">(</span><span class="s2">"hvdc_flow_cst_"</span><span class="p">,</span> <span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">m</span><span class="p">],</span> <span class="s2">"_"</span><span class="p">)</span>
                     <span class="p">)</span>
 
                 <span class="c1"># add the injections matching the flow</span>
@@ -1397,7 +1395,7 @@
                     <span class="n">hvdc_vars</span><span class="o">.</span><span class="n">flows</span><span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">m</span><span class="p">]</span> <span class="o">=</span> <span class="n">prob</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span>
                         <span class="n">lb</span><span class="o">=-</span><span class="n">hvdc_data_t</span><span class="o">.</span><span class="n">rates</span><span class="p">[</span><span class="n">m</span><span class="p">]</span> <span class="o">/</span> <span class="n">Sbase</span><span class="p">,</span>
                         <span class="n">ub</span><span class="o">=</span><span class="n">hvdc_data_t</span><span class="o">.</span><span class="n">rates</span><span class="p">[</span><span class="n">m</span><span class="p">]</span> <span class="o">/</span> <span class="n">Sbase</span><span class="p">,</span>
-                        <span class="n">name</span><span class="o">=</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;hvdc_flow_&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">m</span><span class="p">],</span> <span class="s2">&quot;_&quot;</span><span class="p">)</span>
+                        <span class="n">name</span><span class="o">=</span><span class="n">join</span><span class="p">(</span><span class="s2">"hvdc_flow_"</span><span class="p">,</span> <span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">m</span><span class="p">],</span> <span class="s2">"_"</span><span class="p">)</span>
                     <span class="p">)</span>
 
                     <span class="c1"># add the injections matching the flow</span>
@@ -1422,7 +1420,7 @@
                     <span class="n">vars_bus</span><span class="o">.</span><span class="n">Pbalance</span><span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">fr</span><span class="p">]</span> <span class="o">-=</span> <span class="n">hvdc_vars</span><span class="o">.</span><span class="n">flows</span><span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">m</span><span class="p">]</span>
                     <span class="n">vars_bus</span><span class="o">.</span><span class="n">Pbalance</span><span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">to</span><span class="p">]</span> <span class="o">+=</span> <span class="n">hvdc_vars</span><span class="o">.</span><span class="n">flows</span><span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">m</span><span class="p">]</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;OPF: Unknown HVDC control mode </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">hvdc_data_t</span><span class="o">.</span><span class="n">control_mode_int</span><span class="p">[</span><span class="n">m</span><span class="p">]))</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">'OPF: Unknown HVDC control mode </span><span class="si">{}</span><span class="s1">'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">hvdc_data_t</span><span class="o">.</span><span class="n">control_mode_int</span><span class="p">[</span><span class="n">m</span><span class="p">]))</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="c1"># not active, therefore the flow is exactly zero</span>
             <span class="n">prob</span><span class="o">.</span><span class="n">set_var_bounds</span><span class="p">(</span><span class="n">var</span><span class="o">=</span><span class="n">hvdc_vars</span><span class="o">.</span><span class="n">flows</span><span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">m</span><span class="p">],</span> <span class="n">ub</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">lb</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
@@ -1446,7 +1444,7 @@
                                <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span><span class="p">,</span>
                                <span class="n">sat_rates</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
                                <span class="n">saturate</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 
 <span class="sd">    :param t_idx:</span>
 <span class="sd">    :param Sbase:</span>
@@ -1459,7 +1457,7 @@
 <span class="sd">    :param sat_rates: per-VSC P-mode 3 saturation rates in MW (see compute_vsc_pmode3_saturation_rates)</span>
 <span class="sd">    :param saturate:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">f_obj</span> <span class="o">=</span> <span class="mf">0.0</span>
     <span class="n">any_dc_slack</span> <span class="o">=</span> <span class="kc">False</span>
@@ -1485,11 +1483,11 @@
                 <span class="n">droop</span> <span class="o">=</span> <span class="n">vsc_data_t</span><span class="o">.</span><span class="n">control1_val</span><span class="p">[</span><span class="n">m</span><span class="p">]</span> <span class="o">*</span> <span class="mf">57.295779513</span> <span class="o">/</span> <span class="n">Sbase</span>  <span class="c1"># MW/deg -&gt; p.u./rad</span>
 
                 <span class="k">if</span> <span class="n">control_bus_idx</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
-                    <span class="c1"># Falling back to the converter&#39;s own DC bus makes the droop law reference a bus </span>
+                    <span class="c1"># Falling back to the converter's own DC bus makes the droop law reference a bus </span>
                     <span class="c1"># with no angle variable. Hold the set-point and report it instead.</span>
-                    <span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">&quot;P-mode 3 VSC without an angle-droop reference bus: &quot;</span>
-                                         <span class="s2">&quot;set &#39;control1_dev&#39; to the AC bus at the other end of the DC link. &quot;</span>
-                                         <span class="s2">&quot;The converter is held at its P set-point instead.&quot;</span><span class="p">,</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">"P-mode 3 VSC without an angle-droop reference bus: "</span>
+                                         <span class="s2">"set 'control1_dev' to the AC bus at the other end of the DC link. "</span>
+                                         <span class="s2">"The converter is held at its P set-point instead."</span><span class="p">,</span>
                                      <span class="n">device</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">vsc_data_t</span><span class="o">.</span><span class="n">names</span><span class="p">[</span><span class="n">m</span><span class="p">]))</span>
                     <span class="n">vsc_vars</span><span class="o">.</span><span class="n">flows</span><span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">m</span><span class="p">]</span> <span class="o">=</span> <span class="n">P0</span>
 
@@ -1499,7 +1497,7 @@
                         <span class="n">prob</span><span class="o">=</span><span class="n">prob</span><span class="p">,</span> <span class="n">t_idx</span><span class="o">=</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">m</span><span class="o">=</span><span class="n">m</span><span class="p">,</span> <span class="n">rate</span><span class="o">=</span><span class="n">sat_rates</span><span class="p">[</span><span class="n">m</span><span class="p">]</span> <span class="o">/</span> <span class="n">Sbase</span><span class="p">,</span>
                         <span class="n">P0</span><span class="o">=</span><span class="n">P0</span><span class="p">,</span> <span class="n">droop</span><span class="o">=</span><span class="n">droop</span><span class="p">,</span>
                         <span class="n">theta_f</span><span class="o">=</span><span class="n">bus_vars</span><span class="o">.</span><span class="n">Va</span><span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">control_bus_idx</span><span class="p">],</span> <span class="n">theta_t</span><span class="o">=</span><span class="n">bus_vars</span><span class="o">.</span><span class="n">Va</span><span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">to</span><span class="p">],</span>
-                        <span class="n">base_name</span><span class="o">=</span><span class="s2">&quot;vsc&quot;</span><span class="p">,</span>
+                        <span class="n">base_name</span><span class="o">=</span><span class="s2">"vsc"</span><span class="p">,</span>
                         <span class="n">angle_range</span><span class="o">=</span><span class="p">(</span><span class="n">bus_vars</span><span class="o">.</span><span class="n">angle_min</span><span class="p">[</span><span class="n">control_bus_idx</span><span class="p">]</span> <span class="o">-</span> <span class="n">bus_vars</span><span class="o">.</span><span class="n">angle_max</span><span class="p">[</span><span class="n">to</span><span class="p">],</span>
                                      <span class="n">bus_vars</span><span class="o">.</span><span class="n">angle_max</span><span class="p">[</span><span class="n">control_bus_idx</span><span class="p">]</span> <span class="o">-</span> <span class="n">bus_vars</span><span class="o">.</span><span class="n">angle_min</span><span class="p">[</span><span class="n">to</span><span class="p">]))</span>
 
@@ -1511,14 +1509,14 @@
                     <span class="n">vsc_vars</span><span class="o">.</span><span class="n">flows</span><span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">m</span><span class="p">]</span> <span class="o">=</span> <span class="n">prob</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span>
                         <span class="n">lb</span><span class="o">=-</span><span class="n">sat_rates</span><span class="p">[</span><span class="n">m</span><span class="p">]</span> <span class="o">/</span> <span class="n">Sbase</span><span class="p">,</span>
                         <span class="n">ub</span><span class="o">=</span><span class="n">sat_rates</span><span class="p">[</span><span class="n">m</span><span class="p">]</span> <span class="o">/</span> <span class="n">Sbase</span><span class="p">,</span>
-                        <span class="n">name</span><span class="o">=</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;vsc_flow_&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">m</span><span class="p">],</span> <span class="s2">&quot;_&quot;</span><span class="p">)</span>
+                        <span class="n">name</span><span class="o">=</span><span class="n">join</span><span class="p">(</span><span class="s2">"vsc_flow_"</span><span class="p">,</span> <span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">m</span><span class="p">],</span> <span class="s2">"_"</span><span class="p">)</span>
                     <span class="p">)</span>
 
                     <span class="c1"># flow = P0 + k · (theta_f - theta_t)</span>
                     <span class="n">prob</span><span class="o">.</span><span class="n">add_cst</span><span class="p">(</span>
                         <span class="n">cst</span><span class="o">=</span><span class="n">vsc_vars</span><span class="o">.</span><span class="n">flows</span><span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">m</span><span class="p">]</span> <span class="o">==</span> <span class="n">P0</span> <span class="o">+</span> <span class="n">droop</span> <span class="o">*</span> <span class="p">(</span>
                                 <span class="n">bus_vars</span><span class="o">.</span><span class="n">Va</span><span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">control_bus_idx</span><span class="p">]</span> <span class="o">-</span> <span class="n">bus_vars</span><span class="o">.</span><span class="n">Va</span><span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">to</span><span class="p">]),</span>
-                        <span class="n">name</span><span class="o">=</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;vsc_flow_cst_&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">m</span><span class="p">],</span> <span class="s2">&quot;_&quot;</span><span class="p">)</span>
+                        <span class="n">name</span><span class="o">=</span><span class="n">join</span><span class="p">(</span><span class="s2">"vsc_flow_cst_"</span><span class="p">,</span> <span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">m</span><span class="p">],</span> <span class="s2">"_"</span><span class="p">)</span>
                     <span class="p">)</span>
 
             <span class="k">elif</span> <span class="p">(</span><span class="n">vsc_data_t</span><span class="o">.</span><span class="n">control1_int</span><span class="p">[</span><span class="n">m</span><span class="p">]</span> <span class="o">==</span> <span class="n">ConverterControlType</span><span class="o">.</span><span class="n">Vm_dc</span><span class="o">.</span><span class="n">idx</span><span class="p">()</span> <span class="ow">and</span>
@@ -1535,7 +1533,7 @@
                 <span class="n">vsc_vars</span><span class="o">.</span><span class="n">flows</span><span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">m</span><span class="p">]</span> <span class="o">=</span> <span class="n">prob</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span>
                     <span class="n">lb</span><span class="o">=-</span><span class="n">vsc_data_t</span><span class="o">.</span><span class="n">rates</span><span class="p">[</span><span class="n">m</span><span class="p">]</span> <span class="o">/</span> <span class="n">Sbase</span><span class="p">,</span>
                     <span class="n">ub</span><span class="o">=</span><span class="n">vsc_data_t</span><span class="o">.</span><span class="n">rates</span><span class="p">[</span><span class="n">m</span><span class="p">]</span> <span class="o">/</span> <span class="n">Sbase</span><span class="p">,</span>
-                    <span class="n">name</span><span class="o">=</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;vsc_flow_&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">m</span><span class="p">],</span> <span class="s2">&quot;_&quot;</span><span class="p">)</span>
+                    <span class="n">name</span><span class="o">=</span><span class="n">join</span><span class="p">(</span><span class="s2">"vsc_flow_"</span><span class="p">,</span> <span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">m</span><span class="p">],</span> <span class="s2">"_"</span><span class="p">)</span>
                 <span class="p">)</span>
 
             <span class="k">elif</span> <span class="p">(</span><span class="n">vsc_data_t</span><span class="o">.</span><span class="n">control1_int</span><span class="p">[</span><span class="n">m</span><span class="p">]</span> <span class="o">==</span> <span class="n">ConverterControlType</span><span class="o">.</span><span class="n">Pac</span><span class="o">.</span><span class="n">idx</span><span class="p">()</span> <span class="ow">and</span>
@@ -1552,7 +1550,7 @@
                 <span class="n">vsc_vars</span><span class="o">.</span><span class="n">flows</span><span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">m</span><span class="p">]</span> <span class="o">=</span> <span class="n">prob</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span>
                     <span class="n">lb</span><span class="o">=-</span><span class="n">vsc_data_t</span><span class="o">.</span><span class="n">rates</span><span class="p">[</span><span class="n">m</span><span class="p">]</span> <span class="o">/</span> <span class="n">Sbase</span><span class="p">,</span>
                     <span class="n">ub</span><span class="o">=</span><span class="n">vsc_data_t</span><span class="o">.</span><span class="n">rates</span><span class="p">[</span><span class="n">m</span><span class="p">]</span> <span class="o">/</span> <span class="n">Sbase</span><span class="p">,</span>
-                    <span class="n">name</span><span class="o">=</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;vsc_flow_&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">m</span><span class="p">],</span> <span class="s2">&quot;_&quot;</span><span class="p">)</span>
+                    <span class="n">name</span><span class="o">=</span><span class="n">join</span><span class="p">(</span><span class="s2">"vsc_flow_"</span><span class="p">,</span> <span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">m</span><span class="p">],</span> <span class="s2">"_"</span><span class="p">)</span>
                 <span class="p">)</span>
 
             <span class="k">elif</span> <span class="p">(</span><span class="n">vsc_data_t</span><span class="o">.</span><span class="n">control1_int</span><span class="p">[</span><span class="n">m</span><span class="p">]</span> <span class="o">==</span> <span class="n">ConverterControlType</span><span class="o">.</span><span class="n">Vm_dc</span><span class="o">.</span><span class="n">idx</span><span class="p">()</span> <span class="ow">and</span>
@@ -1569,7 +1567,7 @@
                 <span class="n">vsc_vars</span><span class="o">.</span><span class="n">flows</span><span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">m</span><span class="p">]</span> <span class="o">=</span> <span class="n">prob</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span>
                     <span class="n">lb</span><span class="o">=-</span><span class="n">vsc_data_t</span><span class="o">.</span><span class="n">rates</span><span class="p">[</span><span class="n">m</span><span class="p">]</span> <span class="o">/</span> <span class="n">Sbase</span><span class="p">,</span>
                     <span class="n">ub</span><span class="o">=</span><span class="n">vsc_data_t</span><span class="o">.</span><span class="n">rates</span><span class="p">[</span><span class="n">m</span><span class="p">]</span> <span class="o">/</span> <span class="n">Sbase</span><span class="p">,</span>
-                    <span class="n">name</span><span class="o">=</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;vsc_flow_&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">m</span><span class="p">],</span> <span class="s2">&quot;_&quot;</span><span class="p">)</span>
+                    <span class="n">name</span><span class="o">=</span><span class="n">join</span><span class="p">(</span><span class="s2">"vsc_flow_"</span><span class="p">,</span> <span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">m</span><span class="p">],</span> <span class="s2">"_"</span><span class="p">)</span>
                 <span class="p">)</span>
 
             <span class="k">elif</span> <span class="p">(</span><span class="n">vsc_data_t</span><span class="o">.</span><span class="n">control1_int</span><span class="p">[</span><span class="n">m</span><span class="p">]</span> <span class="o">==</span> <span class="n">ConverterControlType</span><span class="o">.</span><span class="n">Pdc</span><span class="o">.</span><span class="n">idx</span><span class="p">()</span> <span class="ow">and</span>
@@ -1586,7 +1584,7 @@
                 <span class="n">vsc_vars</span><span class="o">.</span><span class="n">flows</span><span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">m</span><span class="p">]</span> <span class="o">=</span> <span class="n">prob</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span>
                     <span class="n">lb</span><span class="o">=-</span><span class="n">vsc_data_t</span><span class="o">.</span><span class="n">rates</span><span class="p">[</span><span class="n">m</span><span class="p">]</span> <span class="o">/</span> <span class="n">Sbase</span><span class="p">,</span>
                     <span class="n">ub</span><span class="o">=</span><span class="n">vsc_data_t</span><span class="o">.</span><span class="n">rates</span><span class="p">[</span><span class="n">m</span><span class="p">]</span> <span class="o">/</span> <span class="n">Sbase</span><span class="p">,</span>
-                    <span class="n">name</span><span class="o">=</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;vsc_flow_&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">m</span><span class="p">],</span> <span class="s2">&quot;_&quot;</span><span class="p">)</span>
+                    <span class="n">name</span><span class="o">=</span><span class="n">join</span><span class="p">(</span><span class="s2">"vsc_flow_"</span><span class="p">,</span> <span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">m</span><span class="p">],</span> <span class="s2">"_"</span><span class="p">)</span>
                 <span class="p">)</span>
 
             <span class="k">elif</span> <span class="p">(</span><span class="n">vsc_data_t</span><span class="o">.</span><span class="n">control1_int</span><span class="p">[</span><span class="n">m</span><span class="p">]</span> <span class="o">==</span> <span class="n">ConverterControlType</span><span class="o">.</span><span class="n">Pdc</span><span class="o">.</span><span class="n">idx</span><span class="p">()</span> <span class="ow">and</span>
@@ -1596,7 +1594,7 @@
                 <span class="n">vsc_vars</span><span class="o">.</span><span class="n">flows</span><span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">m</span><span class="p">]</span> <span class="o">=</span> <span class="n">prob</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span>
                     <span class="n">lb</span><span class="o">=-</span><span class="n">vsc_data_t</span><span class="o">.</span><span class="n">rates</span><span class="p">[</span><span class="n">m</span><span class="p">]</span> <span class="o">/</span> <span class="n">Sbase</span><span class="p">,</span>
                     <span class="n">ub</span><span class="o">=</span><span class="n">vsc_data_t</span><span class="o">.</span><span class="n">rates</span><span class="p">[</span><span class="n">m</span><span class="p">]</span> <span class="o">/</span> <span class="n">Sbase</span><span class="p">,</span>
-                    <span class="n">name</span><span class="o">=</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;vsc_flow_&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">m</span><span class="p">],</span> <span class="s2">&quot;_&quot;</span><span class="p">)</span>
+                    <span class="n">name</span><span class="o">=</span><span class="n">join</span><span class="p">(</span><span class="s2">"vsc_flow_"</span><span class="p">,</span> <span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">m</span><span class="p">],</span> <span class="s2">"_"</span><span class="p">)</span>
                 <span class="p">)</span>
 
             <span class="k">elif</span> <span class="p">(</span><span class="n">vsc_data_t</span><span class="o">.</span><span class="n">control1_int</span><span class="p">[</span><span class="n">m</span><span class="p">]</span> <span class="o">==</span> <span class="n">ConverterControlType</span><span class="o">.</span><span class="n">Pac</span><span class="o">.</span><span class="n">idx</span><span class="p">()</span> <span class="ow">and</span>
@@ -1606,12 +1604,12 @@
                 <span class="n">vsc_vars</span><span class="o">.</span><span class="n">flows</span><span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">m</span><span class="p">]</span> <span class="o">=</span> <span class="n">prob</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span>
                     <span class="n">lb</span><span class="o">=-</span><span class="n">vsc_data_t</span><span class="o">.</span><span class="n">rates</span><span class="p">[</span><span class="n">m</span><span class="p">]</span> <span class="o">/</span> <span class="n">Sbase</span><span class="p">,</span>
                     <span class="n">ub</span><span class="o">=</span><span class="n">vsc_data_t</span><span class="o">.</span><span class="n">rates</span><span class="p">[</span><span class="n">m</span><span class="p">]</span> <span class="o">/</span> <span class="n">Sbase</span><span class="p">,</span>
-                    <span class="n">name</span><span class="o">=</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;vsc_flow_&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">m</span><span class="p">],</span> <span class="s2">&quot;_&quot;</span><span class="p">)</span>
+                    <span class="n">name</span><span class="o">=</span><span class="n">join</span><span class="p">(</span><span class="s2">"vsc_flow_"</span><span class="p">,</span> <span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">m</span><span class="p">],</span> <span class="s2">"_"</span><span class="p">)</span>
                 <span class="p">)</span>
 
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Unsupported controls&quot;</span><span class="p">,</span>
-                                 <span class="n">value</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">vsc_data_t</span><span class="o">.</span><span class="n">control1_int</span><span class="p">[</span><span class="n">m</span><span class="p">]</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">vsc_data_t</span><span class="o">.</span><span class="n">control2_int</span><span class="p">[</span><span class="n">m</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="sa">f</span><span class="s2">"Unsupported controls"</span><span class="p">,</span>
+                                 <span class="n">value</span><span class="o">=</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">vsc_data_t</span><span class="o">.</span><span class="n">control1_int</span><span class="p">[</span><span class="n">m</span><span class="p">]</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">vsc_data_t</span><span class="o">.</span><span class="n">control2_int</span><span class="p">[</span><span class="n">m</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
             <span class="c1"># add the injections matching the flow</span>
             <span class="n">bus_vars</span><span class="o">.</span><span class="n">Pbalance</span><span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">fr</span><span class="p">]</span> <span class="o">-=</span> <span class="n">vsc_vars</span><span class="o">.</span><span class="n">flows</span><span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">m</span><span class="p">]</span>
@@ -1626,7 +1624,7 @@
         <span class="n">f_obj</span> <span class="o">-=</span> <span class="n">vsc_vars</span><span class="o">.</span><span class="n">flows</span><span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">k</span><span class="p">]</span> <span class="o">*</span> <span class="n">sense</span>
 
     <span class="k">if</span> <span class="ow">not</span> <span class="n">any_dc_slack</span> <span class="ow">and</span> <span class="n">vsc_data_t</span><span class="o">.</span><span class="n">nelm</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s2">&quot;No DC Slack! set Vm_dc in any of the converters&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s2">"No DC Slack! set Vm_dc in any of the converters"</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">f_obj</span></div>
 
@@ -1640,7 +1638,7 @@
                             <span class="n">bus_vars</span><span class="p">:</span> <span class="n">BusNtcVars</span><span class="p">,</span>
                             <span class="n">prob</span><span class="p">:</span> <span class="n">OrToolsLpModel</span><span class="p">,</span>
                             <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Add the kirchhoff nodal equality</span>
 <span class="sd">    :param t_idx: time step</span>
 <span class="sd">    :param vd: Array of slack indices</span>
@@ -1648,9 +1646,9 @@
 <span class="sd">    :param bus_vars: BusVars</span>
 <span class="sd">    :param prob: LpModel</span>
 <span class="sd">    :param logger: Logger</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
-    <span class="c1"># Note: At this point, Pbalance has all the devices&#39; power summed up inside (including branches)</span>
+    <span class="c1"># Note: At this point, Pbalance has all the devices' power summed up inside (including branches)</span>
 
     <span class="c1"># add the equality restrictions</span>
     <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">bus_data</span><span class="o">.</span><span class="n">nbus</span><span class="p">):</span>
@@ -1658,15 +1656,15 @@
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">bus_vars</span><span class="o">.</span><span class="n">Pbalance</span><span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">k</span><span class="p">],</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
             <span class="n">bus_vars</span><span class="o">.</span><span class="n">kirchhoff</span><span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">prob</span><span class="o">.</span><span class="n">add_cst</span><span class="p">(</span>
                 <span class="n">cst</span><span class="o">=</span><span class="n">bus_vars</span><span class="o">.</span><span class="n">Va</span><span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">k</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span>
-                <span class="n">name</span><span class="o">=</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;island_bus_&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">k</span><span class="p">],</span> <span class="s2">&quot;_&quot;</span><span class="p">)</span>
+                <span class="n">name</span><span class="o">=</span><span class="n">join</span><span class="p">(</span><span class="s2">"island_bus_"</span><span class="p">,</span> <span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">k</span><span class="p">],</span> <span class="s2">"_"</span><span class="p">)</span>
             <span class="p">)</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s2">&quot;bus isolated&quot;</span><span class="p">,</span>
-                               <span class="n">device</span><span class="o">=</span><span class="n">bus_data</span><span class="o">.</span><span class="n">names</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">+</span> <span class="sa">f</span><span class="s1">&#39;@t=</span><span class="si">{</span><span class="n">t_idx</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s2">"bus isolated"</span><span class="p">,</span>
+                               <span class="n">device</span><span class="o">=</span><span class="n">bus_data</span><span class="o">.</span><span class="n">names</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">+</span> <span class="sa">f</span><span class="s1">'@t=</span><span class="si">{</span><span class="n">t_idx</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
 
         <span class="k">else</span><span class="p">:</span>
             <span class="n">bus_vars</span><span class="o">.</span><span class="n">kirchhoff</span><span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">prob</span><span class="o">.</span><span class="n">add_cst</span><span class="p">(</span>
                 <span class="n">cst</span><span class="o">=</span><span class="n">bus_vars</span><span class="o">.</span><span class="n">Pbalance</span><span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">k</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span>
-                <span class="n">name</span><span class="o">=</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;kirchhoff_&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">k</span><span class="p">],</span> <span class="s2">&quot;_&quot;</span><span class="p">))</span>
+                <span class="n">name</span><span class="o">=</span><span class="n">join</span><span class="p">(</span><span class="s2">"kirchhoff_"</span><span class="p">,</span> <span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">k</span><span class="p">],</span> <span class="s2">"_"</span><span class="p">))</span>
 
     <span class="c1"># set this to the set value</span>
     <span class="n">Va</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">angle</span><span class="p">(</span><span class="n">bus_data</span><span class="o">.</span><span class="n">Vbus</span><span class="p">)</span>
@@ -1699,7 +1697,7 @@
                               <span class="n">verbose</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
                               <span class="n">robust</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
                               <span class="n">mip_framework</span><span class="p">:</span> <span class="n">MIPFramework</span> <span class="o">=</span> <span class="n">MIPFramework</span><span class="o">.</span><span class="n">PuLP</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">NtcVars</span><span class="p">,</span> <span class="n">LpModel</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 
 <span class="sd">    :param grid: MultiCircuit instance</span>
 <span class="sd">    :param t: Time indices (in the general scheme)</span>
@@ -1723,7 +1721,7 @@
 <span class="sd">    :param verbose: Verbosity level</span>
 <span class="sd">    :param robust: Robust optimization?</span>
 <span class="sd">    :return: NtcVars class with the results</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">mode_2_int</span> <span class="o">=</span> <span class="p">{</span>
         <span class="n">AvailableTransferMode</span><span class="o">.</span><span class="n">Generation</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
         <span class="n">AvailableTransferMode</span><span class="o">.</span><span class="n">InstalledPower</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
@@ -1762,10 +1760,6 @@
                                                         <span class="n">areas_dict</span><span class="o">=</span><span class="n">areas_dict</span><span class="p">,</span>
                                                         <span class="n">logger</span><span class="o">=</span><span class="n">logger</span><span class="p">)</span>
 
-    <span class="c1"># The N-1 report divides by these ratings even when no contingency row enters the LP</span>
-    <span class="c1"># so copy them unconditionally</span>
-    <span class="n">mip_vars</span><span class="o">.</span><span class="n">branch_vars</span><span class="o">.</span><span class="n">contingency_rates</span><span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">nc</span><span class="o">.</span><span class="n">passive_branch_data</span><span class="o">.</span><span class="n">contingency_rates</span>
-
     <span class="c1"># branch index, branch object, flow sense w.r.t the area exchange</span>
     <span class="n">bus_a1_idx_set</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">bus_a1_idx</span><span class="p">)</span>
     <span class="n">bus_a2_idx_set</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">bus_a2_idx</span><span class="p">)</span>
@@ -1786,13 +1780,13 @@
             <span class="n">mip_vars</span><span class="o">.</span><span class="n">bus_vars</span><span class="o">.</span><span class="n">Vm</span><span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">lp_model</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span>
                 <span class="n">lb</span><span class="o">=</span><span class="n">nc</span><span class="o">.</span><span class="n">bus_data</span><span class="o">.</span><span class="n">Vmin</span><span class="p">[</span><span class="n">k</span><span class="p">],</span>
                 <span class="n">ub</span><span class="o">=</span><span class="n">nc</span><span class="o">.</span><span class="n">bus_data</span><span class="o">.</span><span class="n">Vmax</span><span class="p">[</span><span class="n">k</span><span class="p">],</span>
-                <span class="n">name</span><span class="o">=</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;Vm_&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">k</span><span class="p">],</span> <span class="s2">&quot;_&quot;</span><span class="p">)</span>
+                <span class="n">name</span><span class="o">=</span><span class="n">join</span><span class="p">(</span><span class="s2">"Vm_"</span><span class="p">,</span> <span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">k</span><span class="p">],</span> <span class="s2">"_"</span><span class="p">)</span>
             <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">mip_vars</span><span class="o">.</span><span class="n">bus_vars</span><span class="o">.</span><span class="n">Va</span><span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">lp_model</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span>
                 <span class="n">lb</span><span class="o">=</span><span class="n">nc</span><span class="o">.</span><span class="n">bus_data</span><span class="o">.</span><span class="n">angle_min</span><span class="p">[</span><span class="n">k</span><span class="p">],</span>
                 <span class="n">ub</span><span class="o">=</span><span class="n">nc</span><span class="o">.</span><span class="n">bus_data</span><span class="o">.</span><span class="n">angle_max</span><span class="p">[</span><span class="n">k</span><span class="p">],</span>
-                <span class="n">name</span><span class="o">=</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;Va_&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">k</span><span class="p">],</span> <span class="s2">&quot;_&quot;</span><span class="p">)</span>
+                <span class="n">name</span><span class="o">=</span><span class="n">join</span><span class="p">(</span><span class="s2">"Va_"</span><span class="p">,</span> <span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">k</span><span class="p">],</span> <span class="s2">"_"</span><span class="p">)</span>
             <span class="p">)</span>
 
     <span class="c1"># formulate injections -------------------------------------------------------------------------------------</span>
@@ -1962,9 +1956,9 @@
                         <span class="n">hvdc_delta_store</span><span class="o">=</span><span class="n">hvdc_delta_store</span>
                     <span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Contingencies enabled, but no contingency groups provided&quot;</span><span class="p">)</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">&quot;Contingencies enabled, but no contingency groups provided. &quot;</span>
-                                       <span class="s2">&quot;You need to add them in the OptimalPowerFlowOptions&quot;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">"Contingencies enabled, but no contingency groups provided"</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">"Contingencies enabled, but no contingency groups provided. "</span>
+                                       <span class="s2">"You need to add them in the OptimalPowerFlowOptions"</span><span class="p">)</span>
 
     <span class="k">elif</span> <span class="n">zonal_grouping</span> <span class="o">==</span> <span class="n">ZonalGrouping</span><span class="o">.</span><span class="n">All</span><span class="p">:</span>
         <span class="c1"># this is the copper plate approach</span>
@@ -1975,7 +1969,7 @@
 
     <span class="c1"># solve</span>
     <span class="k">if</span> <span class="n">progress_text</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">progress_text</span><span class="p">(</span><span class="s2">&quot;Solving...&quot;</span><span class="p">)</span>
+        <span class="n">progress_text</span><span class="p">(</span><span class="s2">"Solving..."</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">progress_func</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">progress_func</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
@@ -2008,18 +2002,18 @@
             <span class="k">pass</span>  <span class="c1"># nothing to choose among the optima, or the first stage failed</span>
 
     <span class="c1"># gather the results</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">&quot;Status&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">lp_model</span><span class="o">.</span><span class="n">status2string</span><span class="p">(</span><span class="n">status</span><span class="p">))</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">"Status"</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">lp_model</span><span class="o">.</span><span class="n">status2string</span><span class="p">(</span><span class="n">status</span><span class="p">))</span>
 
     <span class="k">if</span> <span class="n">status</span> <span class="o">==</span> <span class="n">lp_model</span><span class="o">.</span><span class="n">OPTIMAL</span><span class="p">:</span>
         <span class="c1"># the transfer objective, not the second stage effort the model last minimised</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="s2">&quot;Objective function&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">lp_model</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span><span class="n">f_obj</span><span class="p">))</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="s2">"Objective function"</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">lp_model</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span><span class="n">f_obj</span><span class="p">))</span>
         <span class="n">mip_vars</span><span class="o">.</span><span class="n">acceptable_solution</span><span class="p">[</span><span class="n">t_idx</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="s1">&#39;The problem does not have an optimal solution.&#39;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="s1">'The problem does not have an optimal solution.'</span><span class="p">)</span>
         <span class="n">mip_vars</span><span class="o">.</span><span class="n">acceptable_solution</span><span class="p">[</span><span class="n">t_idx</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
-        <span class="n">lp_file_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">opf_file_path</span><span class="p">(),</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">grid</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> ntc debug.lp&quot;</span><span class="p">)</span>
+        <span class="n">lp_file_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">opf_file_path</span><span class="p">(),</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">grid</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> ntc debug.lp"</span><span class="p">)</span>
         <span class="n">lp_model</span><span class="o">.</span><span class="n">save_model</span><span class="p">(</span><span class="n">file_name</span><span class="o">=</span><span class="n">lp_file_name</span><span class="p">)</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="s2">&quot;Debug LP model saved&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">lp_file_name</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="s2">"Debug LP model saved"</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">lp_file_name</span><span class="p">)</span>
 
     <span class="c1"># gather the values of the variables</span>
     <span class="n">vars_v</span> <span class="o">=</span> <span class="n">mip_vars</span><span class="o">.</span><span class="n">get_values</span><span class="p">(</span><span class="n">Sbase</span><span class="o">=</span><span class="n">grid</span><span class="o">.</span><span class="n">Sbase</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="n">lp_model</span><span class="p">)</span>
@@ -2069,8 +2063,6 @@
         <span class="n">worst_flow</span><span class="o">=</span><span class="n">vars_v</span><span class="o">.</span><span class="n">branch_vars</span><span class="o">.</span><span class="n">worst_contingency_flow</span><span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="p">:],</span>
         <span class="n">worst_loading</span><span class="o">=</span><span class="n">vars_v</span><span class="o">.</span><span class="n">branch_vars</span><span class="o">.</span><span class="n">worst_contingency_loading</span><span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="p">:],</span>
         <span class="n">alpha_n1_worst</span><span class="o">=</span><span class="n">vars_v</span><span class="o">.</span><span class="n">branch_vars</span><span class="o">.</span><span class="n">alpha_n1_worst</span><span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="p">:],</span>
-        <span class="n">tied_groups</span><span class="o">=</span><span class="n">vars_v</span><span class="o">.</span><span class="n">branch_vars</span><span class="o">.</span><span class="n">worst_contingency_ties</span><span class="p">,</span>
-        <span class="n">branch_data</span><span class="o">=</span><span class="n">nc</span><span class="o">.</span><span class="n">passive_branch_data</span><span class="p">,</span>
         <span class="n">solved_flows</span><span class="o">=</span><span class="n">solved_flows</span><span class="p">,</span>
         <span class="n">corrective_addons_mw</span><span class="o">=</span><span class="n">corrective_addons_mw</span><span class="p">,</span>
     <span class="p">)</span>
@@ -2082,7 +2074,7 @@
     <span class="c1"># only their difference (= delta_1 - delta_2) is a mismatch</span>
     <span class="n">area_mismatch_mw</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">vars_v</span><span class="o">.</span><span class="n">delta_1</span><span class="p">[</span><span class="n">t_idx</span><span class="p">]</span> <span class="o">-</span> <span class="n">vars_v</span><span class="o">.</span><span class="n">delta_2</span><span class="p">[</span><span class="n">t_idx</span><span class="p">])</span> <span class="o">*</span> <span class="n">grid</span><span class="o">.</span><span class="n">Sbase</span>
     <span class="k">if</span> <span class="n">area_mismatch_mw</span> <span class="o">&gt;</span> <span class="mf">1e-3</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">&quot;Area 1 increase and area 2 decrease differ (MW)&quot;</span><span class="p">,</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">"Area 1 increase and area 2 decrease differ (MW)"</span><span class="p">,</span>
                            <span class="n">value</span><span class="o">=</span><span class="n">area_mismatch_mw</span><span class="p">,</span> <span class="n">expected_value</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">pass</span>  <span class="c1"># both areas moved the same power</span>
@@ -2093,7 +2085,7 @@
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mip_vars</span><span class="o">.</span><span class="n">bus_vars</span><span class="o">.</span><span class="n">Pbalance</span><span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">bus_k</span><span class="p">],</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
             <span class="k">pass</span>  <span class="c1"># isolated bus, no balance equation</span>
         <span class="k">elif</span> <span class="nb">abs</span><span class="p">(</span><span class="n">vars_v</span><span class="o">.</span><span class="n">bus_vars</span><span class="o">.</span><span class="n">Pbalance</span><span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">bus_k</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mf">1e-3</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">&quot;Nodal balance not fulfilled (MW)&quot;</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">nc</span><span class="o">.</span><span class="n">bus_data</span><span class="o">.</span><span class="n">names</span><span class="p">[</span><span class="n">bus_k</span><span class="p">],</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">"Nodal balance not fulfilled (MW)"</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">nc</span><span class="o">.</span><span class="n">bus_data</span><span class="o">.</span><span class="n">names</span><span class="p">[</span><span class="n">bus_k</span><span class="p">],</span>
                                <span class="n">value</span><span class="o">=</span><span class="n">vars_v</span><span class="o">.</span><span class="n">bus_vars</span><span class="o">.</span><span class="n">Pbalance</span><span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">bus_k</span><span class="p">],</span> <span class="n">expected_value</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">pass</span>  <span class="c1"># balanced within tolerance</span>
@@ -2118,15 +2110,15 @@
     <span class="n">inter_area_vsc_sense</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">inter_info_vsc</span><span class="p">]</span>
 
     <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">inter_area_branch_idx</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="s2">&quot;Inter area branch&quot;</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;(</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">) - </span><span class="si">{</span><span class="n">nc</span><span class="o">.</span><span class="n">passive_branch_data</span><span class="o">.</span><span class="n">names</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="s2">"Inter area branch"</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="sa">f</span><span class="s2">"(</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">) - </span><span class="si">{</span><span class="n">nc</span><span class="o">.</span><span class="n">passive_branch_data</span><span class="o">.</span><span class="n">names</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
                         <span class="n">value</span><span class="o">=</span><span class="n">vars_v</span><span class="o">.</span><span class="n">branch_vars</span><span class="o">.</span><span class="n">flows</span><span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">k</span><span class="p">])</span>
 
     <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">inter_area_hvdc_idx</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="s2">&quot;Inter area HvdcLine&quot;</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;(</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">) - </span><span class="si">{</span><span class="n">nc</span><span class="o">.</span><span class="n">hvdc_data</span><span class="o">.</span><span class="n">names</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="s2">"Inter area HvdcLine"</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="sa">f</span><span class="s2">"(</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">) - </span><span class="si">{</span><span class="n">nc</span><span class="o">.</span><span class="n">hvdc_data</span><span class="o">.</span><span class="n">names</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
                         <span class="n">value</span><span class="o">=</span><span class="n">vars_v</span><span class="o">.</span><span class="n">hvdc_vars</span><span class="o">.</span><span class="n">flows</span><span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">k</span><span class="p">])</span>
 
     <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">inter_area_vsc_idx</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="s2">&quot;Inter area Vsc&quot;</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;(</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">) - </span><span class="si">{</span><span class="n">nc</span><span class="o">.</span><span class="n">vsc_data</span><span class="o">.</span><span class="n">names</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="s2">"Inter area Vsc"</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="sa">f</span><span class="s2">"(</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">) - </span><span class="si">{</span><span class="n">nc</span><span class="o">.</span><span class="n">vsc_data</span><span class="o">.</span><span class="n">names</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
                         <span class="n">value</span><span class="o">=</span><span class="n">vars_v</span><span class="o">.</span><span class="n">vsc_vars</span><span class="o">.</span><span class="n">flows</span><span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">k</span><span class="p">])</span>
 
     <span class="c1"># The summation of flow increments in the inter-area branches must be ΔP in A1.</span>
@@ -2136,8 +2128,8 @@
             <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">vars_v</span><span class="o">.</span><span class="n">vsc_vars</span><span class="o">.</span><span class="n">flows</span><span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">inter_area_vsc_idx</span><span class="p">]</span> <span class="o">*</span> <span class="n">inter_area_vsc_sense</span><span class="p">)</span>
     <span class="p">)</span>
 
-    <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="s2">&quot;Structural inter-area rate&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">vars_v</span><span class="o">.</span><span class="n">structural_ntc</span><span class="p">[</span><span class="n">t_idx</span><span class="p">])</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="s2">&quot;Inter-area NTC&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">vars_v</span><span class="o">.</span><span class="n">inter_area_flows</span><span class="p">[</span><span class="n">t_idx</span><span class="p">])</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="s2">"Structural inter-area rate"</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">vars_v</span><span class="o">.</span><span class="n">structural_ntc</span><span class="p">[</span><span class="n">t_idx</span><span class="p">])</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="s2">"Inter-area NTC"</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">vars_v</span><span class="o">.</span><span class="n">inter_area_flows</span><span class="p">[</span><span class="n">t_idx</span><span class="p">])</span>
 
     <span class="k">return</span> <span class="n">vars_v</span><span class="p">,</span> <span class="n">lp_model</span></div>
 

@@ -59,7 +59,7 @@ def convert_contingencies(elm: Contingency,
                           code=str(elm.code),
                           prop=contingency_ops_type_dict[elm.prop],
                           value=elm.value,
-                          group=groups_dict[elm.group])
+                          group=None if elm.group is None else groups_dict[elm.group])
 
 
 def add_contingencies(circuit: MultiCircuit,

@@ -26,7 +26,7 @@ class PiLineEmtTemplate(TemplateDefinition):
                 TemplateProp(name="phC", units="", descr="Whether phase C is active.", tpe=bool, value=True),
                 TemplateProp(name="name", units="", descr="Symbolic block name.", tpe=str, value="Pi"),
                 TemplateProp(name="G_damp", units="pu", descr="Terminal numerical damping conductance.",
-                             tpe=float, value=1.0e-5),
+                             tpe=float, value=0.0),
             ]
         )
 
@@ -48,7 +48,7 @@ def get_pi_line_emt_template(vf: VarFactory,
                              phB: bool = True,
                              phC: bool = True,
                              name: str = "Pi",
-                             numerical_damping_conductance: float = 1.0e-5) -> EmtModelTemplate:
+                             numerical_damping_conductance: float = 0.0) -> EmtModelTemplate:
     """
     Build the EMT pi-line template with explicit API-mapped parameters.
 
@@ -64,19 +64,19 @@ def get_pi_line_emt_template(vf: VarFactory,
     :param phC: Bool. True if the line has phase C, else False.
     :param name: Symbolic model name.
     :param numerical_damping_conductance: Optional terminal shunt conductance
-        used for numerical damping. Set to zero when exact agreement with a
-        power-flow line model without that shunt is required.
+        used for numerical damping. Defaults to zero so the EMT line and
+        power-flow line have the same physical shunt.
     :return: EMT pi-line model template.
     :raises ValueError: If the line has no active phases.
     """
 
-    templ = EmtModelTemplate()
+    templ: EmtModelTemplate = EmtModelTemplate()
     templ.tpe = DeviceType.LineDevice
 
     templ.name = name
     templ.block.name = EmtLineTypes.PI.value
 
-    c0 = vf.add_const(0.0)
+    c0: Expr = vf.add_const(0.0)
 
     # -----------------------------
     # Phase mask from the line itself [N,A,B,C]
@@ -84,17 +84,17 @@ def get_pi_line_emt_template(vf: VarFactory,
     # The template phase layout must be driven exclusively by the explicit
     # phase flags of the current API. The optional ``line`` argument remains
     # only for backward compatibility with older callers.
-    ph_mask = np.array([
+    ph_mask: np.ndarray = np.array([
         phN,
         phA,
         phB,
         phC,
     ], dtype=bool)
 
-    ph_labels = list(["N", "A", "B", "C"])
-    idx_global = np.where(ph_mask)[0]  # indices in global NABC convention
-    active_ph = list(ph_labels[i] for i in idx_global)
-    m = len(active_ph)
+    ph_labels: list[str] = list(("N", "A", "B", "C"))
+    idx_global: np.ndarray = np.where(ph_mask)[0]  # indices in global NABC convention
+    active_ph: list[str] = list(ph_labels[i] for i in idx_global)
+    m: int = len(active_ph)
 
     if m == 0:
         raise ValueError(f"PI line '{name}' has no enabled phases in line.ys")
@@ -104,7 +104,7 @@ def get_pi_line_emt_template(vf: VarFactory,
     # The initializer writes parameter values into these exact enum slots,
     # which is why the template must read them back with the same layout.
     # -----------------------------
-    r_enums = list([
+    r_enums: list[list[ParamPowerFlowReferenceType]] = list([
         list([
             ParamPowerFlowReferenceType.Rnn, ParamPowerFlowReferenceType.Rna,
             ParamPowerFlowReferenceType.Rnb, ParamPowerFlowReferenceType.Rnc,
@@ -122,7 +122,7 @@ def get_pi_line_emt_template(vf: VarFactory,
             ParamPowerFlowReferenceType.Rcb, ParamPowerFlowReferenceType.Rcc,
         ]),
     ])
-    linv_enums = list([
+    linv_enums: list[list[ParamPowerFlowReferenceType]] = list([
         list([
             ParamPowerFlowReferenceType.Linv_nn, ParamPowerFlowReferenceType.Linv_na,
             ParamPowerFlowReferenceType.Linv_nb, ParamPowerFlowReferenceType.Linv_nc,
@@ -140,7 +140,7 @@ def get_pi_line_emt_template(vf: VarFactory,
             ParamPowerFlowReferenceType.Linv_cb, ParamPowerFlowReferenceType.Linv_cc,
         ]),
     ])
-    c_enums = list([
+    c_enums: list[list[ParamPowerFlowReferenceType]] = list([
         list([
             ParamPowerFlowReferenceType.Cnn, ParamPowerFlowReferenceType.Cna,
             ParamPowerFlowReferenceType.Cnb, ParamPowerFlowReferenceType.Cnc,
@@ -172,24 +172,34 @@ def get_pi_line_emt_template(vf: VarFactory,
     # so the wrapper must not duplicate those declarations.
     # -----------------------------
     block: Block = Block()
+    # Bus ports have their own nominal bases. The physical line state uses the
+    # common from reference; map only these declared slots for new PI Blocks.
+    tap_from: Var = vf.add_var("vtap_f")
+    tap_to: Var = vf.add_var("vtap_t")
+    block.parameters[tap_from] = vf.add_const(1.0)
+    block.parameters[tap_to] = vf.add_const(1.0)
+    block.api_obj_mapping[ParamPowerFlowReferenceType.vtap_f] = tap_from
+    block.api_obj_mapping[ParamPowerFlowReferenceType.vtap_t] = tap_to
 
     # -----------------------------
     # Create the symbolic parameter variables and publish them in the child API map.
     # The EMT problem writes numerical values into these variables later, so the
     # template equations must depend on the mapped variables instead of line data.
     # -----------------------------
-    phases = list(["n", "a", "b", "c"])
+    phases: list[str] = list(("n", "a", "b", "c"))
+    i: int
+    j: int
     for i in range(4):
         for j in range(4):
-            var_r = vf.add_var(f"R{phases[i]}{phases[j]}")
+            var_r: Var = vf.add_var(f"R{phases[i]}{phases[j]}")
             block.api_obj_mapping[r_enums[i][j]] = var_r
             block.parameters[var_r] = vf.add_const(0.0)
 
-            var_l = vf.add_var(f"Linv_{phases[i]}{phases[j]}")
+            var_l: Var = vf.add_var(f"Linv_{phases[i]}{phases[j]}")
             block.api_obj_mapping[linv_enums[i][j]] = var_l
             block.parameters[var_l] = vf.add_const(0.0)
 
-            var_c = vf.add_var(f"C{phases[i]}{phases[j]}")
+            var_c: Var = vf.add_var(f"C{phases[i]}{phases[j]}")
             block.api_obj_mapping[c_enums[i][j]] = var_c
             block.parameters[var_c] = vf.add_const(0.0)
 
@@ -223,41 +233,51 @@ def get_pi_line_emt_template(vf: VarFactory,
         linv_full.append(linv_row)
         c_full.append(c_row)
 
-    R_red = list(list(r_full[i][j] for j in idx_global) for i in idx_global)
-    Linv_red = list(list(linv_full[i][j] for j in idx_global) for i in idx_global)
-    C_red = list(list(c_full[i][j] for j in idx_global) for i in idx_global)
+    R_red: list[list[Var]] = list(list(r_full[i][j] for j in idx_global) for i in idx_global)
+    Linv_red: list[list[Var]] = list(list(linv_full[i][j] for j in idx_global) for i in idx_global)
+    C_red: list[list[Var]] = list(list(c_full[i][j] for j in idx_global) for i in idx_global)
     g_reduced: np.ndarray = g_full[np.ix_(idx_global, idx_global)]
 
     # -----------------------------
     # Create ONLY active terminal voltage input vars
     # -----------------------------
-    vf_keys = dict({
+    vf_keys: dict[str, VarPowerFlowReferenceType] = dict({
         "N": VarPowerFlowReferenceType.vf_N,
         "A": VarPowerFlowReferenceType.vf_A,
         "B": VarPowerFlowReferenceType.vf_B,
         "C": VarPowerFlowReferenceType.vf_C,
     })
-    vt_keys = dict({
+    vt_keys: dict[str, VarPowerFlowReferenceType] = dict({
         "N": VarPowerFlowReferenceType.vt_N,
         "A": VarPowerFlowReferenceType.vt_A,
         "B": VarPowerFlowReferenceType.vt_B,
         "C": VarPowerFlowReferenceType.vt_C,
     })
-    if_keys = dict({
+    if_keys: dict[str, VarPowerFlowReferenceType] = dict({
         "N": VarPowerFlowReferenceType.if_N,
         "A": VarPowerFlowReferenceType.if_A,
         "B": VarPowerFlowReferenceType.if_B,
         "C": VarPowerFlowReferenceType.if_C,
     })
-    it_keys = dict({
+    it_keys: dict[str, VarPowerFlowReferenceType] = dict({
         "N": VarPowerFlowReferenceType.it_N,
         "A": VarPowerFlowReferenceType.it_A,
         "B": VarPowerFlowReferenceType.it_B,
         "C": VarPowerFlowReferenceType.it_C,
     })
 
-    vf_vars = [vf.add_var(name=f"vf_{ph_label}", reference=vf_keys[ph_label]) for ph_label in active_ph]
-    vt_vars = [vf.add_var(name=f"vt_{ph_label}", reference=vt_keys[ph_label]) for ph_label in active_ph]
+    vf_vars: list[Var] = list(vf.add_var(name=f"vf_{ph_label}", reference=vf_keys[ph_label]) for ph_label in active_ph)
+    vt_vars: list[Var] = list(vf.add_var(name=f"vt_{ph_label}", reference=vt_keys[ph_label]) for ph_label in active_ph)
+    # Pair voltage and current conversion so port power remains invariant.
+    internal_voltage_from: np.ndarray = np.empty(m, dtype=object)
+    internal_voltage_to: np.ndarray = np.empty(m, dtype=object)
+    a: int
+    b: int
+    k: int
+    phase_label: str
+    for a in range(m):
+        internal_voltage_from[a] = vf_vars[a] / tap_from
+        internal_voltage_to[a] = vt_vars[a] / tap_to
 
     # d_vf_vars = [vf.add_diff_var(name=f"d_vf_{ph_label}", base_var=v_base) for ph_label, v_base in zip(active_ph, vf_vars)]
     # d_vt_vars = [vf.add_diff_var(name=f"d_vt_{ph_label}", base_var=v_base) for ph_label, v_base in zip(active_ph, vt_vars)]
@@ -266,20 +286,20 @@ def get_pi_line_emt_template(vf: VarFactory,
     # -----------------------------
     # Create model vars
     # -----------------------------
-    i_ser = [vf.add_var(name=f"i_ser_{ph_label}") for ph_label in active_ph]
-    q_f = [vf.add_var(name=f"q_f_{ph_label}") for ph_label in active_ph]
-    q_t = [vf.add_var(name=f"q_t_{ph_label}") for ph_label in active_ph]
-    d_vf_vars = [vf.add_var(name=f"d_vf_{ph_label}") for ph_label in active_ph]
-    d_vt_vars = [vf.add_var(name=f"d_vt_{ph_label}") for ph_label in active_ph]
+    i_ser: list[Var] = list(vf.add_var(name=f"i_ser_{ph_label}") for ph_label in active_ph)
+    q_f: list[Var] = list(vf.add_var(name=f"q_f_{ph_label}") for ph_label in active_ph)
+    q_t: list[Var] = list(vf.add_var(name=f"q_t_{ph_label}") for ph_label in active_ph)
+    d_vf_vars: list[Var] = list(vf.add_var(name=f"d_vf_{ph_label}") for ph_label in active_ph)
+    d_vt_vars: list[Var] = list(vf.add_var(name=f"d_vt_{ph_label}") for ph_label in active_ph)
 
-    di_ser = [vf.add_diff_var(name=f"di_ser_{ph_label}", base_var=i_ser[k]) for k, ph_label  in enumerate(active_ph)]
-    dq_f = [vf.add_diff_var(name=f"dq_f_{ph_label}", base_var=q_f[k]) for k, ph_label  in enumerate(active_ph)]
-    dq_t = [vf.add_diff_var(name=f"dq_t_{ph_label}", base_var=q_t[k]) for k, ph_label  in enumerate(active_ph)]
+    di_ser: list[Var] = list(vf.add_diff_var(name=f"di_ser_{ph_label}", base_var=i_ser[k]) for k, ph_label in enumerate(active_ph))
+    dq_f: list[Var] = list(vf.add_diff_var(name=f"dq_f_{ph_label}", base_var=q_f[k]) for k, ph_label in enumerate(active_ph))
+    dq_t: list[Var] = list(vf.add_diff_var(name=f"dq_t_{ph_label}", base_var=q_t[k]) for k, ph_label in enumerate(active_ph))
 
-    i_cap_f = [vf.add_var(name=f"i_cap_f_{ph_label}") for ph_label in active_ph]
-    i_cap_t = [vf.add_var(name=f"i_cap_t_{ph_label}") for ph_label in active_ph]
-    if_act = [vf.add_var(name=f"if_{ph_label}", reference=if_keys[ph_label]) for ph_label in active_ph]
-    it_act = [vf.add_var(name=f"it_{ph_label}", reference=it_keys[ph_label]) for ph_label in active_ph]
+    i_cap_f: list[Var] = list(vf.add_var(name=f"i_cap_f_{ph_label}") for ph_label in active_ph)
+    i_cap_t: list[Var] = list(vf.add_var(name=f"i_cap_t_{ph_label}") for ph_label in active_ph)
+    if_act: list[Var] = list(vf.add_var(name=f"if_{ph_label}", reference=if_keys[ph_label]) for ph_label in active_ph)
+    it_act: list[Var] = list(vf.add_var(name=f"it_{ph_label}", reference=it_keys[ph_label]) for ph_label in active_ph)
 
     # -----------------------------
     # Build block
@@ -292,15 +312,15 @@ def get_pi_line_emt_template(vf: VarFactory,
     # -----------------------------
     # State equations
     # -----------------------------
-    state_eqs = []
+    state_eqs: list[Expr] = list()
 
     for a in range(m):
-        expr_rhs = c0
+        expr_rhs: Expr = c0
         for b in range(m):
-            L_inv_ab = Linv_red[a][b]
-            term_b = (vf_vars[b] - vt_vars[b])
+            L_inv_ab: Var = Linv_red[a][b]
+            term_b: Expr = internal_voltage_from[b] - internal_voltage_to[b]
             for k in range(m):
-                R_bk = R_red[b][k]
+                R_bk: Var = R_red[b][k]
                 term_b = term_b - R_bk * i_ser[k]
             expr_rhs = expr_rhs + L_inv_ab * term_b
         state_eqs.append(expr_rhs)
@@ -315,23 +335,23 @@ def get_pi_line_emt_template(vf: VarFactory,
     # -----------------------------
     # Algebraic equations
     # -----------------------------
-    alg_eqs = []
+    alg_eqs: list[Expr] = list()
 
     for a in range(m):
-        rhs_q = c0
+        rhs_q: Expr = c0
         for b in range(m):
-            C_ab = C_red[a][b]
-            rhs_q = rhs_q + C_ab * vf_vars[b]
+            C_ab: Var = C_red[a][b]
+            rhs_q = rhs_q + C_ab * internal_voltage_from[b]
         alg_eqs.append(q_f[a] - rhs_q)
 
     for a in range(m):
         rhs_q = c0
         for b in range(m):
             C_ab = C_red[a][b]
-            rhs_q = rhs_q + C_ab * vt_vars[b]
+            rhs_q = rhs_q + C_ab * internal_voltage_to[b]
         alg_eqs.append(q_t[a] - rhs_q)
 
-    G_damp = vf.add_var("G_damp")
+    G_damp: Var = vf.add_var("G_damp")
     block.parameters[G_damp] = vf.add_const(float(numerical_damping_conductance))
     # Reuse the full physical half-shunt expressions in terminal and initial equations.
     # Coupling and neutral entries follow the same active-coordinate reduction as C.
@@ -341,10 +361,12 @@ def get_pi_line_emt_template(vf: VarFactory,
         physical_current_f[a] = c0
         physical_current_t[a] = c0
         for b in range(m):
-            physical_current_f[a] += g_reduced[a, b] * vf_vars[b]
-            physical_current_t[a] += g_reduced[a, b] * vt_vars[b]
-        alg_eqs.append(if_act[a] - (i_ser[a] + i_cap_f[a] + physical_current_f[a] + G_damp * vf_vars[a]))
-        alg_eqs.append(it_act[a] - (-i_ser[a] + i_cap_t[a] + physical_current_t[a] + G_damp * vt_vars[a]))
+            physical_current_f[a] += g_reduced[a, b] * internal_voltage_from[b]
+            physical_current_t[a] += g_reduced[a, b] * internal_voltage_to[b]
+        # Numerical damping is a local port conductance, independently of the
+        # physical half-shunt and its paired current transformation.
+        alg_eqs.append(if_act[a] - ((i_ser[a] + i_cap_f[a] + physical_current_f[a]) / tap_from + G_damp * vf_vars[a]))
+        alg_eqs.append(it_act[a] - ((-i_ser[a] + i_cap_t[a] + physical_current_t[a]) / tap_to + G_damp * vt_vars[a]))
 
     block.algebraic_eqs = alg_eqs
     block.out_vars = if_act + it_act
@@ -370,8 +392,8 @@ def get_pi_line_emt_template(vf: VarFactory,
 
     block.external_mapping = mapping
 
-    d_vf_keys = dict({"N": VarPowerFlowReferenceType.d_v_N_f, "A": VarPowerFlowReferenceType.d_v_A_f, "B": VarPowerFlowReferenceType.d_v_B_f, "C": VarPowerFlowReferenceType.d_v_C_f})
-    d_vt_keys = dict({"N": VarPowerFlowReferenceType.d_v_N_t, "A": VarPowerFlowReferenceType.d_v_A_t, "B": VarPowerFlowReferenceType.d_v_B_t, "C": VarPowerFlowReferenceType.d_v_C_t})
+    d_vf_keys: dict[str, VarPowerFlowReferenceType] = dict({"N": VarPowerFlowReferenceType.d_v_N_f, "A": VarPowerFlowReferenceType.d_v_A_f, "B": VarPowerFlowReferenceType.d_v_B_f, "C": VarPowerFlowReferenceType.d_v_C_f})
+    d_vt_keys: dict[str, VarPowerFlowReferenceType] = dict({"N": VarPowerFlowReferenceType.d_v_N_t, "A": VarPowerFlowReferenceType.d_v_A_t, "B": VarPowerFlowReferenceType.d_v_B_t, "C": VarPowerFlowReferenceType.d_v_C_t})
 
     for k, phase_label in enumerate(active_ph):
         block.external_mapping[d_vf_keys[phase_label]] = d_vf_vars[k]
@@ -382,21 +404,21 @@ def get_pi_line_emt_template(vf: VarFactory,
     # -----------------------------
     # Init equations
     # -----------------------------
-    init_eqs: Dict[Var, Expr] = {}
+    init_eqs: Dict[Var, Expr] = dict()
 
     for a in range(m):
-        rhs_f = c0
-        rhs_t = c0
+        rhs_f: Expr = c0
+        rhs_t: Expr = c0
         for b in range(m):
             C_ab = C_red[a][b]
-            rhs_f += C_ab * vf_vars[b]
-            rhs_t += C_ab * vt_vars[b]
+            rhs_f += C_ab * internal_voltage_from[b]
+            rhs_t += C_ab * internal_voltage_to[b]
         init_eqs[q_f[a]] = rhs_f
         init_eqs[q_t[a]] = rhs_t
 
     for a in range(m):
-        i_ser_from = if_act[a] - i_cap_f[a] - physical_current_f[a] - G_damp * vf_vars[a]
-        i_ser_to = -it_act[a] + i_cap_t[a] + physical_current_t[a] + G_damp * vt_vars[a]
+        i_ser_from: Expr = tap_from * (if_act[a] - G_damp * vf_vars[a]) - i_cap_f[a] - physical_current_f[a]
+        i_ser_to: Expr = -tap_to * (it_act[a] - G_damp * vt_vars[a]) + i_cap_t[a] + physical_current_t[a]
         init_eqs[i_ser[a]] = 0.5 * (i_ser_from + i_ser_to)
 
     block.init_eqs = init_eqs
@@ -404,16 +426,16 @@ def get_pi_line_emt_template(vf: VarFactory,
     # -----------------------------
     # Derivative initialization
     # -----------------------------
-    diff_init_eqs: Dict[Var, Expr] = {}
+    diff_init_eqs: Dict[Var, Expr] = dict()
 
     for a in range(m):
-        di_expression = c0
+        di_expression: Expr = c0
         for b in range(m):
-            term_b = (vf_vars[b] - vt_vars[b])
+            term_b = internal_voltage_from[b] - internal_voltage_to[b]
             for k in range(m):
                 R_bk = R_red[b][k]
                 term_b = term_b - R_bk * i_ser[k]
-            coeff = Linv_red[a][b]
+            coeff: Var = Linv_red[a][b]
             di_expression = di_expression + coeff * term_b
         diff_init_eqs[di_ser[a]] = di_expression
 
@@ -422,12 +444,12 @@ def get_pi_line_emt_template(vf: VarFactory,
         diff_init_eqs[dq_t[a]] = i_cap_t[a]
 
     for a in range(m):
-        rhs_i_cap_f = c0
-        rhs_i_cap_t = c0
+        rhs_i_cap_f: Expr = c0
+        rhs_i_cap_t: Expr = c0
         for b in range(m):
             C_ab = C_red[a][b]
-            rhs_i_cap_f += C_ab * d_vf_vars[b]
-            rhs_i_cap_t += C_ab * d_vt_vars[b]
+            rhs_i_cap_f += C_ab * d_vf_vars[b] / tap_from
+            rhs_i_cap_t += C_ab * d_vt_vars[b] / tap_to
         init_eqs[i_cap_f[a]] = rhs_i_cap_f
         init_eqs[i_cap_t[a]] = rhs_i_cap_t
 

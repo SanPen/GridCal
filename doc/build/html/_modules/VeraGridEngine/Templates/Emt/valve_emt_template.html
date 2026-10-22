@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Templates.Emt.valve_emt_template &mdash; VeraGrid 6.7.13 documentation</title>
+  <title>VeraGridEngine.Templates.Emt.valve_emt_template &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=16fbabd8"></script>
+      <script src="../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -123,12 +123,12 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_get_valve_type_code</span><span class="p">(</span><span class="n">valve_tpe</span><span class="p">:</span> <span class="n">ValveEmtType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Return the numeric code used by the EMT valve template for one valve type.</span>
 
 <span class="sd">    :param valve_tpe: Valve physical type.</span>
 <span class="sd">    :return: Numeric code stored in runtime parameters.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">valve_tpe</span> <span class="o">==</span> <span class="n">ValveEmtType</span><span class="o">.</span><span class="n">Diode</span><span class="p">:</span>
         <span class="k">return</span> <span class="mf">0.0</span>
     <span class="k">else</span><span class="p">:</span>
@@ -142,16 +142,16 @@
     <span class="k">if</span> <span class="n">valve_tpe</span> <span class="o">==</span> <span class="n">ValveEmtType</span><span class="o">.</span><span class="n">Thyristor</span><span class="p">:</span>
         <span class="k">return</span> <span class="mf">2.0</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unsupported EMT valve type </span><span class="si">{</span><span class="n">valve_tpe</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unsupported EMT valve type </span><span class="si">{</span><span class="n">valve_tpe</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_get_valve_variant_code</span><span class="p">(</span><span class="n">model_variant</span><span class="p">:</span> <span class="n">ValveEmtModelVariant</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Return the numeric code used by the EMT valve template for one model variant.</span>
 
 <span class="sd">    :param model_variant: Valve EMT modelling variant.</span>
 <span class="sd">    :return: Numeric code stored in runtime parameters.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">model_variant</span> <span class="o">==</span> <span class="n">ValveEmtModelVariant</span><span class="o">.</span><span class="n">Ideal</span><span class="p">:</span>
         <span class="k">return</span> <span class="mf">0.0</span>
     <span class="k">else</span><span class="p">:</span>
@@ -160,16 +160,16 @@
     <span class="k">if</span> <span class="n">model_variant</span> <span class="o">==</span> <span class="n">ValveEmtModelVariant</span><span class="o">.</span><span class="n">Complete</span><span class="p">:</span>
         <span class="k">return</span> <span class="mf">1.0</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unsupported EMT valve model variant </span><span class="si">{</span><span class="n">model_variant</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unsupported EMT valve model variant </span><span class="si">{</span><span class="n">model_variant</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_get_valve_initialization_code</span><span class="p">(</span><span class="n">initial_state</span><span class="p">:</span> <span class="n">ValveInitializationState</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Return the numeric code used by the EMT valve template for the initialization state.</span>
 
 <span class="sd">    :param initial_state: Valve initialization policy.</span>
 <span class="sd">    :return: Numeric code stored in runtime parameters.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">initial_state</span> <span class="o">==</span> <span class="n">ValveInitializationState</span><span class="o">.</span><span class="n">FromPowerFlow</span><span class="p">:</span>
         <span class="k">return</span> <span class="mf">0.0</span>
     <span class="k">else</span><span class="p">:</span>
@@ -188,14 +188,14 @@
     <span class="k">if</span> <span class="n">initial_state</span> <span class="o">==</span> <span class="n">ValveInitializationState</span><span class="o">.</span><span class="n">ReverseConducting</span><span class="p">:</span>
         <span class="k">return</span> <span class="mf">3.0</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unsupported EMT valve initialization state </span><span class="si">{</span><span class="n">initial_state</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unsupported EMT valve initialization state </span><span class="si">{</span><span class="n">initial_state</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_build_initial_path_mode_expression</span><span class="p">(</span>
         <span class="n">initial_state_code</span><span class="p">:</span> <span class="n">Var</span><span class="p">,</span>
         <span class="n">path_mode_pf_seed</span><span class="p">:</span> <span class="n">Var</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Expr</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Build the initialization expression of the retained valve path mode.</span>
 
 <span class="sd">    The retained runtime mode is initialized from a symbolic expression so the</span>
@@ -205,7 +205,7 @@
 <span class="sd">    :param initial_state_code: Runtime parameter encoding the initialization policy.</span>
 <span class="sd">    :param path_mode_pf_seed: PF-derived forward/reverse conduction seed.</span>
 <span class="sd">    :return: Symbolic initialization expression for the retained path mode.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">from_pf_flag</span><span class="p">:</span> <span class="n">Expr</span> <span class="o">=</span> <span class="p">(</span><span class="n">initial_state_code</span> <span class="o">==</span> <span class="n">Const</span><span class="p">(</span><span class="mf">0.0</span><span class="p">))</span><span class="o">.</span><span class="n">to_expression</span><span class="p">()</span>
     <span class="n">blocked_flag</span><span class="p">:</span> <span class="n">Expr</span> <span class="o">=</span> <span class="p">(</span><span class="n">initial_state_code</span> <span class="o">==</span> <span class="n">Const</span><span class="p">(</span><span class="mf">1.0</span><span class="p">))</span><span class="o">.</span><span class="n">to_expression</span><span class="p">()</span>
     <span class="n">forward_flag</span><span class="p">:</span> <span class="n">Expr</span> <span class="o">=</span> <span class="p">(</span><span class="n">initial_state_code</span> <span class="o">==</span> <span class="n">Const</span><span class="p">(</span><span class="mf">2.0</span><span class="p">))</span><span class="o">.</span><span class="n">to_expression</span><span class="p">()</span>
@@ -224,14 +224,14 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Templates.Emt.html#VeraGridEngine.Templates.Emt.valve_emt_template.get_valve_emt_template">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_valve_emt_template</span><span class="p">(</span>
         <span class="n">vf</span><span class="p">:</span> <span class="n">VarFactory</span><span class="p">,</span>
-        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;valve_emt_template&quot;</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"valve_emt_template"</span><span class="p">,</span>
         <span class="n">valve_tpe</span><span class="p">:</span> <span class="n">ValveEmtType</span> <span class="o">=</span> <span class="n">ValveEmtType</span><span class="o">.</span><span class="n">Igbt</span><span class="p">,</span>
         <span class="n">model_variant</span><span class="p">:</span> <span class="n">ValveEmtModelVariant</span> <span class="o">=</span> <span class="n">ValveEmtModelVariant</span><span class="o">.</span><span class="n">Ideal</span><span class="p">,</span>
         <span class="n">initial_state</span><span class="p">:</span> <span class="n">ValveInitializationState</span> <span class="o">=</span> <span class="n">ValveInitializationState</span><span class="o">.</span><span class="n">Blocked</span><span class="p">,</span>
         <span class="n">antiparallel_diode</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">internal_name_suffix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EmtModelTemplate</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Build a generic two-terminal EMT valve template.</span>
 
 <span class="sd">    The template represents one controlled DC semiconductor branch that can be</span>
@@ -255,7 +255,7 @@
 <span class="sd">        variable unique when several valve blocks share one composite model.</span>
 <span class="sd">        ``None`` preserves the legacy standalone variable names.</span>
 <span class="sd">    :return: Reusable EMT valve template.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">templ</span><span class="p">:</span> <span class="n">EmtModelTemplate</span> <span class="o">=</span> <span class="n">EmtModelTemplate</span><span class="p">()</span>
     <span class="n">templ</span><span class="o">.</span><span class="n">tpe</span> <span class="o">=</span> <span class="n">DeviceType</span><span class="o">.</span><span class="n">DynamicModelHostDevice</span>
     <span class="n">templ</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
@@ -266,81 +266,81 @@
     <span class="c1"># against the complete system block and therefore requires unique names.</span>
     <span class="n">symbolic_suffix</span><span class="p">:</span> <span class="nb">str</span>
     <span class="k">if</span> <span class="n">internal_name_suffix</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">symbolic_suffix</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="n">symbolic_suffix</span> <span class="o">=</span> <span class="s2">""</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">symbolic_suffix</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;_</span><span class="si">{</span><span class="n">internal_name_suffix</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="n">symbolic_suffix</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"_</span><span class="si">{</span><span class="n">internal_name_suffix</span><span class="si">}</span><span class="s2">"</span>
 
     <span class="c1"># ------------------------------------------------------------------</span>
     <span class="c1"># Terminal inputs.</span>
     <span class="c1"># ------------------------------------------------------------------</span>
     <span class="n">v_f_dc</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span>
-        <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;v_f_dc</span><span class="si">{</span><span class="n">symbolic_suffix</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">"v_f_dc</span><span class="si">{</span><span class="n">symbolic_suffix</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
         <span class="n">reference</span><span class="o">=</span><span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">Vf_dc</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">v_t_dc</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span>
-        <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;v_t_dc</span><span class="si">{</span><span class="n">symbolic_suffix</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">"v_t_dc</span><span class="si">{</span><span class="n">symbolic_suffix</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
         <span class="n">reference</span><span class="o">=</span><span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">Vt_dc</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="c1"># ------------------------------------------------------------------</span>
     <span class="c1"># Runtime parameters.</span>
     <span class="c1"># ------------------------------------------------------------------</span>
-    <span class="n">valve_type_code</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;valve_type_code</span><span class="si">{</span><span class="n">symbolic_suffix</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="n">model_variant_code</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;model_variant_code</span><span class="si">{</span><span class="n">symbolic_suffix</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">valve_type_code</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">"valve_type_code</span><span class="si">{</span><span class="n">symbolic_suffix</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="n">model_variant_code</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">"model_variant_code</span><span class="si">{</span><span class="n">symbolic_suffix</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
     <span class="n">antiparallel_diode_enabled</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span>
-        <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;antiparallel_diode_enabled</span><span class="si">{</span><span class="n">symbolic_suffix</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">"antiparallel_diode_enabled</span><span class="si">{</span><span class="n">symbolic_suffix</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
     <span class="p">)</span>
-    <span class="n">rated_current</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;rated_current</span><span class="si">{</span><span class="n">symbolic_suffix</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="n">forward_voltage</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;forward_voltage</span><span class="si">{</span><span class="n">symbolic_suffix</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="n">on_resistance</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;on_resistance</span><span class="si">{</span><span class="n">symbolic_suffix</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="n">off_conductance</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;off_conductance</span><span class="si">{</span><span class="n">symbolic_suffix</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="n">gate_fired</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;gate_fired</span><span class="si">{</span><span class="n">symbolic_suffix</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="n">initial_state_code</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;initial_state_code</span><span class="si">{</span><span class="n">symbolic_suffix</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="n">snubber_enabled</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;snubber_enabled</span><span class="si">{</span><span class="n">symbolic_suffix</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">rated_current</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">"rated_current</span><span class="si">{</span><span class="n">symbolic_suffix</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="n">forward_voltage</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">"forward_voltage</span><span class="si">{</span><span class="n">symbolic_suffix</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="n">on_resistance</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">"on_resistance</span><span class="si">{</span><span class="n">symbolic_suffix</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="n">off_conductance</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">"off_conductance</span><span class="si">{</span><span class="n">symbolic_suffix</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="n">gate_fired</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">"gate_fired</span><span class="si">{</span><span class="n">symbolic_suffix</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="n">initial_state_code</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">"initial_state_code</span><span class="si">{</span><span class="n">symbolic_suffix</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="n">snubber_enabled</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">"snubber_enabled</span><span class="si">{</span><span class="n">symbolic_suffix</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
     <span class="n">snubber_capacitance</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span>
-        <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;snubber_capacitance</span><span class="si">{</span><span class="n">symbolic_suffix</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">"snubber_capacitance</span><span class="si">{</span><span class="n">symbolic_suffix</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">snubber_conductance</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span>
-        <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;snubber_conductance</span><span class="si">{</span><span class="n">symbolic_suffix</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">"snubber_conductance</span><span class="si">{</span><span class="n">symbolic_suffix</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
     <span class="p">)</span>
-    <span class="n">voltage_eps</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;voltage_eps</span><span class="si">{</span><span class="n">symbolic_suffix</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="n">current_eps</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;current_eps</span><span class="si">{</span><span class="n">symbolic_suffix</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="n">path_mode_pf_seed</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;path_mode_pf_seed</span><span class="si">{</span><span class="n">symbolic_suffix</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">voltage_eps</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">"voltage_eps</span><span class="si">{</span><span class="n">symbolic_suffix</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="n">current_eps</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">"current_eps</span><span class="si">{</span><span class="n">symbolic_suffix</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="n">path_mode_pf_seed</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">"path_mode_pf_seed</span><span class="si">{</span><span class="n">symbolic_suffix</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
     <span class="c1"># ------------------------------------------------------------------</span>
     <span class="c1"># Retained runtime mode.</span>
     <span class="c1"># ------------------------------------------------------------------</span>
-    <span class="n">path_mode</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;path_mode</span><span class="si">{</span><span class="n">symbolic_suffix</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">path_mode</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">"path_mode</span><span class="si">{</span><span class="n">symbolic_suffix</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
     <span class="c1"># ------------------------------------------------------------------</span>
     <span class="c1"># Dynamic and algebraic variables.</span>
     <span class="c1"># ------------------------------------------------------------------</span>
-    <span class="n">q_snubber</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;q_snubber</span><span class="si">{</span><span class="n">symbolic_suffix</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">q_snubber</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">"q_snubber</span><span class="si">{</span><span class="n">symbolic_suffix</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
     <span class="n">d_q_snubber</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_diff_var</span><span class="p">(</span>
-        <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;d_q_snubber</span><span class="si">{</span><span class="n">symbolic_suffix</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">"d_q_snubber</span><span class="si">{</span><span class="n">symbolic_suffix</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
         <span class="n">base_var</span><span class="o">=</span><span class="n">q_snubber</span><span class="p">,</span>
     <span class="p">)</span>
 
-    <span class="n">v_valve</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;v_valve</span><span class="si">{</span><span class="n">symbolic_suffix</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="n">i_static</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;i_static</span><span class="si">{</span><span class="n">symbolic_suffix</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="n">i_capacitive</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;i_capacitive</span><span class="si">{</span><span class="n">symbolic_suffix</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">v_valve</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">"v_valve</span><span class="si">{</span><span class="n">symbolic_suffix</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="n">i_static</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">"i_static</span><span class="si">{</span><span class="n">symbolic_suffix</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="n">i_capacitive</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">"i_capacitive</span><span class="si">{</span><span class="n">symbolic_suffix</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
     <span class="n">i_f_dc</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span>
-        <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;i_f_dc</span><span class="si">{</span><span class="n">symbolic_suffix</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">"i_f_dc</span><span class="si">{</span><span class="n">symbolic_suffix</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
         <span class="n">reference</span><span class="o">=</span><span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">If_dc</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">i_t_dc</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span>
-        <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;i_t_dc</span><span class="si">{</span><span class="n">symbolic_suffix</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">"i_t_dc</span><span class="si">{</span><span class="n">symbolic_suffix</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
         <span class="n">reference</span><span class="o">=</span><span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">It_dc</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">p_f</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span>
-        <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;p_f</span><span class="si">{</span><span class="n">symbolic_suffix</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">"p_f</span><span class="si">{</span><span class="n">symbolic_suffix</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
         <span class="n">reference</span><span class="o">=</span><span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">Pf</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">p_t</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span>
-        <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;p_t</span><span class="si">{</span><span class="n">symbolic_suffix</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">"p_t</span><span class="si">{</span><span class="n">symbolic_suffix</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
         <span class="n">reference</span><span class="o">=</span><span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">Pt</span><span class="p">,</span>
     <span class="p">)</span>
-    <span class="n">i_rating_margin</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;i_rating_margin</span><span class="si">{</span><span class="n">symbolic_suffix</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">i_rating_margin</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">"i_rating_margin</span><span class="si">{</span><span class="n">symbolic_suffix</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
     <span class="c1"># ------------------------------------------------------------------</span>
     <span class="c1"># Fixed numerical safeguards.</span>
@@ -457,7 +457,7 @@
                 <span class="n">current_eps_var_name</span><span class="o">=</span><span class="n">current_eps</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
                 <span class="n">valve_voltage_var_name</span><span class="o">=</span><span class="n">v_valve</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
                 <span class="n">valve_current_var_name</span><span class="o">=</span><span class="n">i_f_dc</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
-                <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;valve_state_logic</span><span class="si">{</span><span class="n">symbolic_suffix</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">"valve_state_logic</span><span class="si">{</span><span class="n">symbolic_suffix</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
             <span class="p">),</span>
         <span class="p">]),</span>
     <span class="p">)</span>

@@ -42,6 +42,13 @@ from VeraGrid.Gui.DynamicModelEditor.Editor.BlockProperties.add_symbol_dialog im
     AddSymbolDialog,
     AddSymbolSelection,
 )
+from VeraGrid.Gui.DynamicModelEditor.Editor.BlockProperties.SpecialConfigTabs.special_config_tab import (
+    SpecialConfigTabWidget,
+)
+from VeraGrid.Gui.DynamicModelEditor.Editor.BlockProperties.SpecialConfigTabs.special_config_tab_factory import (
+    create_special_config_tab,
+    has_special_config_tab_editor,
+)
 from VeraGrid.Gui.toast_widget import ToastManager
 from VeraGrid.Gui.dialog_lifecycle import (
     exec_dialog_safely,
@@ -974,6 +981,11 @@ class BlockSymbolDraftRow:
             # runtime references from misplaced parent/child static mappings.
             self._external_reference: VarPowerFlowReferenceType | None = None
             self._static_reference: ParamPowerFlowReferenceType | None = static_reference
+        elif kind == BlockSymbolKind.EVENT_PARAMETER and external_reference is not None:
+            # Preserve the model's declared PF source even when this editor does
+            # not allow authoring a new runtime-reference mapping for the row.
+            self._external_reference = external_reference
+            self._static_reference = None
         elif self.supports_external_reference():
             self._external_reference = external_reference
             self._static_reference = None
@@ -1346,9 +1358,11 @@ def get_ordered_block_symbols(block: Block) -> List[Var]:
         else:
             pass
 
-    mapped_parameter: Var
+    # Unassigned static references carry no symbol to display, just as an
+    # unassigned external initialization reference carries no visible identity.
+    mapped_parameter: Var | None
     for mapped_parameter in block.api_obj_mapping.values():
-        if mapped_parameter not in result:
+        if isinstance(mapped_parameter, Var) and mapped_parameter not in result:
             result.append(mapped_parameter)
         else:
             pass
@@ -1367,7 +1381,9 @@ def get_variable_external_reference(block: Block,
     reference: VarPowerFlowReferenceType
     mapped_variable: Var | None
     for reference, mapped_variable in block.external_mapping.items():
-        if mapped_variable is variable and result is None:
+        if (mapped_variable is not None
+                and (mapped_variable is variable or mapped_variable.uid == variable.uid)
+                and result is None):
             result = reference
         else:
             pass
@@ -1384,9 +1400,11 @@ def get_variable_static_reference(block: Block,
     """
     result: ParamPowerFlowReferenceType | None = None
     reference: ParamPowerFlowReferenceType
-    mapped_variable: Var
+    mapped_variable: Var | None
     for reference, mapped_variable in block.api_obj_mapping.items():
-        if mapped_variable is variable and result is None:
+        if (mapped_variable is not None
+                and (mapped_variable is variable or mapped_variable.uid == variable.uid)
+                and result is None):
             result = reference
         else:
             pass
@@ -2301,7 +2319,8 @@ def apply_symbol_mapping(block: Block,
     external_key: VarPowerFlowReferenceType
     mapped_external_variable: Var | None
     for external_key, mapped_external_variable in block.external_mapping.items():
-        if mapped_external_variable is variable:
+        if (mapped_external_variable is not None
+                and (mapped_external_variable is variable or mapped_external_variable.uid == variable.uid)):
             external_keys_to_remove.append(external_key)
         else:
             pass
@@ -2323,9 +2342,10 @@ def apply_symbol_mapping(block: Block,
     if manages_static_mapping:
         static_keys_to_remove: List[ParamPowerFlowReferenceType] = list()
         static_key: ParamPowerFlowReferenceType
-        mapped_static_variable: Var
+        mapped_static_variable: Var | None
         for static_key, mapped_static_variable in block.api_obj_mapping.items():
-            if mapped_static_variable is variable:
+            if (mapped_static_variable is not None
+                    and (mapped_static_variable is variable or mapped_static_variable.uid == variable.uid)):
                 static_keys_to_remove.append(static_key)
             else:
                 pass
@@ -2484,6 +2504,88 @@ def build_reclassified_constant(previous_constant: Const | None,
         return var_factory.add_const(value=numeric_value, name=name)
 
 
+def get_structured_configuration_parameter_names(block: Block,
+                                                 block_type: BlockType | None) -> set[str]:
+    """Return generated parameters owned by one structured builder setting.
+
+    Point and matrix builders materialize their configuration as scalar event
+    parameters. Those generated constants must not also be edited or restored
+    through the generic parameter model because the builder is authoritative
+    whenever the block is reconstructed.
+
+    Recognition is deliberately restricted to the concrete block families
+    whose builders own a table. A similarly named user parameter in any other
+    block remains an ordinary editable parameter.
+
+    :param block: Root generated block whose event parameters are inspected.
+    :param block_type: Native type defining the structured ownership contract.
+    :return: Semantic variable names owned by the structured configuration.
+    """
+    result: set[str] = set()
+    one_index_stems: tuple[str, ...] = tuple()
+    two_index_stems: tuple[str, ...] = tuple()
+
+    # Each family explicitly declares the generated array stems it owns. This
+    # avoids a global prefix rule that could capture an unrelated user symbol.
+    if block_type in (
+            BlockType.INVERSE_LOOKUP_ARRAY,
+            BlockType.LOOKUP_ARRAY_LINEAR,
+            BlockType.LOOKUP_ARRAY_SPLINE,
+            BlockType.ARBITRARY_WAVEFORM_VOLTAGE_SOURCE_EMT,
+            BlockType.ARBITRARY_WAVEFORM_CURRENT_SOURCE_EMT,
+    ):
+        one_index_stems = ("arr_x", "arr_y")
+    elif block_type == BlockType.LOOKUP_MATRIX_LINEAR or block_type == BlockType.LOOKUP_MATRIX_SPLINE:
+        one_index_stems = ("arr_x", "arr_y")
+        two_index_stems = ("arr_z",)
+    elif block_type == BlockType.NONLINEAR_RESISTOR_EMT:
+        one_index_stems = ("arr_v", "arr_i")
+    else:
+        pass
+
+    variable: Var
+    for variable in block.event_dict:
+        is_owned_parameter: bool = False
+        stem: str
+
+        # One-dimensional arrays use one positive integer immediately after
+        # the semantic stem. A generated block name may follow that index.
+        for stem in one_index_stems:
+            if variable.name.startswith(stem):
+                indexed_suffix: str = variable.name[len(stem):]
+                suffix_parts: List[str] = indexed_suffix.split("_", 1)
+                if len(suffix_parts) >= 1 and suffix_parts[0].isdigit():
+                    is_owned_parameter = True
+                else:
+                    pass
+            else:
+                pass
+
+        # Matrix samples encode both the row and column before the optional
+        # generated block name, for example ``arr_z2_3_lookup_matrix``.
+        for stem in two_index_stems:
+            if variable.name.startswith(stem):
+                matrix_suffix: str = variable.name[len(stem):]
+                matrix_parts: List[str] = matrix_suffix.split("_", 2)
+                if (
+                        len(matrix_parts) >= 2
+                        and matrix_parts[0].isdigit()
+                        and matrix_parts[1].isdigit()
+                ):
+                    is_owned_parameter = True
+                else:
+                    pass
+            else:
+                pass
+
+        if is_owned_parameter:
+            result.add(variable.name)
+        else:
+            pass
+
+    return result
+
+
 class BlockParameterDraftModel(QtCore.QAbstractTableModel):
     """Stage dynamic-parameter expressions from ``event_dict`` until Apply.
 
@@ -2493,18 +2595,26 @@ class BlockParameterDraftModel(QtCore.QAbstractTableModel):
     from the Engine until Apply.
     """
 
-    __slots__ = ("_rows",)
+    __slots__ = ("_rows", "_excluded_root_parameter_names")
 
-    def __init__(self, block: Block, parent: QtCore.QObject | None = None) -> None:
+    def __init__(self,
+                 block: Block,
+                 parent: QtCore.QObject | None = None,
+                 excluded_root_parameter_names: set[str] | None = None) -> None:
         """
         Build staged rows recursively from dynamic-parameter expressions.
 
         :param block: Symbolic block used by the operation.
         :param parent: Owning Qt widget.
+        :param excluded_root_parameter_names: Root values owned by a concrete special editor.
         :return: None.
         """
         super().__init__(parent)
         self._rows: List[ParameterDraftRow] = list()
+        if excluded_root_parameter_names is None:
+            self._excluded_root_parameter_names: set[str] = set()
+        else:
+            self._excluded_root_parameter_names = set(excluded_root_parameter_names)
         self._load_rows(block)
 
     def _load_rows(self, block: Block) -> None:
@@ -2517,10 +2627,17 @@ class BlockParameterDraftModel(QtCore.QAbstractTableModel):
         child_block: Block
         for child_block in all_blocks:
             owner_label: str = child_block.name if child_block is not block else block.name
+            if child_block is block:
+                excluded_parameter_names: set[str] = self._excluded_root_parameter_names
+            else:
+                # Only the generated root arrays belong to the root builder.
+                # Nested blocks retain all of their ordinary event parameters.
+                excluded_parameter_names = set()
             self._append_event_parameter_rows(
                 category=f"Dynamic parameter - {owner_label}",
                 owner=child_block,
                 values=child_block.event_dict,
+                excluded_parameter_names=excluded_parameter_names,
             )
             # Retained modes may have symbolic initialization expressions and
             # execution dependencies. Python code owns them together with the
@@ -2593,26 +2710,33 @@ class BlockParameterDraftModel(QtCore.QAbstractTableModel):
     def _append_event_parameter_rows(self,
                                      category: str,
                                      owner: Block,
-                                     values: Mapping[Var, Expr]) -> None:
+                                     values: Mapping[Var, Expr],
+                                     excluded_parameter_names: set[str]) -> None:
         """Append editable dynamic parameters from one ``event_dict``.
 
         :param category: User-facing dynamic-parameter category and owner label.
         :param owner: Block containing the supplied ``event_dict``.
         :param values: Dynamic parameter-to-expression mapping owned by the block.
+        :param excluded_parameter_names: Builder-owned parameters hidden from generic editing.
         :return: None.
         """
         variable: Var
         expression: Expr
         for variable, expression in values.items():
-            self._rows.append(
-                ParameterDraftRow(
-                    category=category,
-                    owner=owner,
-                    variable=variable,
-                    expression=expression,
-                    kind=BlockSymbolKind.EVENT_PARAMETER,
+            if variable.name in excluded_parameter_names:
+                # The corresponding structured editor owns this value and
+                # exposes it together with its ordering and validation rules.
+                pass
+            else:
+                self._rows.append(
+                    ParameterDraftRow(
+                        category=category,
+                        owner=owner,
+                        variable=variable,
+                        expression=expression,
+                        kind=BlockSymbolKind.EVENT_PARAMETER,
+                    )
                 )
-            )
 
     def rowCount(self, parent: QtCore.QModelIndex = QtCore.QModelIndex()) -> int:
         """
@@ -5402,12 +5526,20 @@ class BlockPropertyTreeModel(QtGui.QStandardItemModel):
     rebuilt = Signal()
     pendingNameChanged = Signal(str, str)
     existingNameChangeRequested = Signal(object)
-    __slots__ = ("_root_block", "_symbols", "_parameters", "_modes", "_structure")
+    __slots__ = (
+        "_root_block",
+        "_symbols",
+        "_parameters",
+        "_modes",
+        "_structure",
+        "_hidden_parameter_names",
+    )
 
     def __init__(self, root: Block, symbols: BlockSymbolDraftModel,
                  parameters: BlockParameterDraftModel,
                  modes: RetainedModeDraftTableModel,
                  structure: BlockStructuralSettingsModel,
+                 hidden_parameter_names: set[str],
                  parent: QtCore.QObject | None = None) -> None:
         """Connect the hierarchy to the existing staged models.
 
@@ -5416,6 +5548,7 @@ class BlockPropertyTreeModel(QtGui.QStandardItemModel):
         :param parameters: Existing dynamic-parameter expression drafts.
         :param modes: Retained-mode projection backed by runtime drafts.
         :param structure: General structural settings, excluding special settings.
+        :param hidden_parameter_names: Root event parameters owned by a dedicated editor.
         :param parent: Owning Qt object.
         :return: None.
         """
@@ -5425,6 +5558,7 @@ class BlockPropertyTreeModel(QtGui.QStandardItemModel):
         self._parameters: BlockParameterDraftModel = parameters
         self._modes: RetainedModeDraftTableModel = modes
         self._structure: BlockStructuralSettingsModel = structure
+        self._hidden_parameter_names: set[str] = set(hidden_parameter_names)
         self.setHorizontalHeaderLabels(
             list((
                 self.tr("Name"),
@@ -5512,7 +5646,18 @@ class BlockPropertyTreeModel(QtGui.QStandardItemModel):
         symbol_index: int
         for symbol_index in range(self._symbols.rowCount()):
             symbol_row: BlockSymbolDraftRow | None = self._symbols.get_row(symbol_index)
+            symbol_variable: Var | None = None if symbol_row is None else symbol_row.get_variable()
             if symbol_row is None:
+                pass
+            elif (
+                    symbol_row.get_owner() is self._root_block
+                    and symbol_row.get_kind() == BlockSymbolKind.EVENT_PARAMETER
+                    and symbol_variable is not None
+                    and symbol_variable.name in self._hidden_parameter_names
+            ):
+                # A concrete special tab owns this generated value. Keep the
+                # symbol in the backing draft and DAE namespace, but do not
+                # expose a second editor for it in General options.
                 pass
             elif symbol_row.get_kind() in (
                     BlockSymbolKind.PARAMETER,
@@ -5565,13 +5710,25 @@ class BlockPropertyTreeModel(QtGui.QStandardItemModel):
                         if row is None or row.get_owner() is not owner:
                             pass
                         else:
-                            is_parameter: bool = row.get_kind() in (
-                                BlockSymbolKind.PARAMETER, BlockSymbolKind.EVENT_PARAMETER,
+                            row_variable: Var | None = row.get_variable()
+                            is_hidden_parameter: bool = (
+                                owner is self._root_block
+                                and row.get_kind() == BlockSymbolKind.EVENT_PARAMETER
+                                and row_variable is not None
+                                and row_variable.name in self._hidden_parameter_names
                             )
-                            if is_parameter == (category == BlockSymbolCategory.PARAMETERS):
-                                self.append_source_row(owner_item, self._symbols.index(symbol_index, 0))
-                            else:
+                            if is_hidden_parameter:
+                                # The dedicated editor is the only visual owner
+                                # of builder-generated table coordinates.
                                 pass
+                            else:
+                                is_parameter: bool = row.get_kind() in (
+                                    BlockSymbolKind.PARAMETER, BlockSymbolKind.EVENT_PARAMETER,
+                                )
+                                if is_parameter == (category == BlockSymbolCategory.PARAMETERS):
+                                    self.append_source_row(owner_item, self._symbols.index(symbol_index, 0))
+                                else:
+                                    pass
         self.rebuilt.emit()
 
     def source_index(self, index: QtCore.QModelIndex) -> QtCore.QModelIndex:
@@ -5957,7 +6114,8 @@ class DynamicBlockPropertiesDialog(QtWidgets.QDialog):
         "_structural_block_type",
         "_structural_builder",
         "_general_structural_model",
-        "_special_structural_model",
+        "_special_config_tab",
+        "_dark_theme",
         "_var_factory",
         "_parameter_model",
         "_symbol_model",
@@ -5985,10 +6143,10 @@ class DynamicBlockPropertiesDialog(QtWidgets.QDialog):
                  structural_builder: TemplateDefinition | None = None,
                  dark_theme: bool = False) -> None:
         """
-        Create a four-tab editor around detached property and equation drafts.
+        Create a property editor around detached property and equation drafts.
 
-        The Qt Designer form owns the complete page topology. Python only
-        installs block-dependent models, editors, and context-menu workflows.
+        The main Qt Designer form owns the common pages. Python installs the
+        optional block-specific tab selected by the special-tab factory.
 
         :param block: Symbolic block edited by this transaction.
         :param block_type_name: Persisted diagram-node type name.
@@ -6011,6 +6169,8 @@ class DynamicBlockPropertiesDialog(QtWidgets.QDialog):
         self._block_type_name: str = block_type_name
         self._structural_block_type: BlockType | None = structural_block_type
         self._structural_builder: TemplateDefinition | None = structural_builder
+        self._special_config_tab: SpecialConfigTabWidget | None = None
+        self._dark_theme: bool = dark_theme
         self._var_factory: VarFactory = var_factory
 
         # Provider-owned bindings cannot be reconstructed by the catalogue
@@ -6027,24 +6187,44 @@ class DynamicBlockPropertiesDialog(QtWidgets.QDialog):
 
         # Separate ordinary settings from large model-specific configuration.
         general_structural_properties: List[TemplateProp] = list()
-        special_structural_properties: List[TemplateProp] = list()
         if structural_builder is not None:
-            general_structural_properties, special_structural_properties = split_structural_template_properties(
-                structural_builder
+            split_properties: tuple[List[TemplateProp], List[TemplateProp]] = (
+                split_structural_template_properties(structural_builder)
             )
+            general_structural_properties = split_properties[0]
         else:
             pass
+        # Block-specific properties stay out of the General table. Their future
+        # concrete tab will read the detached builder directly through the tab
+        # contract, so no second generic table model is created here.
         self._general_structural_model: BlockStructuralSettingsModel = BlockStructuralSettingsModel(
             general_structural_properties,
             self,
         )
-        self._special_structural_model: BlockStructuralSettingsModel = BlockStructuralSettingsModel(
-            special_structural_properties,
-            self,
-        )
+
+        # Only parameters owned by an editor that actually exists are hidden.
+        # This preserves access to generated data for future special tabs until
+        # their dedicated implementation is available.
+        hidden_parameter_names: set[str] = set()
+        if has_special_config_tab_editor(
+                block_type=self._structural_block_type,
+                builder=self._structural_builder,
+        ):
+            hidden_parameter_names = get_structured_configuration_parameter_names(
+                block=block,
+                block_type=structural_block_type,
+            )
+        else:
+            pass
 
         # All edits stay detached until Apply validates the complete transaction.
-        self._parameter_model: BlockParameterDraftModel = BlockParameterDraftModel(block, self)
+        # The same ownership set drives both value staging and tree visibility,
+        # so a parameter can never be editable through only one of those paths.
+        self._parameter_model: BlockParameterDraftModel = BlockParameterDraftModel(
+            block=block,
+            parent=self,
+            excluded_root_parameter_names=hidden_parameter_names,
+        )
         self._symbol_model: BlockSymbolDraftModel = BlockSymbolDraftModel(block, self)
 
         # Build one source buffer for every direct or nested equation owner.
@@ -6065,6 +6245,7 @@ class DynamicBlockPropertiesDialog(QtWidgets.QDialog):
             self._parameter_model,
             self._retained_mode_model,
             self._general_structural_model,
+            hidden_parameter_names,
             self,
         )
 
@@ -6116,9 +6297,10 @@ class DynamicBlockPropertiesDialog(QtWidgets.QDialog):
             property_action: QtGui.QAction
             for property_action in self.ui.property_tree.actions():
                 property_action.setEnabled(False)
-            self.ui.special_settings_table.setEditTriggers(
-                QtWidgets.QAbstractItemView.EditTrigger.NoEditTriggers
-            )
+            if self._special_config_tab is not None:
+                self._special_config_tab.set_read_only(True)
+            else:
+                pass
             self._dae_editor.setReadOnly(True)
         else:
             pass
@@ -6141,6 +6323,10 @@ class DynamicBlockPropertiesDialog(QtWidgets.QDialog):
             self._prepared_to_delete = True
             self._disconnect_child_signals()
             self._property_tree_model.prepare_to_delete()
+            if self._special_config_tab is not None:
+                self._special_config_tab.prepare_to_delete()
+            else:
+                pass
             self._procedural_add_menu.clear()
             self._procedural_add_menu.deleteLater()
             self._dae_editor.prepare_to_delete()
@@ -6149,10 +6335,9 @@ class DynamicBlockPropertiesDialog(QtWidgets.QDialog):
             self.ui.property_tree.closePersistentEditor(self.ui.property_tree.currentIndex())
             self.ui.property_tree.setItemDelegateForColumn(2, None)
             self.ui.property_tree.setModel(None)
-            self.ui.special_settings_table.closePersistentEditor(
-                self.ui.special_settings_table.currentIndex()
-            )
-            self.ui.special_settings_table.setItemDelegateForColumn(1, None)
+            # The legacy Designer page is no longer model-backed. It remains in
+            # the main UI only until the final form cleanup in implementation
+            # point 16, while the selected tab owns its own Designer form.
             self.ui.special_settings_table.setModel(None)
             self.ui.latex_selection_tree.clear()
             self.ui.latex_source_preview.clear()
@@ -6161,7 +6346,6 @@ class DynamicBlockPropertiesDialog(QtWidgets.QDialog):
             self._retained_mode_model.deleteLater()
             self._symbol_model.deleteLater()
             self._parameter_model.deleteLater()
-            self._special_structural_model.deleteLater()
             self._general_structural_model.deleteLater()
 
     def _disconnect_child_signals(self) -> None:
@@ -6300,11 +6484,11 @@ class DynamicBlockPropertiesDialog(QtWidgets.QDialog):
 
     def _build_ui(self) -> None:
         """
-        Bind block-dependent behavior to the four Designer-owned pages.
+        Bind block-dependent behavior to the common and optional pages.
 
         General options contains only the property tree, DAE model contains the
-        Python editor, LaTeX rendering contains export controls, and Special
-        configuration is removed when the block has no special properties.
+        Python editor, LaTeX rendering contains export controls, and the special
+        tab factory contributes one semantic page only when required.
 
         :return: None.
         """
@@ -6352,24 +6536,26 @@ class DynamicBlockPropertiesDialog(QtWidgets.QDialog):
         )
         self._rebuild_latex_selection_tree()
 
-        # Structured settings remain a fourth tab only for templates that
-        # actually expose special rebuild properties.
-        special_table: QtWidgets.QTableView = self.ui.special_settings_table
-        special_table.setModel(self._special_structural_model)
-        special_table.setItemDelegateForColumn(
-            1,
-            StructuralSettingDelegate(special_table),
-        )
-        configure_interactive_table_header(
-            special_table.horizontalHeader(),
-            list((320, 760)),
-        )
-        special_table.horizontalHeader().setStretchLastSection(True)
+        # The main form provides only the insertion position. The factory owns
+        # block-family selection and each returned tab owns its separate UI.
         special_index: int = self.ui.tab_widget.indexOf(self.ui.special_settings_page)
-        if self._special_structural_model.rowCount() > 0:
-            pass
-        else:
+        if special_index >= 0:
             self.ui.tab_widget.removeTab(special_index)
+        else:
+            pass
+        self._special_config_tab = create_special_config_tab(
+            block_type=self._structural_block_type,
+            builder=self._structural_builder,
+            parent=self.ui.tab_widget,
+            dark_theme=self._dark_theme,
+        )
+        if self._special_config_tab is not None:
+            self.ui.tab_widget.addTab(
+                self._special_config_tab,
+                self._special_config_tab.get_tab_title(),
+            )
+        else:
+            pass
 
         self.ui.tab_widget.setCurrentWidget(self.ui.general_page)
 
@@ -6603,8 +6789,10 @@ class DynamicBlockPropertiesDialog(QtWidgets.QDialog):
         self._parameter_model.modelReset.connect(self.refresh_draft_state)
         self._general_structural_model.dataChanged.connect(self.refresh_draft_state)
         self._general_structural_model.modelReset.connect(self.refresh_draft_state)
-        self._special_structural_model.dataChanged.connect(self.refresh_draft_state)
-        self._special_structural_model.modelReset.connect(self.refresh_draft_state)
+        if self._special_config_tab is not None:
+            self._special_config_tab.draftChanged.connect(self.refresh_draft_state)
+        else:
+            pass
         self._retained_mode_model.dataChanged.connect(self.on_retained_mode_draft_changed)
         self._retained_mode_model.rowsInserted.connect(self.refresh_draft_state)
         self._retained_mode_model.rowsRemoved.connect(self.refresh_draft_state)
@@ -6661,7 +6849,10 @@ class DynamicBlockPropertiesDialog(QtWidgets.QDialog):
         else:
             has_changes: bool = (
                 self._general_structural_model.has_changes()
-                or self._special_structural_model.has_changes()
+                or (
+                    self._special_config_tab is not None
+                    and self._special_config_tab.has_changes()
+                )
                 or self._parameter_model.has_changes()
                 or self._symbol_model.has_changes()
             )
@@ -8413,7 +8604,10 @@ class DynamicBlockPropertiesDialog(QtWidgets.QDialog):
 
         structural_changes: bool = (
             self._general_structural_model.has_changes()
-            or self._special_structural_model.has_changes()
+            or (
+                self._special_config_tab is not None
+                and self._special_config_tab.has_changes()
+            )
         )
         has_new_symbols: bool = self._symbol_model.has_new_symbols()
         has_symbol_changes: bool = self._symbol_model.has_symbol_changes()
@@ -8454,6 +8648,16 @@ class DynamicBlockPropertiesDialog(QtWidgets.QDialog):
                 self._show_validation_error(self.tr("This block has no safe structural rebuild adapter."))
                 return
             else:
+                special_validation_error: str | None = None
+                if self._special_config_tab is not None:
+                    special_validation_error = self._special_config_tab.get_validation_error()
+                else:
+                    pass
+                if special_validation_error is not None:
+                    self._show_validation_error(special_validation_error)
+                    return
+                else:
+                    pass
                 try:
                     named_parameter_values: List[tuple[str, float | complex]] = (
                         self._parameter_model.get_pending_named_values(validation_namespace)
@@ -8461,6 +8665,10 @@ class DynamicBlockPropertiesDialog(QtWidgets.QDialog):
                 except (TypeError, ValueError) as error:
                     self._show_validation_error(str(error))
                     return
+                if self._special_config_tab is not None:
+                    self._special_config_tab.apply_draft_to_builder()
+                else:
+                    pass
                 rebuild_request: BlockStructuralEditRequest = BlockStructuralEditRequest(
                     block=self._block,
                     block_type=self._structural_block_type,
@@ -8590,13 +8798,21 @@ class DynamicBlockPropertiesDialog(QtWidgets.QDialog):
         :return: None.
         """
         general_properties: List[TemplateProp] = list()
-        special_properties: List[TemplateProp] = list()
         if self._structural_builder is not None:
-            general_properties, special_properties = split_structural_template_properties(self._structural_builder)
+            split_properties: tuple[List[TemplateProp], List[TemplateProp]] = (
+                split_structural_template_properties(self._structural_builder)
+            )
+            general_properties = split_properties[0]
         else:
             pass
+        # A concrete special tab reloads itself from the builder below. The
+        # discarded split result only prevents those properties appearing in
+        # the common General table while no fallback tab exists.
         self._general_structural_model.reload(general_properties)
-        self._special_structural_model.reload(special_properties)
+        if self._special_config_tab is not None:
+            self._special_config_tab.reload_from_builder()
+        else:
+            pass
         self._parameter_model.reload(self._block)
         self._symbol_model.reload(self._block)
 

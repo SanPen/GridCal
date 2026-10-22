@@ -153,8 +153,9 @@ def get_transfer_power_scaling_per_bus(bus_data_t: BusData,
     """
 
     # get values per bus
-    gen_per_bus = gen_data_t.get_injections_per_bus() / Sbase
-    load_per_bus = load_data_t.get_injections_per_bus() / Sbase
+    # active power only
+    gen_per_bus: Vec = gen_data_t.get_injections_per_bus().real / Sbase
+    load_per_bus: Vec = load_data_t.get_injections_per_bus().real / Sbase
     pinst_per_bus = gen_data_t.get_installed_power_per_bus() / Sbase
 
     # Evaluate transfer method
@@ -851,15 +852,10 @@ def add_linear_branches_formulation(t_idx: int,
                     name=join("dc_flow_", [t_idx, m], "_")
                 )
 
-                # DC Branch
-                # compute the branch susceptance
-                if branch_data_t.R[m] == 0.0:
-                    bk = 1e-6  # setting a value too low will "break" the linear solver
-                else:
-                    bk = 1.0 / branch_data_t.R[m]
-
+                # DC Branch: R x P = ΔV. Dividing by R instead puts 1/R in the matrix, and HiGHS
+                # rejects entries above 1e15 (this fixes an ideal cable as it has an R of 1e-20) 
                 prob.add_cst(
-                    cst=branch_vars.flows[t_idx, m] == bk * (bus_vars.Vm[t_idx, fr] - bus_vars.Vm[t_idx, to]),
+                    cst=branch_data_t.R[m] * branch_vars.flows[t_idx, m] == bus_vars.Vm[t_idx, fr] - bus_vars.Vm[t_idx, to],
                     name=join("dc_flows_", [t_idx, m], "_")
                 )
 
@@ -872,11 +868,13 @@ def add_linear_branches_formulation(t_idx: int,
                     name=join("ac_flow_", [t_idx, m], "_")
                 )
 
-                # compute the branch susceptance
-                if branch_data_t.X[m] == 0.0:
-                    bk = 1e-6  # setting a value too low will "break" the linear solver
+                # compute the branch susceptance as the linear model (PTDF, linear power flow) does,
+                # with the tap module, so the NTC flows equal those of a linear power flow
+                x_eff: float = branch_data_t.X[m] * active_branch_data_t.tap_module[m]
+                if x_eff == 0.0:
+                    bk: float = 1e-6  # setting a value too low will "break" the linear solver
                 else:
-                    bk = 1.0 / branch_data_t.X[m]
+                    bk = 1.0 / x_eff
 
                 # compute the flow
                 if (active_branch_data_t.tap_phase_control_mode[m] == TapPhaseControl.Pf.idx() or
@@ -1898,6 +1896,13 @@ def run_linear_ntc_opf_strict(grid: MultiCircuit,
         solved_flows=solved_flows,
         corrective_addons_mw=corrective_addons_mw,
     )
+
+    # The compact states and their coordinator reference each other through a numpy object
+    # array, which the garbage collector cannot traverse
+    if controlled_states is not None:
+        controlled_states.states.fill(None)
+    else:
+        pass  # no compact contingency states to release
 
     # fill the power shift
     vars_v.power_shift = vars_v.bus_vars.delta_p[:, bus_a1_idx]

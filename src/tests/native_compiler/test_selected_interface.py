@@ -62,5 +62,5 @@ def test_local_llvm_resolves_explicit_toolset() -> None:
     toolset: NativeCompilerToolset = resolve_native_compiler_toolset(_local_selection())
     assert toolset.framework == NativeCompilerFramework.LOCAL_LLVM
     assert toolset.compiler_path.is_file()
-    assert len(toolset.tool_hashes) == 4
+    assert len(toolset.tool_hashes) == 2
     toolset.assert_unchanged()

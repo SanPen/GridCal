@@ -3,15 +3,11 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 
-"""
-Maintainable international-standard module for 'SCRX'.
-
-This is the runtime implementation shipped by VeraGrid.
-It exposes the imported public interface, explicit symbolic equations, and
-"""
+"""Controlled-rectifier excitation with selectable supply and field discharge."""
 
 from __future__ import annotations
 
+import math
 from VeraGridEngine.Devices.Dynamic.rms_template import RmsModelTemplate
 from VeraGridEngine.Devices.Dynamic.var_factory import VarFactory
 from VeraGridEngine.Utils.Symbolic.block import Block
@@ -22,14 +18,44 @@ from VeraGridEngine.Utils.Symbolic.symbolic import Expr
 from VeraGridEngine.Utils.Symbolic.symbolic import Const
 from VeraGridEngine.Utils.Symbolic.symbolic import BinOp
 
-def build_scrx_template(vf: VarFactory, name: str | None = None) -> RmsModelTemplate:
-    """
-    Materialize the international-standard EMT template.
+def build_scrx_template(vf: VarFactory, name: str | None = None,
+                        exciter_time: float = 0.5) -> RmsModelTemplate:
+    """Build a controlled-rectifier excitation system with source selection.
 
-    :param vf: Variable factory used to allocate the symbolic surface.
-    :param name: Optional explicit runtime template name.
-    :returns: Materialized EMT template.
+    Voltage-reference error, stabilizing voltage and excitation-limiter signals
+    pass through a lead-lag compensator and a bounded first-order regulator.
+    Their two memory states describe phase compensation and regulator response;
+    output limits act on the regulator before the supply-voltage multiplier.
+
+    A bus-fed bridge scales its output with live terminal-voltage magnitude.
+    An independently supplied bridge uses unity supply. This distinction must
+    remain live during faults even when voltage sensing uses a compensator.
+
+    A zero crowbar-to-field resistance ratio enables bidirectional field current.
+    With a positive ratio, positive current uses the controlled bridge, while
+    nonpositive current selects the reverse-discharge voltage minus the ratio
+    times the air-gap field-current equivalent. This discharge path bypasses
+    regulator voltage limits. Current is the field-current equivalent, not a
+    stator d-axis current.
+
+    The seven inputs are field current, overexcitation voltage, stabilizing
+    voltage, voltage reference, sensed voltage, underexcitation voltage and
+    terminal-voltage magnitude. The output is field voltage; all voltages and
+    currents use compatible per-unit field/terminal bases and times use seconds.
+    Initial regulator demand is obtained by dividing the required field voltage
+    by the selected initial supply, then balancing the voltage reference.
+
+    :param vf: Shared native symbolic variable factory.
+    :param name: Optional unique instance label.
+    :param exciter_time: Nonnegative regulator lag in seconds; zero selects an
+        algebraic bounded gain and removes its memory state exactly.
+    :return: Native two-state component, or one-state component for zero lag.
+    :raises ValueError: A negative or nonfinite regulator time.
     """
+    if not math.isfinite(exciter_time) or exciter_time < 0:
+        raise ValueError('Static-exciter regulator time must be finite and nonnegative')
+    else:
+        pass
     template_name: str
     if name is None:
         template_name: str = 'SCRX'
@@ -138,7 +164,15 @@ def build_scrx_template(vf: VarFactory, name: str | None = None) -> RmsModelTemp
     algebraic_equations.append((avr_switch1_y - ((sym.heaviside(((avr_limitedFirstOrder_I_y - avr_limitedFirstOrder_lim_uMax) - sym.Const(1e-06))) * avr_limitedFirstOrder_lim_uMax) + ((sym.Const(1.0) - sym.heaviside(((avr_limitedFirstOrder_I_y - avr_limitedFirstOrder_lim_uMax) - sym.Const(1e-06)))) * ((sym.heaviside(((avr_limitedFirstOrder_lim_uMin - avr_limitedFirstOrder_I_y) - sym.Const(1e-06))) * avr_limitedFirstOrder_lim_uMin) + ((sym.Const(1.0) - sym.heaviside(((avr_limitedFirstOrder_lim_uMin - avr_limitedFirstOrder_I_y) - sym.Const(1e-06)))) * avr_limitedFirstOrder_I_y))))))
     algebraic_equations.append((avr_lessEqual_y - sym.heaviside(((avr_switch1_y - avr_gain_k) + sym.Const(1e-06)))))
     algebraic_equations.append((avr_or1_y - (sym.Const(1.0) - ((sym.Const(1.0) - avr_lessEqual_y) * (sym.Const(1.0) - avr_lessEqualThreshold_y)))))
-    algebraic_equations.append((avr_EfdPu - ((avr_or1_y * avr_switch1_y) + ((sym.Const(1.0) - avr_or1_y) * avr_gain_k))))
+    algebraic_equations.append(avr_lessEqualThreshold_y
+        -sym.heaviside(avr_lessEqualThreshold_threshold-avr_gain_k+sym.Const(1e-6)))
+    # Keep terminal supply and reverse-current discharge live rather than
+    # replacing either signal by its operating-point parameter alias.
+    supply_voltage: Expr = avr_CSwitch + (sym.Const(1.0)-avr_CSwitch)*avr_UtPu
+    bidirectional: Expr = sym.Const(1.0)-sym.heaviside(avr_RcToRfd)
+    bridge_selected: Expr = bidirectional+(sym.Const(1.0)-bidirectional)*sym.heaviside(avr_IRotorPu)
+    algebraic_equations.append(avr_EfdPu-(bridge_selected*supply_voltage*avr_switch1_y
+        -(sym.Const(1.0)-bridge_selected)*avr_RcToRfd*avr_IRotorPu))
     algebraic_equations.append((avr_transferFunction_x_1 - (avr_transferFunction_x_scaled_1 / avr_transferFunction_a_end)))
     algebraic_equations.append((avr_transferFunction_y - (((avr_transferFunction_bb_2 - (avr_transferFunction_d * avr_transferFunction_a_2)) * avr_transferFunction_x_1) + (avr_transferFunction_d * avr_sum1_y))))
     algebraic_equations.append((avr_limitedFirstOrder_Gk_y - (avr_limitedFirstOrder_Gk_k * avr_transferFunction_y)))
@@ -214,7 +248,7 @@ def build_scrx_template(vf: VarFactory, name: str | None = None) -> RmsModelTemp
     event_parameters[avr_sum1_k_5] = vf.add_const(-1.0, name='')
     event_parameters[avr_tA] = vf.add_const(0.02, name='')
     event_parameters[avr_tB] = vf.add_const(0.1, name='')
-    event_parameters[avr_tE] = vf.add_const(0.5, name='')
+    event_parameters[avr_tE] = vf.add_const(exciter_time, name='')
     event_parameters[avr_transferFunction_a_1] = avr_tB
     event_parameters[avr_transferFunction_a_2] = vf.add_const(1.0, name='')
     event_parameters[avr_transferFunction_a_end] = ((sym.heaviside(((avr_transferFunction_a_2 - (sym.Const(2.220446049250313e-14) * sym.sqrt(((avr_transferFunction_a_1 ** sym.Const(2.0)) + (avr_transferFunction_a_2 ** sym.Const(2.0)))))) - sym.Const(1e-06))) * avr_transferFunction_a_2) + ((sym.Const(1.0) - sym.heaviside(((avr_transferFunction_a_2 - (sym.Const(2.220446049250313e-14) * sym.sqrt(((avr_transferFunction_a_1 ** sym.Const(2.0)) + (avr_transferFunction_a_2 ** sym.Const(2.0)))))) - sym.Const(1e-06)))) * sym.Const(1.0)))
@@ -259,6 +293,19 @@ def build_scrx_template(vf: VarFactory, name: str | None = None) -> RmsModelTemp
     initial_equations[avr_sum1_y] = (((((avr_sum1_k_1 * avr_UOelPu) + (avr_sum1_k_2 * avr_UPssPu)) + (avr_sum1_k_3 * avr_URefPu)) + (avr_sum1_k_4 * avr_UUelPu)) + (avr_sum1_k_5 * avr_UStatorPu))
     differential_initial_equations: dict[Var, Expr | Const] = dict()
     procedural_logic_entries: list[object] = list()
+
+    # An instantaneous regulator has a bounded algebraic command, with no
+    # dormant inverse-time alias that could divide by zero during initialization.
+    if exciter_time == 0:
+        state_variables.pop(0)
+        state_equations.pop(0)
+        differential_variables.pop(0)
+        algebraic_variables.append(avr_limitedFirstOrder_I_y)
+        algebraic_equations.append(avr_limitedFirstOrder_I_y-sym.hard_sat(
+            avr_K*avr_transferFunction_y,avr_VrMinPu,avr_VrMaxPu))
+        event_parameters[avr_limitedFirstOrder_G_k] = vf.add_const(0.0)
+    else:
+        pass
 
     # Assemble the final block from the explicit typed collections above.
     template.block = Block(

@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Simulations.Rms.numerical.back_euler_ts &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Simulations.Rms.numerical.back_euler_ts &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/license.html">📜 License</a></li>
@@ -122,17 +123,17 @@
 <div class="viewcode-block" id="BackEulerImplicitTensygrid">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.Rms.numerical.html#VeraGridEngine.Simulations.Rms.numerical.back_euler_ts.BackEulerImplicitTensygrid">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">BackEulerImplicitTensygrid</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Backward Euler implicit integration using TensyGrid.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;problem&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;t0&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;h&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;max_iter_0&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;steps&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;t&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;y&quot;</span><span class="p">,</span>
+        <span class="s2">"problem"</span><span class="p">,</span>
+        <span class="s2">"t0"</span><span class="p">,</span>
+        <span class="s2">"h"</span><span class="p">,</span>
+        <span class="s2">"max_iter_0"</span><span class="p">,</span>
+        <span class="s2">"steps"</span><span class="p">,</span>
+        <span class="s2">"t"</span><span class="p">,</span>
+        <span class="s2">"y"</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
@@ -141,10 +142,10 @@
                  <span class="n">t_end</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
                  <span class="n">h</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
                  <span class="n">max_iter</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :param problem:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">problem</span> <span class="o">=</span> <span class="n">problem</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">t0</span> <span class="o">=</span> <span class="n">t0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">h</span> <span class="o">=</span> <span class="n">h</span>
@@ -158,13 +159,13 @@
                       <span class="n">dx</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
                       <span class="n">xn</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
                       <span class="n">h</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return 𝑑x/dt given the current *state* vector.</span>
 <span class="sd">        :param x: get the right-hand-side give a state vector</span>
 <span class="sd">        :param dx:</span>
 <span class="sd">        :param xn:</span>
 <span class="sd">        :return f_state_update or f_algeb</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">f_algeb</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">problem</span><span class="o">.</span><span class="n">rhs_algebraic</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dx</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">problem</span><span class="o">.</span><span class="n">get_states_number</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
@@ -179,21 +180,21 @@
                            <span class="n">x</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
                            <span class="n">dx</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
                            <span class="n">h</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">sp</span><span class="o">.</span><span class="n">csc_matrix</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :param x: vector or variables&#39; values</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        :param x: vector or variables' values</span>
 <span class="sd">        :param dx: vector of diff values</span>
 <span class="sd">        :param h: step</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">                  state Var    algeb var</span>
 <span class="sd">        state eq |I - h * J11 | - h* J12  |    | ∆ state var|    | ∆ state eq |</span>
 <span class="sd">                 |            |           |    |            |    |            |</span>
 <span class="sd">                 -------------------------- x  |------------|  = |------------|</span>
 <span class="sd">        algeb eq |J21         | J22       |    | ∆ algeb var|    | ∆ algeb eq |</span>
 <span class="sd">                 |            |           |    |            |    |            |</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="c1"># returns only j22 if no states, returns J if states</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">problem</span><span class="o">.</span><span class="n">get_states_number</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
@@ -218,10 +219,10 @@
 <div class="viewcode-block" id="BackEulerImplicitTensygrid.simulate">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.Rms.numerical.html#VeraGridEngine.Simulations.Rms.numerical.back_euler_ts.BackEulerImplicitTensygrid.simulate">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">simulate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">converged</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="n">well_initialized</span><span class="p">:</span> <span class="nb">bool</span>  <span class="o">=</span> <span class="kc">True</span>
 
@@ -232,11 +233,11 @@
 
         <span class="c1"># timing accumulators</span>
         <span class="n">timings</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s2">&quot;jacobian_time&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
-            <span class="s2">&quot;rhs_time&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
-            <span class="s2">&quot;lag_update_time&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
-            <span class="s2">&quot;linear_solver_time&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
-            <span class="s2">&quot;initial_step_time&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+            <span class="s2">"jacobian_time"</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+            <span class="s2">"rhs_time"</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+            <span class="s2">"lag_update_time"</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+            <span class="s2">"linear_solver_time"</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+            <span class="s2">"initial_step_time"</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
         <span class="p">}</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">t0</span>
@@ -268,7 +269,7 @@
                 <span class="n">rhs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rhs_implicit</span><span class="p">(</span><span class="n">x_new</span><span class="p">,</span> <span class="n">dx</span><span class="p">,</span> <span class="n">xn</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">h</span><span class="p">)</span>
 
                 <span class="n">rhs_end</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
-                <span class="n">timings</span><span class="p">[</span><span class="s2">&quot;rhs_time&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">rhs_end</span> <span class="o">-</span> <span class="n">rhs_start</span>
+                <span class="n">timings</span><span class="p">[</span><span class="s2">"rhs_time"</span><span class="p">]</span> <span class="o">+=</span> <span class="n">rhs_end</span> <span class="o">-</span> <span class="n">rhs_start</span>
                 <span class="c1"># -------------------------------------------------</span>
 
                 <span class="n">residual</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">rhs</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>
@@ -280,20 +281,20 @@
                     <span class="n">Jf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_jacobian_implicit</span><span class="p">(</span><span class="n">x_new</span><span class="p">,</span> <span class="n">dx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">h</span><span class="p">)</span>
                     <span class="n">delta</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">spsolve</span><span class="p">(</span><span class="n">Jf</span><span class="p">,</span> <span class="o">-</span><span class="n">rhs</span><span class="p">)</span>
                     <span class="k">if</span> <span class="n">converged</span><span class="p">:</span>
-                        <span class="c1"># print(&quot;System well initialized.&quot;)</span>
-                        <span class="c1"># print(f&quot;x is {x_new}&quot;)</span>
+                        <span class="c1"># print("System well initialized.")</span>
+                        <span class="c1"># print(f"x is {x_new}")</span>
                         <span class="k">pass</span>
                     <span class="k">else</span><span class="p">:</span>
                         <span class="n">well_initialized</span> <span class="o">=</span> <span class="kc">False</span>
-                        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;System bad initialized. DAE resiudal is </span><span class="si">{</span><span class="n">residual</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
-                        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;rhs is </span><span class="si">{</span><span class="n">rhs</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"System bad initialized. DAE resiudal is </span><span class="si">{</span><span class="n">residual</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'rhs is </span><span class="si">{</span><span class="n">rhs</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
                         <span class="n">non_zero_indexes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">rhs</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">1e-7</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
                         <span class="n">all_eq</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">problem</span><span class="o">.</span><span class="n">_state_eqs</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">problem</span><span class="o">.</span><span class="n">_algebraic_eqs</span>
-                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;eqs are&quot;</span><span class="p">)</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s2">"eqs are"</span><span class="p">)</span>
                         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">non_zero_indexes</span><span class="p">:</span>
                             <span class="n">eq</span> <span class="o">=</span> <span class="n">all_eq</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
-                            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;eq </span><span class="si">{</span><span class="n">eq</span><span class="si">}</span><span class="s2"> with error </span><span class="si">{</span><span class="n">rhs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-                            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+                            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"eq </span><span class="si">{</span><span class="n">eq</span><span class="si">}</span><span class="s2"> with error </span><span class="si">{</span><span class="n">rhs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+                            <span class="nb">print</span><span class="p">(</span><span class="s2">""</span><span class="p">)</span>
 
 
                 <span class="k">if</span> <span class="ow">not</span> <span class="n">converged</span><span class="p">:</span>
@@ -302,7 +303,7 @@
                     <span class="n">linear_start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
                     <span class="n">delta</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">spsolve</span><span class="p">(</span><span class="n">Jf</span><span class="p">,</span> <span class="o">-</span><span class="n">rhs</span><span class="p">)</span>
                     <span class="n">linear_end</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
-                    <span class="n">timings</span><span class="p">[</span><span class="s2">&quot;linear_solver_time&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">linear_end</span> <span class="o">-</span> <span class="n">linear_start</span>
+                    <span class="n">timings</span><span class="p">[</span><span class="s2">"linear_solver_time"</span><span class="p">]</span> <span class="o">+=</span> <span class="n">linear_end</span> <span class="o">-</span> <span class="n">linear_start</span>
                     <span class="n">solved</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">delta</span><span class="p">))</span>
 
                     <span class="k">if</span> <span class="ow">not</span> <span class="n">solved</span><span class="p">:</span>
@@ -313,31 +314,31 @@
                         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">singular_dirs</span><span class="p">:</span>
                             <span class="n">v</span> <span class="o">=</span> <span class="n">vh</span><span class="o">.</span><span class="n">T</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span>  <span class="c1"># variable-space vector</span>
                             <span class="n">abs_v</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
-                            <span class="n">dominant_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">abs_v</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s2">&quot;stable&quot;</span><span class="p">)[::</span><span class="o">-</span><span class="mi">1</span><span class="p">][:</span><span class="mi">5</span><span class="p">]</span>  <span class="c1"># top 5 vars</span>
-                            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Singular direction </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">, σ=</span><span class="si">{</span><span class="n">s</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">:</span><span class="s2">.3e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                            <span class="n">dominant_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">abs_v</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s2">"stable"</span><span class="p">)[::</span><span class="o">-</span><span class="mi">1</span><span class="p">][:</span><span class="mi">5</span><span class="p">]</span>  <span class="c1"># top 5 vars</span>
+                            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="se">\n</span><span class="s2">Singular direction </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">, σ=</span><span class="si">{</span><span class="n">s</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">:</span><span class="s2">.3e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
                             <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">dominant_idx</span><span class="p">:</span>
                                 <span class="k">if</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">problem</span><span class="o">.</span><span class="n">get_algebraic_var_number</span><span class="p">():</span>
                                     <span class="n">algeb_vars</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">problem</span><span class="o">.</span><span class="n">algebraic_vars</span>
                                     <span class="n">var_name</span> <span class="o">=</span> <span class="n">algeb_vars</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">name</span>
-                                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  </span><span class="si">{</span><span class="n">var_name</span><span class="si">:</span><span class="s2">20s</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">v</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="si">:</span><span class="s2">+.3e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Using LSQR&quot;</span><span class="p">)</span>
-                        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;residual is </span><span class="si">{</span><span class="n">residual</span><span class="si">}</span><span class="s2"> for timestep </span><span class="si">{</span><span class="n">step_idx</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"  </span><span class="si">{</span><span class="n">var_name</span><span class="si">:</span><span class="s2">20s</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">v</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="si">:</span><span class="s2">+.3e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s2">"Using LSQR"</span><span class="p">)</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"residual is </span><span class="si">{</span><span class="n">residual</span><span class="si">}</span><span class="s2"> for timestep </span><span class="si">{</span><span class="n">step_idx</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
                     <span class="k">if</span> <span class="ow">not</span> <span class="n">solved</span><span class="p">:</span>
                         <span class="n">nan_indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">rhs</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
                         <span class="c1"># nan_indices = np.where(np.abs(rhs) &gt; 1e-2)[0]</span>
                         <span class="n">nan_eqs</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">problem</span><span class="o">.</span><span class="n">_algebraic_eqs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">nan_indices</span><span class="p">]</span>
-                        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Jf is </span><span class="si">{</span><span class="n">Jf</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'Jf is </span><span class="si">{</span><span class="n">Jf</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
                         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                            <span class="sa">f</span><span class="s2">&quot;spsolve returned non-finite values (NaN or Inf).</span><span class="se">\n</span><span class="s2">&quot;</span>
-                            <span class="sa">f</span><span class="s2">&quot;delta = </span><span class="si">{</span><span class="n">delta</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
-                            <span class="sa">f</span><span class="s2">&quot;rhs = </span><span class="si">{</span><span class="n">rhs</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
-                            <span class="sa">f</span><span class="s2">&quot;Jacobian shape = </span><span class="si">{</span><span class="n">Jf</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
-                            <span class="sa">f</span><span class="s2">&quot;NaNs found at indices </span><span class="si">{</span><span class="n">nan_indices</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span><span class="si">}</span><span class="s2"> in equations:</span><span class="se">\n</span><span class="si">{</span><span class="n">nan_eqs</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                            <span class="sa">f</span><span class="s2">"spsolve returned non-finite values (NaN or Inf).</span><span class="se">\n</span><span class="s2">"</span>
+                            <span class="sa">f</span><span class="s2">"delta = </span><span class="si">{</span><span class="n">delta</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span>
+                            <span class="sa">f</span><span class="s2">"rhs = </span><span class="si">{</span><span class="n">rhs</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span>
+                            <span class="sa">f</span><span class="s2">"Jacobian shape = </span><span class="si">{</span><span class="n">Jf</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span>
+                            <span class="sa">f</span><span class="s2">"NaNs found at indices </span><span class="si">{</span><span class="n">nan_indices</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span><span class="si">}</span><span class="s2"> in equations:</span><span class="se">\n</span><span class="si">{</span><span class="n">nan_eqs</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
                         <span class="p">)</span>
 
                     <span class="k">if</span> <span class="ow">not</span> <span class="n">solved</span><span class="p">:</span>
-                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Failed to solve linear system even with regularization.&quot;</span><span class="p">)</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s2">"Failed to solve linear system even with regularization."</span><span class="p">)</span>
                         <span class="k">break</span>
 
 
@@ -347,7 +348,7 @@
             <span class="k">if</span> <span class="n">converged</span><span class="p">:</span>
 
                 <span class="n">lag_update_start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
-                <span class="c1"># print(f&#39;converged is {converged} at step {step_idx} and iter {n_iter}&#39;)</span>
+                <span class="c1"># print(f'converged is {converged} at step {step_idx} and iter {n_iter}')</span>
 
                 <span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">[</span><span class="n">step_idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">x_new</span>
 
@@ -355,11 +356,11 @@
 
                 <span class="n">dx_last</span> <span class="o">=</span> <span class="n">dx</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
                 <span class="n">lag_update_end</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
-                <span class="n">timings</span><span class="p">[</span><span class="s2">&quot;lag_update_time&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">lag_update_end</span> <span class="o">-</span> <span class="n">lag_update_start</span>
+                <span class="n">timings</span><span class="p">[</span><span class="s2">"lag_update_time"</span><span class="p">]</span> <span class="o">+=</span> <span class="n">lag_update_end</span> <span class="o">-</span> <span class="n">lag_update_start</span>
 
             <span class="k">else</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to converge at step </span><span class="si">{</span><span class="n">step_idx</span><span class="si">}</span><span class="s2"> and n_iter is </span><span class="si">{</span><span class="n">n_iter</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Residual is </span><span class="si">{</span><span class="n">residual</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Failed to converge at step </span><span class="si">{</span><span class="n">step_idx</span><span class="si">}</span><span class="s2"> and n_iter is </span><span class="si">{</span><span class="n">n_iter</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'Residual is </span><span class="si">{</span><span class="n">residual</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
                 <span class="k">break</span>
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">t</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">well_initialized</span><span class="p">,</span> <span class="n">converged</span></div>

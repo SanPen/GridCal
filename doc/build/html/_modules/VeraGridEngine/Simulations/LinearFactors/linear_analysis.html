@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Simulations.LinearFactors.linear_analysis &mdash; VeraGrid 6.7.13 documentation</title>
+  <title>VeraGridEngine.Simulations.LinearFactors.linear_analysis &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=16fbabd8"></script>
+      <script src="../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -144,7 +144,7 @@
                            <span class="n">ptdf_factors</span><span class="p">:</span> <span class="n">sp</span><span class="o">.</span><span class="n">csc_matrix</span><span class="p">,</span>
                            <span class="n">injections</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
                            <span class="n">threshold</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute the general contingency flows</span>
 <span class="sd">    :param base_flow: base flow (number of branches)</span>
 <span class="sd">    :param lodf_factors: LODF factors (number of branches, number of branch contingencies)</span>
@@ -152,7 +152,7 @@
 <span class="sd">    :param injections: Array of contingency injections)</span>
 <span class="sd">    :param threshold: PTDF and LODF threshold</span>
 <span class="sd">    :return: contingency flows (number of branches)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">branch_number</span> <span class="o">=</span> <span class="n">lodf_factors</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">branch_contingency_number</span> <span class="o">=</span> <span class="n">lodf_factors</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
     <span class="n">injection_number</span> <span class="o">=</span> <span class="n">ptdf_factors</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
@@ -205,19 +205,19 @@
                        <span class="n">pv</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span>
                        <span class="n">bus_types</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span>
                        <span class="n">distribute_slack</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Mat</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute the AC-PTDF</span>
 <span class="sd">    :param Ybus: admittance matrix</span>
-<span class="sd">    :param Yf: Admittance matrix of the buses &quot;from&quot;</span>
-<span class="sd">    :param F: array if Branches &quot;from&quot; bus indices</span>
-<span class="sd">    :param T: array if Branches &quot;to&quot; bus indices</span>
+<span class="sd">    :param Yf: Admittance matrix of the buses "from"</span>
+<span class="sd">    :param F: array if Branches "from" bus indices</span>
+<span class="sd">    :param T: array if Branches "to" bus indices</span>
 <span class="sd">    :param V: voltages array</span>
 <span class="sd">    :param pq: array of pq node indices</span>
 <span class="sd">    :param pv: array of pv node indices</span>
 <span class="sd">    :param bus_types: Array of bus types</span>
 <span class="sd">    :param distribute_slack: distribute slack?</span>
 <span class="sd">    :return: AC-PTDF matrix (Branches, buses)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">V</span><span class="p">)</span>
     <span class="n">pvpq</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span><span class="n">pv</span><span class="p">,</span> <span class="n">pq</span><span class="p">]</span>
     <span class="n">npq</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">pq</span><span class="p">)</span>
@@ -257,7 +257,7 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.LinearFactors.html#VeraGridEngine.Simulations.LinearFactors.linear_analysis.make_dP_from_bus_types">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">make_dP_from_bus_types</span><span class="p">(</span><span class="n">bus_types</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">distribute_slack</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Mat</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Build the dP / Dij matrix used to modify the PTDF.</span>
 
 <span class="sd">    bus_types:</span>
@@ -273,7 +273,7 @@
 
 <span class="sd">    If distribute_slack=False:</span>
 <span class="sd">        Return identity, preserving the current single-slack PTDF behavior.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">PQ</span> <span class="o">=</span> <span class="mi">1</span>
     <span class="n">PV</span> <span class="o">=</span> <span class="mi">2</span>
@@ -298,7 +298,7 @@
             <span class="n">n_participating</span> <span class="o">+=</span> <span class="mi">1</span>
 
     <span class="k">if</span> <span class="n">n_participating</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No PV or Slack buses found for distributed slack&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"No PV or Slack buses found for distributed slack"</span><span class="p">)</span>
 
     <span class="n">share</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="n">n_participating</span>
 
@@ -319,7 +319,7 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.LinearFactors.html#VeraGridEngine.Simulations.LinearFactors.linear_analysis.make_corrected_injections">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">make_corrected_injections</span><span class="p">(</span><span class="n">P</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">bus_types</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">distribute_slack</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute the effective active-power injection vector used for KCL checks.</span>
 
 <span class="sd">    If distribute_slack=True:</span>
@@ -327,7 +327,7 @@
 
 <span class="sd">    If distribute_slack=False:</span>
 <span class="sd">        mismatch is assigned only to the Slack bus or buses.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">PQ</span> <span class="o">=</span> <span class="mi">1</span>
     <span class="n">PV</span> <span class="o">=</span> <span class="mi">2</span>
@@ -353,7 +353,7 @@
                 <span class="n">n_participating</span> <span class="o">+=</span> <span class="mi">1</span>
 
     <span class="k">if</span> <span class="n">n_participating</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No slack-participating buses found&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"No slack-participating buses found"</span><span class="p">)</span>
 
     <span class="n">share</span> <span class="o">=</span> <span class="n">mismatch</span> <span class="o">/</span> <span class="n">n_participating</span>
 
@@ -373,7 +373,7 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.LinearFactors.html#VeraGridEngine.Simulations.LinearFactors.linear_analysis.make_corrected_injections_2d">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">make_corrected_injections_2d</span><span class="p">(</span><span class="n">P</span><span class="p">:</span> <span class="n">Mat</span><span class="p">,</span> <span class="n">bus_types</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">distribute_slack</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Mat</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute the effective active-power injection vector used for KCL checks.</span>
 
 <span class="sd">    If distribute_slack=True:</span>
@@ -381,7 +381,7 @@
 
 <span class="sd">    If distribute_slack=False:</span>
 <span class="sd">        mismatch is assigned only to the Slack bus or buses.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">PQ</span> <span class="o">=</span> <span class="mi">1</span>
     <span class="n">PV</span> <span class="o">=</span> <span class="mi">2</span>
@@ -401,7 +401,7 @@
                 <span class="n">n_participating</span> <span class="o">+=</span> <span class="mi">1</span>
 
     <span class="k">if</span> <span class="n">n_participating</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No slack-participating buses found&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"No slack-participating buses found"</span><span class="p">)</span>
 
     <span class="n">mismatch</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nt</span><span class="p">)</span>
 
@@ -430,15 +430,15 @@
               <span class="n">no_slack</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span>
               <span class="n">bus_types</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span>
               <span class="n">distribute_slack</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Mat</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Build the PTDF matrix</span>
 <span class="sd">    :param Bpqpv: DC-linear susceptance matrix already sliced</span>
-<span class="sd">    :param Bf: Bus-branch &quot;from&quot; susceptance matrix</span>
+<span class="sd">    :param Bf: Bus-branch "from" susceptance matrix</span>
 <span class="sd">    :param no_slack: array of sorted pq and pv node indices</span>
 <span class="sd">    :param bus_types: array of bus types</span>
 <span class="sd">    :param distribute_slack: distribute the slack?</span>
 <span class="sd">    :return: PTDF matrix. It is a full matrix of dimensions Branches x buses</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">n</span> <span class="o">=</span> <span class="n">Bf</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>  <span class="c1"># number of buses</span>
 
@@ -477,7 +477,7 @@
                    <span class="n">bus_types</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span>
                    <span class="n">distribute_slack</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
                    <span class="n">converters_as_setpoint</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Mat</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Build the ACDC PTDF matrix</span>
 <span class="sd">    :param nc: NumericalCircuit</span>
 <span class="sd">    :param logger: Logger</span>
@@ -486,7 +486,7 @@
 <span class="sd">    :param converters_as_setpoint: treat every converter (VSC and HVDC) as a set-point</span>
 <span class="sd">        device with the small admittance, ignoring droop control modes</span>
 <span class="sd">    :return: PTDF matrix. It is a full matrix of dimensions Branches x buses</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">n</span> <span class="o">=</span> <span class="n">nc</span><span class="o">.</span><span class="n">nbus</span>
 
     <span class="c1"># mount the base matrix</span>
@@ -508,7 +508,7 @@
 
         <span class="k">else</span><span class="p">:</span>
             <span class="c1"># this is an error</span>
-            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The branch </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2"> is nether fully AC not fully DC :(&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"The branch </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2"> is nether fully AC not fully DC :("</span><span class="p">)</span>
 
         <span class="n">Af</span><span class="p">[</span><span class="n">k</span><span class="p">,</span> <span class="n">f</span><span class="p">]</span> <span class="o">=</span> <span class="n">ys</span>
         <span class="n">Af</span><span class="p">[</span><span class="n">k</span><span class="p">,</span> <span class="n">t</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">ys</span>
@@ -587,12 +587,12 @@
     <span class="n">dTheta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n</span><span class="p">,</span> <span class="n">n</span><span class="p">))</span>
 
     <span class="k">with</span> <span class="n">warnings</span><span class="o">.</span><span class="n">catch_warnings</span><span class="p">():</span>
-        <span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s1">&#39;error&#39;</span><span class="p">)</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s1">'error'</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">dtheta_ref</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">spsolve</span><span class="p">(</span><span class="n">Ared</span><span class="o">.</span><span class="n">tocsc</span><span class="p">(),</span> <span class="n">Pred</span><span class="p">)</span>
             <span class="n">dTheta</span><span class="p">[</span><span class="n">no_slack</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">dtheta_ref</span>
         <span class="k">except</span> <span class="n">sp</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">MatrixRankWarning</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="s2">&quot;ACDC PTDF singular matrix. Does each subgrid have a slack?&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="s2">"ACDC PTDF singular matrix. Does each subgrid have a slack?"</span><span class="p">)</span>
 
     <span class="n">H</span> <span class="o">=</span> <span class="n">Af</span> <span class="o">@</span> <span class="n">dTheta</span>
 
@@ -607,15 +607,15 @@
               <span class="n">PTDF</span><span class="p">:</span> <span class="n">Mat</span><span class="p">,</span>
               <span class="n">correct_values</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
               <span class="n">numerical_zero</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-10</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Mat</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute the LODF matrix</span>
-<span class="sd">    :param Cf: Branch &quot;from&quot; -bus connectivity matrix</span>
-<span class="sd">    :param Ct: Branch &quot;to&quot; -bus connectivity matrix</span>
+<span class="sd">    :param Cf: Branch "from" -bus connectivity matrix</span>
+<span class="sd">    :param Ct: Branch "to" -bus connectivity matrix</span>
 <span class="sd">    :param PTDF: PTDF matrix in numpy array form (Branches, buses)</span>
 <span class="sd">    :param correct_values: correct values out of the interval</span>
 <span class="sd">    :param numerical_zero: value considered zero in numerical terms (i.e. 1e-10)</span>
 <span class="sd">    :return: LODF matrix of dimensions (Branches, Branches)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">nl</span> <span class="o">=</span> <span class="n">PTDF</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
     <span class="c1"># compute the connectivity matrix</span>
@@ -652,13 +652,13 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">make_transfer_limits</span><span class="p">(</span><span class="n">ptdf</span><span class="p">:</span> <span class="n">Mat</span><span class="p">,</span>
                          <span class="n">flows</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
                          <span class="n">rates</span><span class="p">:</span> <span class="n">Vec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute the maximum transfer limits of each branch in normal operation</span>
 <span class="sd">    :param ptdf: power transfer distribution factors matrix (n-branch, n-bus)</span>
 <span class="sd">    :param flows: base Sf in MW</span>
 <span class="sd">    :param rates: array of branch rates</span>
 <span class="sd">    :return: Max transfer limits vector  (n-branch)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">nbr</span> <span class="o">=</span> <span class="n">ptdf</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">nbus</span> <span class="o">=</span> <span class="n">ptdf</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
     <span class="n">tmc</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nbr</span><span class="p">)</span>
@@ -681,12 +681,12 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.LinearFactors.html#VeraGridEngine.Simulations.LinearFactors.linear_analysis.create_M_numba">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">create_M_numba</span><span class="p">(</span><span class="n">lodf</span><span class="p">:</span> <span class="n">Mat</span><span class="p">,</span> <span class="n">branch_contingency_indices</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Mat</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 
 <span class="sd">    :param lodf:</span>
 <span class="sd">    :param branch_contingency_indices:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">M</span><span class="p">:</span> <span class="n">Mat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">branch_contingency_indices</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">branch_contingency_indices</span><span class="p">)))</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">branch_contingency_indices</span><span class="p">)):</span>
         <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">branch_contingency_indices</span><span class="p">)):</span>
@@ -701,7 +701,7 @@
 <div class="viewcode-block" id="compute_phase_shift_terms">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.LinearFactors.html#VeraGridEngine.Simulations.LinearFactors.linear_analysis.compute_phase_shift_terms">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">compute_phase_shift_terms</span><span class="p">(</span><span class="n">nc</span><span class="p">:</span> <span class="n">NumericalCircuit</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Vec</span><span class="p">,</span> <span class="n">Vec</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Build the per-unit contribution of the branch phase shifts to the DC branch flows.</span>
 
 <span class="sd">    A branch with susceptance ``b = 1 / (X · m)`` and phase shift ``tau`` has</span>
@@ -717,7 +717,7 @@
 
 <span class="sd">    :param nc: numerical circuit</span>
 <span class="sd">    :return: direct flow term per branch, equivalent bus injections, in p.u.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">tau_flows</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nc</span><span class="o">.</span><span class="n">nbr</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
     <span class="n">tau_injections</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nc</span><span class="o">.</span><span class="n">nbus</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
 
@@ -745,25 +745,25 @@
 <div class="viewcode-block" id="LinearAnalysis">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.LinearFactors.html#VeraGridEngine.Simulations.LinearFactors.linear_analysis.LinearAnalysis">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">LinearAnalysis</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Linear Analysis</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;logger&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;islands&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;PTDF&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;PTDF_by_island&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;LODF&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;HvdcDF&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;HvdcODF&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;VscDF&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;VscODF&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;bus_types&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;distributed_slack&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Sbase&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;tau_flows&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;tau_injections&quot;</span><span class="p">,</span>
+        <span class="s2">"logger"</span><span class="p">,</span>
+        <span class="s2">"islands"</span><span class="p">,</span>
+        <span class="s2">"PTDF"</span><span class="p">,</span>
+        <span class="s2">"PTDF_by_island"</span><span class="p">,</span>
+        <span class="s2">"LODF"</span><span class="p">,</span>
+        <span class="s2">"HvdcDF"</span><span class="p">,</span>
+        <span class="s2">"HvdcODF"</span><span class="p">,</span>
+        <span class="s2">"VscDF"</span><span class="p">,</span>
+        <span class="s2">"VscODF"</span><span class="p">,</span>
+        <span class="s2">"bus_types"</span><span class="p">,</span>
+        <span class="s2">"distributed_slack"</span><span class="p">,</span>
+        <span class="s2">"Sbase"</span><span class="p">,</span>
+        <span class="s2">"tau_flows"</span><span class="p">,</span>
+        <span class="s2">"tau_injections"</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
@@ -773,7 +773,7 @@
                  <span class="n">converters_as_setpoint</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
                  <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span> <span class="o">=</span> <span class="n">Logger</span><span class="p">(),</span>
                  <span class="n">use_jacobian_ptdf</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Linear Analysis constructor</span>
 <span class="sd">        :param nc: numerical circuit instance</span>
 <span class="sd">        :param distributed_slack: boolean to distribute slack</span>
@@ -781,7 +781,7 @@
 <span class="sd">        :param converters_as_setpoint: build the AC-DC PTDF with every converter treated</span>
 <span class="sd">            as a set-point device regardless of its control mode</span>
 <span class="sd">        :param use_jacobian_ptdf: use the AC Jacobian PTDF for AC islands</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span> <span class="o">=</span> <span class="n">logger</span>
 
@@ -877,13 +877,13 @@
                         <span class="bp">self</span><span class="o">.</span><span class="n">LODF</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ix_</span><span class="p">(</span><span class="n">island</span><span class="o">.</span><span class="n">passive_branch_data</span><span class="o">.</span><span class="n">original_idx</span><span class="p">,</span>
                                          <span class="n">island</span><span class="o">.</span><span class="n">passive_branch_data</span><span class="o">.</span><span class="n">original_idx</span><span class="p">)]</span> <span class="o">=</span> <span class="n">lodf_island</span>
                     <span class="k">else</span><span class="p">:</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="s1">&#39;No PQ or PV nodes&#39;</span><span class="p">,</span> <span class="s1">&#39;Island </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">n_island</span><span class="p">))</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="s1">'No PQ or PV nodes'</span><span class="p">,</span> <span class="s1">'Island </span><span class="si">{}</span><span class="s1">'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">n_island</span><span class="p">))</span>
 
                 <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">indices</span><span class="o">.</span><span class="n">vd</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s1">&#39;No slack bus&#39;</span><span class="p">,</span> <span class="s1">&#39;Island </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">n_island</span><span class="p">))</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s1">'No slack bus'</span><span class="p">,</span> <span class="s1">'Island </span><span class="si">{}</span><span class="s1">'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">n_island</span><span class="p">))</span>
 
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="s1">&#39;More than one slack bus&#39;</span><span class="p">,</span> <span class="s1">&#39;Island </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">n_island</span><span class="p">))</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="s1">'More than one slack bus'</span><span class="p">,</span> <span class="s1">'Island </span><span class="si">{}</span><span class="s1">'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">n_island</span><span class="p">))</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="c1"># there are no islands</span>
             <span class="k">pass</span>
@@ -893,8 +893,8 @@
         <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_hvdc</span><span class="p">):</span>
             <span class="n">f</span> <span class="o">=</span> <span class="n">nc</span><span class="o">.</span><span class="n">hvdc_data</span><span class="o">.</span><span class="n">F</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
             <span class="n">t</span> <span class="o">=</span> <span class="n">nc</span><span class="o">.</span><span class="n">hvdc_data</span><span class="o">.</span><span class="n">T</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
-            <span class="c1"># A_hvdc[f, k] = -1  # subtracts power at the &quot;from&quot; side</span>
-            <span class="c1"># A_hvdc[t, k] = 1  # injects power at the &quot;to&quot; side</span>
+            <span class="c1"># A_hvdc[f, k] = -1  # subtracts power at the "from" side</span>
+            <span class="c1"># A_hvdc[t, k] = 1  # injects power at the "to" side</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">HvdcDF</span><span class="p">[:,</span> <span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">PTDF</span><span class="p">[:,</span> <span class="n">t</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">PTDF</span><span class="p">[:,</span> <span class="n">f</span><span class="p">]</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">HvdcODF</span><span class="p">[:,</span> <span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">PTDF</span><span class="p">[:,</span> <span class="n">f</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">PTDF</span><span class="p">[:,</span> <span class="n">t</span><span class="p">]</span>
 
@@ -905,8 +905,8 @@
         <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_vsc</span><span class="p">):</span>
             <span class="n">f</span> <span class="o">=</span> <span class="n">nc</span><span class="o">.</span><span class="n">vsc_data</span><span class="o">.</span><span class="n">F</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
             <span class="n">t</span> <span class="o">=</span> <span class="n">nc</span><span class="o">.</span><span class="n">vsc_data</span><span class="o">.</span><span class="n">T</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
-            <span class="c1"># A_vsc[f, k] = -1  # subtracts power at the &quot;from&quot; side</span>
-            <span class="c1"># A_vsc[t, k] = 1  # injects power at the &quot;to&quot; side</span>
+            <span class="c1"># A_vsc[f, k] = -1  # subtracts power at the "from" side</span>
+            <span class="c1"># A_vsc[t, k] = 1  # injects power at the "to" side</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">VscDF</span><span class="p">[:,</span> <span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">PTDF</span><span class="p">[:,</span> <span class="n">t</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">PTDF</span><span class="p">[:,</span> <span class="n">f</span><span class="p">]</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">VscODF</span><span class="p">[:,</span> <span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">PTDF</span><span class="p">[:,</span> <span class="n">f</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">PTDF</span><span class="p">[:,</span> <span class="n">t</span><span class="p">]</span>
 
@@ -915,12 +915,12 @@
 <div class="viewcode-block" id="LinearAnalysis.get_transfer_limits">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.LinearFactors.html#VeraGridEngine.Simulations.LinearFactors.linear_analysis.LinearAnalysis.get_transfer_limits">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_transfer_limits</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">flows</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">rates</span><span class="p">:</span> <span class="n">Vec</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Compute the maximum transfer limits of each branch in normal operation</span>
 <span class="sd">        :param flows: base Sf in MW</span>
 <span class="sd">        :param rates: rates in MW</span>
 <span class="sd">        :return: Max transfer limits vector (n-branch)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">make_transfer_limits</span><span class="p">(</span>
             <span class="n">ptdf</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">PTDF</span><span class="p">,</span>
             <span class="n">flows</span><span class="o">=</span><span class="n">flows</span><span class="p">,</span>
@@ -932,7 +932,7 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.LinearFactors.html#VeraGridEngine.Simulations.LinearFactors.linear_analysis.LinearAnalysis.get_flows">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_flows</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Sbus</span><span class="p">:</span> <span class="n">CxVec</span> <span class="o">|</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">P_hvdc</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                   <span class="n">P_vsc</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CxVec</span> <span class="o">|</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Compute the time series branch Sf using the PTDF</span>
 
 <span class="sd">        Everything here is expected to be in MW </span>
@@ -941,7 +941,7 @@
 <span class="sd">        :param P_hvdc: Power from HvdcLines (nhvdc) [MW] (optional)</span>
 <span class="sd">        :param P_vsc: Power from Vsc (nvsc) [MW] (optional)</span>
 <span class="sd">        :return: branch active power Sf (nbranch) [MW]</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="n">Sbus</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
             <span class="c1"># the phase shift acts as a pair of equivalent injections plus a direct term</span>
             <span class="n">Pf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">PTDF</span> <span class="o">@</span> <span class="p">(</span><span class="n">Sbus</span><span class="o">.</span><span class="n">real</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">tau_injections</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">tau_flows</span>
@@ -954,20 +954,20 @@
 
             <span class="k">return</span> <span class="n">Pf</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Sbus has unsupported dimensions: </span><span class="si">{</span><span class="n">Sbus</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span></div>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s1">'Sbus has unsupported dimensions: </span><span class="si">{</span><span class="n">Sbus</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="LinearAnalysis.get_flows2d">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.LinearFactors.html#VeraGridEngine.Simulations.LinearFactors.linear_analysis.LinearAnalysis.get_flows2d">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_flows2d</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Sbus</span><span class="p">:</span> <span class="n">CxMat</span> <span class="o">|</span> <span class="n">Mat</span><span class="p">,</span> <span class="n">P_hvdc</span><span class="p">:</span> <span class="n">Mat</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                     <span class="n">P_vsc</span><span class="p">:</span> <span class="n">Mat</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CxMat</span> <span class="o">|</span> <span class="n">Mat</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Compute the time series branch Sf using the PTDF, everything in MW, see get_flows</span>
 <span class="sd">        :param Sbus: Power Injections time series array (time, nbus) for 2D [MW]</span>
 <span class="sd">        :param P_hvdc: Power from HvdcLines (nhvdc) [MW] (optional)</span>
 <span class="sd">        :param P_vsc: Power from Vsc (nvsc) [MW] (optional)</span>
 <span class="sd">        :return: branch active power Sf (time, nbranch) [MW]</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="n">Sbus</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
             <span class="c1"># same phase-shift correction as get_flows, broadcast over the time axis</span>
             <span class="n">Pf</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">PTDF</span><span class="p">,</span> <span class="p">(</span><span class="n">Sbus</span><span class="o">.</span><span class="n">real</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">tau_injections</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">T</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">tau_flows</span>
@@ -980,51 +980,51 @@
 
             <span class="k">return</span> <span class="n">Pf</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Sbus has unsupported dimensions: </span><span class="si">{</span><span class="n">Sbus</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span></div>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s1">'Sbus has unsupported dimensions: </span><span class="si">{</span><span class="n">Sbus</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="LinearAnalysis.get_injections">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.LinearFactors.html#VeraGridEngine.Simulations.LinearFactors.linear_analysis.LinearAnalysis.get_injections">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_injections</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">flows</span><span class="p">:</span> <span class="n">Vec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get injections that satisfy the flows</span>
 <span class="sd">        :param flows: Array of flows (nbranch)</span>
 <span class="sd">        :return: Array of injections (nbus)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="n">flows</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
 
             <span class="n">Pbus</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">lstsq</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">PTDF</span><span class="p">,</span> <span class="n">flows</span><span class="p">)</span>
 
             <span class="k">return</span> <span class="n">Pbus</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;flows has unsupported dimensions: </span><span class="si">{</span><span class="n">flows</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span></div>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s1">'flows has unsupported dimensions: </span><span class="si">{</span><span class="n">flows</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="LinearAnalysis.get_reverse_injections_2d">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.LinearFactors.html#VeraGridEngine.Simulations.LinearFactors.linear_analysis.LinearAnalysis.get_reverse_injections_2d">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_reverse_injections_2d</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">flows</span><span class="p">:</span> <span class="n">Mat</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Mat</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get injections that satisfy the flows</span>
 <span class="sd">        :param flows: Matrix of flows (time, nbranch)</span>
 <span class="sd">        :return: Matrix of injections (time, nbus)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="n">flows</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
 
             <span class="n">Pbus_t</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">lstsq</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">PTDF</span><span class="p">,</span> <span class="n">flows</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
 
             <span class="k">return</span> <span class="n">Pbus_t</span><span class="o">.</span><span class="n">T</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;flows has unsupported dimensions: </span><span class="si">{</span><span class="n">flows</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span></div>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s1">'flows has unsupported dimensions: </span><span class="si">{</span><span class="n">flows</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="LinearAnalysis.get_corrected_injections">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.LinearFactors.html#VeraGridEngine.Simulations.LinearFactors.linear_analysis.LinearAnalysis.get_corrected_injections">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_corrected_injections</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">P</span><span class="p">:</span> <span class="n">Vec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        This function corrects the original injections to match the PTDF flows</span>
 <span class="sd">        :param P: Nodal injections</span>
 <span class="sd">        :return: Corrected nodal injections</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># # Now we need to recompose the corrected injections</span>
         <span class="c1"># P_eff = np.zeros_like(P, dtype=float)</span>
         <span class="c1">#</span>
@@ -1060,7 +1060,7 @@
         <span class="c1">#                 # Equivalent to: P_eff[slack] = -sum(P_non_slack)</span>
         <span class="c1">#                 P_eff[slack_global] -= Pi.sum()</span>
         <span class="c1">#             else:</span>
-        <span class="c1">#                 print(f&quot;Expected exactly one slack bus per island, got {len(indices.vd)}&quot;)</span>
+        <span class="c1">#                 print(f"Expected exactly one slack bus per island, got {len(indices.vd)}")</span>
         <span class="c1">#</span>
         <span class="c1"># return P_eff</span>
         <span class="k">return</span> <span class="n">make_corrected_injections</span><span class="p">(</span>
@@ -1073,11 +1073,11 @@
 <div class="viewcode-block" id="LinearAnalysis.get_corrected_injections2d">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.LinearFactors.html#VeraGridEngine.Simulations.LinearFactors.linear_analysis.LinearAnalysis.get_corrected_injections2d">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_corrected_injections2d</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">P</span><span class="p">:</span> <span class="n">Mat</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        This function corrects the original injections to match the PTDF flows</span>
 <span class="sd">        :param P: Nodal injections</span>
 <span class="sd">        :return: Corrected nodal injections</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">make_corrected_injections_2d</span><span class="p">(</span>
             <span class="n">P</span><span class="o">=</span><span class="n">P</span><span class="p">,</span>
             <span class="n">bus_types</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">bus_types</span><span class="p">,</span>
@@ -1090,23 +1090,23 @@
 <div class="viewcode-block" id="LinearMultiContingency">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.LinearFactors.html#VeraGridEngine.Simulations.LinearFactors.linear_analysis.LinearMultiContingency">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">LinearMultiContingency</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    LinearMultiContingency</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;branch_indices&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;hvdc_indices&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;vsc_indices&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;bus_indices&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;mlodf_factors&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;compensated_ptdf_factors&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;injections_factor&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;hvdc_odf&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;vsc_odf&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;compensated_vsc_df&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;compensated_hvdc_df&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;enabled&quot;</span><span class="p">,</span>
+        <span class="s2">"branch_indices"</span><span class="p">,</span>
+        <span class="s2">"hvdc_indices"</span><span class="p">,</span>
+        <span class="s2">"vsc_indices"</span><span class="p">,</span>
+        <span class="s2">"bus_indices"</span><span class="p">,</span>
+        <span class="s2">"mlodf_factors"</span><span class="p">,</span>
+        <span class="s2">"compensated_ptdf_factors"</span><span class="p">,</span>
+        <span class="s2">"injections_factor"</span><span class="p">,</span>
+        <span class="s2">"hvdc_odf"</span><span class="p">,</span>
+        <span class="s2">"vsc_odf"</span><span class="p">,</span>
+        <span class="s2">"compensated_vsc_df"</span><span class="p">,</span>
+        <span class="s2">"compensated_hvdc_df"</span><span class="p">,</span>
+        <span class="s2">"enabled"</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
@@ -1121,7 +1121,7 @@
                  <span class="n">injections_factor</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
                  <span class="n">compensated_vsc_df</span><span class="p">:</span> <span class="n">sp</span><span class="o">.</span><span class="n">csc_matrix</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">compensated_hvdc_df</span><span class="p">:</span> <span class="n">sp</span><span class="o">.</span><span class="n">csc_matrix</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Linear multi contingency object</span>
 <span class="sd">        :param branch_indices: contingency branch indices.</span>
 <span class="sd">        :param hvdc_indices: HvdcLine indices that belong into the contingency</span>
@@ -1144,7 +1144,7 @@
 
 <span class="sd">        :param compensated_hvdc_df: post-contingency HVDC distribution factors (all_branches, n_hvdc), used for</span>
 <span class="sd">                                    corrective N-1 (analogous to compensated_vsc_df).</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">bus_indices</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">injections_factor</span><span class="p">)</span>
 
@@ -1180,10 +1180,10 @@
 <div class="viewcode-block" id="LinearMultiContingency.has_injection_contingencies">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.LinearFactors.html#VeraGridEngine.Simulations.LinearFactors.linear_analysis.LinearMultiContingency.has_injection_contingencies">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">has_injection_contingencies</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Check if this multi-contingency has bus injection modifications</span>
 <span class="sd">        :return: true / false</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bus_indices</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span></div>
 
 
@@ -1194,14 +1194,14 @@
                               <span class="n">injections</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
                               <span class="n">hvdc_flow</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                               <span class="n">vsc_flow</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get contingency flows</span>
 <span class="sd">        :param base_branches_flow: Base branch flows (nbranch)</span>
 <span class="sd">        :param injections: Bus injections increments (nbus)</span>
 <span class="sd">        :param hvdc_flow: Base HvdcLine flows (n_hvdc)</span>
 <span class="sd">        :param vsc_flow: Base Vsc flows (n_vsc)</span>
 <span class="sd">        :return: New flows (nbranch)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="n">flow</span> <span class="o">=</span> <span class="n">base_branches_flow</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 
@@ -1232,7 +1232,7 @@
                                  <span class="n">hvdc_flow</span><span class="p">:</span> <span class="n">ObjVec</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                                  <span class="n">vsc_flow</span><span class="p">:</span> <span class="n">ObjVec</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                                  <span class="n">row_filter</span><span class="p">:</span> <span class="n">BoolVec</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">ObjVec</span><span class="p">,</span> <span class="n">BoolVec</span><span class="p">,</span> <span class="n">IntVec</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get contingency flows using the LP interface equations</span>
 <span class="sd">        :param base_flow: Base branch flows (nbranch)</span>
 <span class="sd">        :param injections: Bus injections (nbus)</span>
@@ -1240,7 +1240,7 @@
 <span class="sd">        :param vsc_flow: Base Vsc flows (n_vsc)</span>
 <span class="sd">        :param row_filter: per-branch flag, True for the branches the caller is going to constrain.</span>
 <span class="sd">        :return: New flows (nbranch), the mask of branches that changed, and their indices</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">mask</span><span class="p">:</span> <span class="n">BoolVec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">base_flow</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
         <span class="n">flow</span><span class="p">:</span> <span class="n">ObjVec</span> <span class="o">=</span> <span class="n">base_flow</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 
@@ -1278,12 +1278,12 @@
 <div class="viewcode-block" id="LinearMultiContingency.get_alpha_n1">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.LinearFactors.html#VeraGridEngine.Simulations.LinearFactors.linear_analysis.LinearMultiContingency.get_alpha_n1">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_alpha_n1</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dP</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">dT</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Compute the N-1 sensitivities to the inter-area exchange</span>
 <span class="sd">        :param dP: Inter-area power exchanges computed with (compute_dP)</span>
 <span class="sd">        :param dT: Exchange amount (MW) usually a unitary increment is sufficient (use the value used to compute dP)</span>
 <span class="sd">        :return: N-1 branch exchange sensitivities</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="c1"># (MLODF[k, βδ] x PTDF[βδ, i] + PTDF[k, i]) x ΔP[i]</span>
         <span class="n">dflow</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compensated_ptdf_factors</span> <span class="o">@</span> <span class="n">dP</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">bus_indices</span><span class="p">]</span>
@@ -1303,16 +1303,16 @@
 <div class="viewcode-block" id="ContingencyIndices">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.LinearFactors.html#VeraGridEngine.Simulations.LinearFactors.linear_analysis.ContingencyIndices">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">ContingencyIndices</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Contingency indices</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;branch_contingency_indices&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;hvdc_contingency_indices&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;vsc_contingency_indices&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;bus_contingency_indices&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;injections_factors&quot;</span><span class="p">,</span>
+        <span class="s2">"branch_contingency_indices"</span><span class="p">,</span>
+        <span class="s2">"hvdc_contingency_indices"</span><span class="p">,</span>
+        <span class="s2">"vsc_contingency_indices"</span><span class="p">,</span>
+        <span class="s2">"bus_contingency_indices"</span><span class="p">,</span>
+        <span class="s2">"injections_factors"</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
@@ -1322,7 +1322,7 @@
                  <span class="n">hvdc_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
                  <span class="n">vsc_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
                  <span class="n">injections_bus_index_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Contingency indices</span>
 <span class="sd">        :param contingency_group: ContingencyGroup</span>
 <span class="sd">        :param contingency_group_dict: dictionary to get the list of contingencies matching a contingency group</span>
@@ -1330,9 +1330,9 @@
 <span class="sd">        :param hvdc_dict: dictionary to get the HvdcLine index by the branch idtag</span>
 <span class="sd">        :param vsc_dict: dictionary to get the Vsc index by the branch idtag</span>
 <span class="sd">        :param injections_bus_index_dict: dictionary to get the injection device bus index by the generator idtag</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
-        <span class="c1"># get the group&#39;s contingencies</span>
+        <span class="c1"># get the group's contingencies</span>
         <span class="n">contingencies</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Contingency</span><span class="p">]</span> <span class="o">=</span> <span class="n">contingency_group_dict</span><span class="p">[</span><span class="n">contingency_group</span><span class="o">.</span><span class="n">idtag</span><span class="p">]</span>
 
         <span class="n">branch_contingency_indices_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
@@ -1368,7 +1368,7 @@
                         <span class="n">bus_contingency_indices_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bus_idx</span><span class="p">)</span>
                         <span class="n">injections_factors_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mf">1.0</span><span class="p">)</span>  <span class="c1"># 100% power contingency</span>
                     <span class="k">else</span><span class="p">:</span>
-                        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;contingency generator </span><span class="si">{</span><span class="n">cnt</span><span class="o">.</span><span class="n">device_idtag</span><span class="si">}</span><span class="s2"> not found&quot;</span><span class="p">)</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"contingency generator </span><span class="si">{</span><span class="n">cnt</span><span class="o">.</span><span class="n">device_idtag</span><span class="si">}</span><span class="s2"> not found"</span><span class="p">)</span>
 
                 <span class="k">else</span><span class="p">:</span>
                     <span class="c1"># search for the contingency in the Branches</span>
@@ -1376,7 +1376,7 @@
                     <span class="k">if</span> <span class="n">br_idx</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                         <span class="n">branch_contingency_indices_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">br_idx</span><span class="p">)</span>
                     <span class="k">else</span><span class="p">:</span>
-                        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;contingency device </span><span class="si">{</span><span class="n">cnt</span><span class="o">.</span><span class="n">device_type</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">cnt</span><span class="o">.</span><span class="n">device_idtag</span><span class="si">}</span><span class="s2"> not found&quot;</span><span class="p">)</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"contingency device </span><span class="si">{</span><span class="n">cnt</span><span class="o">.</span><span class="n">device_type</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">cnt</span><span class="o">.</span><span class="n">device_idtag</span><span class="si">}</span><span class="s2"> not found"</span><span class="p">)</span>
 
             <span class="k">elif</span> <span class="n">cnt</span><span class="o">.</span><span class="n">prop</span> <span class="o">==</span> <span class="n">ContingencyOperationTypes</span><span class="o">.</span><span class="n">PowerPercentage</span><span class="p">:</span>
                 <span class="c1"># this can only be an injection device</span>
@@ -1385,9 +1385,9 @@
                     <span class="n">bus_contingency_indices_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bus_idx</span><span class="p">)</span>
                     <span class="n">injections_factors_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cnt</span><span class="o">.</span><span class="n">value</span> <span class="o">/</span> <span class="mf">100.0</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;contingency generator </span><span class="si">{</span><span class="n">cnt</span><span class="o">.</span><span class="n">device_idtag</span><span class="si">}</span><span class="s2"> not found&quot;</span><span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"contingency generator </span><span class="si">{</span><span class="n">cnt</span><span class="o">.</span><span class="n">device_idtag</span><span class="si">}</span><span class="s2"> not found"</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Unknown branch contingency property </span><span class="si">{</span><span class="n">cnt</span><span class="o">.</span><span class="n">prop</span><span class="si">}</span><span class="s1"> at </span><span class="si">{</span><span class="n">cnt</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s1"> </span><span class="si">{</span><span class="n">cnt</span><span class="o">.</span><span class="n">idtag</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'Unknown branch contingency property </span><span class="si">{</span><span class="n">cnt</span><span class="o">.</span><span class="n">prop</span><span class="si">}</span><span class="s1"> at </span><span class="si">{</span><span class="n">cnt</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s1"> </span><span class="si">{</span><span class="n">cnt</span><span class="o">.</span><span class="n">idtag</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">branch_contingency_indices</span><span class="p">:</span> <span class="n">IntVec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">branch_contingency_indices_list</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">hvdc_contingency_indices</span><span class="p">:</span> <span class="n">IntVec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">hvdc_contingency_indices_list</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
@@ -1400,27 +1400,27 @@
 <div class="viewcode-block" id="LinearMultiContingencies">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.LinearFactors.html#VeraGridEngine.Simulations.LinearFactors.linear_analysis.LinearMultiContingencies">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">LinearMultiContingencies</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    LinearMultiContingencies</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;grid&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;contingency_groups_used&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;__contingency_group_dict&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;__branches_dict&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;__hvdc_dict&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;__vsc_dict&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;__injections_bus_index_dict&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;contingency_indices_list&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;multi_contingencies&quot;</span><span class="p">,</span>
+        <span class="s2">"grid"</span><span class="p">,</span>
+        <span class="s2">"contingency_groups_used"</span><span class="p">,</span>
+        <span class="s2">"__contingency_group_dict"</span><span class="p">,</span>
+        <span class="s2">"__branches_dict"</span><span class="p">,</span>
+        <span class="s2">"__hvdc_dict"</span><span class="p">,</span>
+        <span class="s2">"__vsc_dict"</span><span class="p">,</span>
+        <span class="s2">"__injections_bus_index_dict"</span><span class="p">,</span>
+        <span class="s2">"contingency_indices_list"</span><span class="p">,</span>
+        <span class="s2">"multi_contingencies"</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">grid</span><span class="p">:</span> <span class="n">MultiCircuit</span><span class="p">,</span> <span class="n">contingency_groups_used</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">ContingencyGroup</span><span class="p">]):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Constructor</span>
 <span class="sd">        :param grid: MultiCircuit</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="p">:</span> <span class="n">MultiCircuit</span> <span class="o">=</span> <span class="n">grid</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">contingency_groups_used</span> <span class="o">=</span> <span class="n">contingency_groups_used</span>
@@ -1451,19 +1451,19 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">contingency_group_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">Contingency</span><span class="p">]]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        get the contingency grooups dictionary</span>
 <span class="sd">        :return: Dict[str, List[Contingency]]</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__contingency_group_dict</span>
 
 <div class="viewcode-block" id="LinearMultiContingencies.get_contingency_group_names">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.LinearFactors.html#VeraGridEngine.Simulations.LinearFactors.linear_analysis.LinearMultiContingencies.get_contingency_group_names">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_contingency_group_names</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Returns a list of the names of the used contingency groups</span>
 <span class="sd">        :return: List[str]</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="p">[</span><span class="n">elm</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">elm</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">contingency_groups_used</span><span class="p">]</span></div>
 
 
@@ -1474,7 +1474,7 @@
                 <span class="n">ptdf_threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0001</span><span class="p">,</span>
                 <span class="n">lodf_threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0001</span><span class="p">,</span>
                 <span class="n">with_corrective_converter_df</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Make the LODF with any contingency combination using the declared contingency objects</span>
 <span class="sd">        :param lin: LinearAnalysis instance</span>
 <span class="sd">        :param ptdf_threshold: threshold to discard values</span>
@@ -1483,7 +1483,7 @@
 <span class="sd">                                             factors (compensated_vsc_df / compensated_hvdc_df) used to allow</span>
 <span class="sd">                                             corrective (N-1) re-dispatch of VSC/HVDC set-points.</span>
 <span class="sd">        :return: None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="c1"># lodf: Mat = lin.LODF</span>
         <span class="c1"># ptdf: Mat = lin.PTDF</span>
@@ -1647,11 +1647,11 @@
 <div class="viewcode-block" id="LinearMultiContingencies.get_single_con_branch_idx">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.LinearFactors.html#VeraGridEngine.Simulations.LinearFactors.linear_analysis.LinearMultiContingencies.get_single_con_branch_idx">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_single_con_branch_idx</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">IntVec</span><span class="p">,</span> <span class="n">IntVec</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the branch index array and the contingency group it belongs array</span>
 <span class="sd">        :return: array of single contingency branch indices,</span>
 <span class="sd">                 array of the matching contingency groups</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">con_idx</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
         <span class="n">cg_idx</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">ci</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">contingency_indices_list</span><span class="p">):</span>
@@ -1667,20 +1667,20 @@
 <div class="viewcode-block" id="LinearAnalysisTs">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.LinearFactors.html#VeraGridEngine.Simulations.LinearFactors.linear_analysis.LinearAnalysisTs">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">LinearAnalysisTs</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Class to compute the different linear states of a grid</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;time_indices&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;_inverse_time_index&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;groups&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;mapping&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;_linear_analysis&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;_linear_multi_contingencies&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;nbr&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;nbus&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;nt&quot;</span><span class="p">,</span>
+        <span class="s2">"time_indices"</span><span class="p">,</span>
+        <span class="s2">"_inverse_time_index"</span><span class="p">,</span>
+        <span class="s2">"groups"</span><span class="p">,</span>
+        <span class="s2">"mapping"</span><span class="p">,</span>
+        <span class="s2">"_linear_analysis"</span><span class="p">,</span>
+        <span class="s2">"_linear_multi_contingencies"</span><span class="p">,</span>
+        <span class="s2">"nbr"</span><span class="p">,</span>
+        <span class="s2">"nbus"</span><span class="p">,</span>
+        <span class="s2">"nt"</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">grid</span><span class="p">:</span> <span class="n">MultiCircuit</span><span class="p">,</span>
@@ -1692,21 +1692,21 @@
                  <span class="n">lodf_threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-4</span><span class="p">,</span>
                  <span class="n">compute_multi_contingencies</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
                  <span class="n">use_jacobian_ptdf</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Constructor</span>
 <span class="sd">        :param grid: MultiCircuit instance</span>
 <span class="sd">        :param distributed_slack: boolean to distribute slack</span>
 <span class="sd">        :param correct_values: boolean to fix out layer values</span>
 <span class="sd">        :param time_indices: Array of time indices</span>
-<span class="sd">        :param contingency_groups_used: list of contingency groups to use (all the grid&#39;s if None)</span>
-<span class="sd">        :param ptdf_threshold: threshold for PTDF&#39;s to be converted to sparse</span>
-<span class="sd">        :param lodf_threshold: threshold for LODF&#39;s to be converted to sparse</span>
+<span class="sd">        :param contingency_groups_used: list of contingency groups to use (all the grid's if None)</span>
+<span class="sd">        :param ptdf_threshold: threshold for PTDF's to be converted to sparse</span>
+<span class="sd">        :param lodf_threshold: threshold for LODF's to be converted to sparse</span>
 <span class="sd">        :param compute_multi_contingencies: also pre-compute the LinearMultiContingencies</span>
 <span class="sd">        :param use_jacobian_ptdf: use the AC Jacobian PTDF implementation?</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="n">grid</span><span class="o">.</span><span class="n">has_time_series</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;The grid does not have any time series :(&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">"The grid does not have any time series :("</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">time_indices</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">get_all_time_indices</span><span class="p">()</span> <span class="k">if</span> <span class="n">time_indices</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">time_indices</span>
 
@@ -1715,7 +1715,7 @@
         <span class="c1"># get the states matrix</span>
         <span class="n">mat</span><span class="p">:</span> <span class="n">IntMat</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">get_branch_active_time_array</span><span class="p">()[</span><span class="bp">self</span><span class="o">.</span><span class="n">time_indices</span><span class="p">,</span> <span class="p">:]</span>
 
-        <span class="c1"># analyze how many PTDF&#39;s we need to get</span>
+        <span class="c1"># analyze how many PTDF's we need to get</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">groups</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapping</span> <span class="o">=</span> <span class="n">find_different_states</span><span class="p">(</span><span class="n">mat</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_linear_analysis</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">LinearAnalysis</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
@@ -1756,11 +1756,11 @@
 <div class="viewcode-block" id="LinearAnalysisTs.get_linear_analysis_at">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.LinearFactors.html#VeraGridEngine.Simulations.LinearFactors.linear_analysis.LinearAnalysisTs.get_linear_analysis_at">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_linear_analysis_at</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">LinearAnalysis</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :param t_idx: time index in the general schema</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># get the base index (i.e. when clustering)</span>
         <span class="n">it</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inverse_time_index</span><span class="p">[</span><span class="n">t_idx</span><span class="p">]</span>
 
@@ -1776,11 +1776,11 @@
 <div class="viewcode-block" id="LinearAnalysisTs.get_multiple_contingencies_at">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.LinearFactors.html#VeraGridEngine.Simulations.LinearFactors.linear_analysis.LinearAnalysisTs.get_multiple_contingencies_at">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_multiple_contingencies_at</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">LinearMultiContingencies</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :param t_idx:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># get the base index (i.e. when clustering)</span>
         <span class="n">it</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inverse_time_index</span><span class="p">[</span><span class="n">t_idx</span><span class="p">]</span>
 
@@ -1796,12 +1796,12 @@
 <div class="viewcode-block" id="LinearAnalysisTs.get_flows_at">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.LinearFactors.html#VeraGridEngine.Simulations.LinearFactors.linear_analysis.LinearAnalysisTs.get_flows_at">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_flows_at</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">P</span><span class="p">:</span> <span class="n">CxVec</span> <span class="o">|</span> <span class="n">Vec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CxVec</span> <span class="o">|</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the flows at a time step</span>
 <span class="sd">        :param t_idx: Time index</span>
 <span class="sd">        :param P: Injections vector</span>
 <span class="sd">        :return: branch flows vector</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># get the linear analysis</span>
         <span class="n">lin</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_linear_analysis_at</span><span class="p">(</span><span class="n">t_idx</span><span class="o">=</span><span class="n">t_idx</span><span class="p">)</span>
 
@@ -1811,13 +1811,13 @@
 <div class="viewcode-block" id="LinearAnalysisTs.get_branch_flow_ts">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.LinearFactors.html#VeraGridEngine.Simulations.LinearFactors.linear_analysis.LinearAnalysisTs.get_branch_flow_ts">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_branch_flow_ts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">branch_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">bus_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">P</span><span class="p">:</span> <span class="n">CxVec</span> <span class="o">|</span> <span class="n">Vec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CxVec</span> <span class="o">|</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the flow time series of a single branch given the injection time series of a single bus</span>
 <span class="sd">        :param branch_idx: Branch index</span>
 <span class="sd">        :param bus_idx: Bus index</span>
 <span class="sd">        :param P: Bus injection time series</span>
 <span class="sd">        :return: Branch flow time series</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># must have the same size</span>
         <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">P</span><span class="p">)</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">nt</span>
 
@@ -1835,13 +1835,13 @@
 <div class="viewcode-block" id="LinearAnalysisTs.get_flows_ts">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.LinearFactors.html#VeraGridEngine.Simulations.LinearFactors.linear_analysis.LinearAnalysisTs.get_flows_ts">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_flows_ts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">P</span><span class="p">:</span> <span class="n">CxMat</span> <span class="o">|</span> <span class="n">Mat</span><span class="p">,</span> <span class="n">progress_func</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">progress_text</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CxMat</span> <span class="o">|</span> <span class="n">Mat</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the flow time series of all branches given the injection time series all buses</span>
 <span class="sd">        :param P: Bus injection time series</span>
 <span class="sd">        :param progress_func: Progres function</span>
 <span class="sd">        :param progress_text: Progress text function</span>
 <span class="sd">        :return: Branches flow time series</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># must have the same size</span>
         <span class="k">assert</span> <span class="n">P</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">nt</span>
         <span class="k">assert</span> <span class="n">P</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">nbus</span>
@@ -1852,7 +1852,7 @@
         <span class="k">for</span> <span class="n">t_idx</span><span class="p">,</span> <span class="n">list_of_represented_time_steps</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">groups</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
 
             <span class="k">if</span> <span class="n">progress_text</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">progress_text</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Computing flows for time group </span><span class="si">{</span><span class="n">t_idx</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">progress_text</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Computing flows for time group </span><span class="si">{</span><span class="n">t_idx</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
             <span class="c1"># get the linear analysis</span>
             <span class="n">lin</span><span class="p">:</span> <span class="n">LinearAnalysis</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_linear_analysis</span><span class="p">[</span><span class="n">t_idx</span><span class="p">]</span>
@@ -1869,11 +1869,11 @@
 <div class="viewcode-block" id="LinearAnalysisTs.get_reverse_injections_ts">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.LinearFactors.html#VeraGridEngine.Simulations.LinearFactors.linear_analysis.LinearAnalysisTs.get_reverse_injections_ts">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_reverse_injections_ts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">flows_ts</span><span class="p">:</span> <span class="n">CxMat</span> <span class="o">|</span> <span class="n">Mat</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CxMat</span> <span class="o">|</span> <span class="n">Mat</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the flow time series of all branches given the injection time series all buses</span>
 <span class="sd">        :param flows_ts: Branches flow time series</span>
 <span class="sd">        :return: Bus injection time series</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># must have the same size</span>
         <span class="k">assert</span> <span class="n">flows_ts</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">nt</span>
         <span class="k">assert</span> <span class="n">flows_ts</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">nbr</span>
@@ -1894,11 +1894,11 @@
 <div class="viewcode-block" id="LinearAnalysisTs.get_corrected_injections_ts">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.LinearFactors.html#VeraGridEngine.Simulations.LinearFactors.linear_analysis.LinearAnalysisTs.get_corrected_injections_ts">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_corrected_injections_ts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">P_ts</span><span class="p">:</span> <span class="n">CxMat</span> <span class="o">|</span> <span class="n">Mat</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CxMat</span> <span class="o">|</span> <span class="n">Mat</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the corrected injections time series</span>
 <span class="sd">        :param P_ts: Time series injections</span>
 <span class="sd">        :return: Bus injection time series</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># must have the same size</span>
         <span class="k">assert</span> <span class="n">P_ts</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">nt</span>
         <span class="k">assert</span> <span class="n">P_ts</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">nbus</span>
@@ -1919,11 +1919,11 @@
 <div class="viewcode-block" id="LinearAnalysisTs.get_hvdc_flows_ts">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.LinearFactors.html#VeraGridEngine.Simulations.LinearFactors.linear_analysis.LinearAnalysisTs.get_hvdc_flows_ts">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_hvdc_flows_ts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Pdc_hvdc_ts</span><span class="p">:</span> <span class="n">Mat</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Mat</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the AC branch flow time series due to the HVDC transfers</span>
 <span class="sd">        :param Pdc_hvdc_ts: (nt, nhvdc) HVDC from-&gt;to transfer time series (see get_hvdc_Pdc_ts), in MW</span>
 <span class="sd">        :return: (nt, nbr) branch flows due to the HVDC lines, in MW</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">assert</span> <span class="n">Pdc_hvdc_ts</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">nt</span>
 
         <span class="n">flows</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">nt</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nbr</span><span class="p">))</span>
@@ -1940,12 +1940,12 @@
 <div class="viewcode-block" id="get_hvdc_Pdc_ts">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.LinearFactors.html#VeraGridEngine.Simulations.LinearFactors.linear_analysis.get_hvdc_Pdc_ts">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_hvdc_Pdc_ts</span><span class="p">(</span><span class="n">grid</span><span class="p">:</span> <span class="n">MultiCircuit</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Mat</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Get the HVDC scheduled from-&gt;to transfer time series in MW</span>
 <span class="sd">    (this equals -Pf of HvdcData.get_power evaluated at theta=0)</span>
 <span class="sd">    :param grid: MultiCircuit</span>
 <span class="sd">    :return: (nt, nhvdc) transfer of each HvdcLine, positive from-&gt;to, in MW</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">nt</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">get_time_number</span><span class="p">()</span>
     <span class="n">nhvdc</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">grid</span><span class="o">.</span><span class="n">hvdc_lines</span><span class="p">)</span>
     <span class="n">Pdc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nt</span><span class="p">,</span> <span class="n">nhvdc</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>

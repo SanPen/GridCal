@@ -134,11 +134,12 @@ def get_transformer_emt_template(
     the PF terminal currents.
 
     Assumptions:
-    - `l1`, `l2`, and `m12` already represent the physical transformer model in the
+
+    - ``l1``, ``l2``, and ``m12`` already represent the physical transformer model in the
       chosen winding coordinates.
     - branch currents are positive when leaving the connected bus.
-    - `if_act` and `it_act` are externally initialized by the EMT framework from the
-      power-flow solution through `external_mapping`.
+    - ``if_act`` and ``it_act`` are externally initialized by the EMT framework from the
+      power-flow solution through ``external_mapping``.
 
     :param vf: EMT variable factory.
     :param conn_f: Optional from-side winding connection.

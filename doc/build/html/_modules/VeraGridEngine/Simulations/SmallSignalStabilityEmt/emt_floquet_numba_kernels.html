@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Simulations.SmallSignalStabilityEmt.emt_floquet_numba_kernels &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Simulations.SmallSignalStabilityEmt.emt_floquet_numba_kernels &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/license.html">📜 License</a></li>
@@ -103,7 +104,7 @@
              
   <h1>Source code for VeraGridEngine.Simulations.SmallSignalStabilityEmt.emt_floquet_numba_kernels</h1><div class="highlight"><pre>
 <span></span><span class="c1"># SPDX-License-Identifier: MPL-2.0</span>
-<span class="sd">&quot;&quot;&quot;Required Numba kernels for EMT Floquet block methods.&quot;&quot;&quot;</span>
+<span class="sd">"""Required Numba kernels for EMT Floquet block methods."""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
@@ -117,11 +118,11 @@
 
 <span class="nd">@njit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">fastmath</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">_fro_norm_numba</span><span class="p">(</span><span class="n">X</span><span class="p">:</span> <span class="n">Mat</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute the Frobenius norm of a real matrix.</span>
+<span class="w">    </span><span class="sd">"""Compute the Frobenius norm of a real matrix.</span>
 
 <span class="sd">    :param X: Real matrix whose norm is required.</span>
 <span class="sd">    :return: Frobenius norm of ``X``.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">s</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span>
     <span class="n">n</span><span class="p">:</span> <span class="nb">int</span>
     <span class="n">m</span><span class="p">:</span> <span class="nb">int</span>
@@ -135,12 +136,12 @@
 
 <span class="nd">@njit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">fastmath</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">_gemm_left_t_numba</span><span class="p">(</span><span class="n">Vi</span><span class="p">:</span> <span class="n">Mat</span><span class="p">,</span> <span class="n">W</span><span class="p">:</span> <span class="n">Mat</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Mat</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute ``Vi.T @ W`` using a cache-friendly kernel.</span>
+<span class="w">    </span><span class="sd">"""Compute ``Vi.T @ W`` using a cache-friendly kernel.</span>
 
 <span class="sd">    :param Vi: Left matrix.</span>
 <span class="sd">    :param W: Right matrix.</span>
 <span class="sd">    :return: Matrix product ``Vi.T @ W``.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">n</span><span class="p">:</span> <span class="nb">int</span>
     <span class="n">r</span><span class="p">:</span> <span class="nb">int</span>
     <span class="n">n</span><span class="p">,</span> <span class="n">r</span> <span class="o">=</span> <span class="n">Vi</span><span class="o">.</span><span class="n">shape</span>
@@ -159,13 +160,13 @@
 
 <span class="nd">@njit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">fastmath</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">_gemm_sub_numba</span><span class="p">(</span><span class="n">W</span><span class="p">:</span> <span class="n">Mat</span><span class="p">,</span> <span class="n">Vi</span><span class="p">:</span> <span class="n">Mat</span><span class="p">,</span> <span class="n">H</span><span class="p">:</span> <span class="n">Mat</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Subtract ``Vi @ H`` from ``W`` in place.</span>
+<span class="w">    </span><span class="sd">"""Subtract ``Vi @ H`` from ``W`` in place.</span>
 
 <span class="sd">    :param W: Matrix updated in place.</span>
 <span class="sd">    :param Vi: Basis block.</span>
 <span class="sd">    :param H: Projection coefficients.</span>
 <span class="sd">    :return: None.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">n</span><span class="p">:</span> <span class="nb">int</span>
     <span class="n">r</span><span class="p">:</span> <span class="nb">int</span>
     <span class="n">n</span><span class="p">,</span> <span class="n">r</span> <span class="o">=</span> <span class="n">Vi</span><span class="o">.</span><span class="n">shape</span>
@@ -190,7 +191,7 @@
         <span class="n">W_in</span><span class="p">:</span> <span class="n">Mat</span><span class="p">,</span>
         <span class="n">reorth_factor</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.717</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Mat</span><span class="p">,</span> <span class="n">Mat</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Orthogonalize a block against previous blocks with DGKS reorthogonalization.</span>
+<span class="w">    </span><span class="sd">"""Orthogonalize a block against previous blocks with DGKS reorthogonalization.</span>
 
 <span class="sd">    :param V_all: Concatenated basis blocks.</span>
 <span class="sd">    :param starts: Start column for every basis block.</span>
@@ -198,7 +199,7 @@
 <span class="sd">    :param W_in: Candidate block to orthogonalize.</span>
 <span class="sd">    :param reorth_factor: Threshold that triggers the second pass.</span>
 <span class="sd">    :return: Orthogonalized block and Hessenberg coefficients.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">W</span><span class="p">:</span> <span class="n">Mat</span> <span class="o">=</span> <span class="n">W_in</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
     <span class="n">p</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">W</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
     <span class="n">m_prev</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">ends</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="n">ends</span><span class="o">.</span><span class="n">size</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="mi">0</span>
@@ -232,12 +233,12 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SmallSignalStabilityEmt.html#VeraGridEngine.Simulations.SmallSignalStabilityEmt.emt_floquet_numba_kernels.apply_ak_stack_block_numba">[docs]</a>
 <span class="nd">@njit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">fastmath</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">parallel</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">apply_ak_stack_block_numba</span><span class="p">(</span><span class="n">Ak_stack</span><span class="p">:</span> <span class="n">Mat</span><span class="p">,</span> <span class="n">X0</span><span class="p">:</span> <span class="n">Mat</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Mat</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Apply ``A[M-1] ... A[0]`` to a block of vectors.</span>
+<span class="w">    </span><span class="sd">"""Apply ``A[M-1] ... A[0]`` to a block of vectors.</span>
 
 <span class="sd">    :param Ak_stack: Dense transition matrices with shape ``(M, n, n)``.</span>
 <span class="sd">    :param X0: Initial block with shape ``(n, p)``.</span>
 <span class="sd">    :return: Propagated block with shape ``(n, p)``.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">matrix_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">Ak_stack</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">state_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">Ak_stack</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
     <span class="n">block_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">X0</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
@@ -273,7 +274,7 @@
         <span class="n">perm_c</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span>
         <span class="n">B</span><span class="p">:</span> <span class="n">Mat</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Mat</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Solve a dense permuted LU system for a block right-hand side.</span>
+<span class="w">    </span><span class="sd">"""Solve a dense permuted LU system for a block right-hand side.</span>
 
 <span class="sd">    :param L: Unit-lower-triangular factor.</span>
 <span class="sd">    :param U: Upper-triangular factor.</span>
@@ -281,7 +282,7 @@
 <span class="sd">    :param perm_c: Column permutation indices.</span>
 <span class="sd">    :param B: Right-hand side block.</span>
 <span class="sd">    :return: Solution block.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">n</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">L</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">block_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">B</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
     <span class="n">Bp</span><span class="p">:</span> <span class="n">Mat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n</span><span class="p">,</span> <span class="n">block_size</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
@@ -312,9 +313,9 @@
 
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="s2">&quot;bmgs_twice_numba&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;solve_lu_dense_block_numba&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;apply_ak_stack_block_numba&quot;</span><span class="p">,</span>
+    <span class="s2">"bmgs_twice_numba"</span><span class="p">,</span>
+    <span class="s2">"solve_lu_dense_block_numba"</span><span class="p">,</span>
+    <span class="s2">"apply_ak_stack_block_numba"</span><span class="p">,</span>
 <span class="p">]</span>
 </pre></div>
 

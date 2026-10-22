@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Compilers.Gslv.Simulations.investments &mdash; VeraGrid 6.5.26 documentation</title>
+  <title>VeraGridEngine.Compilers.Gslv.Simulations.investments &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../../_static/documentation_options.js?v=c62e3d9e"></script>
+      <script src="../../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/license.html">📜 License</a></li>
@@ -126,16 +127,16 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">get_gslv_investments_evaluation_options</span><span class="p">(</span>
         <span class="n">opt</span><span class="p">:</span> <span class="n">InvestmentsEvaluationOptions</span><span class="p">,</span>
         <span class="n">circuit</span><span class="p">:</span> <span class="n">MultiCircuit</span><span class="p">,</span>
-        <span class="n">gslv_circuit</span><span class="p">:</span> <span class="s2">&quot;pg.MultiCircuit&quot;</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;pg.InvestmentsEvaluationOptions&quot;</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+        <span class="n">gslv_circuit</span><span class="p">:</span> <span class="s2">"pg.MultiCircuit"</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"pg.InvestmentsEvaluationOptions"</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Translate VeraGrid investment-evaluation options to GSLV options.</span>
 
 <span class="sd">    :param opt: VeraGrid investments-evaluation options.</span>
 <span class="sd">    :param circuit: VeraGrid circuit.</span>
 <span class="sd">    :param gslv_circuit: Converted GSLV circuit.</span>
 <span class="sd">    :return: GSLV investments-evaluation options.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">solver_dict</span> <span class="o">=</span> <span class="p">{</span>
         <span class="n">InvestmentEvaluationMethod</span><span class="o">.</span><span class="n">CBA_PINT_TOOT</span><span class="p">:</span> <span class="n">pg</span><span class="o">.</span><span class="n">InvestmentEvaluationMethod</span><span class="o">.</span><span class="n">CBA_PINT_TOOT</span><span class="p">,</span>
         <span class="n">InvestmentEvaluationMethod</span><span class="o">.</span><span class="n">PINT_TOOT_NSGA3</span><span class="p">:</span> <span class="n">pg</span><span class="o">.</span><span class="n">InvestmentEvaluationMethod</span><span class="o">.</span><span class="n">PINT_TOOT_NSGA3</span><span class="p">,</span>
@@ -168,14 +169,14 @@
 <div class="viewcode-block" id="translate_gslv_investments_evaluation_results">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Compilers.Gslv.Simulations.html#VeraGridEngine.Compilers.Gslv.Simulations.investments.translate_gslv_investments_evaluation_results">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">translate_gslv_investments_evaluation_results</span><span class="p">(</span>
-        <span class="n">res</span><span class="p">:</span> <span class="s2">&quot;pg.InvestmentsEvaluationResults&quot;</span><span class="p">,</span>
+        <span class="n">res</span><span class="p">:</span> <span class="s2">"pg.InvestmentsEvaluationResults"</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">InvestmentsEvaluationResults</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Translate GSLV investment-evaluation results to VeraGrid results.</span>
 
 <span class="sd">    :param res: GSLV investments-evaluation results.</span>
 <span class="sd">    :return: VeraGrid investments-evaluation results.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">results</span> <span class="o">=</span> <span class="n">InvestmentsEvaluationResults</span><span class="p">(</span>
         <span class="n">f_names</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">f_names</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">str</span><span class="p">),</span>
         <span class="n">x_names</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">x_names</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">str</span><span class="p">),</span>
@@ -201,14 +202,14 @@
         <span class="n">options</span><span class="p">:</span> <span class="n">InvestmentsEvaluationOptions</span><span class="p">,</span>
         <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span> <span class="o">=</span> <span class="n">Logger</span><span class="p">(),</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">InvestmentsEvaluationResults</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Run GSLV investments evaluation and translate its results back to VeraGrid.</span>
 
 <span class="sd">    :param circuit: VeraGrid circuit.</span>
 <span class="sd">    :param options: VeraGrid investments-evaluation options.</span>
 <span class="sd">    :param logger: VeraGrid logger instance.</span>
 <span class="sd">    :return: VeraGrid investments-evaluation results.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">use_time_series</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">objf_tpe</span> <span class="ow">in</span> <span class="p">(</span>
         <span class="n">InvestmentsEvaluationObjectives</span><span class="o">.</span><span class="n">TimeSeriesPowerFlow</span><span class="p">,</span>
         <span class="n">InvestmentsEvaluationObjectives</span><span class="o">.</span><span class="n">LinearOptimalPowerFlowTimeSeries</span><span class="p">,</span>
@@ -238,7 +239,7 @@
         <span class="n">logger</span><span class="o">=</span><span class="n">gslv_logger</span><span class="p">,</span>
         <span class="n">clustering_results</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="s2">&quot;gslv time&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">t0</span><span class="p">)</span><span class="si">}</span><span class="s2"> s&quot;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="s2">"gslv time"</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">t0</span><span class="p">)</span><span class="si">}</span><span class="s2"> s"</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">translate_gslv_investments_evaluation_results</span><span class="p">(</span><span class="n">res</span><span class="o">=</span><span class="n">gslv_results</span><span class="p">)</span></div>
 

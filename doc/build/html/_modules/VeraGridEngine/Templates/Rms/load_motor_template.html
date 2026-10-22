@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Templates.Rms.load_motor_template &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Templates.Rms.load_motor_template &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/license.html">📜 License</a></li>
@@ -117,59 +118,59 @@
 
 <div class="viewcode-block" id="MotorLoadBuild">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Templates.Rms.html#VeraGridEngine.Templates.Rms.load_motor_template.MotorLoadBuild">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">MotorLoadBuild</span><span class="p">(</span><span class="n">vfactory</span><span class="p">:</span> <span class="n">VarFactory</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;Motor load RMS template&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RmsModelTemplate</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Build a detailed induction-motor RMS load model.</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">MotorLoadBuild</span><span class="p">(</span><span class="n">vfactory</span><span class="p">:</span> <span class="n">VarFactory</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"Motor load RMS template"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RmsModelTemplate</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Build a detailed induction-motor RMS load model.</span>
 
 <span class="sd">    The model represents transient and subtransient electrical dynamics,</span>
 <span class="sd">    rotor-speed mechanics, and dq-frame current, voltage, and power equations.</span>
 
-<span class="sd">    :param vfactory: Factory that owns the model&#39;s symbolic variables.</span>
+<span class="sd">    :param vfactory: Factory that owns the model's symbolic variables.</span>
 <span class="sd">    :param name: Name assigned to the generated RMS model template.</span>
 <span class="sd">    :return: Configured induction-motor load RMS model template.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">templ</span> <span class="o">=</span> <span class="n">RmsModelTemplate</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
     <span class="n">templ</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
     <span class="n">templ</span><span class="o">.</span><span class="n">tpe</span> <span class="o">=</span> <span class="n">DeviceType</span><span class="o">.</span><span class="n">LoadDevice</span>
     <span class="n">pi</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span>
     <span class="c1"># Inputs:</span>
-    <span class="n">inputs</span> <span class="o">=</span> <span class="p">[</span><span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;Vm&#39;</span><span class="p">,</span> <span class="n">reference</span><span class="o">=</span><span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">Vm</span><span class="p">),</span>
-              <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;Va&#39;</span><span class="p">,</span> <span class="n">reference</span><span class="o">=</span><span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">Va</span><span class="p">)]</span>
+    <span class="n">inputs</span> <span class="o">=</span> <span class="p">[</span><span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'Vm'</span><span class="p">,</span> <span class="n">reference</span><span class="o">=</span><span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">Vm</span><span class="p">),</span>
+              <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'Va'</span><span class="p">,</span> <span class="n">reference</span><span class="o">=</span><span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">Va</span><span class="p">)]</span>
     <span class="n">Vm</span> <span class="o">=</span> <span class="n">inputs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">Va</span> <span class="o">=</span> <span class="n">inputs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
     <span class="c1"># Variables:</span>
-    <span class="n">omega</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;omega&#39;</span><span class="p">)</span>
-    <span class="n">Id</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;Id&#39;</span><span class="p">)</span>
-    <span class="n">Iq</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;Iq&#39;</span><span class="p">)</span>
-    <span class="n">P</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;Pl&#39;</span><span class="p">)</span>
-    <span class="n">Q</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;Ql&#39;</span><span class="p">)</span>
-    <span class="n">Vq</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;Vq&#39;</span><span class="p">)</span>
-    <span class="n">Vd</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;Vd&#39;</span><span class="p">)</span>
-    <span class="n">Ed_prime</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;Ed_prime&#39;</span><span class="p">)</span>
-    <span class="n">Eq_prime</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;Eq_prime&#39;</span><span class="p">)</span>
-    <span class="n">Ed_2prime</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;Ed_2prime&#39;</span><span class="p">)</span>
-    <span class="n">Eq_2prime</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;Eq_2prime&#39;</span><span class="p">)</span>
+    <span class="n">omega</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'omega'</span><span class="p">)</span>
+    <span class="n">Id</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'Id'</span><span class="p">)</span>
+    <span class="n">Iq</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'Iq'</span><span class="p">)</span>
+    <span class="n">P</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'Pl'</span><span class="p">)</span>
+    <span class="n">Q</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'Ql'</span><span class="p">)</span>
+    <span class="n">Vq</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'Vq'</span><span class="p">)</span>
+    <span class="n">Vd</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'Vd'</span><span class="p">)</span>
+    <span class="n">Ed_prime</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'Ed_prime'</span><span class="p">)</span>
+    <span class="n">Eq_prime</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'Eq_prime'</span><span class="p">)</span>
+    <span class="n">Ed_2prime</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'Ed_2prime'</span><span class="p">)</span>
+    <span class="n">Eq_2prime</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'Eq_2prime'</span><span class="p">)</span>
 
     <span class="c1"># Parameters:</span>
-    <span class="n">u</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;u&#39;</span><span class="p">)</span>
-    <span class="n">Ls</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;Ls&#39;</span><span class="p">)</span>
-    <span class="n">Lp</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;Lp&#39;</span><span class="p">)</span>
-    <span class="n">Rs</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;Ra&#39;</span><span class="p">)</span>
-    <span class="n">Tp0</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;Tp0&#39;</span><span class="p">)</span>
-    <span class="n">H</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;H&#39;</span><span class="p">)</span>
-    <span class="n">D</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;D&#39;</span><span class="p">)</span>
-    <span class="n">n</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;n&#39;</span><span class="p">)</span>
-    <span class="n">VT</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;VT&#39;</span><span class="p">)</span>
-    <span class="n">TV</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;TV&#39;</span><span class="p">)</span>
-    <span class="n">Lpp</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;Lpp&#39;</span><span class="p">)</span>
-    <span class="n">Cl0</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;Cl0&#39;</span><span class="p">)</span>
-    <span class="n">Tpp0</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;Tpp0&#39;</span><span class="p">)</span>
-    <span class="n">omega_s</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;omega_s&#39;</span><span class="p">)</span>
-    <span class="n">omega0</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;omega_0&#39;</span><span class="p">)</span>
-    <span class="n">SLIP0</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;SLIP0&#39;</span><span class="p">)</span>
+    <span class="n">u</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'u'</span><span class="p">)</span>
+    <span class="n">Ls</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'Ls'</span><span class="p">)</span>
+    <span class="n">Lp</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'Lp'</span><span class="p">)</span>
+    <span class="n">Rs</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'Ra'</span><span class="p">)</span>
+    <span class="n">Tp0</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'Tp0'</span><span class="p">)</span>
+    <span class="n">H</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'H'</span><span class="p">)</span>
+    <span class="n">D</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'D'</span><span class="p">)</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'n'</span><span class="p">)</span>
+    <span class="n">VT</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'VT'</span><span class="p">)</span>
+    <span class="n">TV</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'TV'</span><span class="p">)</span>
+    <span class="n">Lpp</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'Lpp'</span><span class="p">)</span>
+    <span class="n">Cl0</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'Cl0'</span><span class="p">)</span>
+    <span class="n">Tpp0</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'Tpp0'</span><span class="p">)</span>
+    <span class="n">omega_s</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'omega_s'</span><span class="p">)</span>
+    <span class="n">omega0</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'omega_0'</span><span class="p">)</span>
+    <span class="n">SLIP0</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'SLIP0'</span><span class="p">)</span>
 
     <span class="c1"># Shunt Parameters</span>
-    <span class="n">b</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;b&#39;</span><span class="p">)</span>
-    <span class="n">g</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;g&#39;</span><span class="p">)</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'b'</span><span class="p">)</span>
+    <span class="n">g</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'g'</span><span class="p">)</span>
 
     <span class="n">events_dict</span> <span class="o">=</span> <span class="p">{</span>
         <span class="c1"># Electrical (induction motor typical ranges)</span>
@@ -178,7 +179,7 @@
         <span class="n">Lp</span><span class="p">:</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_const</span><span class="p">(</span><span class="mf">3.00</span><span class="p">),</span>  <span class="c1"># Magnetising (mutual) inductance (pu) ~ 2–5</span>
 
         <span class="c1"># Transient / rotor dynamics (approx. rotor open-circuit constants)</span>
-        <span class="n">Tp0</span><span class="p">:</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_const</span><span class="p">(</span><span class="mf">0.60</span><span class="p">),</span>  <span class="c1"># &quot;Transient&quot; time constant (s) ~ 0.2–1.0</span>
+        <span class="n">Tp0</span><span class="p">:</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_const</span><span class="p">(</span><span class="mf">0.60</span><span class="p">),</span>  <span class="c1"># "Transient" time constant (s) ~ 0.2–1.0</span>
         <span class="n">Lpp</span><span class="p">:</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_const</span><span class="p">(</span><span class="mf">0.12</span><span class="p">),</span>  <span class="c1"># Subtransient/leakage-like inductance (pu), &lt; Ls</span>
         <span class="n">Tpp0</span><span class="p">:</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_const</span><span class="p">(</span><span class="mf">0.05</span><span class="p">),</span>  <span class="c1"># Fast electrical time constant (s) ~ 0.02–0.10</span>
 
@@ -214,7 +215,7 @@
         <span class="n">state_vars</span><span class="o">=</span><span class="p">[</span><span class="n">Ed_prime</span><span class="p">,</span> <span class="n">Eq_prime</span><span class="p">,</span> <span class="n">Ed_2prime</span><span class="p">,</span> <span class="n">Eq_2prime</span><span class="p">],</span>
     <span class="p">)</span>
 
-    <span class="n">Te</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;Te&#39;</span><span class="p">)</span>
+    <span class="n">Te</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'Te'</span><span class="p">)</span>
     <span class="n">block2</span> <span class="o">=</span> <span class="n">Block</span><span class="p">(</span>
         <span class="n">state_eqs</span><span class="o">=</span><span class="p">[</span>
             <span class="n">u</span> <span class="o">*</span> <span class="p">((</span><span class="n">Eq_2prime</span> <span class="o">*</span> <span class="n">Iq</span> <span class="o">+</span> <span class="n">Ed_2prime</span> <span class="o">*</span> <span class="n">Id</span><span class="p">)</span> <span class="o">-</span> <span class="n">Cl0</span> <span class="o">*</span> <span class="n">sym</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">omega</span> <span class="o">/</span> <span class="n">omega0</span><span class="p">)</span> <span class="o">**</span> <span class="n">n</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">H</span><span class="p">,</span>
@@ -273,7 +274,7 @@
     <span class="p">}</span>
 
     <span class="n">templ</span><span class="o">.</span><span class="n">block</span> <span class="o">=</span> <span class="n">res_block</span>
-    <span class="n">templ</span><span class="o">.</span><span class="n">comment</span> <span class="o">=</span> <span class="s1">&#39;Load RMS induction-motor model&#39;</span>
+    <span class="n">templ</span><span class="o">.</span><span class="n">comment</span> <span class="o">=</span> <span class="s1">'Load RMS induction-motor model'</span>
     <span class="k">return</span> <span class="n">templ</span></div>
 
 </pre></div>

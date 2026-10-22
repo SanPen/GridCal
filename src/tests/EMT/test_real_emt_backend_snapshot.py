@@ -301,6 +301,25 @@ def solvers_zip(problem_and_context_zip):
     )}
 
 
+def test_automatic_residual_kernels_are_compiled_during_backend_build(
+        solvers_shunt: Dict[EmtSolverTypes, Any],
+) -> None:
+    """Verify that AD residual kernels are specialized before simulation.
+
+    :param solvers_shunt: Prebuilt solvers for the real shunt-load EMT case.
+    :return: None.
+    """
+    solver: JitAdSolver = solvers_shunt[EmtSolverTypes.Automatic]
+    kernels: list[Any] = solver.jit_kernels_ad[solver.method]
+
+    # An explicitly signed Numba dispatcher owns its machine-code signature as
+    # soon as build_jit_ad returns; a lazy dispatcher has an empty collection.
+    assert len(kernels) > 0
+    kernel: Any
+    for kernel in kernels:
+        assert len(kernel.signatures) == 1
+
+
 def test_residual_snapshot_matches_across_all_backends(
         problem_and_context_shunt: Tuple[EmtProblemDae, Dict[str, Any]],
         solvers_shunt: Dict[EmtSolverTypes, Any]

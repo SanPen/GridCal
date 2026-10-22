@@ -5,6 +5,8 @@
 from __future__ import annotations
 
 import os
+import hashlib
+import json
 from pathlib import Path
 import struct
 import subprocess
@@ -20,7 +22,10 @@ from VeraGridEngine.IO.manufacturer_native.inspection import (
 )
 from VeraGridEngine.IO.manufacturer_native.worker_artifact import (
     ManufacturerNativeWorkerArtifact,
-    resolve_packaged_windows_x86_worker,
+    prepare_manufacturer_native_runtime,
+    resolve_manufacturer_native_worker,
+    _source_digest,
+    _worker_sources,
 )
 from VeraGridEngine.IO.native_compiler.compiler_interface import NativeCompilerSelection, NativeCompilerToolset
 from VeraGridEngine.IO.native_compiler.selected_interface import (
@@ -89,19 +94,38 @@ def _compile_windows_x86_fixture(source: Path,
     assert inspect_windows_pe_machine(binary.read_bytes()) == 0x014c
 
 
-def test_packaged_windows_x86_worker_is_common_source_bound() -> None:
-    """Resolve the reviewed common-protocol PE32 worker and its manifest.
+def test_cached_windows_x86_worker_is_common_source_bound() -> None:
+    """Resolve PE32 architecture, measured bytes and Windows runtime identity.
 
     :return: None.
     """
     _require_windows_x64_parent()
-    artifact: ManufacturerNativeWorkerArtifact = resolve_packaged_windows_x86_worker()
+    artifact: ManufacturerNativeWorkerArtifact = prepare_manufacturer_native_runtime(
+        platform=IeeeCigreDllPlatform.WINDOWS_X86,
+    ).artifact
+    resolved: ManufacturerNativeWorkerArtifact = resolve_manufacturer_native_worker(
+        platform=IeeeCigreDllPlatform.WINDOWS_X86,
+    )
 
     assert artifact.platform == IeeeCigreDllPlatform.WINDOWS_X86
-    assert artifact.executable_path.name == "veragrid-manufacturer-worker-x86.exe"
+    assert artifact.executable_path.name == "veragrid-manufacturer-worker.exe"
     assert inspect_windows_pe_machine(artifact.executable_path.read_bytes()) == 0x014c
     assert len(artifact.content_sha256) == 64
+    assert artifact.content_sha256 == hashlib.sha256(artifact.executable_path.read_bytes()).hexdigest()
+    assert artifact.cache_key == resolved.cache_key
+    assert artifact.content_sha256 == resolved.content_sha256
+    manifest_raw: object = json.loads(
+        (artifact.executable_path.parent / "manifest.json").read_text(encoding="utf-8")
+    )
+    assert isinstance(manifest_raw, dict)
+    manifest: dict[str, object] = manifest_raw
+    assert manifest.get("schema", None) == 2
+    assert manifest.get("cache_key", None) == artifact.cache_key
+    assert manifest.get("source_sha256", None) == _source_digest(_worker_sources())
+    assert not artifact.executable_path.is_relative_to(Path(__file__).resolve().parents[3])
     assert artifact.system_directory.lower().endswith(r"\windows\syswow64")
+    with pytest.raises(ValueError, match="incompatible"):
+        resolve_manufacturer_native_worker(platform=IeeeCigreDllPlatform.LINUX_X64)
 
 
 def test_windows_x86_ieee_cigre_v1_1_qualifies_through_common_worker(

@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Devices.Dynamic.emt_template &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Devices.Dynamic.emt_template &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/license.html">📜 License</a></li>
@@ -120,31 +121,31 @@
 <div class="viewcode-block" id="EmtLazyTemplateBuilder">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Dynamic.html#VeraGridEngine.Devices.Dynamic.emt_template.EmtLazyTemplateBuilder">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">EmtLazyTemplateBuilder</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Typed wrapper used to materialize one EMT template lazily.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
-    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;_builder&quot;</span><span class="p">,</span> <span class="s2">&quot;_kwargs&quot;</span><span class="p">)</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"_builder"</span><span class="p">,</span> <span class="s2">"_kwargs"</span><span class="p">)</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">builder</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="s2">&quot;EmtModelTemplate&quot;</span><span class="p">],</span> <span class="n">kwargs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">builder</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="s2">"EmtModelTemplate"</span><span class="p">],</span> <span class="n">kwargs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Build the lazy template wrapper.</span>
 
 <span class="sd">        :param builder: EMT template builder function.</span>
 <span class="sd">        :param kwargs: Explicit builder keyword arguments.</span>
 <span class="sd">        :return: None.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_builder</span> <span class="o">=</span> <span class="n">builder</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
 
 <div class="viewcode-block" id="EmtLazyTemplateBuilder.build">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Dynamic.html#VeraGridEngine.Devices.Dynamic.emt_template.EmtLazyTemplateBuilder.build">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">build</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;EmtModelTemplate&quot;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">build</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"EmtModelTemplate"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Materialize the wrapped EMT template.</span>
 
 <span class="sd">        :return: Materialized EMT template.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_builder</span><span class="p">(</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">_kwargs</span><span class="p">)</span></div>
 </div>
 
@@ -153,41 +154,41 @@
 <div class="viewcode-block" id="EmtModelTemplate">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Dynamic.html#VeraGridEngine.Devices.Dynamic.emt_template.EmtModelTemplate">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">EmtModelTemplate</span><span class="p">(</span><span class="n">PointerDeviceParent</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    This class serves to give flexible access to either a template or a custom model</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s1">&#39;_block&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_device_type&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_lazy_builder&#39;</span><span class="p">,</span>
+        <span class="s1">'_block'</span><span class="p">,</span>
+        <span class="s1">'_device_type'</span><span class="p">,</span>
+        <span class="s1">'_lazy_builder'</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="n">LOCAL_PROPERTY_DECLARATIONS</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">GCProp</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;block&#39;</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'block'</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s2">""</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="n">SubObjectType</span><span class="o">.</span><span class="n">DaeBlockType</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;DAE block&#39;</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">'DAE block'</span><span class="p">,</span>
             <span class="n">editable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
             <span class="n">display</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;tpe&#39;</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'tpe'</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s2">""</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="n">DeviceType</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Device type&#39;</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">'Device type'</span><span class="p">,</span>
             <span class="n">editable</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
             <span class="n">display</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
         <span class="p">),</span>
     <span class="p">)</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idtag</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idtag</span><span class="o">=</span><span class="s2">""</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
                          <span class="n">idtag</span><span class="o">=</span><span class="n">idtag</span><span class="p">,</span>
-                         <span class="n">code</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+                         <span class="n">code</span><span class="o">=</span><span class="s2">""</span><span class="p">,</span>
                          <span class="n">device</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                         <span class="n">comment</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+                         <span class="n">comment</span><span class="o">=</span><span class="s2">""</span><span class="p">,</span>
                          <span class="n">device_type</span><span class="o">=</span><span class="n">DeviceType</span><span class="o">.</span><span class="n">EmtModelTemplateDevice</span><span class="p">,</span>
                          <span class="n">pointer_dev_tpes</span><span class="o">=</span><span class="p">[</span>
                              <span class="n">DeviceType</span><span class="o">.</span><span class="n">PhysicalDeviceType</span>  <span class="c1"># Signifies all physical devices</span>
@@ -229,10 +230,10 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">block</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Block</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Materialize and return the normalized EMT symbolic block.</span>
+<span class="w">        </span><span class="sd">"""Materialize and return the normalized EMT symbolic block.</span>
 
 <span class="sd">        :return: EMT symbolic block using one initialization source per event parameter.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_block</span><span class="o">.</span><span class="n">empty</span><span class="p">()</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lazy_builder</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">built_template</span><span class="p">:</span> <span class="n">EmtModelTemplate</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lazy_builder</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_block</span> <span class="o">=</span> <span class="n">built_template</span><span class="o">.</span><span class="n">block</span>
@@ -245,11 +246,11 @@
 
     <span class="nd">@block</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">block</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">:</span> <span class="n">Block</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Replace the EMT block and normalize legacy event initialization.</span>
+<span class="w">        </span><span class="sd">"""Replace the EMT block and normalize legacy event initialization.</span>
 
 <span class="sd">        :param obj: Complete symbolic block assigned to the template.</span>
 <span class="sd">        :return: None.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_lazy_builder</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_block</span> <span class="o">=</span> <span class="n">obj</span>
         <span class="n">normalize_event_parameter_initialization</span><span class="p">(</span><span class="n">block</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_block</span><span class="p">)</span>
@@ -257,12 +258,12 @@
 <div class="viewcode-block" id="EmtModelTemplate.set_lazy_builder">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Dynamic.html#VeraGridEngine.Devices.Dynamic.emt_template.EmtModelTemplate.set_lazy_builder">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">set_lazy_builder</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">builder</span><span class="p">:</span> <span class="n">EmtLazyTemplateBuilder</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Register one lazy EMT template builder.</span>
 
 <span class="sd">        :param builder: Lazy builder wrapper.</span>
 <span class="sd">        :return: None.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_lazy_builder</span> <span class="o">=</span> <span class="n">builder</span></div>
 </div>
 

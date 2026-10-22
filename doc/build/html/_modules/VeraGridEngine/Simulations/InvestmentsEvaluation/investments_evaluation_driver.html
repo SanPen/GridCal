@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Simulations.InvestmentsEvaluation.investments_evaluation_driver &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Simulations.InvestmentsEvaluation.investments_evaluation_driver &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/license.html">📜 License</a></li>
@@ -135,11 +136,11 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.InvestmentsEvaluation.html#VeraGridEngine.Simulations.InvestmentsEvaluation.investments_evaluation_driver.InvestmentsEvaluationDriver">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">InvestmentsEvaluationDriver</span><span class="p">(</span><span class="n">DriverTemplate</span><span class="p">):</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;options&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;problem&quot;</span><span class="p">,</span>
+        <span class="s2">"options"</span><span class="p">,</span>
+        <span class="s2">"problem"</span><span class="p">,</span>
     <span class="p">)</span>
 
-    <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;Investments evaluation&#39;</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s1">'Investments evaluation'</span>
     <span class="n">tpe</span> <span class="o">=</span> <span class="n">SimulationTypes</span><span class="o">.</span><span class="n">InvestmentsEvaluation_run</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
@@ -147,13 +148,13 @@
                  <span class="n">options</span><span class="p">:</span> <span class="n">InvestmentsEvaluationOptions</span><span class="p">,</span>
                  <span class="n">problem</span><span class="p">:</span> <span class="n">BlackBoxProblemTemplate</span><span class="p">,</span>
                  <span class="n">engine</span><span class="p">:</span> <span class="n">EngineType</span> <span class="o">=</span> <span class="n">EngineType</span><span class="o">.</span><span class="n">VeraGrid</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        InputsAnalysisDriver class constructor</span>
 <span class="sd">        :param grid: MultiCircuit instance</span>
 <span class="sd">        :param options: InvestmentsEvaluationOptions</span>
 <span class="sd">        :param problem: BlackBoxProblemTemplate</span>
 <span class="sd">        :param engine: EngineType</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">grid</span><span class="o">=</span><span class="n">grid</span><span class="p">,</span> <span class="n">engine</span><span class="o">=</span><span class="n">engine</span><span class="p">)</span>
 
@@ -184,10 +185,10 @@
 <div class="viewcode-block" id="InvestmentsEvaluationDriver.initialize">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.InvestmentsEvaluation.html#VeraGridEngine.Simulations.InvestmentsEvaluation.investments_evaluation_driver.InvestmentsEvaluationDriver.initialize">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">max_iter</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Initialize the results</span>
 <span class="sd">        :param max_iter: Maximum iterations</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">results</span> <span class="o">=</span> <span class="n">InvestmentsEvaluationResults</span><span class="p">(</span>
             <span class="n">f_names</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">problem</span><span class="o">.</span><span class="n">get_objectives_names</span><span class="p">(),</span>
             <span class="n">x_names</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">problem</span><span class="o">.</span><span class="n">get_vars_names</span><span class="p">(),</span>
@@ -200,22 +201,22 @@
 <div class="viewcode-block" id="InvestmentsEvaluationDriver.get_steps">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.InvestmentsEvaluation.html#VeraGridEngine.Simulations.InvestmentsEvaluation.investments_evaluation_driver.InvestmentsEvaluationDriver.get_steps">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_steps</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">get_index</span><span class="p">()</span></div>
 
 
 <div class="viewcode-block" id="InvestmentsEvaluationDriver.objective_function">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.InvestmentsEvaluation.html#VeraGridEngine.Simulations.InvestmentsEvaluation.investments_evaluation_driver.InvestmentsEvaluationDriver.objective_function">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">objective_function</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">record_results</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Function to evaluate a combination of investments</span>
 <span class="sd">        :param x: vector of investments (yes/no). Length = number of investment groups</span>
 <span class="sd">        :param record_results: record the results or not</span>
 <span class="sd">        :return: multi-objective function criteria values</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_cancel</span><span class="p">():</span>
             <span class="n">objectives</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">problem</span><span class="o">.</span><span class="n">get_objectives_names</span><span class="p">()),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
@@ -234,11 +235,11 @@
 <div class="viewcode-block" id="InvestmentsEvaluationDriver.objective_function_so">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.InvestmentsEvaluation.html#VeraGridEngine.Simulations.InvestmentsEvaluation.investments_evaluation_driver.InvestmentsEvaluationDriver.objective_function_so">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">objective_function_so</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Single objective version of the objective function</span>
 <span class="sd">        :param x: vector of investments (yes/no). Length = number of investment groups</span>
 <span class="sd">        :return: summation of the objectives</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">res_vec</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">objective_function</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">x</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">res_vec</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span></div>
@@ -247,9 +248,9 @@
 <div class="viewcode-block" id="InvestmentsEvaluationDriver.evaluate_individual_investments">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.InvestmentsEvaluation.html#VeraGridEngine.Simulations.InvestmentsEvaluation.investments_evaluation_driver.InvestmentsEvaluationDriver.evaluate_individual_investments">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">evaluate_individual_investments</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Run a one-by-one investment evaluation without considering multiple evaluation groups at a time</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">results_with_combinations</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
         <span class="n">dim</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">investments_groups</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">objective_function</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">problem</span><span class="o">.</span><span class="n">n_vars</span><span class="p">(),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">))</span>
@@ -257,23 +258,23 @@
         <span class="n">results_with_combinations</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">baseline</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">dim</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)))</span>
         <span class="n">st</span> <span class="o">=</span> <span class="n">timeit</span><span class="o">.</span><span class="n">default_timer</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">dim</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Evaluating investment group </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">...&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Evaluating investment group </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">..."</span><span class="p">)</span>
             <span class="n">combination</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">dim</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
             <span class="n">combination</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
             <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">objective_function</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">combination</span><span class="p">,</span> <span class="n">record_results</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
             <span class="n">results_with_combinations</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">results</span><span class="p">,</span> <span class="n">combination</span><span class="p">))</span>
         <span class="n">et</span> <span class="o">=</span> <span class="n">timeit</span><span class="o">.</span><span class="n">default_timer</span><span class="p">()</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Time taken to evaluate individual investments: </span><span class="si">{</span><span class="n">et</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">st</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Time taken to evaluate individual investments: </span><span class="si">{</span><span class="n">et</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">st</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">results_with_combinations</span></div>
 
 
 <div class="viewcode-block" id="InvestmentsEvaluationDriver.independent_evaluation">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.InvestmentsEvaluation.html#VeraGridEngine.Simulations.InvestmentsEvaluation.investments_evaluation_driver.InvestmentsEvaluationDriver.independent_evaluation">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">independent_evaluation</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Evaluate projects with a CBA-like reference/PINT/TOOT ranking and then build a cumulative portfolio.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s2">&quot;Evaluating investments with a CBA-like independent sequence...&quot;</span><span class="p">)</span>
+<span class="sd">        """</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s2">"Evaluating investments with a CBA-like independent sequence..."</span><span class="p">)</span>
         <span class="n">dim</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">problem</span><span class="o">.</span><span class="n">n_vars</span><span class="p">()</span>
         <span class="n">n_cumulative_evaluations</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">dim</span> <span class="o">-</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">dim</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="mi">0</span>
 
@@ -303,11 +304,11 @@
 <div class="viewcode-block" id="InvestmentsEvaluationDriver.optimized_evaluation_mvrsm_pareto">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.InvestmentsEvaluation.html#VeraGridEngine.Simulations.InvestmentsEvaluation.investments_evaluation_driver.InvestmentsEvaluationDriver.optimized_evaluation_mvrsm_pareto">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">optimized_evaluation_mvrsm_pareto</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Run an optimized investment evaluation without considering multiple evaluation groups at a time</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s2">&quot;Evaluating investments with multi-objective MVRSM...&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s2">"Evaluating investments with multi-objective MVRSM..."</span><span class="p">)</span>
 
         <span class="c1"># number of random evaluations at the beginning</span>
         <span class="n">dim</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">problem</span><span class="o">.</span><span class="n">n_vars</span><span class="p">()</span>
@@ -345,10 +346,10 @@
 <div class="viewcode-block" id="InvestmentsEvaluationDriver.optimized_evaluation_nsga3">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.InvestmentsEvaluation.html#VeraGridEngine.Simulations.InvestmentsEvaluation.investments_evaluation_driver.InvestmentsEvaluationDriver.optimized_evaluation_nsga3">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">optimized_evaluation_nsga3</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Run an optimized investment evaluation with NSGA3</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s2">&quot;Evaluating investments with NSGA3...&quot;</span><span class="p">)</span>
+<span class="sd">        """</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s2">"Evaluating investments with NSGA3..."</span><span class="p">)</span>
         <span class="n">dim</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">problem</span><span class="o">.</span><span class="n">n_vars</span><span class="p">()</span>
         <span class="n">pop_size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">dim</span><span class="p">))</span>  <span class="c1"># for the ieee 118 bus grid make this * 3</span>
 
@@ -390,10 +391,10 @@
 <div class="viewcode-block" id="InvestmentsEvaluationDriver.optimized_evaluation_pint_toot_nsga3">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.InvestmentsEvaluation.html#VeraGridEngine.Simulations.InvestmentsEvaluation.investments_evaluation_driver.InvestmentsEvaluationDriver.optimized_evaluation_pint_toot_nsga3">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">optimized_evaluation_pint_toot_nsga3</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Run an NSGA3 search warm-started with the direct PINT and TOOT evaluations.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s2">&quot;Evaluating investments with PINT/TOOT-seeded NSGA3...&quot;</span><span class="p">)</span>
+<span class="sd">        """</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s2">"Evaluating investments with PINT/TOOT-seeded NSGA3..."</span><span class="p">)</span>
         <span class="n">dim</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">problem</span><span class="o">.</span><span class="n">n_vars</span><span class="p">()</span>
         <span class="n">pop_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">dim</span><span class="p">))</span>
         <span class="n">n_obj</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">problem</span><span class="o">.</span><span class="n">get_objectives_names</span><span class="p">())</span>
@@ -449,10 +450,10 @@
 <div class="viewcode-block" id="InvestmentsEvaluationDriver.randomized_evaluation">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.InvestmentsEvaluation.html#VeraGridEngine.Simulations.InvestmentsEvaluation.investments_evaluation_driver.InvestmentsEvaluationDriver.randomized_evaluation">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">randomized_evaluation</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Run purely random evaluations, without any optimization</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s2">&quot;Randomly evaluating investments...&quot;</span><span class="p">)</span>
+<span class="sd">        """</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s2">"Randomly evaluating investments..."</span><span class="p">)</span>
 
         <span class="c1"># compile the snapshot</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">initialize</span><span class="p">(</span><span class="n">max_iter</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">max_eval</span><span class="p">)</span>
@@ -481,10 +482,10 @@
 <div class="viewcode-block" id="InvestmentsEvaluationDriver.optimized_evaluation_mixed_nsga2">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.InvestmentsEvaluation.html#VeraGridEngine.Simulations.InvestmentsEvaluation.investments_evaluation_driver.InvestmentsEvaluationDriver.optimized_evaluation_mixed_nsga2">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">optimized_evaluation_mixed_nsga2</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Run an optimized investment evaluation on mixed variables with NSGA2</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s2">&quot;Evaluating investments with NSGA2...&quot;</span><span class="p">)</span>
+<span class="sd">        """</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s2">"Evaluating investments with NSGA2..."</span><span class="p">)</span>
         <span class="n">dim</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">problem</span><span class="o">.</span><span class="n">n_vars</span><span class="p">()</span>
         <span class="n">pop_size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">dim</span><span class="p">))</span> <span class="o">*</span> <span class="mi">2</span>
 
@@ -527,19 +528,19 @@
 <div class="viewcode-block" id="InvestmentsEvaluationDriver.run">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.InvestmentsEvaluation.html#VeraGridEngine.Simulations.InvestmentsEvaluation.investments_evaluation_driver.InvestmentsEvaluationDriver.run">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        run the QThread</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">tic</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s2">&quot;Compiling and configuring...&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s2">"Compiling and configuring..."</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">&quot;Solver&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">&quot;Max evaluations&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">max_eval</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">"Solver"</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">"Max evaluations"</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">max_eval</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span> <span class="o">==</span> <span class="n">EngineType</span><span class="o">.</span><span class="n">GSLV</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">GSLV_AVAILABLE</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">engine</span> <span class="o">=</span> <span class="n">EngineType</span><span class="o">.</span><span class="n">VeraGrid</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s1">&#39;GSLV not available, falling back to VeraGrid&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s1">'GSLV not available, falling back to VeraGrid'</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">pass</span>
 
@@ -550,7 +551,7 @@
                     <span class="n">InvestmentsEvaluationObjectives</span><span class="o">.</span><span class="n">LinearOptimalPowerFlowTimeSeries</span><span class="p">):</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">engine</span> <span class="o">=</span> <span class="n">EngineType</span><span class="o">.</span><span class="n">VeraGrid</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span>
-                    <span class="s1">&#39;GSLV investments evaluation does not support this objective, falling back to VeraGrid&#39;</span>
+                    <span class="s1">'GSLV investments evaluation does not support this objective, falling back to VeraGrid'</span>
                 <span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">pass</span>
@@ -560,13 +561,13 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span> <span class="o">==</span> <span class="n">EngineType</span><span class="o">.</span><span class="n">GSLV</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">solver</span> <span class="o">==</span> <span class="n">InvestmentEvaluationMethod</span><span class="o">.</span><span class="n">FromPlugin</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">engine</span> <span class="o">=</span> <span class="n">EngineType</span><span class="o">.</span><span class="n">VeraGrid</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span>
-                <span class="s1">&#39;GSLV investments evaluation does not support VeraGrid plugin solvers, falling back to VeraGrid&#39;</span>
+                <span class="s1">'GSLV investments evaluation does not support VeraGrid plugin solvers, falling back to VeraGrid'</span>
             <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">pass</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span> <span class="o">==</span> <span class="n">EngineType</span><span class="o">.</span><span class="n">GSLV</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s2">&quot;Evaluating investments with GSLV...&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s2">"Evaluating investments with GSLV..."</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">results</span> <span class="o">=</span> <span class="n">gslv_investments_evaluation</span><span class="p">(</span>
                 <span class="n">circuit</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="p">,</span>
                 <span class="n">options</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">,</span>
@@ -595,10 +596,10 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">plugin_fcn_ptr</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Unsupported method&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">'Unsupported method'</span><span class="p">)</span>
 
         <span class="c1"># finalize</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s2">&quot;Finalizing the results object...&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s2">"Finalizing the results object..."</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span> <span class="o">!=</span> <span class="n">EngineType</span><span class="o">.</span><span class="n">GSLV</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">finalize</span><span class="p">()</span>
         <span class="k">else</span><span class="p">:</span>
@@ -610,11 +611,11 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">inv_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">inv</span> <span class="ow">in</span> <span class="n">inv_list</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Best combination&quot;</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">inv</span><span class="o">.</span><span class="n">idtag</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">inv</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="sa">f</span><span class="s2">"Best combination"</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">inv</span><span class="o">.</span><span class="n">idtag</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">inv</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">toc</span><span class="p">()</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_cancel</span><span class="p">():</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">report_done</span><span class="p">(</span><span class="s2">&quot;Cancelled!&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">report_done</span><span class="p">(</span><span class="s2">"Cancelled!"</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">report_done</span><span class="p">()</span></div>
 
@@ -622,11 +623,11 @@
 <div class="viewcode-block" id="InvestmentsEvaluationDriver.cancel">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.InvestmentsEvaluation.html#VeraGridEngine.Simulations.InvestmentsEvaluation.investments_evaluation_driver.InvestmentsEvaluationDriver.cancel">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">cancel</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Request cancellation without emitting completion from the caller thread.</span>
 
 <span class="sd">        :return: None.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">DriverTemplate</span><span class="o">.</span><span class="n">cancel</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
 </div>
 

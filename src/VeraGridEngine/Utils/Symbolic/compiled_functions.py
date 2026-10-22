@@ -3,7 +3,7 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 
-from typing import Dict, List, Sequence, Callable, Any
+from typing import Dict, List, Sequence, Callable, Any, Tuple, Set
 from collections import defaultdict
 import numpy as np
 import numba as nb
@@ -14,6 +14,7 @@ import concurrent.futures
 from VeraGridEngine.Utils.Symbolic.symbolic import (Var, Const, Expr, heaviside_num, expression2numba,
                                                     get_expression_vars)
 from VeraGridEngine.basic_structures import Vec, IntVec
+from VeraGridEngine.Utils.Symbolic.jit_compiler import SubexpressionAnalyzer, _collect_candidate_wrt_uids
 
 
 def compile_jac_block(block_id,
@@ -56,8 +57,23 @@ def compile_jac_block(block_id,
             final_names_dict[uid] = compiler_names_dict[uid]
 
     offset = block_offsets[block_id]
+    analyzer: SubexpressionAnalyzer = SubexpressionAnalyzer()
+    simplified: Expr
+    i: int
+    e: Expr
+    assignments: List[str]
+    expression_names: Dict[int, str]
     for i, e in enumerate(block_eqs):
-        src += f"    out[{offset + i}] = {expression2numba(e.simplify(), final_names_dict)}\n"
+        # Finish each expression before its existing output write. Reuse only
+        # within that expression so output aliasing and exception order remain.
+        simplified = e.simplify()
+        assignments, expression_names = analyzer.emit_ordered_assignments(
+            simplified, final_names_dict, (VARS_NAME, DIFF_NAME, EVENT_PARAMS_NAME, PARAMS_NAME, "h", "out"))
+        if assignments:
+            src += "\n".join(assignments) + "\n"
+        else:
+            pass
+        src += f"    out[{offset + i}] = {expression2numba(simplified, final_names_dict, 0, expression_names)}\n"
 
     exec(src, namespace)
 
@@ -125,13 +141,32 @@ class SymbolicJacobian:
         used_vars_count = defaultdict(int)
         triplets = []
 
+        row: int
+        col: int
+        var: Var
+        eq: Expr
+        candidates: Set[int]
+        d_expression: Expr
+        v: Var
+        wrt_map: Dict[int, Tuple[int, Var]] = dict((var.uid, (col, var)) for col, var in enumerate(variables))
         for row, eq in enumerate(eqs):
+            # Reuse the RMS compiler's dependency selection, including related
+            # derivative UIDs, before differentiating. Unrelated coordinates
+            # must not expand large initialization formulas into zero terms.
+            candidates = _collect_candidate_wrt_uids(eq, wrt_map)
+            # Keep the original column iteration so repeated requested UIDs
+            # retain all of their columns rather than collapsing in the lookup.
             for col, var in enumerate(variables):
-                d_expression = eq.diff(var, dt=h)
-                if not (isinstance(d_expression, Const) and d_expression.value == 0):
-                    triplets.append((col, row, d_expression))
-                for v in get_expression_vars(d_expression):
-                    used_vars_count[v.uid] += 1
+                if var.uid in candidates:
+                    d_expression = eq.diff(var, dt=h)
+                    if not (isinstance(d_expression, Const) and d_expression.value == 0):
+                        triplets.append((col, row, d_expression))
+                    else:
+                        pass
+                    for v in get_expression_vars(d_expression):
+                        used_vars_count[v.uid] += 1
+                else:
+                    pass
 
         triplets.sort(key=lambda t: (t[0], t[1]))
         cols_sorted, rows_sorted, equations_sorted = zip(*triplets) if triplets else ([], [], [])
@@ -253,9 +288,23 @@ class SymbolicVector:
                 if count > 1:
                     final_names_dict[uid] = alias_names_dict[uid]
                     src += f"    {alias_names_dict[uid]} = {compiler_names_dict[uid]}\n"
-            src += "\n".join(
-                [f"    out[{i}] = {expression2numba(e.simplify(), final_names_dict)}" for i, e in
-                 enumerate(eqs)]) + "\n"
+            analyzer: SubexpressionAnalyzer = SubexpressionAnalyzer()
+            simplified: Expr
+            i: int
+            e: Expr
+            assignments: List[str]
+            expression_names: Dict[int, str]
+            for i, e in enumerate(eqs):
+                # A per-expression plan limits generated IR without changing
+                # residual ordering, derivative formulas or solver policy.
+                simplified = e.simplify()
+                assignments, expression_names = analyzer.emit_ordered_assignments(
+                    simplified, final_names_dict, (VARS_NAME, DIFF_NAME, EVENT_PARAMS_NAME, PARAMS_NAME, "out"))
+                if assignments:
+                    src += "\n".join(assignments) + "\n"
+                else:
+                    pass
+                src += f"    out[{i}] = {expression2numba(simplified, final_names_dict, 0, expression_names)}\n"
 
             # compile in python namespace
             exec(src, self.namespace)

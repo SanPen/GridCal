@@ -34,8 +34,16 @@ from VeraGridEngine.Templates.InternationalStandardsCatalog import (
 )
 from VeraGridEngine.enumerations import (
     BlockType,
+    DerivativeInactiveBehavior,
+    DerivativeOrder,
+    DerivativeScalingMode,
     DynamicDeviceTemplateType,
     ExactMathematicalBlockOperation,
+    IntegratorBoundSource,
+    IntegratorHoldMode,
+    IntegratorResetMode,
+    IntegratorSaturationMode,
+    IntegratorScalingMode,
     InternationalStandardModel,
     ProceduralLogicType,
 )
@@ -73,6 +81,362 @@ class LibraryLeafSpec:
         self.label: str = label
         self.payload: object = payload
         self.search_text: str = search_text
+
+
+class IntegratorPresetDescriptor:
+    """Describe one preconfigured view of the canonical integrator builder."""
+
+    __slots__ = (
+        "_block_type",
+        "_scaling_mode",
+        "_hold_mode",
+        "_reset_mode",
+        "_saturation_mode",
+        "_bound_source",
+        "_scale_bounds_by_gain",
+        "_description",
+    )
+
+    def __init__(
+            self,
+            block_type: BlockType,
+            scaling_mode: IntegratorScalingMode,
+            hold_mode: IntegratorHoldMode,
+            reset_mode: IntegratorResetMode,
+            saturation_mode: IntegratorSaturationMode,
+            bound_source: IntegratorBoundSource,
+            scale_bounds_by_gain: bool,
+            description: str,
+    ) -> None:
+        """Store the structural defaults represented by one Library leaf.
+
+        Every preset materializes the same normal configurable integrator. The
+        descriptor only avoids repetitive clicks for common initial layouts.
+
+        :param block_type: Canonical integrator builder type.
+        :param scaling_mode: Input scaling selected by the preset.
+        :param hold_mode: External hold structure selected by the preset.
+        :param reset_mode: Reset structure selected by the preset.
+        :param saturation_mode: Output saturation selected by the preset.
+        :param bound_source: Source of enabled saturation bounds.
+        :param scale_bounds_by_gain: Whether one parameter scales the bounds.
+        :param description: Human-facing explanation shown in the Library.
+        :return: None.
+        """
+        self._block_type: BlockType = block_type
+        self._scaling_mode: IntegratorScalingMode = scaling_mode
+        self._hold_mode: IntegratorHoldMode = hold_mode
+        self._reset_mode: IntegratorResetMode = reset_mode
+        self._saturation_mode: IntegratorSaturationMode = saturation_mode
+        self._bound_source: IntegratorBoundSource = bound_source
+        self._scale_bounds_by_gain: bool = scale_bounds_by_gain
+        self._description: str = description
+
+    def get_block_type(self) -> BlockType:
+        """Return the canonical builder type.
+
+        :return: Integrator block type used to materialize the preset.
+        """
+        return self._block_type
+
+    def get_scaling_mode(self) -> IntegratorScalingMode:
+        """Return the preset input-scaling mode.
+
+        :return: Configured integrator scaling mode.
+        """
+        return self._scaling_mode
+
+    def get_hold_mode(self) -> IntegratorHoldMode:
+        """Return the preset hold mode.
+
+        :return: Configured integrator hold mode.
+        """
+        return self._hold_mode
+
+    def get_reset_mode(self) -> IntegratorResetMode:
+        """Return the preset reset mode.
+
+        :return: Configured integrator reset mode.
+        """
+        return self._reset_mode
+
+    def get_saturation_mode(self) -> IntegratorSaturationMode:
+        """Return the preset output-saturation mode.
+
+        :return: Configured integrator saturation mode.
+        """
+        return self._saturation_mode
+
+    def get_bound_source(self) -> IntegratorBoundSource:
+        """Return the source of enabled saturation bounds.
+
+        :return: Configured bound source.
+        """
+        return self._bound_source
+
+    def get_scale_bounds_by_gain(self) -> bool:
+        """Return whether the preset scales its bounds by a gain.
+
+        :return: ``True`` when enabled bounds share an extra gain parameter.
+        """
+        return self._scale_bounds_by_gain
+
+    def get_description(self) -> str:
+        """Return the Library explanation of the preset.
+
+        :return: Human-facing preset description.
+        """
+        return self._description
+
+    def apply_to_template_builder(self, builder: TemplateDefinition) -> None:
+        """Apply this preset to a canonical integrator template builder.
+
+        :param builder: Integrator builder whose initial structural values are
+            replaced by this preset.
+        :return: None.
+        """
+        builder.params_dict["scaling"].value = self._scaling_mode
+        builder.params_dict["hold_input"].value = self._hold_mode
+        builder.params_dict["reset"].value = self._reset_mode
+        builder.params_dict["output_saturation"].value = self._saturation_mode
+        builder.params_dict["bound_source"].value = self._bound_source
+        builder.params_dict["scale_bounds_by_gain"].value = self._scale_bounds_by_gain
+
+
+class DerivativePresetDescriptor:
+    """Describe one preconfigured view of the canonical derivative builder."""
+
+    __slots__ = (
+        "_derivative_order",
+        "_scaling_mode",
+        "_inactive_behavior",
+        "_description",
+    )
+
+    def __init__(
+            self,
+            derivative_order: DerivativeOrder,
+            scaling_mode: DerivativeScalingMode,
+            inactive_behavior: DerivativeInactiveBehavior,
+            description: str,
+    ) -> None:
+        """Store the structural defaults represented by one Library leaf.
+
+        :param derivative_order: First- or second-order filtered derivative.
+        :param scaling_mode: Numerator scaling selected by the preset.
+        :param inactive_behavior: Response to a non-positive denominator time.
+        :param description: Human-facing explanation shown in the Library.
+        :return: None.
+        """
+        self._derivative_order: DerivativeOrder = derivative_order
+        self._scaling_mode: DerivativeScalingMode = scaling_mode
+        self._inactive_behavior: DerivativeInactiveBehavior = inactive_behavior
+        self._description: str = description
+
+    def get_block_type(self) -> BlockType:
+        """Return the canonical builder type.
+
+        :return: Derivative block type used to materialize the preset.
+        """
+        return BlockType.DERIVATIVE
+
+    def get_derivative_order(self) -> DerivativeOrder:
+        """Return the preset derivative order.
+
+        :return: Configured first- or second-order selection.
+        """
+        return self._derivative_order
+
+    def get_scaling_mode(self) -> DerivativeScalingMode:
+        """Return the preset numerator-scaling mode.
+
+        :return: Configured derivative scaling mode.
+        """
+        return self._scaling_mode
+
+    def get_inactive_behavior(self) -> DerivativeInactiveBehavior:
+        """Return the preset non-positive-time behavior.
+
+        :return: Configured derivative inactive behavior.
+        """
+        return self._inactive_behavior
+
+    def get_description(self) -> str:
+        """Return the Library explanation of the preset.
+
+        :return: Human-facing preset description.
+        """
+        return self._description
+
+    def apply_to_template_builder(self, builder: TemplateDefinition) -> None:
+        """Apply this preset to a canonical derivative template builder.
+
+        :param builder: Derivative builder receiving the initial selections.
+        :return: None.
+        """
+        builder.params_dict["order"].value = self._derivative_order
+        builder.params_dict["scaling"].value = self._scaling_mode
+        builder.params_dict["non_positive_time"].value = self._inactive_behavior
+
+
+def build_integrator_preset_descriptors() -> tuple[tuple[str, IntegratorPresetDescriptor], ...]:
+    """Build the curated Library views of the configurable integrator.
+
+    The set intentionally covers independent common structures instead of the
+    full Cartesian product. Users can combine every option later in General
+    Structure without multiplying Library entries indefinitely.
+
+    :return: Ordered label and preset-descriptor pairs.
+    """
+    default_bound_source: IntegratorBoundSource = IntegratorBoundSource.PARAMETER
+    presets: tuple[tuple[str, IntegratorPresetDescriptor], ...] = (
+        ("Integrator", IntegratorPresetDescriptor(
+            block_type=BlockType.INTEGRATOR,
+            scaling_mode=IntegratorScalingMode.UNIT,
+            hold_mode=IntegratorHoldMode.NONE,
+            reset_mode=IntegratorResetMode.NONE,
+            saturation_mode=IntegratorSaturationMode.NONE,
+            bound_source=default_bound_source,
+            scale_bounds_by_gain=False,
+            description="Integrates the input as y = integral(u dt).",
+        )),
+        ("Gain integrator (K/s)", IntegratorPresetDescriptor(
+            block_type=BlockType.INTEGRATOR,
+            scaling_mode=IntegratorScalingMode.GAIN,
+            hold_mode=IntegratorHoldMode.NONE,
+            reset_mode=IntegratorResetMode.NONE,
+            saturation_mode=IntegratorSaturationMode.NONE,
+            bound_source=default_bound_source,
+            scale_bounds_by_gain=False,
+            description="Integrates the input with a configurable gain K: dy/dt = K u.",
+        )),
+        ("Time-constant integrator (1/(sT))", IntegratorPresetDescriptor(
+            block_type=BlockType.INTEGRATOR,
+            scaling_mode=IntegratorScalingMode.TIME_CONSTANT,
+            hold_mode=IntegratorHoldMode.NONE,
+            reset_mode=IntegratorResetMode.NONE,
+            saturation_mode=IntegratorSaturationMode.NONE,
+            bound_source=default_bound_source,
+            scale_bounds_by_gain=False,
+            description="Integrates the input through a configurable time constant T: dy/dt = u/T.",
+        )),
+        ("Upper-limited integrator", IntegratorPresetDescriptor(
+            block_type=BlockType.INTEGRATOR,
+            scaling_mode=IntegratorScalingMode.UNIT,
+            hold_mode=IntegratorHoldMode.NONE,
+            reset_mode=IntegratorResetMode.NONE,
+            saturation_mode=IntegratorSaturationMode.UPPER,
+            bound_source=default_bound_source,
+            scale_bounds_by_gain=False,
+            description="Integrates the input and clamps the exposed output at a configurable upper limit.",
+        )),
+        ("Lower-limited integrator", IntegratorPresetDescriptor(
+            block_type=BlockType.INTEGRATOR,
+            scaling_mode=IntegratorScalingMode.UNIT,
+            hold_mode=IntegratorHoldMode.NONE,
+            reset_mode=IntegratorResetMode.NONE,
+            saturation_mode=IntegratorSaturationMode.LOWER,
+            bound_source=default_bound_source,
+            scale_bounds_by_gain=False,
+            description="Integrates the input and clamps the exposed output at a configurable lower limit.",
+        )),
+        ("Limited integrator", IntegratorPresetDescriptor(
+            block_type=BlockType.INTEGRATOR,
+            scaling_mode=IntegratorScalingMode.UNIT,
+            hold_mode=IntegratorHoldMode.NONE,
+            reset_mode=IntegratorResetMode.NONE,
+            saturation_mode=IntegratorSaturationMode.BOTH,
+            bound_source=default_bound_source,
+            scale_bounds_by_gain=False,
+            description=(
+                "Integrates the input and clamps the exposed output between configurable lower and upper limits."
+            ),
+        )),
+        ("Holdable integrator", IntegratorPresetDescriptor(
+            block_type=BlockType.INTEGRATOR,
+            scaling_mode=IntegratorScalingMode.UNIT,
+            hold_mode=IntegratorHoldMode.SIGNAL,
+            reset_mode=IntegratorResetMode.NONE,
+            saturation_mode=IntegratorSaturationMode.NONE,
+            bound_source=default_bound_source,
+            scale_bounds_by_gain=False,
+            description="Integrates the input and freezes its state while the external hold signal is active.",
+        )),
+        ("Resettable integrator", IntegratorPresetDescriptor(
+            block_type=BlockType.INTEGRATOR,
+            scaling_mode=IntegratorScalingMode.UNIT,
+            hold_mode=IntegratorHoldMode.NONE,
+            reset_mode=IntegratorResetMode.INITIAL_STATE,
+            saturation_mode=IntegratorSaturationMode.NONE,
+            bound_source=default_bound_source,
+            scale_bounds_by_gain=False,
+            description="Integrates the input and resets the state to its initialized value on a rising reset edge.",
+        )),
+        ("Integrator with startup freeze", IntegratorPresetDescriptor(
+            block_type=BlockType.STARTUP_FREEZE_INTEGRATOR,
+            scaling_mode=IntegratorScalingMode.UNIT,
+            hold_mode=IntegratorHoldMode.NONE,
+            reset_mode=IntegratorResetMode.NONE,
+            saturation_mode=IntegratorSaturationMode.NONE,
+            bound_source=default_bound_source,
+            scale_bounds_by_gain=False,
+            description=(
+                "Keeps the state frozen for a configurable interval after startup and then integrates normally."
+            ),
+        )),
+    )
+    return presets
+
+
+def build_derivative_preset_descriptors() -> tuple[tuple[str, DerivativePresetDescriptor], ...]:
+    """Build the curated Library views of the configurable derivative.
+
+    The presets cover common transfer functions without exposing the full
+    Cartesian product. Every created block remains completely configurable in
+    General Structure.
+
+    :return: Ordered label and preset-descriptor pairs.
+    """
+    strict_behavior: DerivativeInactiveBehavior = DerivativeInactiveBehavior.STRICT
+    presets: tuple[tuple[str, DerivativePresetDescriptor], ...] = (
+        ("Filtered derivative s/(1+Ts)", DerivativePresetDescriptor(
+            derivative_order=DerivativeOrder.FIRST,
+            scaling_mode=DerivativeScalingMode.UNIT,
+            inactive_behavior=strict_behavior,
+            description="Applies the first-order filtered derivative s/(1 + T s).",
+        )),
+        ("Gain filtered derivative", DerivativePresetDescriptor(
+            derivative_order=DerivativeOrder.FIRST,
+            scaling_mode=DerivativeScalingMode.GAIN,
+            inactive_behavior=strict_behavior,
+            description="Applies the gain-scaled filtered derivative K s/(1 + T s).",
+        )),
+        ("Washout", DerivativePresetDescriptor(
+            derivative_order=DerivativeOrder.FIRST,
+            scaling_mode=DerivativeScalingMode.TIME_CONSTANT,
+            inactive_behavior=strict_behavior,
+            description="Applies the washout transfer function T s/(1 + T s).",
+        )),
+        ("Gain washout", DerivativePresetDescriptor(
+            derivative_order=DerivativeOrder.FIRST,
+            scaling_mode=DerivativeScalingMode.GAIN_TIME_CONSTANT,
+            inactive_behavior=strict_behavior,
+            description="Applies the gain-scaled washout K T s/(1 + T s).",
+        )),
+        ("Bypassable washout", DerivativePresetDescriptor(
+            derivative_order=DerivativeOrder.FIRST,
+            scaling_mode=DerivativeScalingMode.TIME_CONSTANT,
+            inactive_behavior=DerivativeInactiveBehavior.BYPASS_INPUT,
+            description="Applies T s/(1 + T s), or passes the input through when T is non-positive.",
+        )),
+        ("Second-order filtered derivative", DerivativePresetDescriptor(
+            derivative_order=DerivativeOrder.SECOND,
+            scaling_mode=DerivativeScalingMode.GAIN,
+            inactive_behavior=strict_behavior,
+            description="Applies the second-order filtered derivative K s²/(1 + T s)².",
+        )),
+    )
+    return presets
 
 
 class LibraryDeviceTemplateSpec:
@@ -488,7 +852,7 @@ def build_native_device_description(
     elif source == DynamicDeviceTemplateType.EMT_COMPLETE_GENERATOR:
         description = "Complete three-phase synchronous-generator EMT model with machine and controls"
     elif source == BlockType.EMT_THEVENIN:
-        description = "Three-phase Thevenin generator EMT model behind a series resistance-inductance impedance"
+        description = "Grounded passive ABC source with coupled R/L impedance and balanced or per-phase internal voltage"
     elif source == DynamicDeviceTemplateType.EMT_IDEAL_CONVERTER:
         description = "Averaged ideal voltage-source converter EMT model without semiconductor switching"
     elif source == BlockType.COMPLETE_PSEUDO_VSC_EMT:
@@ -897,34 +1261,79 @@ def build_international_standard_description(model: InternationalStandardModel) 
         description: str = "GENSAL salient-pole synchronous-machine RMS model"
     elif model == InternationalStandardModel.GENROU:
         description = "GENROU round-rotor synchronous-machine RMS model"
+    elif model == InternationalStandardModel.GENTRA:
+        description = "Field-transient salient-pole synchronous machine without damper windings"
+    elif model == InternationalStandardModel.GENSAE:
+        description = "Salient-pole synchronous machine with five states and two-axis power-law saturation"
+    elif model == InternationalStandardModel.GENROE:
+        description = "Round-rotor synchronous machine with power-law magnetic saturation"
     elif model == InternationalStandardModel.CIMTR1:
         description = "CIMTR1 induction-generator RMS model"
     elif model == InternationalStandardModel.CIMW:
         description = "CIMW induction-motor RMS model for a dynamic load"
+    elif model == InternationalStandardModel.GGOV1D:
+        description = "Tracked fuel-valve governor with asymmetric speed deadband and turbine dynamics"
+    elif model == InternationalStandardModel.GASTD:
+        description = "GASTD turbine-governor with asymmetric speed pickup and explicit turbine dynamics"
+    elif model == InternationalStandardModel.IEESGOD:
+        description = "IEESGOD turbine-governor with asymmetric speed pickup and explicit turbine dynamics"
+    elif model == InternationalStandardModel.HYGOV2:
+        description = 'Cascaded PI hydraulic governor with gate motion limits and inverse-response water dynamics.'
+    elif model == InternationalStandardModel.PIDGOV:
+        description = 'Hydraulic PID regulation with selectable droop feedback and calibrated gate/power characteristic.'
+    elif model == InternationalStandardModel.PIDGOVD:
+        description = 'Deadbanded hydraulic PID regulation with raw-speed mechanical damping.'
+    elif model == InternationalStandardModel.HYGOV2D:
+        description = 'Cascaded PI hydraulic governor with asymmetric excess-speed deadband.'
+    elif model == InternationalStandardModel.HYGOVD:
+        description = "HYGOVD turbine-governor with asymmetric speed pickup and explicit turbine dynamics"
+    elif model == InternationalStandardModel.TGOV1D:
+        description = "TGOV1D turbine-governor with asymmetric speed pickup and explicit turbine dynamics"
     elif model == InternationalStandardModel.GGOV1:
         description = "GGOV1 general-purpose turbine-governor model for synchronous generation"
+    elif model == InternationalStandardModel.IEEEG3:
+        description = "Hydraulic governor with pilot-valve dynamics, transient droop and inverse water-column response"
+    elif model == InternationalStandardModel.IEEEG3D:
+        description = "Hydraulic governor with asymmetric speed deadband, pilot-valve dynamics and inverse water-column response"
+    elif model == InternationalStandardModel.GAST:
+        description = "Gas-turbine speed governor with fuel-valve dynamics and exhaust-temperature limiting"
+    elif model == InternationalStandardModel.IEESGO:
+        description = "Steam-turbine speed governor with chest, reheat and crossover power stages"
     elif model in tuple((InternationalStandardModel.GOVHYDRO4, InternationalStandardModel.HYGOV)):
         description = f"{label} hydro-turbine governor model for synchronous generation"
     elif model in tuple((InternationalStandardModel.GOVSTEAM1, InternationalStandardModel.GOVSTEAMEU)):
         description = f"{label} steam-turbine governor model for synchronous generation"
+    elif model in (InternationalStandardModel.DEGOV, InternationalStandardModel.DEGOV1, InternationalStandardModel.DEGOV1D):
+        description = 'Electronic engine-speed governor with bounded fuel throttle and combustion transport delay'
+    elif model == InternationalStandardModel.IVOGO:
+        description = 'Three-stage rational speed governor with balanced integral load memories and separate power/torque outputs.'
+    elif model == InternationalStandardModel.LCFB1:
+        description = "Outer measured-power control with frequency bias and bounded governor-reference correction"
+    elif model == InternationalStandardModel.IEEEG1D:
+        description = "Steam governor with asymmetric deadband, valve travel limits and four turbine stages"
     elif model in tuple((InternationalStandardModel.IEEEG1, InternationalStandardModel.IEEEG2)):
         description = f"{label} IEEE turbine-governor model for synchronous generation"
     elif model in tuple((InternationalStandardModel.TGOV1, InternationalStandardModel.TGOV3)):
         description = f"{label} turbine-governor model for synchronous generation"
     elif model == InternationalStandardModel.IEEEVC_1981:
         description = "IEEEVC 1981 terminal-voltage compensation model for a synchronous generator"
+    elif model == InternationalStandardModel.COMP:
+        description = "Voltage sensing behind a signed reactive impedance using rectangular terminal phasors"
+    elif model == InternationalStandardModel.COMPCC:
+        description = "Cross-compound voltage sensing with shared and individual two-machine current corrections"
+    elif model == InternationalStandardModel.CCOMP4A:
+        description = "Four-unit reactive-current sharing with a bounded correction to terminal voltage"
+    elif model == InternationalStandardModel.REMCMP:
+        description = "Remote bus voltage sensing without an artificial measurement delay"
     elif model == InternationalStandardModel.VRKUNDUR:
         description = "Kundur automatic voltage regulator model for a synchronous generator"
     elif model in tuple((
             InternationalStandardModel.AC1A,
-            InternationalStandardModel.AC1C,
             InternationalStandardModel.AC6A,
             InternationalStandardModel.AC6C,
             InternationalStandardModel.AC7B,
             InternationalStandardModel.AC7C,
-            InternationalStandardModel.AC8B,
             InternationalStandardModel.AC8C,
-            InternationalStandardModel.BBSEX1,
             InternationalStandardModel.DC1A,
             InternationalStandardModel.DC1C,
             InternationalStandardModel.ESDC2A,
@@ -935,15 +1344,9 @@ def build_international_standard_description(model: InternationalStandardModel) 
             InternationalStandardModel.SCRX,
             InternationalStandardModel.SEXS,
             InternationalStandardModel.ST1A,
-            InternationalStandardModel.ST1C,
-            InternationalStandardModel.ST4B,
-            InternationalStandardModel.ST4C,
-            InternationalStandardModel.ST5B,
             InternationalStandardModel.ST5C,
             InternationalStandardModel.ST6B,
             InternationalStandardModel.ST6C,
-            InternationalStandardModel.ST7B,
-            InternationalStandardModel.ST7C,
             InternationalStandardModel.ST9C,
     )):
         description = f"{label} automatic voltage regulator and excitation-system model for a synchronous generator"
@@ -962,6 +1365,10 @@ def build_international_standard_description(model: InternationalStandardModel) 
         description = "PSS1A power-system stabilizer using rotor-speed deviation as its input"
     elif model == InternationalStandardModel.PSS1APGEN:
         description = "PSS1A power-system stabilizer using generator active power as its input"
+    elif model == InternationalStandardModel.PSS2C:
+        description = 'Continuously enabled four-phase dual-input ramp tracking with limited measurements.'
+    elif model == InternationalStandardModel.PSS3B:
+        description = 'Dual-input damping with optional washouts and two quadratic phase compensators.'
     elif model in tuple((InternationalStandardModel.PSS2A, InternationalStandardModel.PSS2B,
                          InternationalStandardModel.PSS2C)):
         description = f"{label} dual-input power-system stabilizer for damping electromechanical oscillations"
@@ -970,6 +1377,114 @@ def build_international_standard_description(model: InternationalStandardModel) 
         description = f"{label} power-system stabilizer for damping generator electromechanical oscillations"
     elif model == InternationalStandardModel.PSSKUNDUR:
         description = "Kundur power-system stabilizer for damping generator electromechanical oscillations"
+    elif model == InternationalStandardModel.STAB1:
+        description = "Speed-sensitive stabilizer with washout and two phase-compensation stages"
+    elif model == InternationalStandardModel.STAB2A:
+        description = "Electrical-power stabilizer with triple washout and parallel-path filtering"
+    elif model == InternationalStandardModel.STAB3:
+        description = "Reference-subtracted power stabilizer with filtered derivative feedback"
+    elif model == InternationalStandardModel.STAB4:
+        description = "Power stabilizer with derivative reset, phase compensation and asymmetric voltage limits"
+    elif model == InternationalStandardModel.IVOST:
+        description = 'Electrical-power damping through three rational filters with distinct tracking and external output limits.'
+    elif model == InternationalStandardModel.STABNI:
+        description = "Power stabilizer with double reset and fourth-order shaping"
+    elif model == InternationalStandardModel.IEEEST:
+        description = "Single-input stabilizer with polynomial filtering and terminal-voltage supervision"
+    elif model == InternationalStandardModel.IEE2ST:
+        description = "Dual-input stabilizer with independent transducers and three phase-compensation stages"
+    elif model == InternationalStandardModel.BBSEX1:
+        description = 'Static excitation with bounded regulator feedback and voltage-dependent field capability.'
+    elif model == InternationalStandardModel.BUDCZT:
+        description = 'Parallel PI excitation with bounded integral memory and separate actuator/exciter dynamics.'
+    elif model == InternationalStandardModel.EXPIC1:
+        description = 'PI excitation with separate regulator/field limits, shaped rate feedback and compound supply.'
+    elif model == InternationalStandardModel.EXNI:
+        description = 'Bidirectional controlled-bridge excitation with external clipping and two-stage rate feedback.'
+    elif model == InternationalStandardModel.IEET1B:
+        description = 'Biased rotating excitation with clipped voltage error, two regulator stages and selectable rate feedback.'
+    elif model == InternationalStandardModel.ST4B:
+        description = 'Cascaded bounded voltage/field PI regulators with loaded compound-transformer supply.'
+    elif model == InternationalStandardModel.AC8B:
+        description = 'Bounded PID excitation with a saturated rotating winding, current-dependent ceiling and loaded diode bridge.'
+    elif model == InternationalStandardModel.ST4C:
+        description = 'Cascaded bounded PI excitation with selectable take-over gates, firing lag and filtered bridge feedback.'
+    elif model == InternationalStandardModel.ST5B:
+        description = 'Three live bounded lead-lag channels with take-over selection and terminal-dependent field capability.'
+    elif model in (InternationalStandardModel.ST7B,InternationalStandardModel.ST7C):
+        description = 'Static excitation with reference takeover, independent capability feedback and optional firing lag.'
+    elif model == InternationalStandardModel.ST1C:
+        description = 'Terminal-fed static excitation with three minimum/maximum limiter locations and two stabilizer summations.'
+    elif model == InternationalStandardModel.ESST1A:
+        description = 'Terminal-fed static excitation with selectable limiter/stabilizer routing and field-current limiting.'
+    elif model == InternationalStandardModel.IEEET3:
+        description = 'Compound-transformer excitation with capability on total field forcing.'
+    elif model == InternationalStandardModel.IEEEX3:
+        description = 'Compound-transformer excitation with capability on rectified transformer supply.'
+    elif model == InternationalStandardModel.AC7C:
+        description = 'Cascaded PID/PI excitation with explicit takeover gates and compound or self-derived field power.'
+    elif model == InternationalStandardModel.AC7B:
+        description = 'Cascaded voltage PID and field PI with mixed field feedback, terminal supply and negative forcing capability.'
+    elif model == InternationalStandardModel.ST6C:
+        description = 'Current-limited PID field regulation with inner feedforward, bridge-command feedback and compound supply.'
+    elif model == InternationalStandardModel.DC4C:
+        description = 'Compound-fed bounded PID regulation of a commutator exciter with loaded supply and field-rate feedback.'
+    elif model == InternationalStandardModel.DC4B:
+        description = 'Terminal-fed bounded PID excitation with selectable limiter routing and field-rate feedback.'
+    elif model == InternationalStandardModel.DC3A:
+        description = 'Rheostat excitation with range-normalized motor travel, fast contacts and lower field stop.'
+    elif model == InternationalStandardModel.DC2C:
+        description = 'Bounded rotating excitation with terminal-fed regulation and selectable limiter takeover.'
+    elif model == InternationalStandardModel.ESAC8B:
+        description = 'PID voltage regulator with saturated rotating excitation and nonnegative field output.'
+    elif model == InternationalStandardModel.ESAC5A:
+        description = "Brushless exciter with independent regulator supply and shaped exciter-field feedback"
+    elif model == InternationalStandardModel.EXAC4:
+        description = "Alternator-fed controlled bridge with external current-dependent output clipping"
+    elif model == InternationalStandardModel.AC5C:
+        description = 'Brushless excitation with shaped field-loss feedback and selectable excitation limiters.'
+    elif model in (InternationalStandardModel.AC1C,InternationalStandardModel.AC2C):
+        description = 'Brushless rotating excitation with selectable limiter insertion and a field-current ceiling.'
+    elif model == InternationalStandardModel.AC4C:
+        description = 'Controlled bridge with selectable excitation gates and current-dependent capability'
+    elif model == InternationalStandardModel.ESAC4A:
+        description = "Alternator-fed controlled bridge with non-windup regulation and a minimum-excitation gate"
+    elif model == InternationalStandardModel.EXAC1A:
+        description = "Brushless exciter with rate feedback from rectified field voltage"
+    elif model == InternationalStandardModel.ESAC1A:
+        description = "Brushless exciter with separate amplifier/forcing limits and cascaded capability gates"
+    elif model == InternationalStandardModel.EXAC2:
+        description = "High-response brushless exciter with inner field-current feedback and a finite-gain current override"
+    elif model == InternationalStandardModel.EXAC3:
+        description = "Self-excited brushless exciter with nonlinear field-voltage rate feedback and minimum-voltage protection"
+    elif model == InternationalStandardModel.EXBAS:
+        description = "PI brushless excitation with shaped exciter-current rate feedback"
+    elif model == InternationalStandardModel.IEET1A:
+        description = "Field-controlled excitation with external output-voltage clipping and internal-memory rate feedback"
+    elif model == InternationalStandardModel.IEEET4:
+        description = "Deadband relay reset with parallel rapid forcing"
+    elif model == InternationalStandardModel.IEEET5:
+        description = "Continuous error reset with parallel rapid forcing"
+    elif model == InternationalStandardModel.IEEEX4:
+        description = "Range-normalized reset with parallel rapid forcing"
+    elif model == InternationalStandardModel.IEET5A:
+        description = "Lag or integral regulation with rapid forcing and an external field clip"
+    elif model == InternationalStandardModel.ESAC2A:
+        description = "High-response brushless excitation with takeover gates and an internal field-current stop"
+    elif model == InternationalStandardModel.ESAC3A:
+        description = "Self-excited brushless excitation with minimum-excitation takeover and internal field stops"
+    elif model == InternationalStandardModel.MNLEX1:
+        description = "Minimum-excitation limiter using active-current and field-current balance"
+    elif model == InternationalStandardModel.MNLEX2:
+        description = "Circular power-capability limiter with voltage scaling and internal rate feedback"
+    elif model == InternationalStandardModel.MNLEX3:
+        description = "Linear reactive-current capability limiter with field-voltage feedback"
+    elif model == InternationalStandardModel.EXST2A:
+        description = 'Multiplicative compound-source static exciter with field-voltage feedback.'
+    elif model == InternationalStandardModel.ESST2A:
+        description = 'Multiplicative compound-source static exciter with a minimum-excitation gate.'
+    elif model == InternationalStandardModel.EXST2:
+        description = "Static exciter with compound rectifier supply, commutation loading and bounded field voltage"
     elif model == InternationalStandardModel.REECB:
         description = "WECC REECB renewable-energy electrical control model"
     elif model == InternationalStandardModel.REECC:
@@ -1046,7 +1561,9 @@ def get_dynamic_library_international_standard_descriptors() -> Sequence[Interna
     """
     descriptors: List[InternationalStandardTemplateDescriptor] = list()
     _append_international_standard_group(
-        descriptors, (InternationalStandardModel.GENSAL, InternationalStandardModel.GENROU),
+        descriptors, (InternationalStandardModel.GENSAL, InternationalStandardModel.GENROU,
+                      InternationalStandardModel.GENTRA, InternationalStandardModel.GENROE,
+                      InternationalStandardModel.GENSAE),
         "Synchronous machines", "synchronous_machines", DeviceType.GeneratorDevice)
 
     # Induction models have different physical hosts and are registered
@@ -1060,12 +1577,22 @@ def get_dynamic_library_international_standard_descriptors() -> Sequence[Interna
 
     _append_international_standard_group(
         descriptors,
-        (InternationalStandardModel.GGOV1, InternationalStandardModel.GOVHYDRO4,
+        (InternationalStandardModel.GASTD, InternationalStandardModel.IEESGOD, InternationalStandardModel.HYGOVD,
+         InternationalStandardModel.HYGOV2, InternationalStandardModel.HYGOV2D,
+         InternationalStandardModel.PIDGOV, InternationalStandardModel.PIDGOVD,
+         InternationalStandardModel.TGOV1D, InternationalStandardModel.GGOV1, InternationalStandardModel.GGOV1D, InternationalStandardModel.GOVHYDRO4,
          InternationalStandardModel.GOVSTEAM1, InternationalStandardModel.GOVSTEAMEU,
-         InternationalStandardModel.HYGOV, InternationalStandardModel.IEEEG1,
+         InternationalStandardModel.IVOGO, InternationalStandardModel.DEGOV, InternationalStandardModel.DEGOV1, InternationalStandardModel.DEGOV1D,
+         InternationalStandardModel.HYGOV, InternationalStandardModel.IEEEG1, InternationalStandardModel.IEEEG1D, InternationalStandardModel.LCFB1,
          InternationalStandardModel.IEEEG2, InternationalStandardModel.TGOV1,
-         InternationalStandardModel.TGOV3),
+         InternationalStandardModel.TGOV3, InternationalStandardModel.GAST, InternationalStandardModel.IEEEG3, InternationalStandardModel.IEEEG3D,
+         InternationalStandardModel.IEESGO),
         "Governors", "governors", None)
+    _append_international_standard_group(
+        descriptors,
+        (InternationalStandardModel.COMP, InternationalStandardModel.COMPCC,
+         InternationalStandardModel.CCOMP4A, InternationalStandardModel.REMCMP),
+        "Voltage compensators", "voltage_compensators", None)
     _append_international_standard_group(
         descriptors,
         (InternationalStandardModel.AC1A, InternationalStandardModel.AC1C,
@@ -1074,7 +1601,30 @@ def get_dynamic_library_international_standard_descriptors() -> Sequence[Interna
          InternationalStandardModel.AC8B, InternationalStandardModel.AC8C,
          InternationalStandardModel.BBSEX1, InternationalStandardModel.DC1A,
          InternationalStandardModel.DC1C, InternationalStandardModel.ESDC2A,
-         InternationalStandardModel.EXAC1, InternationalStandardModel.IEEET1,
+         InternationalStandardModel.EXAC1, InternationalStandardModel.EXST2,
+         InternationalStandardModel.EXST2A, InternationalStandardModel.ESST2A, InternationalStandardModel.IEEET1,
+         InternationalStandardModel.IEEEX1, InternationalStandardModel.ESDC1A, InternationalStandardModel.EXDC2,
+         InternationalStandardModel.ESAC5A,
+         InternationalStandardModel.ESAC8B,
+         InternationalStandardModel.DC2C, InternationalStandardModel.DC3A, InternationalStandardModel.DC4B, InternationalStandardModel.DC4C,
+         InternationalStandardModel.IEEET3, InternationalStandardModel.IEEEX3,
+         InternationalStandardModel.ESST1A,
+         InternationalStandardModel.BUDCZT,
+         InternationalStandardModel.EXAC4, InternationalStandardModel.ESAC4A, InternationalStandardModel.AC4C,
+         InternationalStandardModel.AC2C, InternationalStandardModel.AC5C,
+         InternationalStandardModel.EXAC1A,
+         InternationalStandardModel.ESAC1A,
+         InternationalStandardModel.EXAC2,
+         InternationalStandardModel.EXAC3,
+         InternationalStandardModel.EXBAS,
+         InternationalStandardModel.IEET1A, InternationalStandardModel.IEET1B, InternationalStandardModel.EXNI, InternationalStandardModel.EXPIC1,
+         InternationalStandardModel.IEEET4,
+         InternationalStandardModel.IEEET5,
+         InternationalStandardModel.IEEEX4,
+         InternationalStandardModel.IEET5A,
+         InternationalStandardModel.ESAC2A,
+         InternationalStandardModel.ESAC3A,
+         InternationalStandardModel.IEEET2,
          InternationalStandardModel.IEEEX2, InternationalStandardModel.IEEX2A,
          InternationalStandardModel.SCRX, InternationalStandardModel.SEXS,
          InternationalStandardModel.ST1A, InternationalStandardModel.ST1C,
@@ -1088,6 +1638,7 @@ def get_dynamic_library_international_standard_descriptors() -> Sequence[Interna
     _append_international_standard_group(
         descriptors,
         (InternationalStandardModel.IEEL, InternationalStandardModel.MAXEX2,
+         InternationalStandardModel.MNLEX1, InternationalStandardModel.MNLEX2, InternationalStandardModel.MNLEX3,
          InternationalStandardModel.OEL2C, InternationalStandardModel.OEL3C,
          InternationalStandardModel.OEL4C, InternationalStandardModel.OEL5C,
          InternationalStandardModel.SCL1C, InternationalStandardModel.SCL2C,
@@ -1099,7 +1650,10 @@ def get_dynamic_library_international_standard_descriptors() -> Sequence[Interna
          InternationalStandardModel.PSS2A, InternationalStandardModel.PSS2B,
          InternationalStandardModel.PSS2C, InternationalStandardModel.PSS3B,
          InternationalStandardModel.PSS3C, InternationalStandardModel.PSS6C,
-         InternationalStandardModel.PSSKUNDUR),
+         InternationalStandardModel.PSSKUNDUR, InternationalStandardModel.STAB1,
+         InternationalStandardModel.STAB2A, InternationalStandardModel.STAB3,
+         InternationalStandardModel.STAB4, InternationalStandardModel.STABNI, InternationalStandardModel.IVOST,
+         InternationalStandardModel.IEEEST, InternationalStandardModel.IEE2ST),
         "Power system stabilizers", "power_system_stabilizers", None)
     _append_international_standard_group(
         descriptors,
@@ -1231,6 +1785,7 @@ def build_rms_control_library_branch() -> Dict[str, object]:
 
     standard_category_map: tuple[tuple[str, str], ...] = (
         ("Governors", "Governors"),
+        ("Voltage compensators", "Reactive power and voltage"),
         ("Excitation systems", "Exciters"),
         ("Excitation limiters", "Limiters"),
         ("Power system stabilizers", "Stabilizers"),
@@ -1393,6 +1948,20 @@ def get_dynamic_library_device_specs(mode: DynamicSimulationMode) -> List[Librar
     specs: List[LibraryDeviceTemplateSpec] = list()
     _collect_device_specs_from_branch(device_branch, specs)
     return specs
+
+
+def get_catalogue_template_block_type(
+        template: RmsModelTemplate | EmtModelTemplate | FmuTemplate,
+        mode: DynamicSimulationMode,
+) -> BlockType | None:
+    """Resolve a saved catalogue template's native type from its stable code."""
+    if not template.code:
+        return None
+    spec: LibraryDeviceTemplateSpec
+    for spec in get_dynamic_library_device_specs(mode):
+        if spec.unique_key == template.code and isinstance(spec.source, BlockType):
+            return spec.source
+    return None
 
 
 def build_dynamic_library_device_template(
@@ -1845,12 +2414,13 @@ def get_basic_continuous_category_path(descriptor: BasicBlockTemplateDescriptor,
         "e_st_bypass_incforward", "e_st_incbackward", "e_st_incforward",
     )
     derivative_keys: tuple[str, ...] = (
-        "s_1_st", "s_w0_2_s_2", "st_1_st_bypass_form_a", "st_1_st",
+        "s_1_st", "st_1_st_bypass_form_a", "st_1_st",
         "st_1_st_bypass_form_b", "skt_1_st", "sktd_1_st",
         "stb_1_sta_fb", "stld_1_stlg_fb", "sk_1_0_01s",
         "sk_1_st_fb", "sk_1_st", "s_2k_1_st_2",
     )
     filter_keys: tuple[str, ...] = (
+        "s_w0_2_s_2",
         "h0w0_q_s_w0_2_sw0_q_s_2", "butterworth_2nd_order",
         "butterworth_3rd_order", "butterworth_2nd_order_rst_hold",
         "butterworth_3rd_order_rst_hold",
@@ -1878,7 +2448,12 @@ def get_basic_continuous_category_path(descriptor: BasicBlockTemplateDescriptor,
         else:
             raise ValueError(f"Unclassified delay or memory template '{template_key}'")
     elif source_category == "Integrators and Derivatives":
-        if template_key in derivative_keys:
+        if template_key in filter_keys:
+            # The legacy catalogue stored the undamped resonator beside
+            # integrators and derivatives, but its transfer function is a
+            # resonant filter and must be classified by behavior.
+            category_path = ("Continuous dynamics", "Filters")
+        elif template_key in derivative_keys:
             category_path = ("Continuous dynamics", "Derivatives")
         else:
             # The remaining audited source records implement 1/s or 1/(sT)
@@ -1894,8 +2469,10 @@ def get_basic_continuous_category_path(descriptor: BasicBlockTemplateDescriptor,
         category_path = ("Continuous dynamics", "Filters")
     elif template_key in derivative_keys:
         category_path = ("Continuous dynamics", "Derivatives")
-    elif template_key in integrator_keys_from_controllers or template_key == "1_2hs":
+    elif template_key in integrator_keys_from_controllers:
         category_path = ("Continuous dynamics", "Integrators")
+    elif template_key == "1_2hs":
+        category_path = ("Mechanical", "Drive train")
     elif source_category in ("Transfer Functions and Filters", "Controllers"):
         # All non-exception records in these two audited legacy families are
         # rational transfer functions or complete continuous controllers.
@@ -2270,9 +2847,24 @@ def is_replaced_legacy_basic_descriptor(descriptor: BasicBlockTemplateDescriptor
         "sqrt3",
         "sqrt_2_3",
         "sqrt_3_2",
+        "s_1_st",
+        "s_2k_1_st_2",
+        "sk_1_0_01s",
+        "sk_1_st",
+        "sk_1_st_fb",
+        "skt_1_st",
+        "sktd_1_st",
+        "st_1_st",
+        "st_1_st_bypass_form_a",
+        "st_1_st_bypass_form_b",
+        "st_1_st_enable",
+        "stb_1_sta_fb",
+        "stld_1_stlg_fb",
         "time_form_a",
     )
-    return descriptor.template_key in replaced_template_keys
+    descriptor_type_id: int = int(descriptor.typ_id)
+    is_legacy_integrator: bool = 206 <= descriptor_type_id <= 292
+    return is_legacy_integrator or descriptor.template_key in replaced_template_keys
 
 
 def build_non_empty_library_branch(branch: Dict[str, object]) -> Dict[str, object]:
@@ -2340,6 +2932,34 @@ def build_basic_library_branch() -> Dict[str, object]:
             leaf=structural_entry[1],
         )
 
+    # Presets are convenient initial views of one canonical configurable
+    # integrator, not separate block implementations. General Structure can
+    # still transform any created instance into every supported combination.
+    integrator_preset_entry: tuple[str, IntegratorPresetDescriptor]
+    for integrator_preset_entry in build_integrator_preset_descriptors():
+        insert_library_leaf(
+            branch=basic_branch,
+            category_path=("Continuous dynamics", "Integrators"),
+            leaf=LibraryLeafSpec(
+                label=integrator_preset_entry[0],
+                payload=integrator_preset_entry[1],
+            ),
+        )
+
+    # Derivative presets are common starting configurations of one canonical
+    # builder. Less common combinations remain available through General
+    # Structure without expanding the Library with legacy duplicates.
+    derivative_preset_entry: tuple[str, DerivativePresetDescriptor]
+    for derivative_preset_entry in build_derivative_preset_descriptors():
+        insert_library_leaf(
+            branch=basic_branch,
+            category_path=("Continuous dynamics", "Derivatives"),
+            leaf=LibraryLeafSpec(
+                label=derivative_preset_entry[0],
+                payload=derivative_preset_entry[1],
+            ),
+        )
+
     # Exact named values are registered as two parallel normal block families:
     # sources under Constants and multipliers under Gain. Imported equivalents
     # remain available for legacy files but their duplicate leaves are hidden.
@@ -2388,11 +3008,15 @@ def build_basic_library_branch() -> Dict[str, object]:
         if is_replaced_legacy_basic_descriptor(descriptor=descriptor):
             pass
         else:
+            if descriptor.template_key == "1_2hs":
+                descriptor_label: str = "Inertia integrator 1/(2Hs)"
+            else:
+                descriptor_label = descriptor.display_label
             insert_library_leaf(
                 branch=basic_branch,
                 category_path=get_basic_library_category_path(descriptor=descriptor),
                 leaf=LibraryLeafSpec(
-                    label=descriptor.display_label,
+                    label=descriptor_label,
                     payload=descriptor,
                     search_text=descriptor.search_text,
                 ),
@@ -2447,7 +3071,9 @@ def is_supported_library_payload(item_data: object) -> bool:
     :param item_data: Candidate payload object.
     :return: ``True`` when the payload can be materialized in the editor.
     """
-    if isinstance(item_data, BlockType):
+    if isinstance(item_data, (IntegratorPresetDescriptor, DerivativePresetDescriptor)):
+        return True
+    elif isinstance(item_data, BlockType):
         return True
     elif isinstance(item_data, ExactMathematicalBlockDescriptor):
         return True
@@ -2496,7 +3122,11 @@ def build_library_item_description(payload: object) -> str:
     :param payload: Typed payload represented by one library leaf.
     :return: Human-readable description derived from existing block metadata.
     """
-    if isinstance(payload, BasicBlockTemplateDescriptor):
+    if isinstance(payload, IntegratorPresetDescriptor):
+        description: str = payload.get_description()
+    elif isinstance(payload, DerivativePresetDescriptor):
+        description = payload.get_description()
+    elif isinstance(payload, BasicBlockTemplateDescriptor):
         if len(payload.description) > 0:
             description: str = payload.description
         else:
@@ -2690,7 +3320,20 @@ def build_block_type_description(block_type: BlockType) -> str:
     elif block_type == BlockType.ABS:
         description = "Returns the absolute value or magnitude of the input signal"
     elif block_type == BlockType.INTEGRATOR:
-        description = "Integrates the input signal over simulation time"
+        description = (
+            "Integrates the input with configurable scaling, hold, reset, "
+            "and output-saturation structure"
+        )
+    elif block_type == BlockType.STARTUP_FREEZE_INTEGRATOR:
+        description = (
+            "Integrates the input after a configurable startup freeze interval, "
+            "with optional scaling, hold, reset, and output saturation"
+        )
+    elif block_type == BlockType.DERIVATIVE:
+        description = (
+            "Applies a configurable first- or second-order filtered derivative "
+            "with selectable numerator scaling and non-positive-time behavior"
+        )
     elif block_type == BlockType.POWER:
         description = "Raises the input signal to a configurable power"
     elif block_type in tuple((BlockType.SIN, BlockType.COS, BlockType.TAN)):
@@ -2781,7 +3424,25 @@ def set_library_item_icon(item: QtGui.QStandardItem, payload: object) -> None:
     :return: None.
     """
 
-    if isinstance(payload, FmuTemplate):
+    if isinstance(payload, IntegratorPresetDescriptor):
+        # Every configurable-integrator preset belongs to the same Library
+        # family, so all variants intentionally share the user-provided base
+        # integrator artwork.
+        integrator_icon: QtGui.QIcon = QtGui.QIcon(":/Icons/icons/integrator.svg")
+        if integrator_icon.isNull():
+            item.setIcon(QtGui.QIcon(":/Icons/icons/dyn_gray.png"))
+        else:
+            item.setIcon(integrator_icon)
+    elif isinstance(payload, DerivativePresetDescriptor):
+        # All derivative presets intentionally share one family icon, just as
+        # the integrator presets do. The generic dynamic-block icon remains a
+        # defensive fallback if the compiled Qt resource is unavailable.
+        derivative_icon: QtGui.QIcon = QtGui.QIcon(":/Icons/icons/derivative.svg")
+        if derivative_icon.isNull():
+            item.setIcon(QtGui.QIcon(":/Icons/icons/dyn_gray.png"))
+        else:
+            item.setIcon(derivative_icon)
+    elif isinstance(payload, FmuTemplate):
         item.setIcon(QtGui.QIcon(device_type_icons[DeviceType.FmuTemplateDevice.value]))
     elif isinstance(payload, RmsModelTemplate):
         item.setIcon(QtGui.QIcon(device_type_icons[DeviceType.RmsModelTemplateDevice.value]))

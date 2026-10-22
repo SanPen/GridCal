@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Utils.Sparse.csc_numba &mdash; VeraGrid 6.7.13 documentation</title>
+  <title>VeraGridEngine.Utils.Sparse.csc_numba &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=16fbabd8"></script>
+      <script src="../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -117,7 +117,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Tuple</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.basic_structures</span><span class="w"> </span><span class="kn">import</span> <span class="n">Mat</span><span class="p">,</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">IntVec</span>
 
-<span class="c1"># @nb.jit(&quot;i4[:](i8)&quot;)</span>
+<span class="c1"># @nb.jit("i4[:](i8)")</span>
 <div class="viewcode-block" id="ialloc">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Sparse.html#VeraGridEngine.Utils.Sparse.csc_numba.ialloc">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -126,7 +126,7 @@
 
 
 
-<span class="c1"># @nb.jit(&quot;f8[:](i8)&quot;)</span>
+<span class="c1"># @nb.jit("f8[:](i8)")</span>
 <div class="viewcode-block" id="xalloc">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Sparse.html#VeraGridEngine.Utils.Sparse.csc_numba.xalloc">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -135,19 +135,19 @@
 
 
 
-<span class="c1"># @nb.jit(&quot;Tuple((i8, i8, i4[:], i4[:], f8[:], i8))(i8, i8, i8)&quot;)</span>
+<span class="c1"># @nb.jit("Tuple((i8, i8, i4[:], i4[:], f8[:], i8))(i8, i8, i8)")</span>
 <div class="viewcode-block" id="csc_spalloc_f">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Sparse.html#VeraGridEngine.Utils.Sparse.csc_numba.csc_spalloc_f">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">csc_spalloc_f</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">nzmax</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Allocate a sparse matrix (triplet form or compressed-column form).</span>
 
 <span class="sd">    @param m: number of rows</span>
 <span class="sd">    @param n: number of columns</span>
 <span class="sd">    @param nzmax: maximum number of entries</span>
 <span class="sd">    @return: m, n, Aindptr, Aindices, Adata, Anzmax</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">Anzmax</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">nzmax</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
     <span class="n">Aindptr</span> <span class="o">=</span> <span class="n">ialloc</span><span class="p">(</span><span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
     <span class="n">Aindices</span> <span class="o">=</span> <span class="n">ialloc</span><span class="p">(</span><span class="n">Anzmax</span><span class="p">)</span>
@@ -156,33 +156,33 @@
 
 
 
-<span class="c1"># @nb.jit(&quot;(f8[:], f8[:], i8)&quot;)</span>
+<span class="c1"># @nb.jit("(f8[:], f8[:], i8)")</span>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">_copy_f</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">dest</span><span class="p">,</span> <span class="n">length</span><span class="p">):</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">length</span><span class="p">):</span>
         <span class="n">dest</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">src</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
 
 
-<span class="c1"># @nb.jit(&quot;(i4[:], i4[:], i8)&quot;)</span>
+<span class="c1"># @nb.jit("(i4[:], i4[:], i8)")</span>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">_copy_i</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">dest</span><span class="p">,</span> <span class="n">length</span><span class="p">):</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">length</span><span class="p">):</span>
         <span class="n">dest</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">src</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
 
 
-<span class="c1"># @nb.jit(&quot;i8(i4[:], i4[:], i8)&quot;)</span>
+<span class="c1"># @nb.jit("i8(i4[:], i4[:], i8)")</span>
 <div class="viewcode-block" id="csc_cumsum_i">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Sparse.html#VeraGridEngine.Utils.Sparse.csc_numba.csc_cumsum_i">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">csc_cumsum_i</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    p [0..n] = cumulative sum of c [0..n-1], and then copy p [0..n-1] into c</span>
 
 <span class="sd">    @param p: size n+1, cumulative sum of c</span>
 <span class="sd">    @param c: size n, overwritten with p [0..n-1] on output</span>
 <span class="sd">    @param n: length of c</span>
 <span class="sd">    @return: sum (c), null on error</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">nz</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="n">nz2</span> <span class="o">=</span> <span class="mf">0.0</span>
 
@@ -196,12 +196,12 @@
 
 
 
-<span class="c1"># @nb.jit(&quot;Tuple((i4[:], f8[:], i8))(i8, i4[:], i4[:], f8[:], i8)&quot;)</span>
+<span class="c1"># @nb.jit("Tuple((i4[:], f8[:], i8))(i8, i4[:], i4[:], f8[:], i8)")</span>
 <div class="viewcode-block" id="csc_sprealloc_f">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Sparse.html#VeraGridEngine.Utils.Sparse.csc_numba.csc_sprealloc_f">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">csc_sprealloc_f</span><span class="p">(</span><span class="n">An</span><span class="p">,</span> <span class="n">Aindptr</span><span class="p">,</span> <span class="n">Aindices</span><span class="p">,</span> <span class="n">Adata</span><span class="p">,</span> <span class="n">nzmax</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Change the max # of entries a sparse matrix can hold.</span>
 <span class="sd">    :param An: number of columns</span>
 <span class="sd">    :param Aindptr: csc column pointers</span>
@@ -209,7 +209,7 @@
 <span class="sd">    :param Adata: csc data</span>
 <span class="sd">    :param nzmax:new maximum number of entries</span>
 <span class="sd">    :return: indices, data, nzmax</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">if</span> <span class="n">nzmax</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
         <span class="n">nzmax</span> <span class="o">=</span> <span class="n">Aindptr</span><span class="p">[</span><span class="n">An</span><span class="p">]</span>
@@ -228,12 +228,12 @@
 
 
 
-<span class="c1"># @nb.jit(&quot;i8(i4[:], i4[:], f8[:], i8, f8, i4[:], f8[:], i8, i4[:], i8)&quot;)</span>
+<span class="c1"># @nb.jit("i8(i4[:], i4[:], f8[:], i8, f8, i4[:], f8[:], i8, i4[:], i8)")</span>
 <div class="viewcode-block" id="csc_scatter_f">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Sparse.html#VeraGridEngine.Utils.Sparse.csc_numba.csc_scatter_f">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">csc_scatter_f</span><span class="p">(</span><span class="n">Ap</span><span class="p">,</span> <span class="n">Ai</span><span class="p">,</span> <span class="n">Ax</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">mark</span><span class="p">,</span> <span class="n">Ci</span><span class="p">,</span> <span class="n">nz</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Scatters and sums a sparse vector A(:,j) into a dense vector, x = x + beta * A(:,j)</span>
 <span class="sd">    :param Ap:</span>
 <span class="sd">    :param Ai:</span>
@@ -246,7 +246,7 @@
 <span class="sd">    :param Ci: pattern of x accumulated in C.i</span>
 <span class="sd">    :param nz: pattern of x placed in C starting at C.i[nz]</span>
 <span class="sd">    :return: new value of nz, -1 on error, x and w are modified</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Ap</span><span class="p">[</span><span class="n">j</span><span class="p">],</span> <span class="n">Ap</span><span class="p">[</span><span class="n">j</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]):</span>
         <span class="n">i</span> <span class="o">=</span> <span class="n">Ai</span><span class="p">[</span><span class="n">p</span><span class="p">]</span>  <span class="c1"># A(i,j) is nonzero</span>
@@ -261,12 +261,12 @@
 
 
 
-<span class="c1"># @nb.jit(&quot;i8(i4[:], i4[:], f8[:], i8, f8, i4[:], f8[:], i8, i4[:], i8)&quot;)</span>
+<span class="c1"># @nb.jit("i8(i4[:], i4[:], f8[:], i8, f8, i4[:], f8[:], i8, i4[:], i8)")</span>
 <div class="viewcode-block" id="csc_scatter_ff">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Sparse.html#VeraGridEngine.Utils.Sparse.csc_numba.csc_scatter_ff">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">csc_scatter_ff</span><span class="p">(</span><span class="n">Aindptr</span><span class="p">,</span> <span class="n">Aindices</span><span class="p">,</span> <span class="n">Adata</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">mark</span><span class="p">,</span> <span class="n">Ci</span><span class="p">,</span> <span class="n">nz</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Scatters and sums a sparse vector A(:,j) into a dense vector, x = x + beta * A(:,j)</span>
 <span class="sd">    :param Aindptr:</span>
 <span class="sd">    :param Aindices:</span>
@@ -279,7 +279,7 @@
 <span class="sd">    :param Ci: pattern of x accumulated in C.i</span>
 <span class="sd">    :param nz: pattern of x placed in C starting at C.i[nz]</span>
 <span class="sd">    :return: new value of nz, -1 on error, x and w are modified</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Aindptr</span><span class="p">[</span><span class="n">j</span><span class="p">],</span> <span class="n">Aindptr</span><span class="p">[</span><span class="n">j</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]):</span>
         <span class="n">i</span> <span class="o">=</span> <span class="n">Aindices</span><span class="p">[</span><span class="n">p</span><span class="p">]</span>  <span class="c1"># A(i,j) is nonzero</span>
@@ -294,13 +294,13 @@
 
 
 
-<span class="c1"># @nb.jit(&quot;Tuple((i8, i8, i4[:], i4[:], f8[:]))(i8, i8, i4[:], i4[:], f8[:], i8, i8, i4[:], i4[:], f8[:], f8, f8)&quot;)</span>
+<span class="c1"># @nb.jit("Tuple((i8, i8, i4[:], i4[:], f8[:]))(i8, i8, i4[:], i4[:], f8[:], i8, i8, i4[:], i4[:], f8[:], f8, f8)")</span>
 <div class="viewcode-block" id="csc_add_ff">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Sparse.html#VeraGridEngine.Utils.Sparse.csc_numba.csc_add_ff">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">csc_add_ff</span><span class="p">(</span><span class="n">Am</span><span class="p">,</span> <span class="n">An</span><span class="p">,</span> <span class="n">Aindptr</span><span class="p">,</span> <span class="n">Aindices</span><span class="p">,</span> <span class="n">Adata</span><span class="p">,</span>
                <span class="n">Bm</span><span class="p">,</span> <span class="n">Bn</span><span class="p">,</span> <span class="n">Bindptr</span><span class="p">,</span> <span class="n">Bindices</span><span class="p">,</span> <span class="n">Bdata</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    C = alpha*A + beta*B</span>
 
 <span class="sd">    @param A: column-compressed matrix</span>
@@ -308,7 +308,7 @@
 <span class="sd">    @param alpha: scalar alpha</span>
 <span class="sd">    @param beta: scalar beta</span>
 <span class="sd">    @return: C=alpha*A + beta*B, null on error (Cm, Cn, Cp, Ci, Cx)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">nz</span> <span class="o">=</span> <span class="mi">0</span>
 
     <span class="n">m</span><span class="p">,</span> <span class="n">anz</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">Bp</span><span class="p">,</span> <span class="n">Bx</span> <span class="o">=</span> <span class="n">Am</span><span class="p">,</span> <span class="n">Aindptr</span><span class="p">[</span><span class="n">An</span><span class="p">],</span> <span class="n">Bn</span><span class="p">,</span> <span class="n">Bindptr</span><span class="p">,</span> <span class="n">Bdata</span>
@@ -337,14 +337,14 @@
 
 
 
-<span class="c1"># @nb.jit(&quot;Tuple((i8, i8, i4[:], i4[:], f8[:], i8))(i8, i8, i4[:], i4[:], f8[:], i8, i8, i4[:], i4[:], f8[:])&quot;,</span>
+<span class="c1"># @nb.jit("Tuple((i8, i8, i4[:], i4[:], f8[:], i8))(i8, i8, i4[:], i4[:], f8[:], i8, i8, i4[:], i4[:], f8[:])",</span>
 <span class="c1">#          parallel=False, nogil=True, fastmath=False, cache=True)  # fastmath=True breaks the code</span>
 <div class="viewcode-block" id="csc_multiply_ff">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Sparse.html#VeraGridEngine.Utils.Sparse.csc_numba.csc_multiply_ff">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">csc_multiply_ff</span><span class="p">(</span><span class="n">Am</span><span class="p">,</span> <span class="n">An</span><span class="p">,</span> <span class="n">Ap</span><span class="p">,</span> <span class="n">Ai</span><span class="p">,</span> <span class="n">Ax</span><span class="p">,</span>
                     <span class="n">Bm</span><span class="p">,</span> <span class="n">Bn</span><span class="p">,</span> <span class="n">Bp</span><span class="p">,</span> <span class="n">Bi</span><span class="p">,</span> <span class="n">Bx</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Sparse matrix multiplication, C = A*B where A and B are CSC sparse matrices</span>
 <span class="sd">    :param Am: number of rows in A</span>
 <span class="sd">    :param An: number of columns in A</span>
@@ -357,7 +357,7 @@
 <span class="sd">    :param Bi: indices of B</span>
 <span class="sd">    :param Bx: data of B</span>
 <span class="sd">    :return: Cm, Cn, Cp, Ci, Cx, Cnzmax</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">assert</span> <span class="n">An</span> <span class="o">==</span> <span class="n">Bm</span>
     <span class="n">nz</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="n">anz</span> <span class="o">=</span> <span class="n">Ap</span><span class="p">[</span><span class="n">An</span><span class="p">]</span>
@@ -381,7 +381,7 @@
         <span class="c1"># claim more space</span>
         <span class="k">if</span> <span class="n">nz</span> <span class="o">+</span> <span class="n">Cm</span> <span class="o">&gt;</span> <span class="n">Cnzmax</span><span class="p">:</span>
             <span class="c1"># Ci, Cx, Cnzmax = csc_sprealloc_f(Cn, Cp, Ci, Cx, 2 * Cnzmax + m)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Re-Allocating&#39;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">'Re-Allocating'</span><span class="p">)</span>
             <span class="n">Cnzmax</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">Cnzmax</span> <span class="o">+</span> <span class="n">Cm</span>
             <span class="k">if</span> <span class="n">Cnzmax</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="n">Cnzmax</span> <span class="o">=</span> <span class="n">Cp</span><span class="p">[</span><span class="n">An</span><span class="p">]</span>
@@ -428,12 +428,12 @@
 
 
 
-<span class="c1"># @nb.jit(&quot;f8[:](i8, i8, i4[:], i4[:], f8[:], f8[:])&quot;, parallel=False)</span>
+<span class="c1"># @nb.jit("f8[:](i8, i8, i4[:], i4[:], f8[:], f8[:])", parallel=False)</span>
 <div class="viewcode-block" id="csc_mat_vec_ff">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Sparse.html#VeraGridEngine.Utils.Sparse.csc_numba.csc_mat_vec_ff">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">csc_mat_vec_ff</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">Ap</span><span class="p">,</span> <span class="n">Ai</span><span class="p">,</span> <span class="n">Ax</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Sparse matrix times dense column vector, y = A * x.</span>
 <span class="sd">    :param m: number of rows</span>
 <span class="sd">    :param n: number of columns</span>
@@ -442,7 +442,7 @@
 <span class="sd">    :param Ax: data</span>
 <span class="sd">    :param x: vector x (n)</span>
 <span class="sd">    :return: vector y (m)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">assert</span> <span class="n">n</span> <span class="o">==</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
@@ -458,13 +458,13 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Sparse.html#VeraGridEngine.Utils.Sparse.csc_numba.diag_positions">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">diag_positions</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">Ap</span><span class="p">,</span> <span class="n">Ai</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    get the positions of the diagonal in the CSC data scheme</span>
 <span class="sd">    :param n: number of rows and columns (must be square)</span>
 <span class="sd">    :param Ap: pointers</span>
 <span class="sd">    :param Ai: indices</span>
 <span class="sd">    :return: vector pos (n)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">pos</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">nb</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
     <span class="n">k</span> <span class="o">=</span> <span class="mi">0</span>
@@ -485,12 +485,12 @@
 
 
 
-<span class="c1"># @nb.jit(&quot;Tuple((i8, i8, i4[:], i4[:], f8[:]))(i8, i8, i4[:], i4[:], f8[:], i8)&quot;)</span>
+<span class="c1"># @nb.jit("Tuple((i8, i8, i4[:], i4[:], f8[:]))(i8, i8, i4[:], i4[:], f8[:], i8)")</span>
 <div class="viewcode-block" id="coo_to_csc">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Sparse.html#VeraGridEngine.Utils.Sparse.csc_numba.coo_to_csc">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">coo_to_csc</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">Ti</span><span class="p">,</span> <span class="n">Tj</span><span class="p">,</span> <span class="n">Tx</span><span class="p">,</span> <span class="n">nnz</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    C = compressed-column form of a triplet matrix T.</span>
 <span class="sd">    The columns of T are not sorted, and duplicate entries may be present in T.</span>
 
@@ -501,7 +501,7 @@
 <span class="sd">    :param Tx: array of data</span>
 <span class="sd">    :param nnz: non-zero entries, if there are no duplicate entries, nnz = len(Tx)</span>
 <span class="sd">    :return: Cm, Cn, Cp, Ci, Cx</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">Cm</span><span class="p">,</span> <span class="n">Cn</span><span class="p">,</span> <span class="n">Cp</span><span class="p">,</span> <span class="n">Ci</span><span class="p">,</span> <span class="n">Cx</span><span class="p">,</span> <span class="n">nnz</span> <span class="o">=</span> <span class="n">csc_spalloc_f</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">nnz</span><span class="p">)</span>  <span class="c1"># allocate result</span>
 
@@ -523,22 +523,22 @@
 
 
 
-<span class="c1"># @nb.jit(&quot;void(i8, i8, i4[:], i4[:], f8[:], i4[:], i4[:], f8[:])&quot;)</span>
+<span class="c1"># @nb.jit("void(i8, i8, i4[:], i4[:], f8[:], i4[:], i4[:], f8[:])")</span>
 <div class="viewcode-block" id="csc_to_csr">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Sparse.html#VeraGridEngine.Utils.Sparse.csc_numba.csc_to_csr">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">csc_to_csr</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">Ap</span><span class="p">,</span> <span class="n">Ai</span><span class="p">,</span> <span class="n">Ax</span><span class="p">,</span> <span class="n">Bp</span><span class="p">,</span> <span class="n">Bi</span><span class="p">,</span> <span class="n">Bx</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Convert a CSC Matrix into a CSR Matrix</span>
 <span class="sd">    :param m: number of rows</span>
 <span class="sd">    :param n: number of columns</span>
 <span class="sd">    :param Ap: indptr of the CSC matrix</span>
 <span class="sd">    :param Ai: indices of the CSC matrix</span>
 <span class="sd">    :param Ax: data of the CSC matrix</span>
-<span class="sd">    :param Bp: indptr of the CSR matrix (to compute, size &#39;m+1&#39;, has to be initialized to zeros)</span>
+<span class="sd">    :param Bp: indptr of the CSR matrix (to compute, size 'm+1', has to be initialized to zeros)</span>
 <span class="sd">    :param Bi: indices of the CSR matrix (to compute, size nnz)</span>
 <span class="sd">    :param Bx: data of the CSR matrix (to compute, size nnz)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">nnz</span> <span class="o">=</span> <span class="n">Ap</span><span class="p">[</span><span class="n">n</span><span class="p">]</span>
 
     <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nnz</span><span class="p">):</span>
@@ -567,12 +567,12 @@
 
 
 
-<span class="c1"># @nb.jit(&quot;Tuple((i8, i8, i4[:], i4[:], f8[:]))(i8, i8, i4[:], i4[:], f8[:])&quot;)</span>
+<span class="c1"># @nb.jit("Tuple((i8, i8, i4[:], i4[:], f8[:]))(i8, i8, i4[:], i4[:], f8[:])")</span>
 <div class="viewcode-block" id="csc_transpose">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Sparse.html#VeraGridEngine.Utils.Sparse.csc_numba.csc_transpose">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">csc_transpose</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">Ap</span><span class="p">,</span> <span class="n">Ai</span><span class="p">,</span> <span class="n">Ax</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Transpose matrix</span>
 <span class="sd">    :param m: A.m</span>
 <span class="sd">    :param n: A.n</span>
@@ -580,15 +580,15 @@
 <span class="sd">    :param Ai: A.indices</span>
 <span class="sd">    :param Ax: A.data</span>
 <span class="sd">    :return: Cm, Cn, Cp, Ci, Cx</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Computes the transpose of a sparse matrix, C =A&#39;;</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Computes the transpose of a sparse matrix, C =A';</span>
 
 <span class="sd">    @param A: column-compressed matrix</span>
 <span class="sd">    @param allocate_values: pattern only if false, both pattern and values otherwise</span>
-<span class="sd">    @return: C=A&#39;, null on error</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    @return: C=A', null on error</span>
+<span class="sd">    """</span>
 
     <span class="n">Cm</span><span class="p">,</span> <span class="n">Cn</span><span class="p">,</span> <span class="n">Cp</span><span class="p">,</span> <span class="n">Ci</span><span class="p">,</span> <span class="n">Cx</span><span class="p">,</span> <span class="n">Cnzmax</span> <span class="o">=</span> <span class="n">csc_spalloc_f</span><span class="p">(</span><span class="n">m</span><span class="o">=</span><span class="n">n</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="n">m</span><span class="p">,</span> <span class="n">nzmax</span><span class="o">=</span><span class="n">Ap</span><span class="p">[</span><span class="n">n</span><span class="p">])</span>  <span class="c1"># allocate result</span>
 
@@ -610,18 +610,18 @@
 
 
 
-<span class="c1"># @nb.jit(&quot;i4(i4, i4, i4[:])&quot;)</span>
+<span class="c1"># @nb.jit("i4(i4, i4, i4[:])")</span>
 <div class="viewcode-block" id="binary_find">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Sparse.html#VeraGridEngine.Utils.Sparse.csc_numba.binary_find">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">binary_find</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">array</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Binary search</span>
 <span class="sd">    :param N: size of the array</span>
 <span class="sd">    :param x: value</span>
 <span class="sd">    :param array: array</span>
 <span class="sd">    :return: position where it is found. -1 if it is not found</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">lower</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="n">upper</span> <span class="o">=</span> <span class="n">N</span>
 
@@ -638,11 +638,11 @@
 
 
 
-<span class="c1"># @nb.jit(&quot;Tuple((i8, i4[:], i4[:], f8[:]))(i8, i8, i4[:], i4[:], f8[:], i4[:], i4[:])&quot;)</span>
+<span class="c1"># @nb.jit("Tuple((i8, i4[:], i4[:], f8[:]))(i8, i8, i4[:], i4[:], f8[:], i4[:], i4[:])")</span>
 <div class="viewcode-block" id="csc_sub_matrix_old">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Sparse.html#VeraGridEngine.Utils.Sparse.csc_numba.csc_sub_matrix_old">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">csc_sub_matrix_old</span><span class="p">(</span><span class="n">Am</span><span class="p">,</span> <span class="n">Anz</span><span class="p">,</span> <span class="n">Ap</span><span class="p">,</span> <span class="n">Ai</span><span class="p">,</span> <span class="n">Ax</span><span class="p">,</span> <span class="n">rows</span><span class="p">,</span> <span class="n">cols</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Get SCS arbitrary sub-matrix</span>
 <span class="sd">    :param Am: number of rows</span>
 <span class="sd">    :param Anz: number of non-zero entries</span>
@@ -652,7 +652,7 @@
 <span class="sd">    :param rows: row indices to keep</span>
 <span class="sd">    :param cols: column indices to keep</span>
 <span class="sd">    :return: CSC sub-matrix (n, new_col_ptr, new_row_ind, new_val)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">n_cols</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">cols</span><span class="p">)</span>
 
     <span class="n">Bx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">Anz</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
@@ -687,7 +687,7 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Sparse.html#VeraGridEngine.Utils.Sparse.csc_numba.csc_sub_matrix">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">csc_sub_matrix</span><span class="p">(</span><span class="n">Am</span><span class="p">,</span> <span class="n">Annz</span><span class="p">,</span> <span class="n">Ap</span><span class="p">,</span> <span class="n">Ai</span><span class="p">,</span> <span class="n">Ax</span><span class="p">,</span> <span class="n">rows</span><span class="p">,</span> <span class="n">cols</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    CSC matrix sub-matrix view</span>
 <span class="sd">    :param Am: number of rows</span>
 <span class="sd">    :param Annz: number of non-zero entries</span>
@@ -697,7 +697,7 @@
 <span class="sd">    :param rows: array of selected rows: must be sorted! to use the binary search</span>
 <span class="sd">    :param cols: array of columns: should be sorted</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">n_rows</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">rows</span><span class="p">)</span>
     <span class="n">n_cols</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">cols</span><span class="p">)</span>
 
@@ -716,7 +716,7 @@
 
         <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Ap</span><span class="p">[</span><span class="n">j</span><span class="p">],</span> <span class="n">Ap</span><span class="p">[</span><span class="n">j</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]):</span>  <span class="c1"># rows of A[:, j]</span>
 
-            <span class="c1"># row index translation to the &quot;rows&quot; space</span>
+            <span class="c1"># row index translation to the "rows" space</span>
             <span class="n">i</span> <span class="o">=</span> <span class="n">Ai</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
             <span class="n">ii</span> <span class="o">=</span> <span class="n">lookup</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
 
@@ -743,7 +743,7 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Sparse.html#VeraGridEngine.Utils.Sparse.csc_numba.csc_sub_matrix_cols">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">csc_sub_matrix_cols</span><span class="p">(</span><span class="n">Am</span><span class="p">,</span> <span class="n">Anz</span><span class="p">,</span> <span class="n">Ap</span><span class="p">,</span> <span class="n">Ai</span><span class="p">,</span> <span class="n">Ax</span><span class="p">,</span> <span class="n">cols</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Get SCS arbitrary sub-matrix with all the rows</span>
 <span class="sd">    :param Am: number of rows</span>
 <span class="sd">    :param Anz: number of non-zero entries</span>
@@ -752,7 +752,7 @@
 <span class="sd">    :param Ax: Data</span>
 <span class="sd">    :param cols: column indices to keep</span>
 <span class="sd">    :return: CSC sub-matrix (n, new_col_ptr, new_row_ind, new_val)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">n_cols</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">cols</span><span class="p">)</span>
     <span class="n">n</span> <span class="o">=</span> <span class="mi">0</span>
@@ -781,7 +781,7 @@
 <div class="viewcode-block" id="csc_sub_matrix_rows">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Sparse.html#VeraGridEngine.Utils.Sparse.csc_numba.csc_sub_matrix_rows">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">csc_sub_matrix_rows</span><span class="p">(</span><span class="n">An</span><span class="p">,</span> <span class="n">Anz</span><span class="p">,</span> <span class="n">Ap</span><span class="p">,</span> <span class="n">Ai</span><span class="p">,</span> <span class="n">Ax</span><span class="p">,</span> <span class="n">rows</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Get SCS arbitrary sub-matrix</span>
 <span class="sd">    :param An: number of rows</span>
 <span class="sd">    :param Anz: number of non-zero entries</span>
@@ -790,7 +790,7 @@
 <span class="sd">    :param Ax: Data</span>
 <span class="sd">    :param rows: row indices to keep</span>
 <span class="sd">    :return: CSC sub-matrix (n, new_col_ptr, new_row_ind, new_val)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">n_rows</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">rows</span><span class="p">)</span>
     <span class="n">n</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="n">p</span> <span class="o">=</span> <span class="mi">0</span>
@@ -820,11 +820,11 @@
 
 
 
-<span class="c1"># @nb.jit(&quot;f8[:, :](i8, i8, i4[:], i4[:], f8[:])&quot;)</span>
+<span class="c1"># @nb.jit("f8[:, :](i8, i8, i4[:], i4[:], f8[:])")</span>
 <div class="viewcode-block" id="csc_to_dense">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Sparse.html#VeraGridEngine.Utils.Sparse.csc_numba.csc_to_dense">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">csc_to_dense</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">indptr</span><span class="p">,</span> <span class="n">indices</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Convert csc matrix to dense</span>
 <span class="sd">    :param m:</span>
 <span class="sd">    :param n:</span>
@@ -832,7 +832,7 @@
 <span class="sd">    :param indices:</span>
 <span class="sd">    :param data:</span>
 <span class="sd">    :return: 2d numpy array</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">val</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">m</span><span class="p">,</span> <span class="n">n</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
 
     <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
@@ -842,17 +842,17 @@
 
 
 
-<span class="c1"># @nb.jit(&quot;Tuple((i4[:], i4[:], f8[:]))(i8, f8)&quot;)</span>
+<span class="c1"># @nb.jit("Tuple((i4[:], i4[:], f8[:]))(i8, f8)")</span>
 <div class="viewcode-block" id="csc_diagonal">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Sparse.html#VeraGridEngine.Utils.Sparse.csc_numba.csc_diagonal">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">csc_diagonal</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="mf">1.0</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Build CSC diagonal matrix of the given value</span>
 <span class="sd">    :param m: size</span>
 <span class="sd">    :param value: value</span>
 <span class="sd">    :return: CSC matrix</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">indptr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">m</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
     <span class="n">indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
     <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
@@ -866,17 +866,17 @@
 
 
 
-<span class="c1"># @nb.jit(&quot;Tuple((i4[:], i4[:], f8[:]))(i8, f8[:])&quot;)</span>
+<span class="c1"># @nb.jit("Tuple((i4[:], i4[:], f8[:]))(i8, f8[:])")</span>
 <div class="viewcode-block" id="csc_diagonal_from_array">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Sparse.html#VeraGridEngine.Utils.Sparse.csc_numba.csc_diagonal_from_array">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">csc_diagonal_from_array</span><span class="p">(</span><span class="n">array</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 
 <span class="sd">    :param m:</span>
 <span class="sd">    :param array:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">m</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">array</span><span class="p">)</span>
     <span class="n">indptr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">m</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
     <span class="n">indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
@@ -897,12 +897,12 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Sparse.html#VeraGridEngine.Utils.Sparse.csc_numba.csc_diagonal_from_complex_array">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">csc_diagonal_from_complex_array</span><span class="p">(</span><span class="n">array</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 
 <span class="sd">    :param m:</span>
 <span class="sd">    :param array:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">m</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">array</span><span class="p">)</span>
     <span class="n">indptr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">m</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
     <span class="n">indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
@@ -923,12 +923,12 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Sparse.html#VeraGridEngine.Utils.Sparse.csc_numba.csc_diagonal_from_number">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">csc_diagonal_from_number</span><span class="p">(</span><span class="n">m</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 
 <span class="sd">    :param m:</span>
 <span class="sd">    :param value:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">indptr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">m</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
     <span class="n">indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
     <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
@@ -951,7 +951,7 @@
                         <span class="n">bm</span><span class="p">,</span> <span class="n">bn</span><span class="p">,</span> <span class="n">Bi</span><span class="p">,</span> <span class="n">Bp</span><span class="p">,</span> <span class="n">Bx</span><span class="p">,</span>
                         <span class="n">cm</span><span class="p">,</span> <span class="n">cn</span><span class="p">,</span> <span class="n">Ci</span><span class="p">,</span> <span class="n">Cp</span><span class="p">,</span> <span class="n">Cx</span><span class="p">,</span>
                         <span class="n">dm</span><span class="p">,</span> <span class="n">dn</span><span class="p">,</span> <span class="n">Di</span><span class="p">,</span> <span class="n">Dp</span><span class="p">,</span> <span class="n">Dx</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    stack csc sparse float matrices like this:</span>
 <span class="sd">    | A | B |</span>
 <span class="sd">    | C | D |</span>
@@ -977,7 +977,7 @@
 <span class="sd">    :param Dp:</span>
 <span class="sd">    :param Dx:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="c1"># check dimensional compatibility</span>
     <span class="k">assert</span> <span class="n">am</span> <span class="o">==</span> <span class="n">bm</span>
@@ -1032,7 +1032,7 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">csc_stack_3_by_4_ff</span><span class="p">(</span><span class="n">am</span><span class="p">,</span> <span class="n">an</span><span class="p">,</span> <span class="n">Ai</span><span class="p">,</span> <span class="n">Ap</span><span class="p">,</span> <span class="n">Ax</span><span class="p">,</span>
                         <span class="n">bm</span><span class="p">,</span> <span class="n">bn</span><span class="p">,</span> <span class="n">Bi</span><span class="p">,</span> <span class="n">Bp</span><span class="p">,</span> <span class="n">Bx</span><span class="p">,</span>
                         <span class="n">cm</span><span class="p">,</span> <span class="n">cn</span><span class="p">,</span> <span class="n">Ci</span><span class="p">,</span> <span class="n">Cp</span><span class="p">,</span> <span class="n">Cx</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    stack csc sparse float matrices like this:</span>
 <span class="sd">    | A | B |</span>
 <span class="sd">    | C | 0 |</span>
@@ -1053,7 +1053,7 @@
 <span class="sd">    :param Cp:</span>
 <span class="sd">    :param Cx:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="c1"># check dimensional compatibility</span>
     <span class="k">assert</span> <span class="n">am</span> <span class="o">==</span> <span class="n">bm</span>
@@ -1098,13 +1098,13 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Sparse.html#VeraGridEngine.Utils.Sparse.csc_numba.csc_norm">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">csc_norm</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">Ap</span><span class="p">,</span> <span class="n">Ax</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Computes the 1-norm of a sparse matrix = max (sum (abs (A))), largest</span>
 <span class="sd">    column sum.</span>
 
 <span class="sd">    @param A: column-compressed matrix</span>
 <span class="sd">    @return: the 1-norm if successful, -1 on error</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">norm</span> <span class="o">=</span> <span class="mi">0</span>
 
     <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
@@ -1120,11 +1120,11 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Sparse.html#VeraGridEngine.Utils.Sparse.csc_numba.find_islands">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">find_islands</span><span class="p">(</span><span class="n">node_number</span><span class="p">,</span> <span class="n">indptr</span><span class="p">,</span> <span class="n">indices</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Method to get the islands of a graph</span>
 <span class="sd">    This is the non-recursive version</span>
 <span class="sd">    :return: islands list where each element is a list of the node indices of the island</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="c1"># Mark all the vertices as not visited</span>
     <span class="n">visited</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">node_number</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">nb</span><span class="o">.</span><span class="n">boolean</span><span class="p">)</span>
@@ -1146,7 +1146,7 @@
             <span class="n">islands</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">List</span><span class="o">.</span><span class="n">empty_list</span><span class="p">(</span><span class="n">nb</span><span class="o">.</span><span class="n">int64</span><span class="p">))</span>
 
             <span class="c1"># ------------------------------------------------------------------------------------------------------</span>
-            <span class="c1"># DFS: store in the island all the reachable vertices from current vertex &quot;node&quot;</span>
+            <span class="c1"># DFS: store in the island all the reachable vertices from current vertex "node"</span>
             <span class="c1">#</span>
             <span class="c1"># declare a stack with the initial node to visit (node)</span>
             <span class="n">stack</span> <span class="o">=</span> <span class="n">List</span><span class="o">.</span><span class="n">empty_list</span><span class="p">(</span><span class="n">nb</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
@@ -1186,12 +1186,12 @@
 
 
 
-<span class="c1"># @nb.jit(&quot;Tuple((i4[:], i4[:], f8[:], i8, i8))(i8, i4[:], i4[:], f8[:], i8[:])&quot;)</span>
+<span class="c1"># @nb.jit("Tuple((i4[:], i4[:], f8[:], i8, i8))(i8, i4[:], i4[:], f8[:], i8[:])")</span>
 <div class="viewcode-block" id="sp_submat_c_numba">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Sparse.html#VeraGridEngine.Utils.Sparse.csc_numba.sp_submat_c_numba">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">sp_submat_c_numba</span><span class="p">(</span><span class="n">nrows</span><span class="p">,</span> <span class="n">ptrs</span><span class="p">,</span> <span class="n">indices</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">cols</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    slice CSC columns</span>
 <span class="sd">    :param nrows: number of rows of the matrix</span>
 <span class="sd">    :param ptrs: row pointers</span>
@@ -1199,7 +1199,7 @@
 <span class="sd">    :param values: data</span>
 <span class="sd">    :param cols: vector of columns to slice</span>
 <span class="sd">    :return: new_indices, new_col_ptr, new_val, nrows, ncols</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># pass1: determine the number of non-zeros</span>
     <span class="n">nnz</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">cols</span><span class="p">:</span>
@@ -1234,8 +1234,8 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Sparse.html#VeraGridEngine.Utils.Sparse.csc_numba.csc_stack_2d_ff_row_major">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">nogil</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">fastmath</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">csc_stack_2d_ff_row_major</span><span class="p">(</span><span class="n">mats_data</span><span class="p">,</span> <span class="n">mats_indptr</span><span class="p">,</span> <span class="n">mats_indices</span><span class="p">,</span> <span class="n">mats_cols</span><span class="p">,</span> <span class="n">mats_rows</span><span class="p">,</span> <span class="n">m_rows</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">m_cols</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Assemble matrix from a list of matrices representing a &quot;super matrix&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Assemble matrix from a list of matrices representing a "super matrix"</span>
 
 <span class="sd">    |mat11 | mat12 | mat13 |</span>
 <span class="sd">    |mat21 | mat22 | mat23 |</span>
@@ -1254,12 +1254,12 @@
 <span class="sd">    :param m_rows: number of rows of the mats structure</span>
 <span class="sd">    :param m_cols: number of cols of the mats structure</span>
 <span class="sd">    :return: Final assembled matrix</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Row major: A(r,c) element is at A[c + r * n_columns]; </span>
 <span class="sd">    Col major: A(r,c) element is at A[r + c * n_rows];    </span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="c1"># pass 1: compute the number of non zero</span>
     <span class="n">nnz</span> <span class="o">=</span> <span class="mi">0</span>
@@ -1318,8 +1318,8 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Sparse.html#VeraGridEngine.Utils.Sparse.csc_numba.csc_stack_2d_ff_col_major">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">nogil</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">fastmath</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">csc_stack_2d_ff_col_major</span><span class="p">(</span><span class="n">mats_data</span><span class="p">,</span> <span class="n">mats_indptr</span><span class="p">,</span> <span class="n">mats_indices</span><span class="p">,</span> <span class="n">mats_cols</span><span class="p">,</span> <span class="n">mats_rows</span><span class="p">,</span> <span class="n">m_rows</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">m_cols</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Assemble matrix from a list of matrices representing a &quot;super matrix&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Assemble matrix from a list of matrices representing a "super matrix"</span>
 
 <span class="sd">    |mat11 | mat12 | mat13 |</span>
 <span class="sd">    |mat21 | mat22 | mat23 |</span>
@@ -1338,11 +1338,11 @@
 <span class="sd">    :param m_rows: number of rows of the mats structure</span>
 <span class="sd">    :param m_cols: number of cols of the mats structure</span>
 <span class="sd">    :return: Final assembled matrix</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Col major: A(r,c) element is at A[r + c * n_rows];    </span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="c1"># pass 1: compute the number of non zero</span>
     <span class="n">nnz</span> <span class="o">=</span> <span class="mi">0</span>
@@ -1401,12 +1401,12 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Sparse.html#VeraGridEngine.Utils.Sparse.csc_numba.dense_to_csc_numba">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">dense_to_csc_numba</span><span class="p">(</span><span class="n">mat</span><span class="p">:</span> <span class="n">Mat</span><span class="p">,</span> <span class="n">threshold</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Vec</span><span class="p">,</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">IntVec</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Extract the sparse matrix from a dense matrix where abs values are below a threshold</span>
 <span class="sd">    :param mat: dense matrix</span>
 <span class="sd">    :param threshold: threshold</span>
 <span class="sd">    :return: data, indices, indptr</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">n_row</span><span class="p">,</span> <span class="n">n_col</span> <span class="o">=</span> <span class="n">mat</span><span class="o">.</span><span class="n">shape</span>
 
     <span class="n">indptr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">n_col</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
@@ -1437,12 +1437,12 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Sparse.html#VeraGridEngine.Utils.Sparse.csc_numba.get_sparse_array_numba">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_sparse_array_numba</span><span class="p">(</span><span class="n">arr</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">threshold</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Vec</span><span class="p">,</span> <span class="n">IntVec</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Extract the sparse array from a dense array where abs values are below a threshold</span>
 <span class="sd">    :param arr: dense matrix</span>
 <span class="sd">    :param threshold: threshold</span>
 <span class="sd">    :return: data, indices</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span>
 
     <span class="n">indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">nb</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>

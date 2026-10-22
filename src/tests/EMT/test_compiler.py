@@ -92,6 +92,135 @@ def test_matrix_vectorized_clustering_logic() -> None:
     np.testing.assert_allclose(res, expected, rtol=1e-7)
 
 
+@pytest.mark.parametrize("eager", (False, True))
+@pytest.mark.parametrize("method", (
+    DynamicIntegrationMethod.DaeBackEuler,
+    DynamicIntegrationMethod.DaeTrapezoidal,
+    DynamicIntegrationMethod.DaeBDF2,
+))
+def test_matrix_same_name_runtime_identity(eager: bool, method: DynamicIntegrationMethod) -> None:
+    """Keep same-name runtime/parameter contributions and canonical cache reuse.
+
+    :param eager: Exercise the in-place eager or returned-vector matrix interface.
+    :param method: Existing supported history discretization method.
+    :return: None; analytical residuals, column permutations and cache identity must agree.
+    """
+    states: np.ndarray = np.array((2.0, 7.0, 4.0, 11.0), dtype=np.float64)
+    history: np.ndarray = np.array((1.0, 5.0, 2.0, 8.0), dtype=np.float64)
+    history2: np.ndarray = np.array((0.5, 4.0, 1.0, 6.0), dtype=np.float64)
+    d_history: np.ndarray = np.array((0.2, 0.4, 0.6, 0.8), dtype=np.float64)
+    params: np.ndarray = np.array((13.0, 17.0), dtype=np.float64)
+    indices: np.ndarray = np.array(((0, 1), (2, 3)), dtype=np.int32)
+    h: float = 0.5
+    derivative: np.ndarray
+    if method == DynamicIntegrationMethod.DaeBackEuler:
+        derivative = (states[::2] - history[::2]) / h
+    elif method == DynamicIntegrationMethod.DaeTrapezoidal:
+        derivative = 2.0 * (states[::2] - history[::2]) / h - d_history[::2]
+    else:
+        derivative = (1.5 * states[::2] - 2.0 * history[::2] + 0.5 * history2[::2]) / h
+    expected: np.ndarray = derivative + 3.0 * states[::2] - 2.0 * states[1::2] + params[0]
+    first_kernel: Callable | None = None
+    first_nested_kernels: List[Callable | None] = list((None, None))
+    generation: int
+    for generation in range(2):
+        # Names and UIDs may change across equivalent models, while the emitted
+        # gather positions and parameter-vector bindings retain their meaning.
+        x: Var = Var("i_A" if generation == 0 else "renamed_current")
+        y: Var = Var(x.name)
+        dx: Var = Var("d_current", base_var=x)
+        k: Var = Var(x.name)
+        other_k: Var = Var(k.name)
+        equation: Expr = dx + 3.0 * x - 2.0 * y + k
+        compiler: MatrixVectorizedCompiler | EagerEquationCompiler
+        if eager:
+            compiler = EagerEquationCompiler(list((x, y)), parameters=list((k, other_k)), method=method)
+        else:
+            compiler = MatrixVectorizedCompiler(list((x, y)), parameters=list((k, other_k)), method=method)
+        reversed_columns: bool
+        for reversed_columns in (False, True):
+            template_vars: List[Var] = list((y, x)) if reversed_columns else list((x, y))
+            gathered_indices: np.ndarray = indices[:, ::-1].copy() if reversed_columns else indices
+            python_kernel: Callable
+            kernel: Callable
+            actual: np.ndarray = np.empty(2, dtype=np.float64)
+            if isinstance(compiler, EagerEquationCompiler):
+                signature: object
+                python_kernel, signature = compiler.compile_matrix_kernel(equation, "same_name_identity", template_vars)
+                kernel = nb.njit(signature, cache=False, fastmath=False)(python_kernel)
+                kernel(states, params, history, d_history, h, gathered_indices, actual, history2)
+            else:
+                python_kernel = compiler.compile_matrix_kernel(equation, "same_name_identity", template_vars)
+                kernel = nb.njit(cache=False, fastmath=False)(python_kernel)
+                actual = kernel(states, params, history, d_history, h, gathered_indices, history2)
+            np.testing.assert_allclose(actual, expected, rtol=0.0, atol=1e-12)
+            if reversed_columns:
+                assert python_kernel is not first_kernel
+            else:
+                if first_kernel is None:
+                    first_kernel = python_kernel
+                else:
+                    assert python_kernel is first_kernel
+
+        # A mapped derivative is a runtime value, not an instruction to consult
+        # history. Its UID must take precedence over derivative fallback.
+        mapped_compiler: MatrixVectorizedCompiler | EagerEquationCompiler
+        if eager:
+            mapped_compiler = EagerEquationCompiler(list((dx,)), parameters=list((k,)), method=method)
+        else:
+            mapped_compiler = MatrixVectorizedCompiler(list((dx,)), parameters=list((k,)), method=method)
+        mapped_indices: np.ndarray = indices[:, :1].copy()
+        mapped_actual: np.ndarray = np.empty(2, dtype=np.float64)
+        if isinstance(mapped_compiler, EagerEquationCompiler):
+            python_kernel, signature = mapped_compiler.compile_matrix_kernel(dx - k, "mapped_derivative_identity", list((dx,)))
+            kernel = nb.njit(signature, cache=False, fastmath=False)(python_kernel)
+            kernel(states, params, history, d_history, h, mapped_indices, mapped_actual, history2)
+        else:
+            python_kernel = mapped_compiler.compile_matrix_kernel(dx - k, "mapped_derivative_identity", list((dx,)))
+            kernel = nb.njit(cache=False, fastmath=False)(python_kernel)
+            mapped_actual = kernel(states, params, history, d_history, h, mapped_indices, history2)
+        np.testing.assert_allclose(mapped_actual, states[::2] - params[0], rtol=0.0, atol=1e-12)
+        if method == DynamicIntegrationMethod.DaeBackEuler:
+            # Nested matrix derivatives recurse through the derivative visitor,
+            # bypassing an intermediate direct mapping. Cache fingerprints must
+            # retain the origin slot even when that intermediate is a parameter.
+            d2x: Var = Var("nested_derivative", base_var=dx)
+            mapped_runtime: bool
+            for mapped_runtime in (False, True):
+                nested_variables: List[Var] = list((x, y, dx)) if mapped_runtime else list((x, y))
+                nested_parameters: List[Var] = list() if mapped_runtime else list((dx,))
+                nested_compiler: MatrixVectorizedCompiler | EagerEquationCompiler
+                if eager:
+                    nested_compiler = EagerEquationCompiler(nested_variables, parameters=nested_parameters, method=method)
+                else:
+                    nested_compiler = MatrixVectorizedCompiler(nested_variables, parameters=nested_parameters, method=method)
+                for reversed_columns in (False, True):
+                    template_vars = list((y, x)) if reversed_columns else list((x, y))
+                    gathered_indices = indices[:, ::-1].copy() if reversed_columns else indices
+                    nested_actual: np.ndarray = np.empty(2, dtype=np.float64)
+                    if isinstance(nested_compiler, EagerEquationCompiler):
+                        python_kernel, signature = nested_compiler.compile_matrix_kernel(d2x, "nested_gather_identity", template_vars)
+                        kernel = nb.njit(signature, cache=False, fastmath=False)(python_kernel)
+                        kernel(states, params, history, d_history, h, gathered_indices, nested_actual, history2)
+                    else:
+                        python_kernel = nested_compiler.compile_matrix_kernel(d2x, "nested_gather_identity", template_vars)
+                        kernel = nb.njit(cache=False, fastmath=False)(python_kernel)
+                        nested_actual = kernel(states, params, history, d_history, h, gathered_indices, history2)
+                    nested_expected: np.ndarray = ((states[::2] - history[::2]) / h - d_history[::2]) / h
+                    np.testing.assert_allclose(nested_actual, nested_expected, rtol=0.0, atol=1e-12)
+                    prior_nested: Callable | None = first_nested_kernels[int(mapped_runtime)]
+                    if reversed_columns:
+                        assert python_kernel is not prior_nested
+                    else:
+                        if prior_nested is None:
+                            first_nested_kernels[int(mapped_runtime)] = python_kernel
+                        else:
+                            assert python_kernel is prior_nested
+        else:
+            # Other existing matrix methods do not expose a nested-history ABI.
+            pass
+
+
 def test_truncation_error_order() -> None:
     """
     Mathematical proof of O(h^2) convergence for the Trapezoidal JIT kernel.

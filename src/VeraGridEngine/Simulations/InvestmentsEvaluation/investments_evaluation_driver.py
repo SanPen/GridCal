@@ -24,7 +24,7 @@ from VeraGridEngine.Simulations.InvestmentsEvaluation.Methods.toot_pint_cba impo
 from VeraGridEngine.Simulations.InvestmentsEvaluation.Problems.black_box_problem_template import BlackBoxProblemTemplate
 from VeraGridEngine.enumerations import EngineType, InvestmentEvaluationMethod, InvestmentsEvaluationObjectives, SimulationTypes
 from VeraGridEngine.basic_structures import IntVec, IntMat, Vec, Mat
-from VeraGridEngine.Compilers.Gslv.activation import GSLV_AVAILABLE
+from VeraGridEngine.Compilers.Gslv.activation import GSLV_AVAILABLE, GSLV_UNAVAILABLE_REASON
 from VeraGridEngine.Compilers.Gslv.Simulations.investments import gslv_investments_evaluation
 
 class InvestmentsEvaluationDriver(DriverTemplate):
@@ -398,7 +398,7 @@ class InvestmentsEvaluationDriver(DriverTemplate):
 
         if self.engine == EngineType.GSLV and not GSLV_AVAILABLE:
             self.engine = EngineType.VeraGrid
-            self.logger.add_warning('GSLV not available, falling back to VeraGrid')
+            self.logger.add_warning(f'GSLV unavailable: {GSLV_UNAVAILABLE_REASON}; falling back to VeraGrid')
         else:
             pass
 

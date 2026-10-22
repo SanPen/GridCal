@@ -37,43 +37,6 @@ DenseSolveBundle = Tuple[DenseFactorization, np.ndarray]
 SparseSolveBundle = Tuple[SuperLU, CscMat]
 
 
-def _has_consistent_initial_state_derivatives(
-        problem: EmtProblemTemplate,
-        x0: np.ndarray,
-        dx0: np.ndarray,
-        runtime_params: np.ndarray,
-        t0: float,
-) -> bool:
-    """Use trapezoidal BDF2 startup only when its initial slope is valid."""
-    try:
-        bindings: Dict[int, float] = {
-            uid: float(x0[idx]) for uid, idx in problem.uid2idx_vars.items()
-        }
-        bindings.update({
-            uid: float(dx0[idx]) for uid, idx in problem.uid2idx_diff.items()
-        })
-        bindings.update({
-            uid: float(runtime_params[idx])
-            for uid, idx in problem.uid2idx_event_params.items()
-        })
-        bindings.update({
-            uid: float(problem.get_parameters_values()[idx].value)
-            for uid, idx in problem.uid2idx_params.items()
-        })
-        bindings[problem.glob_time.uid] = float(t0)
-
-        for differential, equation in zip(problem.get_diff_vars(), problem.get_state_eqs()):
-            rhs = float(equation.eval_uid(bindings))
-            stored = float(dx0[problem.uid2idx_diff[differential.uid]])
-            if not np.isfinite(rhs) or not np.isfinite(stored):
-                return False
-            if abs(stored - rhs) > 1e-6 * (1.0 + max(abs(stored), abs(rhs))):
-                return False
-    except (KeyError, TypeError, ValueError, AttributeError, ZeroDivisionError):
-        return False
-    return True
-
-
 class SymbolicCompiledNumbaKernelCache:
     """
     In-process cache of Numba-compiled symbolic kernels.
@@ -628,7 +591,7 @@ class JitSymbolicSolver:
         '_residual_buffer', '_trial_state_buffer', '_trial_residual_buffer', '_trial_residual_evaluator',
         '_backend_build_stats', '_last_runtime_stats', '_last_sim_loop_time',
         '_max_residual_inf_fail', '_max_state_residual_inf_fail', '_cancel_checker', '_progress_signal',
-        '_newton_tolerance'
+        '_newton_tolerance', '_use_compiled_runtime_parameters'
     ]
 
     def __init__(self,
@@ -646,7 +609,8 @@ class JitSymbolicSolver:
                  max_state_residual_inf_fail: float = np.inf,
                  progress_signal: DummySignal | None = None,
                  cancel_checker: Callable[[], bool] | None = None,
-                 newton_tolerance: float = 1.0e-6)-> None:
+                 newton_tolerance: float = 1.0e-6,
+                 use_compiled_runtime_parameters: bool = True)-> None:
         """
         :param problem: The DAE problem definition.
         :param t0: Initial time.
@@ -660,9 +624,12 @@ class JitSymbolicSolver:
         :param newton_tolerance: Absolute infinity-norm tolerance for Newton residual convergence.
         :param progress_signal: Optional progress signal updated during the simulation loop.
         :type progress_signal: DummySignal | None
+        :param use_compiled_runtime_parameters: Activate the compiled runtime-parameter evaluator at
+            the start of simulate; False keeps the interpreted evaluator on a problem not enabled before.
         """
         self.jit_compiler = None
         self.problem = problem
+        self._use_compiled_runtime_parameters: bool = bool(use_compiled_runtime_parameters)
         self.t0 = t0
         self.h = h
         self.method = method
@@ -1000,6 +967,14 @@ class JitSymbolicSolver:
         :param boundary_updater: Optional override for the problem boundary updater.
         :return: A tuple containing the time vector and the state trajectory matrix. Tuple[Vec, Mat]
         """
+        # Problem construction, initialization and event-group selection are complete
+        # here. Activate the compiled runtime-parameter evaluator before the boundary
+        # updater reset evaluates the runtime parameters, as StructuralCompiledSolver does.
+        if self._use_compiled_runtime_parameters:
+            self.problem.enable_compiled_runtime_parameter_evaluator()
+        else:
+            pass
+
         t_start = time.time()
         method = self.method
 
@@ -1044,6 +1019,21 @@ class JitSymbolicSolver:
         x_prev = x0.copy()
         dx_prev = dx0.copy()
         x_prev2 = x0.copy()
+        bdf2_startup_pending: bool = method == DynamicIntegrationMethod.DaeBDF2
+        # Kernels index history by runtime variable; dy has canonical diff slots.
+        base_slopes: Vec = np.zeros(x_prev.size if bdf2_startup_pending else 0, dtype=np.float64)
+        diff_base_indices: IntVec = np.full(dx_prev.size if bdf2_startup_pending else 0, -1, dtype=np.int64)
+        if bdf2_startup_pending:
+            differential: Var
+            for differential in self.diff_vars:
+                if differential.base_var is not None:
+                    diff_index: int = self.problem.uid2idx_diff[differential.uid]
+                    diff_base_indices[diff_index] = self.problem.uid2idx_vars.get(differential.base_var.uid, -1)
+                else:
+                    pass
+            kernel_derivatives: Vec = base_slopes
+        else:
+            kernel_derivatives = dx_prev
         x_iter = x0.copy()
         trial_x = self._trial_state_buffer
         trial_res = self._trial_residual_buffer
@@ -1066,22 +1056,16 @@ class JitSymbolicSolver:
         else:
             pass
 
-        use_trapezoidal_startup = (
-            method == DynamicIntegrationMethod.DaeBDF2
-            and _has_consistent_initial_state_derivatives(
-                problem=self.problem,
-                x0=x_prev,
-                dx0=dx_prev,
-                runtime_params=ev_params,
-                t0=float(self.t0),
-            )
-        )
-        if use_trapezoidal_startup:
-            startup_method = DynamicIntegrationMethod.DaeTrapezoidal
+        startup_method: DynamicIntegrationMethod = DynamicIntegrationMethod.DaeBackEuler
+        startup_jac_key: str = f"{startup_method}_{is_sparse}"
+        if bdf2_startup_pending:
             if startup_method not in self.jit_kernels:
                 self.build_jit_kernel(startup_method)
+            else:
+                pass
             self._build_jit_symbolic_hybrid(startup_method, use_sparse=is_sparse)
-            startup_jac_key = f"{startup_method}_{is_sparse}"
+        else:
+            pass
 
         trace_collector = self.problem.get_newton_trace_collector()
         diag_cfg = self._newton_diag_config
@@ -1128,6 +1112,7 @@ class JitSymbolicSolver:
         failed_substep_count: int = 0
         first_failed_time_s: float = float("nan")
         failed_substep_times_s: list[float] = list()
+        completed_samples: int = 1
 
         for i in range(self.steps):
 
@@ -1182,7 +1167,7 @@ class JitSymbolicSolver:
 
                 effective_method = (
                     startup_method
-                    if use_trapezoidal_startup and i == 0
+                    if bdf2_startup_pending
                     else method
                 )
                 kernel_list_eff = self.jit_kernels[effective_method]
@@ -1209,7 +1194,11 @@ class JitSymbolicSolver:
                     ev_params[:] = full_params[:len(ev_params)]
 
                 x_iter[:] = x_prev
-                x_iter[:n_states] = x_prev[:n_states] + h_eff * dx_prev[:n_states]
+                if bdf2_startup_pending:
+                    # Do not trust an inconsistent caller slope for startup prediction.
+                    pass
+                else:
+                    x_iter[:n_states] = x_prev[:n_states] + h_eff * kernel_derivatives[:n_states]
                 last_res_norm: float = 1.0
 
                 # The factorization cache is local to the substep because the
@@ -1232,7 +1221,7 @@ class JitSymbolicSolver:
                 substep_numerical_failure: bool = False
                 newton_iteration_count: int
                 if state_event_retry_time is None:
-                    newton_iteration_count = self.newton_max_iter
+                    newton_iteration_count = self.newton_max_iter + int(method == DynamicIntegrationMethod.DaeBDF2)
                 else:
                     newton_iteration_count = 0
                 for k in range(newton_iteration_count):
@@ -1242,7 +1231,7 @@ class JitSymbolicSolver:
                         step_idx=int(i),
                         newton_iter=int(k),
                         phase="jit",
-                        method=str(method)
+                        method=str(effective_method)
                     )
 
                     # The residual buffer is reused across Newton iterations to
@@ -1254,7 +1243,7 @@ class JitSymbolicSolver:
                             x_iter=x_iter,
                             full_params=full_params,
                             x_prev=x_prev,
-                            dx_prev=dx_prev,
+                            dx_prev=kernel_derivatives,
                             h_eff=h_eff,
                             x_prev2=x_prev2,
                             residual_out=res,
@@ -1313,6 +1302,11 @@ class JitSymbolicSolver:
                     else:
                         pass
 
+                    if method == DynamicIntegrationMethod.DaeBDF2 and k >= self.newton_max_iter:
+                        break
+                    else:
+                        pass
+
                     recompute: bool = (cached_lu_dense is None and cached_lu_sparse is None) or \
                                       (k > 0 and (res_norm_inf / (last_res_norm + 1e-16)) > 0.5)
 
@@ -1321,7 +1315,7 @@ class JitSymbolicSolver:
                             states=x_iter,
                             params=full_params,
                             history=x_prev,
-                            d_history=dx_prev,
+                            d_history=kernel_derivatives,
                             h=h_eff,
                             history2=x_prev2
                         )
@@ -1388,7 +1382,7 @@ class JitSymbolicSolver:
                             kernel_list=kernel_list_eff,
                             full_params=full_params,
                             x_prev=x_prev,
-                            dx_prev=dx_prev,
+                            dx_prev=kernel_derivatives,
                             h_eff=h_eff,
                             x_prev2=x_prev2,
                         )
@@ -1435,6 +1429,12 @@ class JitSymbolicSolver:
                 else:
                     pass
 
+                # A rejected BDF2 candidate must not consume startup or history.
+                if method == DynamicIntegrationMethod.DaeBDF2 and not substep_converged:
+                    break
+                else:
+                    pass
+
                 if substep_converged and state_event_retry_time is None:
                     # A post-acceptance native sample may publish new held
                     # outputs. Retain them for the next aligned sub-step.
@@ -1456,7 +1456,19 @@ class JitSymbolicSolver:
                     if substep_numerical_failure:
                         pass
                     else:
-                        if effective_method == DynamicIntegrationMethod.DaeTrapezoidal:
+                        if method == DynamicIntegrationMethod.DaeBDF2:
+                            if bdf2_startup_pending:
+                                base_slopes[:] = (x_iter - x_prev) / h_eff
+                            else:
+                                base_slopes[:] = (1.5 * x_iter - 2.0 * x_prev + 0.5 * x_prev2) / h_eff
+                            base_index: int
+                            for diff_index, base_index in enumerate(diff_base_indices):
+                                if base_index >= 0:
+                                    dx_prev[diff_index] = base_slopes[base_index]
+                                else:
+                                    pass
+                            bdf2_startup_pending = False
+                        elif effective_method == DynamicIntegrationMethod.DaeTrapezoidal:
                             dx_prev[:n_states] = (
                                     (2.0 / h_eff) * (x_iter[:n_states] - x_prev[:n_states])
                                     - dx_prev[:n_states]
@@ -1465,19 +1477,12 @@ class JitSymbolicSolver:
                             dx_prev[:n_states] = (
                                     (x_iter[:n_states] - x_prev[:n_states]) / h_eff
                             )
-                        elif effective_method == DynamicIntegrationMethod.DaeBDF2:
-                            x_prev2[:] = x_prev
-                            dx_prev[:n_states] = (
-                                1.5 * x_iter[:n_states]
-                                - 2.0 * x_prev[:n_states]
-                                + 0.5 * x_prev2[:n_states]
-                            ) / h_eff
                         else:
                             dx_prev[:n_states] = (
                                     (x_iter[:n_states] - x_prev[:n_states]) / h_eff
                             )
 
-                    if effective_method != DynamicIntegrationMethod.DaeBDF2 and not substep_numerical_failure:
+                    if not substep_numerical_failure:
                         x_prev2[:] = x_prev
                     else:
                         pass
@@ -1488,8 +1493,13 @@ class JitSymbolicSolver:
 
 
 
+            if method == DynamicIntegrationMethod.DaeBDF2 and not converged:
+                break
+            else:
+                pass
             self.y[i + 1, :] = x_prev
             self.dy[i + 1, :] = dx_prev
+            completed_samples += 1
 
         if self.verbose:
             print(f"JIT Finished: {time.time() - t_start:.4f}s")
@@ -1502,13 +1512,16 @@ class JitSymbolicSolver:
             total_newton_iterations=float(total_newton_iterations),
             jacobian_evaluations=float(jacobian_evaluation_count),
             aligned_substeps=float(aligned_substep_count),
-            macro_steps=float(self.steps),
+            macro_steps=float(completed_samples - 1),
             failed_substeps=float(failed_substep_count),
             first_failed_time_s=float(first_failed_time_s),
             failed_substep_times_s=list(failed_substep_times_s),
         )
 
-        return self.t, self.y, self.dy, well_initialized, converged
+        if method == DynamicIntegrationMethod.DaeBDF2:
+            return self.t[:completed_samples].copy(), self.y[:completed_samples, :].copy(), self.dy[:completed_samples, :].copy(), well_initialized, converged
+        else:
+            return self.t, self.y, self.dy, well_initialized, converged
 
     def get_backend_build_stats(self) -> Dict[str, float]:
         """

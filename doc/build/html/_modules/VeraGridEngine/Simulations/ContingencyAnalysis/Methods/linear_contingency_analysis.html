@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Simulations.ContingencyAnalysis.Methods.linear_contingency_analysis &mdash; VeraGrid 6.7.13 documentation</title>
+  <title>VeraGridEngine.Simulations.ContingencyAnalysis.Methods.linear_contingency_analysis &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../../_static/documentation_options.js?v=16fbabd8"></script>
+      <script src="../../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../../_static/js/theme.js"></script>
@@ -137,7 +137,7 @@
                                 <span class="n">t_prob</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
                                 <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                                 <span class="n">report_progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ContingencyAnalysisResults</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Run N-1 simulation in series with HELM, non-linear solution</span>
 <span class="sd">    :param nc: NumericalCircuit</span>
 <span class="sd">    :param options: ContingencyAnalysisOptions</span>
@@ -155,10 +155,10 @@
 <span class="sd">    :param logger: logger instance</span>
 <span class="sd">    :param report_progress</span>
 <span class="sd">    :return: returns the results</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">if</span> <span class="n">report_text</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">report_text</span><span class="p">(</span><span class="s1">&#39;Analyzing outage distribution factors in a non-linear fashion...&#39;</span><span class="p">)</span>
+        <span class="n">report_text</span><span class="p">(</span><span class="s1">'Analyzing outage distribution factors in a non-linear fashion...'</span><span class="p">)</span>
 
     <span class="c1"># declare the results</span>
     <span class="n">results</span> <span class="o">=</span> <span class="n">ContingencyAnalysisResults</span><span class="p">(</span>
@@ -190,7 +190,7 @@
     <span class="n">loadings_n</span> <span class="o">=</span> <span class="n">flows_n</span> <span class="o">/</span> <span class="p">(</span><span class="n">nc</span><span class="o">.</span><span class="n">passive_branch_data</span><span class="o">.</span><span class="n">rates</span> <span class="o">+</span> <span class="mf">1e-9</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">report_text</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">report_text</span><span class="p">(</span><span class="s1">&#39;Computing loading...&#39;</span><span class="p">)</span>
+        <span class="n">report_text</span><span class="p">(</span><span class="s1">'Computing loading...'</span><span class="p">)</span>
 
     <span class="c1"># for each contingency group</span>
     <span class="k">for</span> <span class="n">ic</span><span class="p">,</span> <span class="n">multi_contingency</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">linear_multiple_contingencies</span><span class="o">.</span><span class="n">multi_contingencies</span><span class="p">):</span>
@@ -244,7 +244,7 @@
         <span class="k">if</span> <span class="n">t</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">report_text</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">report_progress</span><span class="p">:</span>
                 <span class="n">report_text</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s1">&#39;Contingency group: </span><span class="si">{</span><span class="n">linear_multiple_contingencies</span><span class="o">.</span><span class="n">contingency_groups_used</span><span class="p">[</span><span class="n">ic</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s1">&#39;</span>
+                    <span class="sa">f</span><span class="s1">'Contingency group: </span><span class="si">{</span><span class="n">linear_multiple_contingencies</span><span class="o">.</span><span class="n">contingency_groups_used</span><span class="p">[</span><span class="n">ic</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s1">'</span>
                 <span class="p">)</span>
 
             <span class="k">if</span> <span class="n">report_progress2</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">report_progress</span><span class="p">:</span>
@@ -274,7 +274,7 @@
                                 <span class="n">t</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                                 <span class="n">t_prob</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
                                 <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ContingencyAnalysisResults</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Run N-1 simulation in series with HELM, non-linear solution</span>
 <span class="sd">    :param nc: NumericalCircuit</span>
 <span class="sd">    :param options: ContingencyAnalysisOptions</span>
@@ -290,10 +290,10 @@
 <span class="sd">    :param t_prob: probability of te time</span>
 <span class="sd">    :param logger: logger instance</span>
 <span class="sd">    :return: returns the results</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">if</span> <span class="n">report_text</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">report_text</span><span class="p">(</span><span class="s1">&#39;Analyzing outage distribution factors in a non-linear fashion...&#39;</span><span class="p">)</span>
+        <span class="n">report_text</span><span class="p">(</span><span class="s1">'Analyzing outage distribution factors in a non-linear fashion...'</span><span class="p">)</span>
 
     <span class="c1"># declare the results</span>
     <span class="n">results</span> <span class="o">=</span> <span class="n">ContingencyAnalysisResults</span><span class="p">(</span>
@@ -334,7 +334,7 @@
     <span class="n">loadings_n</span> <span class="o">=</span> <span class="n">flows_n</span> <span class="o">/</span> <span class="p">(</span><span class="n">nc</span><span class="o">.</span><span class="n">passive_branch_data</span><span class="o">.</span><span class="n">rates</span> <span class="o">+</span> <span class="mf">1e-9</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">report_text</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">report_text</span><span class="p">(</span><span class="s1">&#39;Computing loading...&#39;</span><span class="p">)</span>
+        <span class="n">report_text</span><span class="p">(</span><span class="s1">'Computing loading...'</span><span class="p">)</span>
 
     <span class="c1"># for each contingency group</span>
     <span class="k">for</span> <span class="n">ic</span><span class="p">,</span> <span class="n">multi_contingency</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">linear_multiple_contingencies</span><span class="o">.</span><span class="n">multi_contingencies</span><span class="p">):</span>
@@ -388,7 +388,7 @@
         <span class="k">if</span> <span class="n">t</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">report_text</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">report_text</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s1">&#39;Contingency group: </span><span class="si">{</span><span class="n">linear_multiple_contingencies</span><span class="o">.</span><span class="n">contingency_groups_used</span><span class="p">[</span><span class="n">ic</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+                    <span class="sa">f</span><span class="s1">'Contingency group: </span><span class="si">{</span><span class="n">linear_multiple_contingencies</span><span class="o">.</span><span class="n">contingency_groups_used</span><span class="p">[</span><span class="n">ic</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="n">report_progress2</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">report_progress2</span><span class="p">(</span><span class="n">ic</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">linear_multiple_contingencies</span><span class="o">.</span><span class="n">multi_contingencies</span><span class="p">))</span>
@@ -417,7 +417,7 @@
                                   <span class="n">mon_idx</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span>
                                   <span class="n">single_con_br_idx</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span>
                                   <span class="n">single_con_cg_idx</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Fast contingency scan using the PTDF</span>
 <span class="sd">    :param nbr: Number of branches</span>
 <span class="sd">    :param n_con_groups: Number of contingency groups</span>
@@ -430,7 +430,7 @@
 <span class="sd">    :param single_con_br_idx: array of single contingency branch indices</span>
 <span class="sd">    :param single_con_cg_idx: array of the matching contingency groups</span>
 <span class="sd">    :return: SbrCon(nconn, nbr), LoadingCon(nconn, nbr), problems(..., (m, c))</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">single_con_br_idx</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">single_con_cg_idx</span><span class="p">)</span>
 

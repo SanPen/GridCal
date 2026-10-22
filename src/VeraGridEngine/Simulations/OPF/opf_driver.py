@@ -13,7 +13,7 @@ from VeraGridEngine.Simulations.OPF.ac_opf_worker import run_nonlinear_opf
 from VeraGridEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from VeraGridEngine.Simulations.driver_template import TimeSeriesDriverTemplate
 from VeraGridEngine.Simulations.OPF.simple_dispatch_ts import GreedyDispatchInputsSnapshot, greedy_dispatch2
-from VeraGridEngine.Compilers.Gslv.activation import GSLV_AVAILABLE, pg
+from VeraGridEngine.Compilers.Gslv.activation import GSLV_AVAILABLE, GSLV_UNAVAILABLE_REASON, pg
 from VeraGridEngine.Compilers.Gslv.Simulations.opf import gslv_opf
 
 
@@ -321,7 +321,7 @@ class OptimalPowerFlowDriver(TimeSeriesDriverTemplate):
         if self.engine == EngineType.GSLV:
             if not GSLV_AVAILABLE:
                 self.engine = EngineType.VeraGrid
-                self.logger.add_warning('GSLV not available, falling back to VeraGrid')
+                self.logger.add_warning(f'GSLV unavailable: {GSLV_UNAVAILABLE_REASON}; falling back to VeraGrid')
             else:
                 if self.options.solver not in (SolverType.LINEAR_OPF, SolverType.NONLINEAR_OPF):
                     self.engine = EngineType.VeraGrid

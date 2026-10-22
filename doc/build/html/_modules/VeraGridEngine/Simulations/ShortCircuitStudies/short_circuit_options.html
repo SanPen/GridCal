@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Simulations.ShortCircuitStudies.short_circuit_options &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Simulations.ShortCircuitStudies.short_circuit_options &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/license.html">📜 License</a></li>
@@ -117,34 +118,34 @@
 <div class="viewcode-block" id="ShortCircuitOptions">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.ShortCircuitStudies.html#VeraGridEngine.Simulations.ShortCircuitStudies.short_circuit_options.ShortCircuitOptions">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">ShortCircuitOptions</span><span class="p">(</span><span class="n">OptionsTemplate</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Short circuit options</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;bus_index&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;fault_type&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;method&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;phases&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;mid_line_fault&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;branch_index&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;branch_fault_locations&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;branch_fault_r&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;branch_fault_x&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;verbose&quot;</span><span class="p">,</span>
+        <span class="s2">"bus_index"</span><span class="p">,</span>
+        <span class="s2">"fault_type"</span><span class="p">,</span>
+        <span class="s2">"method"</span><span class="p">,</span>
+        <span class="s2">"phases"</span><span class="p">,</span>
+        <span class="s2">"mid_line_fault"</span><span class="p">,</span>
+        <span class="s2">"branch_index"</span><span class="p">,</span>
+        <span class="s2">"branch_fault_locations"</span><span class="p">,</span>
+        <span class="s2">"branch_fault_r"</span><span class="p">,</span>
+        <span class="s2">"branch_fault_x"</span><span class="p">,</span>
+        <span class="s2">"verbose"</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="n">LOCAL_PROPERTY_DECLARATIONS</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">GCProp</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;bus_index&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;fault_type&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">FaultType</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;method&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">MethodShortCircuit</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;phases&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">PhasesShortCircuit</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;mid_line_fault&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">bool</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;branch_index&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;branch_fault_locations&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;branch_fault_r&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;branch_fault_x&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;verbose&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"bus_index"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"fault_type"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">FaultType</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"method"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">MethodShortCircuit</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"phases"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">PhasesShortCircuit</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"mid_line_fault"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">bool</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"branch_index"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"branch_fault_locations"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"branch_fault_r"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"branch_fault_x"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"verbose"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
@@ -158,18 +159,18 @@
                  <span class="n">verbose</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
                  <span class="n">method</span><span class="o">=</span><span class="n">MethodShortCircuit</span><span class="o">.</span><span class="n">sequences</span><span class="p">,</span>
                  <span class="n">phases</span><span class="o">=</span><span class="n">PhasesShortCircuit</span><span class="o">.</span><span class="n">abc</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        :param bus_index: Index of the bus failed (used if mid_line_fault is False)</span>
 <span class="sd">        :param fault_type: fault type among 3x, LG, LL and LLG possibilities</span>
 <span class="sd">        :param method: choose between the traditional sequence shortcircuit method or the new abc approach</span>
 <span class="sd">        :param mid_line_fault: Is the fault occurring at the middle of a line?</span>
 <span class="sd">        :param branch_index: Index of the failed branch in case of a line fault (used if mid_line_fault is True)</span>
-<span class="sd">        :param branch_fault_locations: per unit location of the fault measured from the &quot;from&quot; bus</span>
+<span class="sd">        :param branch_fault_locations: per unit location of the fault measured from the "from" bus</span>
 <span class="sd">        :param fault_r: Fault resistance</span>
 <span class="sd">        :param fault_x: Fault reactance</span>
 <span class="sd">        :param verbose: Verbosity level</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">OptionsTemplate</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;ShortCircuitOptions&quot;</span><span class="p">)</span>
+<span class="sd">        """</span>
+        <span class="n">OptionsTemplate</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"ShortCircuitOptions"</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">bus_index</span> <span class="o">=</span> <span class="n">bus_index</span>
 

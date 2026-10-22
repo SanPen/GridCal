@@ -219,7 +219,12 @@ class FmuRefBinding:
         :return: None.
         """
 
-        self.reference: VarPowerFlowReferenceType = reference
+        # Component sizing is resolved during EMT initialization, independently
+        # of live FMI input/output transfers. Reject before archive/runtime use.
+        if reference == VarPowerFlowReferenceType.VmSizing:
+            raise ValueError("VmSizing is initialization-only and cannot bind an FMU runtime signal")
+        else:
+            self.reference: VarPowerFlowReferenceType = reference
         if len(fmu_variable_name.strip()) > 0:
             self.fmu_variable_name: str = fmu_variable_name
         else:

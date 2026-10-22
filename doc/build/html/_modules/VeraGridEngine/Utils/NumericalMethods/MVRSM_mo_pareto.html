@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Utils.NumericalMethods.MVRSM_mo_pareto &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Utils.NumericalMethods.MVRSM_mo_pareto &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/license.html">📜 License</a></li>
@@ -137,10 +138,10 @@
 <div class="viewcode-block" id="relu">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.NumericalMethods.html#VeraGridEngine.Utils.NumericalMethods.MVRSM_mo_pareto.relu">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">relu</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    The Rectified Linear Unit (ReLU) function.</span>
 <span class="sd">    :param x: the input and output vector</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">x</span><span class="p">)</span></div>
 
 
@@ -148,11 +149,11 @@
 <div class="viewcode-block" id="relu_deriv">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.NumericalMethods.html#VeraGridEngine.Utils.NumericalMethods.MVRSM_mo_pareto.relu_deriv">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">relu_deriv</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    The derivative of the rectified linear unit function,</span>
 <span class="sd">    defined with `relu_deriv(0) = 0.5`.</span>
 <span class="sd">    :param x: the input and output vector</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">heaviside</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">x</span><span class="p">)</span></div>
 
 
@@ -160,22 +161,22 @@
 <div class="viewcode-block" id="SurrogateModel">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.NumericalMethods.html#VeraGridEngine.Utils.NumericalMethods.MVRSM_mo_pareto.SurrogateModel">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">SurrogateModel</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    SurrogateModel</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;n_obj&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;m&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;c&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;W&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;b&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;P&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;bounds&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;scratch&quot;</span><span class="p">,</span>
+        <span class="s2">"n_obj"</span><span class="p">,</span>
+        <span class="s2">"m"</span><span class="p">,</span>
+        <span class="s2">"c"</span><span class="p">,</span>
+        <span class="s2">"W"</span><span class="p">,</span>
+        <span class="s2">"b"</span><span class="p">,</span>
+        <span class="s2">"P"</span><span class="p">,</span>
+        <span class="s2">"bounds"</span><span class="p">,</span>
+        <span class="s2">"scratch"</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_obj</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">m</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">c</span><span class="p">:</span> <span class="n">Mat</span><span class="p">,</span> <span class="n">W</span><span class="p">:</span> <span class="n">Mat</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">reg</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">bounds</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Container for the surrogate model data, defined as a linear combination of</span>
 <span class="sd">        `m` basis functions whose weights `c` are to be trained. The basis function</span>
 <span class="sd">        `Φ_k(x)` is a ReLU with input `z_k(x)`, a linear function with weights `W_{k, ·}ᵀ`</span>
@@ -187,8 +188,8 @@
 <span class="sd">        :param W: the `z_k(x)` functions weights (m×d matrix).</span>
 <span class="sd">        :param b: the `z_k(x)` functions biases (m×1 vector).</span>
 <span class="sd">        :param reg: the regularization parameter.</span>
-<span class="sd">        :param bounds: the decision variable bounds. (scipy&#39;s bounds)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        :param bounds: the decision variable bounds. (scipy's bounds)</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">n_obj</span> <span class="o">=</span> <span class="n">n_obj</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">m</span> <span class="o">=</span> <span class="n">m</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">c</span> <span class="o">=</span> <span class="n">c</span>
@@ -196,7 +197,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">b</span> <span class="o">=</span> <span class="n">b</span>
         <span class="c1"># RLS covariance matrix, stored in column-major order (we *almost* exclusively</span>
         <span class="c1"># treat this matrix with BLAS routines).</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">P</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">m</span><span class="p">,</span> <span class="n">m</span><span class="p">),</span> <span class="n">order</span><span class="o">=</span><span class="s1">&#39;F&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">P</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">m</span><span class="p">,</span> <span class="n">m</span><span class="p">),</span> <span class="n">order</span><span class="o">=</span><span class="s1">'F'</span><span class="p">)</span>
         <span class="n">np</span><span class="o">.</span><span class="n">fill_diagonal</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">P</span><span class="p">,</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">reg</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span> <span class="o">=</span> <span class="n">bounds</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">scratch</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>  <span class="c1"># vector to store temporary results and avoid unnecessary allocations.</span>
@@ -204,15 +205,15 @@
 <div class="viewcode-block" id="SurrogateModel.init">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.NumericalMethods.html#VeraGridEngine.Utils.NumericalMethods.MVRSM_mo_pareto.SurrogateModel.init">[docs]</a>
     <span class="nd">@classmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">init</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">n_obj</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">d</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">lb</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">ub</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">num_int</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;SurrogateModel&#39;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">init</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">n_obj</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">d</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">lb</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">ub</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">num_int</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">'SurrogateModel'</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Initializes a surrogate model.</span>
 <span class="sd">        :param n_obj: number of objective function dimensions</span>
 <span class="sd">        :param d: the number of (discrete and continuous) decision variables.</span>
 <span class="sd">        :param lb: the lower bound of the decision variable values.</span>
 <span class="sd">        :param ub: the upper bound of the decision variable values.</span>
 <span class="sd">        :param num_int: the number of discrete decision variables (`0 ≤ num_int ≤ d`).</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># Define the basis functions parameters.</span>
         <span class="n">W</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># weights  TODO: can we know the size beforehand?</span>
         <span class="n">b</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># biases</span>
@@ -293,11 +294,11 @@
 <div class="viewcode-block" id="SurrogateModel.phi">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.NumericalMethods.html#VeraGridEngine.Utils.NumericalMethods.MVRSM_mo_pareto.SurrogateModel.phi">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">phi</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Evaluates the basis functions at `x`.</span>
 <span class="sd">        :param x: the decision variable values</span>
 <span class="sd">        :param out: the vector in which to put the result; `None` to allocate.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">W</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">out</span><span class="p">)</span>
         <span class="n">z</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">b</span>
         <span class="k">return</span> <span class="n">relu</span><span class="p">(</span><span class="n">z</span><span class="p">)</span></div>
@@ -306,11 +307,11 @@
 <div class="viewcode-block" id="SurrogateModel.phi_deriv">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.NumericalMethods.html#VeraGridEngine.Utils.NumericalMethods.MVRSM_mo_pareto.SurrogateModel.phi_deriv">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">phi_deriv</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Evaluates the derivatives of the basis functions with respect to `x`.</span>
 <span class="sd">        :param x: the decision variable values</span>
 <span class="sd">        :param out: the vector in which to put the result; `None` to allocate.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">W</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">out</span><span class="p">)</span>
         <span class="n">z</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">b</span>
         <span class="k">return</span> <span class="n">relu_deriv</span><span class="p">(</span><span class="n">z</span><span class="p">)</span></div>
@@ -319,30 +320,30 @@
 <div class="viewcode-block" id="SurrogateModel.update">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.NumericalMethods.html#VeraGridEngine.Utils.NumericalMethods.MVRSM_mo_pareto.SurrogateModel.update">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Updates the model upon the observation of a new data point `(x, y)`.</span>
 <span class="sd">        :param x: the decision variables values</span>
 <span class="sd">        :param y: the objective function value `y(x)`</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="n">phi</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">phi</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>  <span class="c1"># basis function values for k = 1, ..., m.</span>
         <span class="c1"># st = timeit.default_timer()</span>
         <span class="c1"># Recursive least squares algorithm</span>
         <span class="n">v</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">P</span><span class="p">,</span> <span class="n">phi</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">scratch</span><span class="p">)</span>
         <span class="c1"># end = timeit.default_timer()</span>
-        <span class="c1"># print(f&quot;Time to calculate v: {end - st}&quot;)</span>
+        <span class="c1"># print(f"Time to calculate v: {end - st}")</span>
 
         <span class="c1"># st = timeit.default_timer()</span>
         <span class="c1"># --&gt; changes with multiple objectives.  Let g depend on the objective index. Do this initialization for all objectives.</span>
         <span class="n">g0</span> <span class="o">=</span> <span class="n">v</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">inner</span><span class="p">(</span><span class="n">phi</span><span class="p">,</span> <span class="n">v</span><span class="p">))</span>
         <span class="c1"># P ← P - gvᵀ</span>
         <span class="c1"># end = timeit.default_timer()</span>
-        <span class="c1"># print(f&quot;Time to calculate g0: {end - st}&quot;)</span>
+        <span class="c1"># print(f"Time to calculate g0: {end - st}")</span>
 
         <span class="c1"># st = timeit.default_timer()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">P</span> <span class="o">=</span> <span class="n">dger</span><span class="p">(</span><span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">g0</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">P</span><span class="p">,</span> <span class="n">overwrite_x</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">overwrite_y</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">overwrite_a</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="c1"># end = timeit.default_timer()</span>
-        <span class="c1"># print(f&quot;Time to update P: {end - st}&quot;)</span>
+        <span class="c1"># print(f"Time to update P: {end - st}")</span>
 
         <span class="c1"># st = timeit.default_timer()</span>
         <span class="c1"># for each objective index...</span>
@@ -353,15 +354,15 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">c</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span> <span class="o">+=</span> <span class="n">g</span>  <span class="c1"># do this for each objective</span></div>
 
         <span class="c1"># end = timeit.default_timer()</span>
-        <span class="c1"># print(f&quot;Time to update c: {end - st}&quot;)</span>
+        <span class="c1"># print(f"Time to update c: {end - st}")</span>
 
 <div class="viewcode-block" id="SurrogateModel.g">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.NumericalMethods.html#VeraGridEngine.Utils.NumericalMethods.MVRSM_mo_pareto.SurrogateModel.g">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">g</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>  <span class="c1"># change this to have the objective index in the argument   def g(self, x, obj_index):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Evaluates the surrogate model at `x`.</span>
 <span class="sd">        :param x: the decision variable values.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">phi</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">phi</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>  <span class="c1"># phi does not change with multiple obj.</span>
         <span class="c1"># ret = np.empty(self.n_obj, dtype=float)</span>
         <span class="c1"># for i in range(self.n_obj):</span>
@@ -372,10 +373,10 @@
 <div class="viewcode-block" id="SurrogateModel.g_jac">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.NumericalMethods.html#VeraGridEngine.Utils.NumericalMethods.MVRSM_mo_pareto.SurrogateModel.g_jac">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">g_jac</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>  <span class="c1"># change this to have the objective index in the argument   def g(self, x, obj_index):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Evaluates the Jacobian of the model at `x`.</span>
 <span class="sd">        :param x: the decision variable values.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">phi_prime</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">phi_deriv</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">scratch</span><span class="p">)</span>
         <span class="c1"># b = np.multiply(self.c[i,:], phi_prime, out=self.scratch)  # use c[obj_index]</span>
         <span class="n">b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">n_obj</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="p">))</span>
@@ -387,11 +388,11 @@
 <div class="viewcode-block" id="SurrogateModel.g_scalarize">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.NumericalMethods.html#VeraGridEngine.Utils.NumericalMethods.MVRSM_mo_pareto.SurrogateModel.g_scalarize">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">g_scalarize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">scalarization_weights</span><span class="p">:</span> <span class="n">Vec</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Evaluates the linear scalarization of multiple objectives.</span>
 <span class="sd">        :param x: the decision variable values</span>
 <span class="sd">        :param scalarization_weights: vector of size n_obj</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># single_obj = inner product between scalarization_weights and vector of g</span>
         <span class="c1"># or: single_obj = sum of scalarization_weights[obj_index]*g[obj_index]</span>
         <span class="c1"># return single_obj</span>
@@ -401,11 +402,11 @@
 <div class="viewcode-block" id="SurrogateModel.g_scalarize_max">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.NumericalMethods.html#VeraGridEngine.Utils.NumericalMethods.MVRSM_mo_pareto.SurrogateModel.g_scalarize_max">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">g_scalarize_max</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">scalarization_weights</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Evaluates the maximum or Tchebycheff scalarization of multiple objectives.</span>
 <span class="sd">        :param x: the decision variable values</span>
 <span class="sd">        :param scalarization_weights: vector of size n_obj</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># worst objective after multiplying with weight</span>
         <span class="n">mul</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">g</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">scalarization_weights</span><span class="p">)</span>
         <span class="n">j</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">mul</span><span class="p">)</span>
@@ -415,22 +416,22 @@
 <div class="viewcode-block" id="SurrogateModel.g_scalarize_jac">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.NumericalMethods.html#VeraGridEngine.Utils.NumericalMethods.MVRSM_mo_pareto.SurrogateModel.g_scalarize_jac">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">g_scalarize_jac</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">scalarization_weights</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Evaluates the Jacobian of the linear scalarization of multiple objectives.</span>
 <span class="sd">        :param x: the decision variable values</span>
 <span class="sd">        :param scalarization_weights: vector of size n_obj</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">scalarization_weights</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">g_jac</span><span class="p">(</span><span class="n">x</span><span class="p">))</span></div>
 
 
 <div class="viewcode-block" id="SurrogateModel.g_scalarize_max_jac">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.NumericalMethods.html#VeraGridEngine.Utils.NumericalMethods.MVRSM_mo_pareto.SurrogateModel.g_scalarize_max_jac">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">g_scalarize_max_jac</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">scalarization_weights</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Evaluates the Jacobian of the maximum or Tchebycheff scalarization of multiple objectives.</span>
 <span class="sd">        :param x: the decision variable values</span>
 <span class="sd">        :param scalarization_weights: vector of size n_obj</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">mul</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">g</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">scalarization_weights</span><span class="p">)</span>
         <span class="n">j</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">mul</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">g_jac</span><span class="p">(</span><span class="n">x</span><span class="p">)[</span><span class="n">j</span><span class="p">,</span> <span class="p">:]</span></div>
@@ -439,23 +440,23 @@
 <div class="viewcode-block" id="SurrogateModel.augmented_Tchebycheff">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.NumericalMethods.html#VeraGridEngine.Utils.NumericalMethods.MVRSM_mo_pareto.SurrogateModel.augmented_Tchebycheff">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">augmented_Tchebycheff</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">scalarization_weights</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Evaluates the augmented Tchebycheff scalarization of multiple objectives.</span>
 <span class="sd">        :param x: the decision variable values</span>
 <span class="sd">        :param scalarization_weights: vector of size n_obj</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># Augmented Tchebycheff scalarization from ``ParEGO: A Hybrid Algorithm With On-Line Landscape Approximation for Expensive Multiobjective Optimization Problems&#39;&#39;</span>
+<span class="sd">        """</span>
+        <span class="c1"># Augmented Tchebycheff scalarization from ``ParEGO: A Hybrid Algorithm With On-Line Landscape Approximation for Expensive Multiobjective Optimization Problems''</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">g_scalarize_max</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">scalarization_weights</span><span class="p">)</span> <span class="o">+</span> <span class="mf">0.05</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">g_scalarize</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">scalarization_weights</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="SurrogateModel.augmented_Tchebycheff_jac">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.NumericalMethods.html#VeraGridEngine.Utils.NumericalMethods.MVRSM_mo_pareto.SurrogateModel.augmented_Tchebycheff_jac">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">augmented_Tchebycheff_jac</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">scalarization_weights</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Evaluates the Jacobian of the augmented Tchebycheff scalarization of multiple objectives.</span>
 <span class="sd">        :param x: the decision variable values</span>
 <span class="sd">        :param scalarization_weights: vector of size n_obj</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">g_scalarize_max_jac</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">scalarization_weights</span><span class="p">)</span> <span class="o">+</span> <span class="mf">0.05</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">g_scalarize_jac</span><span class="p">(</span><span class="n">x</span><span class="p">,</span>
                                                                                                 <span class="n">scalarization_weights</span><span class="p">)</span></div>
 
@@ -463,12 +464,12 @@
 <div class="viewcode-block" id="SurrogateModel.minimum">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.NumericalMethods.html#VeraGridEngine.Utils.NumericalMethods.MVRSM_mo_pareto.SurrogateModel.minimum">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">minimum</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x0</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">scalarization_weights</span><span class="p">:</span> <span class="n">Vec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Find a minimum of the surrogate model approximately.</span>
 <span class="sd">        :param x0: the initial guess.</span>
 <span class="sd">        :param scalarization_weights: weights for the scalarization of multiple objectives</span>
 <span class="sd">        :return minimization evaluation and corresponding function values</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">scalarization_type</span> <span class="o">=</span> <span class="mi">2</span>  <span class="c1"># 0=linear, 1=max, 0.5 is a mix, 2 is augmented Tchebycheff.</span>
         <span class="c1"># max seems to capture the shape of nonconvex pareto front better (also according to theory)</span>
         <span class="c1"># but has worse performance</span>
@@ -477,54 +478,54 @@
 
         <span class="k">if</span> <span class="n">scalarization_type</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="c1"># with linear scalarization</span>
-            <span class="c1"># print(&#39;Using linear scalarization&#39;)</span>
-            <span class="n">res</span> <span class="o">=</span> <span class="n">minimize</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">g_scalarize</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">scalarization_weights</span><span class="p">,),</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;L-BFGS-B&#39;</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">,</span>
+            <span class="c1"># print('Using linear scalarization')</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="n">minimize</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">g_scalarize</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">scalarization_weights</span><span class="p">,),</span> <span class="n">method</span><span class="o">=</span><span class="s1">'L-BFGS-B'</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">,</span>
                            <span class="n">jac</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">g_scalarize_jac</span><span class="p">,</span>
-                           <span class="n">options</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;maxiter&#39;</span><span class="p">:</span> <span class="mi">20</span><span class="p">,</span> <span class="s1">&#39;maxfun&#39;</span><span class="p">:</span> <span class="mi">20</span><span class="p">})</span>
+                           <span class="n">options</span><span class="o">=</span><span class="p">{</span><span class="s1">'maxiter'</span><span class="p">:</span> <span class="mi">20</span><span class="p">,</span> <span class="s1">'maxfun'</span><span class="p">:</span> <span class="mi">20</span><span class="p">})</span>
             <span class="k">return</span> <span class="n">res</span><span class="o">.</span><span class="n">x</span>
         <span class="k">elif</span> <span class="n">scalarization_type</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
             <span class="c1"># with max scalarization</span>
             <span class="c1"># Similar to:</span>
             <span class="c1"># Golovin, Daniel and Qiuyi Zhang. “Random Hypervolume Scalarizations for</span>
             <span class="c1"># Provable Multi-Objective Black Box Optimization.” ArXiv abs/2006.04655 (2020): n. pag.</span>
-            <span class="c1"># print(&#39;Using max scalarization&#39;)</span>
-            <span class="n">res</span> <span class="o">=</span> <span class="n">minimize</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">g_scalarize_max</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">scalarization_weights</span><span class="p">,),</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;L-BFGS-B&#39;</span><span class="p">,</span>
+            <span class="c1"># print('Using max scalarization')</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="n">minimize</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">g_scalarize_max</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">scalarization_weights</span><span class="p">,),</span> <span class="n">method</span><span class="o">=</span><span class="s1">'L-BFGS-B'</span><span class="p">,</span>
                            <span class="n">bounds</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">,</span>
                            <span class="n">jac</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">g_scalarize_max_jac</span><span class="p">,</span>
-                           <span class="n">options</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;maxiter&#39;</span><span class="p">:</span> <span class="mi">20</span><span class="p">,</span> <span class="s1">&#39;maxfun&#39;</span><span class="p">:</span> <span class="mi">20</span><span class="p">})</span>
+                           <span class="n">options</span><span class="o">=</span><span class="p">{</span><span class="s1">'maxiter'</span><span class="p">:</span> <span class="mi">20</span><span class="p">,</span> <span class="s1">'maxfun'</span><span class="p">:</span> <span class="mi">20</span><span class="p">})</span>
             <span class="k">return</span> <span class="n">res</span><span class="o">.</span><span class="n">x</span>
         <span class="k">elif</span> <span class="n">scalarization_type</span> <span class="o">==</span> <span class="mf">0.5</span><span class="p">:</span>
             <span class="c1"># with mix scalarization</span>
             <span class="n">r</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span>
             <span class="k">if</span> <span class="n">r</span> <span class="o">&gt;</span> <span class="mf">0.5</span><span class="p">:</span>
-                <span class="c1"># print(&#39;Using mixed scalarization (now max)&#39;)</span>
-                <span class="n">res</span> <span class="o">=</span> <span class="n">minimize</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">g_scalarize_max</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">scalarization_weights</span><span class="p">,),</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;L-BFGS-B&#39;</span><span class="p">,</span>
+                <span class="c1"># print('Using mixed scalarization (now max)')</span>
+                <span class="n">res</span> <span class="o">=</span> <span class="n">minimize</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">g_scalarize_max</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">scalarization_weights</span><span class="p">,),</span> <span class="n">method</span><span class="o">=</span><span class="s1">'L-BFGS-B'</span><span class="p">,</span>
                                <span class="n">bounds</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">,</span>
                                <span class="n">jac</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">g_scalarize_max_jac</span><span class="p">,</span>
-                               <span class="n">options</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;maxiter&#39;</span><span class="p">:</span> <span class="mi">20</span><span class="p">,</span> <span class="s1">&#39;maxfun&#39;</span><span class="p">:</span> <span class="mi">20</span><span class="p">})</span>
+                               <span class="n">options</span><span class="o">=</span><span class="p">{</span><span class="s1">'maxiter'</span><span class="p">:</span> <span class="mi">20</span><span class="p">,</span> <span class="s1">'maxfun'</span><span class="p">:</span> <span class="mi">20</span><span class="p">})</span>
                 <span class="k">return</span> <span class="n">res</span><span class="o">.</span><span class="n">x</span>
             <span class="k">elif</span> <span class="n">r</span> <span class="o">&lt;=</span> <span class="mf">0.5</span><span class="p">:</span>
-                <span class="c1"># print(&#39;Using mixed scalarization (now linear)&#39;)</span>
-                <span class="n">res</span> <span class="o">=</span> <span class="n">minimize</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">g_scalarize</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">scalarization_weights</span><span class="p">,),</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;L-BFGS-B&#39;</span><span class="p">,</span>
+                <span class="c1"># print('Using mixed scalarization (now linear)')</span>
+                <span class="n">res</span> <span class="o">=</span> <span class="n">minimize</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">g_scalarize</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">scalarization_weights</span><span class="p">,),</span> <span class="n">method</span><span class="o">=</span><span class="s1">'L-BFGS-B'</span><span class="p">,</span>
                                <span class="n">bounds</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">,</span>
                                <span class="n">jac</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">g_scalarize_jac</span><span class="p">,</span>
-                               <span class="n">options</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;maxiter&#39;</span><span class="p">:</span> <span class="mi">20</span><span class="p">,</span> <span class="s1">&#39;maxfun&#39;</span><span class="p">:</span> <span class="mi">20</span><span class="p">})</span>
+                               <span class="n">options</span><span class="o">=</span><span class="p">{</span><span class="s1">'maxiter'</span><span class="p">:</span> <span class="mi">20</span><span class="p">,</span> <span class="s1">'maxfun'</span><span class="p">:</span> <span class="mi">20</span><span class="p">})</span>
                 <span class="k">return</span> <span class="n">res</span><span class="o">.</span><span class="n">x</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Warning: wrong random number generated&#39;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">'Warning: wrong random number generated'</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">scalarization_type</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
             <span class="c1"># with augmented Tchebycheff scalarization</span>
             <span class="c1"># (from ``ParEGO: A Hybrid Algorithm With On-Line Landscape Approximation for Expensive</span>
-            <span class="c1"># Multiobjective Optimization Problems&#39;&#39;)</span>
+            <span class="c1"># Multiobjective Optimization Problems'')</span>
             <span class="c1"># Warning: type 2 Augmented Tchebycheff is untested!!!</span>
-            <span class="c1"># print(&#39;Using augmented Tchebycheff scalarization&#39;)</span>
-            <span class="n">res</span> <span class="o">=</span> <span class="n">minimize</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">augmented_Tchebycheff</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">scalarization_weights</span><span class="p">,),</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;L-BFGS-B&#39;</span><span class="p">,</span>
+            <span class="c1"># print('Using augmented Tchebycheff scalarization')</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="n">minimize</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">augmented_Tchebycheff</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">scalarization_weights</span><span class="p">,),</span> <span class="n">method</span><span class="o">=</span><span class="s1">'L-BFGS-B'</span><span class="p">,</span>
                            <span class="n">bounds</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">,</span>
                            <span class="n">jac</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">augmented_Tchebycheff_jac</span><span class="p">,</span>
-                           <span class="n">options</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;maxiter&#39;</span><span class="p">:</span> <span class="mi">20</span><span class="p">,</span> <span class="s1">&#39;maxfun&#39;</span><span class="p">:</span> <span class="mi">20</span><span class="p">})</span>
+                           <span class="n">options</span><span class="o">=</span><span class="p">{</span><span class="s1">'maxiter'</span><span class="p">:</span> <span class="mi">20</span><span class="p">,</span> <span class="s1">'maxfun'</span><span class="p">:</span> <span class="mi">20</span><span class="p">})</span>
             <span class="k">return</span> <span class="n">res</span><span class="o">.</span><span class="n">x</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Warning: wrong scalarization chosen.&#39;</span><span class="p">)</span></div>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">'Warning: wrong scalarization chosen.'</span><span class="p">)</span></div>
 </div>
 
 
@@ -534,7 +535,7 @@
 <div class="viewcode-block" id="scale">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.NumericalMethods.html#VeraGridEngine.Utils.NumericalMethods.MVRSM_mo_pareto.scale">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">scale</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">y0</span><span class="p">,</span> <span class="n">scale_threshold</span><span class="o">=</span><span class="mf">1e-8</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    # normalize: do this for every objective so that all objectives are more or less in the same range</span>
 <span class="sd">    Scale the objective with respect to the initial objective value,</span>
 <span class="sd">    causing the optimum to lie below zero. This helps exploration and</span>
@@ -542,7 +543,7 @@
 <span class="sd">    :param y: the objective function value.</span>
 <span class="sd">    :param y0: the initial objective function value, `y(x0)`.</span>
 <span class="sd">    :param scale_threshold: value under which no scaling is done</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
     <span class="n">y0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">y0</span><span class="p">)</span>
     <span class="n">y0</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">y0</span><span class="p">)</span>
@@ -558,13 +559,13 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.NumericalMethods.html#VeraGridEngine.Utils.NumericalMethods.MVRSM_mo_pareto.inv_scale">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">inv_scale</span><span class="p">(</span><span class="n">y_scaled</span><span class="p">,</span> <span class="n">y0</span><span class="p">,</span>
               <span class="n">scale_threshold</span><span class="o">=</span><span class="mf">1e-8</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Computes the inverse function of `scale(y, y0)`.</span>
 <span class="sd">    :param y_scaled: the scaled objective function value.</span>
 <span class="sd">    :param y0: the initial objective function value, `y(x0)`.</span>
 <span class="sd">    :param scale_threshold: value under which no scaling is done</span>
 <span class="sd">    :return: the value `y` such that `scale(y, y0) = y_scaled`.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">y0</span><span class="p">)):</span>
         <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">y0</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">&gt;</span> <span class="n">scale_threshold</span><span class="p">:</span>
             <span class="n">y_scaled</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">y0</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
@@ -575,11 +576,11 @@
 <div class="viewcode-block" id="get_norm_factors">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.NumericalMethods.html#VeraGridEngine.Utils.NumericalMethods.MVRSM_mo_pareto.get_norm_factors">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_norm_factors</span><span class="p">(</span><span class="n">scaling_values</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Computes the factors used to normalize objective function criteria..</span>
 <span class="sd">    :param scaling_values: Array with all the criteria obtained during random evaluation process.</span>
 <span class="sd">    :return: Tuple of arrays where 1st array is maximum values of y and second minimum values.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">terms_max</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">scaling_values</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
     <span class="n">terms_min</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">scaling_values</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 
@@ -590,12 +591,12 @@
 <div class="viewcode-block" id="normalize_md">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.NumericalMethods.html#VeraGridEngine.Utils.NumericalMethods.MVRSM_mo_pareto.normalize_md">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">normalize_md</span><span class="p">(</span><span class="n">y_no_normalized</span><span class="p">,</span> <span class="n">norm_factors</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Computes the normalization of y_no_normalized --&gt; y_normalized=(y_no_normalized-y_min)/(y_max-y_min).</span>
 <span class="sd">    :param y_no_normalized: The no normalized objective function values: np.array.shape[1]=f_obj_dim.</span>
 <span class="sd">    :param norm_factors: Tuple of arrays where 1st array is maximum values of y and second minimum values.</span>
 <span class="sd">    :return: the value `y_normalized` such that `normalize_md(y_no_normalized, y0) = y_normalized`.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">max_min</span> <span class="o">=</span> <span class="n">norm_factors</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">norm_factors</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
     <span class="n">max_min</span><span class="p">[</span><span class="n">max_min</span> <span class="o">==</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
 
@@ -606,12 +607,12 @@
 <div class="viewcode-block" id="inv_normalize_md">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.NumericalMethods.html#VeraGridEngine.Utils.NumericalMethods.MVRSM_mo_pareto.inv_normalize_md">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">inv_normalize_md</span><span class="p">(</span><span class="n">y_normalized</span><span class="p">,</span> <span class="n">norm_factors</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Computes the inverse of normalize_md(y_no_normalized, norm_factors).</span>
 <span class="sd">    :param y_normalized: The normalized objective function values: np.array.shape[1]=f_obj_dim.</span>
 <span class="sd">    :param norm_factors: Tuple of arrays where 1st array is maximum values of y and second minimum values.</span>
 <span class="sd">    :return: the value `y_no_normalized` such that `inv_normalize_md(y_normalized, y0) = y_no_normalized`.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">max_min</span> <span class="o">=</span> <span class="n">norm_factors</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">norm_factors</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
 
@@ -631,7 +632,7 @@
                     <span class="n">rand_evals</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
                     <span class="n">args</span><span class="o">=</span><span class="p">(),</span>
                     <span class="n">cancel_checker</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="nb">bool</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    MVRSM algorithm for multiple objectives</span>
 <span class="sd">    x = [integer vars | float vars]</span>
 <span class="sd">    :param obj_func: objective function</span>
@@ -645,7 +646,7 @@
 <span class="sd">    :param args: extra arguments to be passed to obj_func apart from x</span>
 <span class="sd">    :param cancel_checker: Optional cancellation check.</span>
 <span class="sd">    :return: pareto front y, pareto front x, all y not sorted</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">d</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">x0</span><span class="p">)</span>  <span class="c1"># number of decision variables</span>
 
     <span class="k">if</span> <span class="n">max_evals</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
@@ -724,7 +725,7 @@
     <span class="c1"># Update the model with the normalized random evaluation points</span>
     <span class="k">for</span> <span class="n">rand_it</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">objectives_normalized</span><span class="p">)):</span>
         <span class="n">model</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">x_population</span><span class="p">[</span><span class="n">rand_it</span><span class="p">],</span> <span class="n">y</span><span class="o">=</span><span class="n">objectives_normalized</span><span class="p">[</span><span class="n">rand_it</span><span class="p">])</span>
-        <span class="c1"># print(f&quot;Time to update model: {e_time - st_time}&quot;)</span>
+        <span class="c1"># print(f"Time to update model: {e_time - st_time}")</span>
 
     <span class="c1"># Iteratively evaluate the objective, update the model, find the minimum of the model,</span>
     <span class="c1"># and explore the search space.</span>
@@ -737,7 +738,7 @@
             <span class="n">x</span> <span class="o">=</span> <span class="n">next_x</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
             <span class="n">y</span> <span class="o">=</span> <span class="n">obj_func</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">)</span>
 
-            <span class="c1"># Store the solution in the population at the position &quot;i&quot;</span>
+            <span class="c1"># Store the solution in the population at the position "i"</span>
             <span class="n">y_population</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">y</span>
             <span class="n">x_population</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">x</span>
             <span class="n">actual_evals</span> <span class="o">+=</span> <span class="mi">1</span>
@@ -747,7 +748,7 @@
 
             <span class="n">model</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">y_normalized</span><span class="p">)</span>
         <span class="c1"># e_time = time.time()</span>
-        <span class="c1"># print(f&quot;Time to update model: {e_time - st_time}&quot;)</span>
+        <span class="c1"># print(f"Time to update model: {e_time - st_time}")</span>
 
         <span class="c1"># Keep track of Pareto front</span>
         <span class="c1"># Note: Should actually do this for the random evaluations too</span>
@@ -781,23 +782,23 @@
                             <span class="c1"># Situation B: pp dominated by y</span>
                             <span class="k">if</span> <span class="n">diff</span> <span class="o">&gt;</span> <span class="n">TOL</span><span class="p">:</span>
                                 <span class="n">y_dominates_pp</span> <span class="o">+=</span> <span class="mi">1</span>
-                        <span class="c1"># print(&#39;pp_dominates_y&#39;, pp_dominates_y)</span>
-                        <span class="c1"># print(&#39;y_dominates_pp&#39;, y_dominates_pp)</span>
+                        <span class="c1"># print('pp_dominates_y', pp_dominates_y)</span>
+                        <span class="c1"># print('y_dominates_pp', y_dominates_pp)</span>
                         <span class="c1"># Situation A: y is dominated by pp</span>
                         <span class="k">if</span> <span class="n">pp_dominates_y</span> <span class="o">&gt;=</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">y_dominates_pp</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                            <span class="c1"># keep list the same, and don&#39;t add y</span>
+                            <span class="c1"># keep list the same, and don't add y</span>
                             <span class="c1"># y is dominated by pp so stop checking other pp</span>
                             <span class="n">y_is_dominated</span> <span class="o">=</span> <span class="mi">1</span>
-                            <span class="c1"># print(&#39;A&#39;)</span>
+                            <span class="c1"># print('A')</span>
                             <span class="k">break</span>
 
                         <span class="c1"># Situation B: pp dominated by y</span>
                         <span class="k">if</span> <span class="n">y_dominates_pp</span> <span class="o">&gt;=</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">pp_dominates_y</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
                             <span class="n">pp_to_remove</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pp</span><span class="p">)</span>
-                            <span class="c1"># print(&#39;B&#39;)</span>
+                            <span class="c1"># print('B')</span>
                     <span class="k">for</span> <span class="n">pp</span> <span class="ow">in</span> <span class="n">pp_to_remove</span><span class="p">:</span>
                         <span class="n">Pareto_index</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">pp</span><span class="p">)</span>
-                    <span class="c1"># Situation C: pp and y don&#39;t dominate each other, for every pp --&gt; y is then Pareto optimal</span>
+                    <span class="c1"># Situation C: pp and y don't dominate each other, for every pp --&gt; y is then Pareto optimal</span>
                     <span class="k">if</span> <span class="n">y_is_dominated</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
                         <span class="n">Pareto_index</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
 
@@ -824,7 +825,7 @@
             <span class="c1"># st_time = time.time()</span>
             <span class="n">next_x</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">x0</span><span class="o">=</span><span class="n">best_x</span><span class="p">,</span> <span class="n">scalarization_weights</span><span class="o">=</span><span class="n">scalarization_weights</span><span class="p">)</span>
             <span class="c1"># e_time = time.time()</span>
-            <span class="c1"># print(f&quot;Time to find minimum: {e_time - st_time}&quot;)</span>
+            <span class="c1"># print(f"Time to find minimum: {e_time - st_time}")</span>
             <span class="c1"># Round discrete variables to the nearest integer.</span>
             <span class="n">next_x</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">num_int</span><span class="p">]</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">out</span><span class="o">=</span><span class="n">next_x</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">num_int</span><span class="p">])</span>
 

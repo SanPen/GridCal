@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Simulations.Topology.topology_reduction_driver &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Simulations.Topology.topology_reduction_driver &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/license.html">📜 License</a></li>
@@ -118,20 +119,20 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.enumerations</span><span class="w"> </span><span class="kn">import</span> <span class="n">SimulationTypes</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Simulations.driver_template</span><span class="w"> </span><span class="kn">import</span> <span class="n">DriverTemplate</span>
 
-<span class="n">pd</span><span class="o">.</span><span class="n">set_option</span><span class="p">(</span><span class="s1">&#39;display.max_rows&#39;</span><span class="p">,</span> <span class="mi">500</span><span class="p">)</span>
-<span class="n">pd</span><span class="o">.</span><span class="n">set_option</span><span class="p">(</span><span class="s1">&#39;display.max_columns&#39;</span><span class="p">,</span> <span class="mi">500</span><span class="p">)</span>
-<span class="n">pd</span><span class="o">.</span><span class="n">set_option</span><span class="p">(</span><span class="s1">&#39;display.width&#39;</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span>
+<span class="n">pd</span><span class="o">.</span><span class="n">set_option</span><span class="p">(</span><span class="s1">'display.max_rows'</span><span class="p">,</span> <span class="mi">500</span><span class="p">)</span>
+<span class="n">pd</span><span class="o">.</span><span class="n">set_option</span><span class="p">(</span><span class="s1">'display.max_columns'</span><span class="p">,</span> <span class="mi">500</span><span class="p">)</span>
+<span class="n">pd</span><span class="o">.</span><span class="n">set_option</span><span class="p">(</span><span class="s1">'display.width'</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="get_branches_of_bus">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.Topology.html#VeraGridEngine.Simulations.Topology.topology_reduction_driver.get_branches_of_bus">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_branches_of_bus</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">j</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Get the indices of the Branches connected to the bus j</span>
 <span class="sd">    :param B: Branch-bus CSC matrix</span>
 <span class="sd">    :param j: bus index</span>
 <span class="sd">    :return: list of Branches in the bus</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="p">[</span><span class="n">B</span><span class="o">.</span><span class="n">indices</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">B</span><span class="o">.</span><span class="n">indptr</span><span class="p">[</span><span class="n">j</span><span class="p">],</span> <span class="n">B</span><span class="o">.</span><span class="n">indptr</span><span class="p">[</span><span class="n">j</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])]</span></div>
 
 
@@ -140,14 +141,14 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.Topology.html#VeraGridEngine.Simulations.Topology.topology_reduction_driver.select_branches_to_reduce">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">select_branches_to_reduce</span><span class="p">(</span><span class="n">circuit</span><span class="p">:</span> <span class="n">MultiCircuit</span><span class="p">,</span> <span class="n">rx_criteria</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">rx_threshold</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">,</span>
                               <span class="n">selected_types</span><span class="o">=</span><span class="n">BranchType</span><span class="o">.</span><span class="n">Branch</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Find Branches to delete</span>
 <span class="sd">    Args:</span>
 <span class="sd">        circuit: Circuit to modify in-place</span>
 <span class="sd">        rx_criteria: use the r+x threshold to select Branches?</span>
 <span class="sd">        rx_threshold: r+x threshold</span>
 <span class="sd">        selected_types: branch types to select</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">branches_to_remove_idx</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
     <span class="n">branches</span> <span class="o">=</span> <span class="n">circuit</span><span class="o">.</span><span class="n">get_branches</span><span class="p">()</span>
@@ -164,7 +165,7 @@
 
                 <span class="c1"># if the r+x criteria is met, add it</span>
                 <span class="k">if</span> <span class="n">rx</span> <span class="o">&lt;</span> <span class="n">rx_threshold</span><span class="p">:</span>
-                    <span class="nb">print</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="s1">&#39;-&gt;&#39;</span><span class="p">,</span> <span class="n">rx</span><span class="p">,</span> <span class="s1">&#39;&lt;&#39;</span><span class="p">,</span> <span class="n">rx_threshold</span><span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="s1">'-&gt;'</span><span class="p">,</span> <span class="n">rx</span><span class="p">,</span> <span class="s1">'&lt;'</span><span class="p">,</span> <span class="n">rx_threshold</span><span class="p">)</span>
                     <span class="n">branches_to_remove_idx</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
 
             <span class="k">elif</span> <span class="n">branches</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">branch_type</span> <span class="o">==</span> <span class="n">BranchType</span><span class="o">.</span><span class="n">Switch</span><span class="p">:</span>
@@ -183,7 +184,7 @@
 <div class="viewcode-block" id="reduce_grid_brute">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.Topology.html#VeraGridEngine.Simulations.Topology.topology_reduction_driver.reduce_grid_brute">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">reduce_grid_brute</span><span class="p">(</span><span class="n">circuit</span><span class="p">:</span> <span class="n">MultiCircuit</span><span class="p">,</span> <span class="n">removed_br_idx</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Remove the first branch found to be removed.</span>
 <span class="sd">    this function is meant to be called until it returns false</span>
 <span class="sd">    Args:</span>
@@ -191,7 +192,7 @@
 <span class="sd">        removed_br_idx: branch index</span>
 
 <span class="sd">    Returns: Nothing</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="c1"># form C</span>
     <span class="n">m</span> <span class="o">=</span> <span class="n">circuit</span><span class="o">.</span><span class="n">get_branch_number</span><span class="p">(</span><span class="n">add_vsc</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
@@ -255,11 +256,11 @@
         <span class="c1"># delete_with_dialogue bus</span>
         <span class="n">removed_bus</span> <span class="o">=</span> <span class="n">circuit</span><span class="o">.</span><span class="n">buses</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
 
-        <span class="c1"># delete the branch and that&#39;s it</span>
+        <span class="c1"># delete the branch and that's it</span>
         <span class="n">removed_branch</span> <span class="o">=</span> <span class="n">branches</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">removed_br_idx</span><span class="p">)</span>
 
     <span class="k">else</span><span class="p">:</span>
-        <span class="c1"># delete the branch and that&#39;s it</span>
+        <span class="c1"># delete the branch and that's it</span>
         <span class="n">removed_branch</span> <span class="o">=</span> <span class="n">branches</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">removed_br_idx</span><span class="p">)</span>
         <span class="n">removed_bus</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="n">updated_bus</span> <span class="o">=</span> <span class="kc">None</span>
@@ -272,7 +273,7 @@
 <div class="viewcode-block" id="reduce_buses">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.Topology.html#VeraGridEngine.Simulations.Topology.topology_reduction_driver.reduce_buses">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">reduce_buses</span><span class="p">(</span><span class="n">circuit</span><span class="p">:</span> <span class="n">MultiCircuit</span><span class="p">,</span> <span class="n">buses_to_reduce</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Bus</span><span class="p">],</span> <span class="n">text_func</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">prog_func</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Reduce the uses in the grid</span>
 <span class="sd">    This function removes the buses but whenever a bus is removed, the devices connected to it</span>
 <span class="sd">    are inherited by the bus of higher voltage that is connected.</span>
@@ -282,10 +283,10 @@
 <span class="sd">    :param text_func:</span>
 <span class="sd">    :param prog_func:</span>
 <span class="sd">    :return: Nothing</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">if</span> <span class="n">text_func</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">text_func</span><span class="p">(</span><span class="s1">&#39;Removing and merging buses...&#39;</span><span class="p">)</span>
+        <span class="n">text_func</span><span class="p">(</span><span class="s1">'Removing and merging buses...'</span><span class="p">)</span>
 
     <span class="c1"># create dictionary of bus relationships</span>
     <span class="n">bus_bus</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
@@ -294,13 +295,13 @@
         <span class="n">f</span> <span class="o">=</span> <span class="n">branch</span><span class="o">.</span><span class="n">bus_from</span>
         <span class="n">t</span> <span class="o">=</span> <span class="n">branch</span><span class="o">.</span><span class="n">bus_to</span>
 
-        <span class="c1"># add that &quot;t&quot; is related to &quot;f&quot;</span>
+        <span class="c1"># add that "t" is related to "f"</span>
         <span class="k">if</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">bus_bus</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
             <span class="n">bus_bus</span><span class="p">[</span><span class="n">f</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">bus_bus</span><span class="p">[</span><span class="n">f</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">t</span><span class="p">]</span>
 
-        <span class="c1"># add that &quot;f&quot; is related to &quot;t&quot;</span>
+        <span class="c1"># add that "f" is related to "t"</span>
         <span class="k">if</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">bus_bus</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
             <span class="n">bus_bus</span><span class="p">[</span><span class="n">t</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
@@ -325,7 +326,7 @@
                     <span class="n">selected</span> <span class="o">=</span> <span class="n">related_buses</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
 
                 <span class="c1"># merge the bus with the selected one</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Assigning&#39;</span><span class="p">,</span> <span class="n">bus</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s1">&#39;to&#39;</span><span class="p">,</span> <span class="n">selected</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">'Assigning'</span><span class="p">,</span> <span class="n">bus</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s1">'to'</span><span class="p">,</span> <span class="n">selected</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
                 <span class="n">circuit</span><span class="o">.</span><span class="n">merge_buses</span><span class="p">(</span><span class="n">bus1</span><span class="o">=</span><span class="n">selected</span><span class="p">,</span> <span class="n">bus2</span><span class="o">=</span><span class="n">bus</span><span class="p">)</span>
 
                 <span class="c1"># remember the buses that keep the devices</span>
@@ -343,7 +344,7 @@
             <span class="n">circuit</span><span class="o">.</span><span class="n">delete_bus</span><span class="p">(</span><span class="n">bus</span><span class="p">,</span> <span class="n">delete_associated</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">text_func</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">text_func</span><span class="p">(</span><span class="s1">&#39;Removing &#39;</span> <span class="o">+</span> <span class="n">bus</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s1">&#39;...&#39;</span><span class="p">)</span>
+            <span class="n">text_func</span><span class="p">(</span><span class="s1">'Removing '</span> <span class="o">+</span> <span class="n">bus</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s1">'...'</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">prog_func</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">prog_func</span><span class="p">((</span><span class="n">k</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="n">total</span> <span class="o">*</span> <span class="mf">100.0</span><span class="p">)</span>
@@ -355,22 +356,22 @@
 <div class="viewcode-block" id="TopologyReductionOptions">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.Topology.html#VeraGridEngine.Simulations.Topology.topology_reduction_driver.TopologyReductionOptions">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">TopologyReductionOptions</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    TopologyReductionOptions</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;rx_criteria&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;rx_threshold&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;selected_type&quot;</span><span class="p">,</span>
+        <span class="s2">"rx_criteria"</span><span class="p">,</span>
+        <span class="s2">"rx_threshold"</span><span class="p">,</span>
+        <span class="s2">"selected_type"</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rx_criteria</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">rx_threshold</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">,</span> <span class="n">selected_types</span><span class="o">=</span><span class="n">BranchType</span><span class="o">.</span><span class="n">Branch</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Topology reduction options</span>
 <span class="sd">        :param rx_criteria:</span>
 <span class="sd">        :param rx_threshold:</span>
 <span class="sd">        :param selected_types:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">rx_criteria</span> <span class="o">=</span> <span class="n">rx_criteria</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">rx_threshold</span> <span class="o">=</span> <span class="n">rx_threshold</span>
@@ -381,16 +382,16 @@
 <div class="viewcode-block" id="TopologyReduction">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.Topology.html#VeraGridEngine.Simulations.Topology.topology_reduction_driver.TopologyReduction">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">TopologyReduction</span><span class="p">(</span><span class="n">DriverTemplate</span><span class="p">):</span>
-    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;br_to_remove&quot;</span><span class="p">,)</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"br_to_remove"</span><span class="p">,)</span>
 
     <span class="n">tpe</span> <span class="o">=</span> <span class="n">SimulationTypes</span><span class="o">.</span><span class="n">TopologyReduction_run</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">grid</span><span class="p">:</span> <span class="n">MultiCircuit</span><span class="p">,</span> <span class="n">branch_indices</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Topology reduction driver</span>
 <span class="sd">        :param grid: MultiCircuit instance</span>
 <span class="sd">        :param branch_indices: indices of branches to reduce</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">DriverTemplate</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">grid</span><span class="o">=</span><span class="n">grid</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">br_to_remove</span> <span class="o">=</span> <span class="n">branch_indices</span>
@@ -400,14 +401,14 @@
 <div class="viewcode-block" id="TopologyReduction.run">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.Topology.html#VeraGridEngine.Simulations.Topology.topology_reduction_driver.TopologyReduction.run">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Run the monte carlo simulation</span>
 <span class="sd">        @return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">tic</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s2">&quot;Compiling and configuring...&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s2">"Compiling and configuring..."</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">report_progress</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s1">&#39;Detecting which Branches to delete...&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s1">'Detecting which Branches to delete...'</span><span class="p">)</span>
 
         <span class="c1"># sort the Branches in reverse order</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">br_to_remove</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -421,7 +422,7 @@
                                                                                            <span class="n">removed_br_idx</span><span class="o">=</span><span class="n">br_idx</span><span class="p">)</span>
 
             <span class="c1"># display progress</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s1">&#39;Removed branch &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">br_idx</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;: &#39;</span> <span class="o">+</span> <span class="n">removed_branch</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s1">'Removed branch '</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">br_idx</span><span class="p">)</span> <span class="o">+</span> <span class="s1">': '</span> <span class="o">+</span> <span class="n">removed_branch</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">report_progress2</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">total</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">toc</span><span class="p">()</span></div>
@@ -430,11 +431,11 @@
 <div class="viewcode-block" id="TopologyReduction.cancel">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.Topology.html#VeraGridEngine.Simulations.Topology.topology_reduction_driver.TopologyReduction.cancel">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">cancel</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Cancel the simulation</span>
 
 <span class="sd">        :return: None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__cancel__</span> <span class="o">=</span> <span class="kc">True</span></div>
 </div>
 
@@ -444,18 +445,18 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.Topology.html#VeraGridEngine.Simulations.Topology.topology_reduction_driver.DeleteAndReduce">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">DeleteAndReduce</span><span class="p">(</span><span class="n">DriverTemplate</span><span class="p">):</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;objects&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;sel_idx&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;buses_merged&quot;</span><span class="p">,</span>
+        <span class="s2">"objects"</span><span class="p">,</span>
+        <span class="s2">"sel_idx"</span><span class="p">,</span>
+        <span class="s2">"buses_merged"</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">grid</span><span class="p">:</span> <span class="n">MultiCircuit</span><span class="p">,</span> <span class="n">objects</span><span class="p">,</span> <span class="n">sel_idx</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :param grid:</span>
 <span class="sd">        :param objects: list of objects to reduce (buses in this cases)</span>
 <span class="sd">        :param sel_idx: indices</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">DriverTemplate</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">grid</span><span class="o">=</span><span class="n">grid</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">objects</span> <span class="o">=</span> <span class="n">objects</span>
@@ -469,15 +470,15 @@
 <div class="viewcode-block" id="DeleteAndReduce.run">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.Topology.html#VeraGridEngine.Simulations.Topology.topology_reduction_driver.DeleteAndReduce.run">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Run the monte carlo simulation</span>
 <span class="sd">        @return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">tic</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s2">&quot;Compiling and configuring...&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s2">"Compiling and configuring..."</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_is_running</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">report_progress</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s1">&#39;Detecting which Branches to delete...&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s1">'Detecting which Branches to delete...'</span><span class="p">)</span>
 
         <span class="c1"># get the selected buses</span>
         <span class="n">buses</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">objects</span><span class="p">[</span><span class="n">idx</span><span class="o">.</span><span class="n">row</span><span class="p">()]</span> <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">sel_idx</span><span class="p">]</span>
@@ -497,11 +498,11 @@
 <div class="viewcode-block" id="DeleteAndReduce.cancel">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.Topology.html#VeraGridEngine.Simulations.Topology.topology_reduction_driver.DeleteAndReduce.cancel">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">cancel</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Cancel the simulation</span>
 
 <span class="sd">        :return: None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__cancel__</span> <span class="o">=</span> <span class="kc">True</span></div>
 
 

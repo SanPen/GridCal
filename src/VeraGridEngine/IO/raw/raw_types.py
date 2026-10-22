@@ -7,6 +7,14 @@ Aggregate RAW object typing aliases across supported PSSE versions.
 """
 
 from typing import TypeAlias
+from VeraGridEngine.IO.raw.versioned.base.sub import RawSub
+from VeraGridEngine.IO.raw.versioned.base.mon import RawMon
+from VeraGridEngine.IO.raw.versioned.base.con_ import RawCon
+from VeraGridEngine.IO.raw.versioned.base.dyr import RawDyr
+from VeraGridEngine.IO.raw.versioned.base.seq import RawSeq
+from VeraGridEngine.IO.raw.versioned.base.rop import RawRop
+from VeraGridEngine.IO.raw.versioned.base.gcp import RawGcp
+from VeraGridEngine.IO.raw.versioned.base.loc import RawLoc
 
 from VeraGridEngine.IO.raw.versioned.v29.area import RawAreaV29
 from VeraGridEngine.IO.raw.versioned.v29.zone import RawZoneV29
@@ -203,3 +211,6 @@ RawEquipmentTerminalLike: TypeAlias = RawEquipmentTerminalV34 | RawEquipmentTerm
 RawGneDeviceLike: TypeAlias = RawGneDeviceV29 | RawGneDeviceV30 | RawGneDeviceV31 | RawGneDeviceV32 | RawGneDeviceV33 | RawGneDeviceV34 | RawGneDeviceV35 | RawGneDeviceV36
 RawImpedanceCorrectionTableLike: TypeAlias = RawImpedanceCorrectionTableV29 | RawImpedanceCorrectionTableV30 | RawImpedanceCorrectionTableV31 | RawImpedanceCorrectionTableV32 | RawImpedanceCorrectionTableV33 | RawImpedanceCorrectionTableV34 | RawImpedanceCorrectionTableV35 | RawImpedanceCorrectionTableV36
 RawMultiLineSectionLike: TypeAlias = RawMultiLineSectionV29 | RawMultiLineSectionV30 | RawMultiLineSectionV31 | RawMultiLineSectionV32 | RawMultiLineSectionV33 | RawMultiLineSectionV34 | RawMultiLineSectionV35 | RawMultiLineSectionV36
+
+# Concrete v33-v36 documents inherit these bases and retain their own grammar.
+PsseAuxiliaryDocument: TypeAlias = RawSub | RawMon | RawCon | RawDyr | RawSeq | RawRop | RawGcp | RawLoc

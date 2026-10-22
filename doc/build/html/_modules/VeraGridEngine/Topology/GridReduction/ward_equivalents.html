@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Topology.GridReduction.ward_equivalents &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Topology.GridReduction.ward_equivalents &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/license.html">📜 License</a></li>
@@ -126,12 +127,12 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Topology.GridReduction.html#VeraGridEngine.Topology.GridReduction.ward_equivalents.get_reduction_sets_1">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_reduction_sets_1</span><span class="p">(</span><span class="n">nc</span><span class="p">:</span> <span class="n">NumericalCircuit</span><span class="p">,</span>
                          <span class="n">reduction_bus_indices</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">IntVec</span><span class="p">,</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">IntVec</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Generate the set of bus indices for grid reduction</span>
 <span class="sd">    :param nc: NumericalCircuit</span>
 <span class="sd">    :param reduction_bus_indices: array of bus indices to reduce (external set)</span>
 <span class="sd">    :return: external, boundary, internal, boundary_branches</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">external_set</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">reduction_bus_indices</span><span class="p">)</span>
     <span class="n">boundary_set</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
@@ -185,7 +186,7 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">ward_standard_reduction</span><span class="p">(</span><span class="n">grid</span><span class="p">:</span> <span class="n">MultiCircuit</span><span class="p">,</span>
                            <span class="n">reduction_bus_indices</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span>
                            <span class="n">V0</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">MultiCircuit</span><span class="p">,</span> <span class="n">Logger</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Ward standard reduction according to:</span>
 <span class="sd">    REVIEW OF THE WARD CLASS OF EXTERNAL EQUIVALENTS FOR POWER SYSTEMS</span>
 <span class="sd">    by J.W. Bandler, M.A. El-Kady and G. Centkowski, October 1983</span>
@@ -193,7 +194,7 @@
 <span class="sd">    :param reduction_bus_indices: Indices of the buses to reduce</span>
 <span class="sd">    :param V0: Initial power flow voltages</span>
 <span class="sd">    :return: Modified (in-place) MultiCircuit</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">logger</span> <span class="o">=</span> <span class="n">Logger</span><span class="p">()</span>
 
     <span class="n">nc</span> <span class="o">=</span> <span class="n">compile_numerical_circuit_at</span><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="n">t_idx</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
@@ -209,15 +210,15 @@
     <span class="n">nb</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">b_buses</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">ne</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">&quot;Nothing to reduce&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">"Nothing to reduce"</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">grid</span><span class="p">,</span> <span class="n">logger</span>
 
     <span class="k">if</span> <span class="n">ni</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">&quot;Nothing to keep (null grid as a result)&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">"Nothing to keep (null grid as a result)"</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">grid</span><span class="p">,</span> <span class="n">logger</span>
 
     <span class="k">if</span> <span class="n">nb</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">&quot;The reducible and non reducible sets are disjoint and cannot be reduced&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">"The reducible and non reducible sets are disjoint and cannot be reduced"</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">grid</span><span class="p">,</span> <span class="n">logger</span>
 
     <span class="c1"># Get the admittance matrix, contains the shunts at the diagonal</span>
@@ -257,7 +258,7 @@
         <span class="n">yeq_row_i</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="n">ysh</span> <span class="o">=</span> <span class="n">Yeq</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">yeq_row_i</span><span class="p">)</span>
         <span class="n">grid</span><span class="o">.</span><span class="n">add_shunt</span><span class="p">(</span><span class="n">bus</span><span class="o">=</span><span class="n">bus</span><span class="p">,</span>
-                       <span class="n">api_obj</span><span class="o">=</span><span class="n">dev</span><span class="o">.</span><span class="n">Shunt</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Equivalent shunt </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                       <span class="n">api_obj</span><span class="o">=</span><span class="n">dev</span><span class="o">.</span><span class="n">Shunt</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">"Equivalent shunt </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
                                          <span class="n">B</span><span class="o">=</span><span class="n">ysh</span><span class="o">.</span><span class="n">imag</span><span class="p">,</span> <span class="n">G</span><span class="o">=</span><span class="n">ysh</span><span class="o">.</span><span class="n">real</span><span class="p">))</span>
 
         <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span><span class="p">):</span>
@@ -272,7 +273,7 @@
                     <span class="n">z</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="n">Yeq</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span>
 
                     <span class="n">grid</span><span class="o">.</span><span class="n">add_series_reactance</span><span class="p">(</span><span class="n">obj</span><span class="o">=</span><span class="n">dev</span><span class="o">.</span><span class="n">SeriesReactance</span><span class="p">(</span>
-                        <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Equivalent boundary impedance </span><span class="si">{</span><span class="n">b_buses</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">b_buses</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                        <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">"Equivalent boundary impedance </span><span class="si">{</span><span class="n">b_buses</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">b_buses</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
                         <span class="n">bus_from</span><span class="o">=</span><span class="n">grid</span><span class="o">.</span><span class="n">buses</span><span class="p">[</span><span class="n">f</span><span class="p">],</span>
                         <span class="n">bus_to</span><span class="o">=</span><span class="n">grid</span><span class="o">.</span><span class="n">buses</span><span class="p">[</span><span class="n">t</span><span class="p">],</span>
                         <span class="n">r</span><span class="o">=</span><span class="n">z</span><span class="o">.</span><span class="n">real</span><span class="p">,</span>
@@ -280,8 +281,8 @@
                         <span class="n">rate</span><span class="o">=</span><span class="mf">9999.0</span>
                     <span class="p">))</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Impedance between buses </span><span class="si">{</span><span class="n">f</span><span class="si">}</span><span class="s2"> and </span><span class="si">{</span><span class="n">t</span><span class="si">}</span><span class="s2"> is too small, </span><span class="se">\</span>
-<span class="s2">                                       skipping the boundary series reactance&quot;</span><span class="p">)</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="sa">f</span><span class="s2">"Impedance between buses </span><span class="si">{</span><span class="n">f</span><span class="si">}</span><span class="s2"> and </span><span class="si">{</span><span class="n">t</span><span class="si">}</span><span class="s2"> is too small, </span><span class="se">\</span>
+<span class="s2">                                       skipping the boundary series reactance"</span><span class="p">)</span>
 
     <span class="c1"># ----------------------------------------------------------------------</span>
     <span class="c1"># Add equivalent loads at the boundary</span>
@@ -290,7 +291,7 @@
     <span class="c1"># add loads</span>
     <span class="k">for</span> <span class="n">ib</span><span class="p">,</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">b_buses</span><span class="p">):</span>
         <span class="n">grid</span><span class="o">.</span><span class="n">add_load</span><span class="p">(</span><span class="n">bus</span><span class="o">=</span><span class="n">grid</span><span class="o">.</span><span class="n">buses</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
-                      <span class="n">api_obj</span><span class="o">=</span><span class="n">dev</span><span class="o">.</span><span class="n">Load</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;compensation </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">P</span><span class="o">=</span><span class="n">Seq</span><span class="p">[</span><span class="n">ib</span><span class="p">]</span><span class="o">.</span><span class="n">real</span><span class="p">,</span> <span class="n">Q</span><span class="o">=</span><span class="n">Seq</span><span class="p">[</span><span class="n">ib</span><span class="p">]</span><span class="o">.</span><span class="n">imag</span><span class="p">))</span>
+                      <span class="n">api_obj</span><span class="o">=</span><span class="n">dev</span><span class="o">.</span><span class="n">Load</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">"compensation </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">P</span><span class="o">=</span><span class="n">Seq</span><span class="p">[</span><span class="n">ib</span><span class="p">]</span><span class="o">.</span><span class="n">real</span><span class="p">,</span> <span class="n">Q</span><span class="o">=</span><span class="n">Seq</span><span class="p">[</span><span class="n">ib</span><span class="p">]</span><span class="o">.</span><span class="n">imag</span><span class="p">))</span>
 
     <span class="c1"># ----------------------------------------------------------------------</span>
     <span class="c1"># Remove the external buses</span>

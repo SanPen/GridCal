@@ -799,29 +799,41 @@ class BaseDiagramWidget(QSplitter):
         time_values: np.ndarray = np.asarray(self.circuit.time_profile).copy()
         dialog_title: str = self.tr("{device_name} plot").format(device_name=api_object.name)
         plot_dialogue: PlotDialogue = PlotDialogue(title=dialog_title, parent=self.gui)
-        plotted_units: list[str] = list()
-        plotted_charts: list[GraphsWidget] = list()
-        has_profiles: bool = self._add_device_profile_tabs(
-            plot_dialogue=plot_dialogue,
-            api_object=api_object,
-            time_values=time_values,
-            plotted_units=plotted_units,
-            plotted_charts=plotted_charts,
-        )
-        has_results: bool = self._add_device_result_tabs(
-            plot_dialogue=plot_dialogue,
-            api_object=api_object,
-            plotted_units=plotted_units,
-            plotted_charts=plotted_charts,
-        )
-        if has_profiles or has_results:
-            plot_dialogue.select_default_catalog_series()
-            plot_dialogue.set_series_selector_visible(visible=True)
-            self.gui.register_open_plot_dialog(plot_dialogue)
-            plot_dialogue.open_from_context_menu()
-        else:
-            plot_dialogue.reject()
+        retained: bool = False
+        try:
+            plotted_units: list[str] = list()
+            plotted_charts: list[GraphsWidget] = list()
+            has_profiles: bool = self._add_device_profile_tabs(
+                plot_dialogue=plot_dialogue,
+                api_object=api_object,
+                time_values=time_values,
+                plotted_units=plotted_units,
+                plotted_charts=plotted_charts,
+            )
+            has_results: bool = self._add_device_result_tabs(
+                plot_dialogue=plot_dialogue,
+                api_object=api_object,
+                plotted_units=plotted_units,
+                plotted_charts=plotted_charts,
+            )
+            if has_profiles or has_results:
+                plot_dialogue.select_default_catalog_series()
+                plot_dialogue.set_series_selector_visible(visible=True)
+                self.gui.register_open_plot_dialog(plot_dialogue)
+                plot_dialogue.open_from_context_menu()
+                retained = True
+            else:
+                pass
+        finally:
+            # Result extraction can fail before registration; dispose that hidden window too.
+            if not retained:
+                plot_dialogue.reject()
+            else:
+                pass
+        if not retained:
             info_msg(self.tr("This device has no numeric profiles or time-series results to plot."), dialog_title)
+        else:
+            pass
 
     def _add_device_profile_tabs(self,
                                  plot_dialogue: PlotDialogue,

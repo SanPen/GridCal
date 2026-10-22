@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Simulations.PowerFlow.power_flow_ts_driver &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Simulations.PowerFlow.power_flow_ts_driver &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/license.html">📜 License</a></li>
@@ -126,8 +127,8 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow.html#VeraGridEngine.Simulations.PowerFlow.power_flow_ts_driver.PowerFlowTimeSeriesDriver">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">PowerFlowTimeSeriesDriver</span><span class="p">(</span><span class="n">TimeSeriesDriverTemplate</span><span class="p">):</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;options&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;opf_time_series_results&quot;</span><span class="p">,</span>
+        <span class="s2">"options"</span><span class="p">,</span>
+        <span class="s2">"opf_time_series_results"</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="n">tpe</span> <span class="o">=</span> <span class="n">SimulationTypes</span><span class="o">.</span><span class="n">PowerFlowTimeSeries_run</span>
@@ -140,7 +141,7 @@
                  <span class="n">opf_time_series_results</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                  <span class="n">clustering_results</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">ClusteringResults</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">engine</span><span class="p">:</span> <span class="n">EngineType</span> <span class="o">=</span> <span class="n">EngineType</span><span class="o">.</span><span class="n">VeraGrid</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        PowerFlowTimeSeries constructor</span>
 <span class="sd">        :param grid: MultiCircuit instance</span>
 <span class="sd">        :param options: PowerFlowOptions instance</span>
@@ -148,7 +149,7 @@
 <span class="sd">        :param opf_time_series_results: ClusteringResults instance (optional)</span>
 <span class="sd">        :param clustering_results: ClusteringResults instance (optional)</span>
 <span class="sd">        :param engine: Calculation engine to use</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">TimeSeriesDriverTemplate</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
             <span class="n">grid</span><span class="o">=</span><span class="n">grid</span><span class="p">,</span>
@@ -187,11 +188,11 @@
 <div class="viewcode-block" id="PowerFlowTimeSeriesDriver.run_single_thread">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow.html#VeraGridEngine.Simulations.PowerFlow.power_flow_ts_driver.PowerFlowTimeSeriesDriver.run_single_thread">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">run_single_thread</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time_indices</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PowerFlowTimeSeriesResults</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Run single thread time series</span>
 <span class="sd">        :param time_indices: array of time indices to consider</span>
 <span class="sd">        :return: TimeSeriesResults instance</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="n">n</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">get_bus_number</span><span class="p">()</span>
         <span class="c1"># m = self.grid.get_branch_number(add_hvdc=False, add_vsc=False, add_switch=True)</span>
@@ -227,7 +228,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">report_progress</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">it</span><span class="p">,</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">time_indices</span><span class="p">):</span>
 
-            <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s1">&#39;Time series at &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">time_profile</span><span class="p">[</span><span class="n">t</span><span class="p">])</span> <span class="o">+</span> <span class="s1">&#39;...&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s1">'Time series at '</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">time_profile</span><span class="p">[</span><span class="n">t</span><span class="p">])</span> <span class="o">+</span> <span class="s1">'...'</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">report_progress2</span><span class="p">(</span><span class="n">it</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">time_indices</span><span class="p">))</span>
 
             <span class="c1"># run power flow</span>
@@ -250,11 +251,11 @@
 <div class="viewcode-block" id="PowerFlowTimeSeriesDriver.run_gslv">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow.html#VeraGridEngine.Simulations.PowerFlow.power_flow_ts_driver.PowerFlowTimeSeriesDriver.run_gslv">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">run_gslv</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time_indices</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PowerFlowTimeSeriesResults</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Run with GSLV</span>
 <span class="sd">        :param time_indices: array of time indices</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">res</span> <span class="o">=</span> <span class="n">gslv_pf</span><span class="p">(</span><span class="n">circuit</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="p">,</span>
                       <span class="n">pf_opt</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">,</span>
                       <span class="n">time_series</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
@@ -273,32 +274,32 @@
 <div class="viewcode-block" id="PowerFlowTimeSeriesDriver.run">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow.html#VeraGridEngine.Simulations.PowerFlow.power_flow_ts_driver.PowerFlowTimeSeriesDriver.run">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Run the time series simulation</span>
 <span class="sd">        @return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">tic</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s2">&quot;Compiling and configuring...&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s2">"Compiling and configuring..."</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span> <span class="o">==</span> <span class="n">EngineType</span><span class="o">.</span><span class="n">GSLV</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">GSLV_AVAILABLE</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">engine</span> <span class="o">=</span> <span class="n">EngineType</span><span class="o">.</span><span class="n">VeraGrid</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s1">&#39;Failed back to VeraGrid&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s1">'Failed back to VeraGrid'</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span> <span class="o">==</span> <span class="n">EngineType</span><span class="o">.</span><span class="n">VeraGrid</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_single_thread</span><span class="p">(</span><span class="n">time_indices</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">time_indices</span><span class="p">)</span>
 
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span> <span class="o">==</span> <span class="n">EngineType</span><span class="o">.</span><span class="n">GSLV</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s1">&#39;Running GSLV... &#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s1">'Running GSLV... '</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_gslv</span><span class="p">(</span><span class="n">time_indices</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">time_indices</span><span class="p">)</span>
 
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span> <span class="o">==</span> <span class="n">EngineType</span><span class="o">.</span><span class="n">PGM</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s1">&#39;Running Power Grid Model... &#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s1">'Running Power Grid Model... '</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">results</span> <span class="o">=</span> <span class="n">pgm_pf</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="p">,</span> <span class="n">time_series</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">area_names</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">a</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">areas</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">str</span><span class="p">)</span>
 
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Engine not implemented for Time Series:&#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">'Engine not implemented for Time Series:'</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
 
         <span class="c1"># fill F, T, Areas, etc...</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">fill_circuit_info</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="p">)</span>

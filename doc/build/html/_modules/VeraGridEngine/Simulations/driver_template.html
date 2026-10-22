@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Simulations.driver_template &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Simulations.driver_template &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/license.html">📜 License</a></li>
@@ -124,27 +125,27 @@
 <div class="viewcode-block" id="DummySignal">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Simulations.html#VeraGridEngine.Simulations.driver_template.DummySignal">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">DummySignal</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Qt signal placeholder to not to import QT in the engine</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;tpe&quot;</span><span class="p">,)</span>
+<span class="sd">    """</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"tpe"</span><span class="p">,)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tpe</span><span class="p">:</span> <span class="nb">type</span> <span class="o">=</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">tpe</span> <span class="o">=</span> <span class="n">tpe</span>
 
 <div class="viewcode-block" id="DummySignal.emit">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Simulations.html#VeraGridEngine.Simulations.driver_template.DummySignal.emit">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">emit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">emit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="s1">''</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">pass</span></div>
 
 
 <div class="viewcode-block" id="DummySignal.connect">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Simulations.html#VeraGridEngine.Simulations.driver_template.DummySignal.connect">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">connect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :param val:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">pass</span></div>
 </div>
 
@@ -153,14 +154,14 @@
 <div class="viewcode-block" id="DriverToSave">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Simulations.html#VeraGridEngine.Simulations.driver_template.DriverToSave">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">DriverToSave</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Wrapper to save a driver</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;name&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;tpe&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;results&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;logger&quot;</span><span class="p">,</span>
+        <span class="s2">"name"</span><span class="p">,</span>
+        <span class="s2">"tpe"</span><span class="p">,</span>
+        <span class="s2">"results"</span><span class="p">,</span>
+        <span class="s2">"logger"</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
@@ -168,13 +169,13 @@
                  <span class="n">tpe</span><span class="p">:</span> <span class="n">SimulationTypes</span><span class="p">,</span>
                  <span class="n">results</span><span class="p">:</span> <span class="n">ResultsTemplate</span><span class="p">,</span>
                  <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :param name:</span>
 <span class="sd">        :param tpe:</span>
 <span class="sd">        :param results:</span>
 <span class="sd">        :param logger:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">tpe</span><span class="p">:</span> <span class="n">SimulationTypes</span> <span class="o">=</span> <span class="n">tpe</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">:</span> <span class="n">ResultsTemplate</span> <span class="o">=</span> <span class="n">results</span>
@@ -185,33 +186,33 @@
 <div class="viewcode-block" id="DriverTemplate">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Simulations.html#VeraGridEngine.Simulations.driver_template.DriverTemplate">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">DriverTemplate</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Base driver template</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;progress_signal&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;progress_text&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;grid&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;results&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;engine&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;elapsed&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;logger&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;__cancel__&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;_is_running&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;_DriverTemplate__start&quot;</span><span class="p">,</span>
+        <span class="s2">"progress_signal"</span><span class="p">,</span>
+        <span class="s2">"progress_text"</span><span class="p">,</span>
+        <span class="s2">"grid"</span><span class="p">,</span>
+        <span class="s2">"results"</span><span class="p">,</span>
+        <span class="s2">"engine"</span><span class="p">,</span>
+        <span class="s2">"elapsed"</span><span class="p">,</span>
+        <span class="s2">"logger"</span><span class="p">,</span>
+        <span class="s2">"__cancel__"</span><span class="p">,</span>
+        <span class="s2">"_is_running"</span><span class="p">,</span>
+        <span class="s2">"_DriverTemplate__start"</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="n">tpe</span> <span class="o">=</span> <span class="n">SimulationTypes</span><span class="o">.</span><span class="n">TemplateDriver</span>
-    <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;Template&#39;</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s1">'Template'</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                  <span class="n">grid</span><span class="p">:</span> <span class="n">MultiCircuit</span><span class="p">,</span>
                  <span class="n">engine</span><span class="p">:</span> <span class="n">EngineType</span> <span class="o">=</span> <span class="n">EngineType</span><span class="o">.</span><span class="n">VeraGrid</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Constructor</span>
 <span class="sd">        :param grid: MultiCircuit instance</span>
 <span class="sd">        :param engine: EngineType</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">progress_signal</span> <span class="o">=</span> <span class="n">DummySignal</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">progress_text</span> <span class="o">=</span> <span class="n">DummySignal</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
 
@@ -234,58 +235,58 @@
 <div class="viewcode-block" id="DriverTemplate.tic">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Simulations.html#VeraGridEngine.Simulations.driver_template.DriverTemplate.tic">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">tic</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">skip_logger</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Register start of time</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="n">skip_logger</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">&quot;Elapsed total (s)&quot;</span><span class="p">,</span>
-                                 <span class="n">device_property</span><span class="o">=</span><span class="s2">&quot;Started&quot;</span><span class="p">)</span></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">"Elapsed total (s)"</span><span class="p">,</span>
+                                 <span class="n">device_property</span><span class="o">=</span><span class="s2">"Started"</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="DriverTemplate.toc">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Simulations.html#VeraGridEngine.Simulations.driver_template.DriverTemplate.toc">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">toc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">skip_logger</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Register end of time</span>
 <span class="sd">        :param skip_logger: skip logging this?</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">elapsed</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">__start</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="n">skip_logger</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">&quot;Elapsed total (s)&quot;</span><span class="p">,</span>
-                                 <span class="n">device_property</span><span class="o">=</span><span class="s2">&quot;Ended (s)&quot;</span><span class="p">,</span>
-                                 <span class="n">value</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">{:.4f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">elapsed</span><span class="p">))</span></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">"Elapsed total (s)"</span><span class="p">,</span>
+                                 <span class="n">device_property</span><span class="o">=</span><span class="s2">"Ended (s)"</span><span class="p">,</span>
+                                 <span class="n">value</span><span class="o">=</span><span class="s1">'</span><span class="si">{:.4f}</span><span class="s1">'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">elapsed</span><span class="p">))</span></div>
 
 
 <div class="viewcode-block" id="DriverTemplate.get_steps">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Simulations.html#VeraGridEngine.Simulations.driver_template.DriverTemplate.get_steps">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_steps</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the number of steps in the simulation</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="nb">list</span><span class="p">()</span></div>
 
 
 <div class="viewcode-block" id="DriverTemplate.run">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Simulations.html#VeraGridEngine.Simulations.driver_template.DriverTemplate.run">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">pass</span></div>
 
 
 <div class="viewcode-block" id="DriverTemplate.copy_signals">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Simulations.html#VeraGridEngine.Simulations.driver_template.DriverTemplate.copy_signals">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">copy_signals</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="s2">&quot;TimeSeriesDriverTemplate&quot;</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">copy_signals</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="s2">"TimeSeriesDriverTemplate"</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Copy the signals from another driver</span>
 <span class="sd">        :param other:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">progress_signal</span> <span class="o">=</span> <span class="n">other</span><span class="o">.</span><span class="n">progress_signal</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">progress_text</span> <span class="o">=</span> <span class="n">other</span><span class="o">.</span><span class="n">progress_text</span></div>
 
@@ -293,31 +294,31 @@
 <div class="viewcode-block" id="DriverTemplate.report_progress">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Simulations.html#VeraGridEngine.Simulations.driver_template.DriverTemplate.report_progress">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">report_progress</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Report progress</span>
 <span class="sd">        :param val: float value</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">progress_signal</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="n">val</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="DriverTemplate.report_progress2">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Simulations.html#VeraGridEngine.Simulations.driver_template.DriverTemplate.report_progress2">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">report_progress2</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">current</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">total</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Report progress</span>
 <span class="sd">        :param current: current value (zero based)</span>
 <span class="sd">        :param total: total value</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">val</span> <span class="o">=</span> <span class="p">((</span><span class="n">current</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="n">total</span><span class="p">)</span> <span class="o">*</span> <span class="mi">100</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">progress_signal</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="n">val</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="DriverTemplate.report_done">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Simulations.html#VeraGridEngine.Simulations.driver_template.DriverTemplate.report_done">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">report_done</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">txt</span><span class="o">=</span><span class="s2">&quot;done!&quot;</span><span class="p">,</span> <span class="n">val</span><span class="o">=</span><span class="mf">0.0</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">report_done</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">txt</span><span class="o">=</span><span class="s2">"done!"</span><span class="p">,</span> <span class="n">val</span><span class="o">=</span><span class="mf">0.0</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Report done</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">report_progress</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="n">txt</span><span class="p">)</span></div>
 
@@ -325,49 +326,49 @@
 <div class="viewcode-block" id="DriverTemplate.report_text">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Simulations.html#VeraGridEngine.Simulations.driver_template.DriverTemplate.report_text">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">report_text</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Report text</span>
 <span class="sd">        :param val: text value</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">progress_text</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="n">val</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="DriverTemplate.cancel">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Simulations.html#VeraGridEngine.Simulations.driver_template.DriverTemplate.cancel">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">cancel</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Cancel the simulation</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__cancel__</span> <span class="o">=</span> <span class="kc">True</span></div>
 
 
 <div class="viewcode-block" id="DriverTemplate.is_cancel">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Simulations.html#VeraGridEngine.Simulations.driver_template.DriverTemplate.is_cancel">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">is_cancel</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Check if cancel was activated</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__cancel__</span></div>
 
 
 <div class="viewcode-block" id="DriverTemplate.isRunning">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Simulations.html#VeraGridEngine.Simulations.driver_template.DriverTemplate.isRunning">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">isRunning</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_running</span></div>
 
 
 <div class="viewcode-block" id="DriverTemplate.get_save_data">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Simulations.html#VeraGridEngine.Simulations.driver_template.DriverTemplate.get_save_data">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_save_data</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DriverToSave</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get save data representation of this driver</span>
 <span class="sd">        :return: DriverToSave</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">DriverToSave</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
                             <span class="n">tpe</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tpe</span><span class="p">,</span>
                             <span class="n">results</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">,</span>
@@ -379,15 +380,15 @@
 <div class="viewcode-block" id="TimeSeriesDriverTemplate">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Simulations.html#VeraGridEngine.Simulations.driver_template.TimeSeriesDriverTemplate">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">TimeSeriesDriverTemplate</span><span class="p">(</span><span class="n">DriverTemplate</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Time series driver template</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;clustering_results&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;using_clusters&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;time_indices&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;sampled_probabilities&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;original_sample_idx&quot;</span><span class="p">,</span>
+        <span class="s2">"clustering_results"</span><span class="p">,</span>
+        <span class="s2">"using_clusters"</span><span class="p">,</span>
+        <span class="s2">"time_indices"</span><span class="p">,</span>
+        <span class="s2">"sampled_probabilities"</span><span class="p">,</span>
+        <span class="s2">"original_sample_idx"</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
@@ -397,14 +398,14 @@
             <span class="n">clustering_results</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">ClusteringResults</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
             <span class="n">engine</span><span class="p">:</span> <span class="n">EngineType</span> <span class="o">=</span> <span class="n">EngineType</span><span class="o">.</span><span class="n">VeraGrid</span><span class="p">,</span>
             <span class="n">check_time_series</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Time Series driver constructor</span>
 <span class="sd">        :param grid: MultiCircuit instance</span>
 <span class="sd">        :param time_indices: array of time indices to simulate (optional)</span>
 <span class="sd">        :param clustering_results: ClusteringResults object (optional)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">grid</span><span class="o">.</span><span class="n">has_time_series</span> <span class="ow">and</span> <span class="n">check_time_series</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s2">&quot; can only run in grids with time series data :(&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s2">" can only run in grids with time series data :("</span><span class="p">)</span>
 
         <span class="n">DriverTemplate</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">grid</span><span class="o">=</span><span class="n">grid</span><span class="p">,</span> <span class="n">engine</span><span class="o">=</span><span class="n">engine</span><span class="p">)</span>
 
@@ -433,24 +434,24 @@
 <div class="viewcode-block" id="TimeSeriesDriverTemplate.get_steps">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Simulations.html#VeraGridEngine.Simulations.driver_template.TimeSeriesDriverTemplate.get_steps">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_steps</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get time steps list of strings</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_indices</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="p">[]</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">time_profile</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%d</span><span class="s1">-%m-%Y %H:%M&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_indices</span><span class="p">]</span></div>
+            <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">time_profile</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">'</span><span class="si">%d</span><span class="s1">-%m-%Y %H:%M'</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_indices</span><span class="p">]</span></div>
 
 
 <div class="viewcode-block" id="TimeSeriesDriverTemplate.get_fuel_emissions_energy_calculations">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Simulations.html#VeraGridEngine.Simulations.driver_template.TimeSeriesDriverTemplate.get_fuel_emissions_energy_calculations">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_fuel_emissions_energy_calculations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gen_p</span><span class="p">:</span> <span class="n">Mat</span><span class="p">,</span> <span class="n">gen_cost</span><span class="p">:</span> <span class="n">Mat</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Calculate fuel emissions and energy cost</span>
 <span class="sd">        :param gen_p:</span>
 <span class="sd">        :param gen_cost:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># gather the fuels and emission rates matrices</span>
         <span class="n">gen_emissions_rates_matrix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">get_gen_emission_rates_sparse_matrix</span><span class="p">()</span>
         <span class="n">gen_fuel_rates_matrix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">get_gen_fuel_rates_sparse_matrix</span><span class="p">()</span>
@@ -458,7 +459,7 @@
         <span class="n">system_fuel</span> <span class="o">=</span> <span class="p">(</span><span class="n">gen_fuel_rates_matrix</span> <span class="o">*</span> <span class="n">gen_p</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
         <span class="n">system_emissions</span> <span class="o">=</span> <span class="p">(</span><span class="n">gen_emissions_rates_matrix</span> <span class="o">*</span> <span class="n">gen_p</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
 
-        <span class="k">with</span> <span class="n">np</span><span class="o">.</span><span class="n">errstate</span><span class="p">(</span><span class="n">divide</span><span class="o">=</span><span class="s1">&#39;ignore&#39;</span><span class="p">,</span> <span class="n">invalid</span><span class="o">=</span><span class="s1">&#39;ignore&#39;</span><span class="p">):</span>  <span class="c1"># numpy magic to ignore the zero divisions</span>
+        <span class="k">with</span> <span class="n">np</span><span class="o">.</span><span class="n">errstate</span><span class="p">(</span><span class="n">divide</span><span class="o">=</span><span class="s1">'ignore'</span><span class="p">,</span> <span class="n">invalid</span><span class="o">=</span><span class="s1">'ignore'</span><span class="p">):</span>  <span class="c1"># numpy magic to ignore the zero divisions</span>
             <span class="n">system_energy_cost</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan_to_num</span><span class="p">(</span><span class="n">gen_cost</span> <span class="o">/</span> <span class="n">gen_p</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">system_fuel</span><span class="p">,</span> <span class="n">system_emissions</span><span class="p">,</span> <span class="n">system_energy_cost</span></div>

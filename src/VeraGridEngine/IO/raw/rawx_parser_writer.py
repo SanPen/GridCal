@@ -112,7 +112,8 @@ def write_rawx(file_name: str, circuit: PsseCircuit, logger: Logger = Logger()) 
     """
     data = dict()
 
-    for circuit_prop in circuit.get_properties():
+    circuit.warn_auxiliary_omission(logger)
+    for circuit_prop in circuit.get_rawx_properties():
 
         circuit_val: List[RawObject] = circuit.get_prop_value(circuit_prop)
 

@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Simulations.InvestmentsEvaluation.Methods.toot_pint_cba &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Simulations.InvestmentsEvaluation.Methods.toot_pint_cba &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/license.html">📜 License</a></li>
@@ -106,7 +107,7 @@
 <span class="c1"># License, v. 2.0. If a copy of the MPL was not distributed with this</span>
 <span class="c1"># file, You can obtain one at https://mozilla.org/MPL/2.0/.</span>
 <span class="c1"># SPDX-License-Identifier: MPL-2.0</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 <span class="sd">TOOT/PINT-based independent investment ranking for the investments evaluation framework.</span>
 
 <span class="sd">This module implements a light-weight library function, :func:`TOOT_PINT_CBA`, that follows the same</span>
@@ -130,11 +131,11 @@
 <span class="sd">    The baseline combination, built from the lower bounds of the investment decision vector.</span>
 
 <span class="sd">``PINT``</span>
-<span class="sd">    &quot;Project in&quot; evaluations. For each decision variable, one project is added to the reference</span>
+<span class="sd">    "Project in" evaluations. For each decision variable, one project is added to the reference</span>
 <span class="sd">    combination and the marginal improvement is measured against the baseline objective vector.</span>
 
 <span class="sd">``TOOT``</span>
-<span class="sd">    &quot;Take one out&quot; evaluations. A target combination containing all candidate projects is built from</span>
+<span class="sd">    "Take one out" evaluations. A target combination containing all candidate projects is built from</span>
 <span class="sd">    the upper bounds. Then, for each decision variable, one project is removed from that target and the</span>
 <span class="sd">    marginal degradation is measured against the target objective vector.</span>
 
@@ -154,14 +155,14 @@
 
 <span class="sd">``lb`` and ``ub``</span>
 <span class="sd">    Lower and upper decision-vector bounds. These are used to construct the reference and target</span>
-<span class="sd">    combinations and to infer the canonical &quot;project active&quot; value for each decision variable.</span>
+<span class="sd">    combinations and to infer the canonical "project active" value for each decision variable.</span>
 
 <span class="sd">``objective_names`` and ``variable_names``</span>
 <span class="sd">    Metadata used to locate the CAPEX objective and to emit readable log messages.</span>
 
 <span class="sd">The implementation assumes a minimization problem, which matches the investments evaluation framework.</span>
 <span class="sd">Positive deltas therefore represent improvements.</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">timeit</span>
@@ -175,14 +176,14 @@
 <div class="viewcode-block" id="get_reference_combination">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.InvestmentsEvaluation.Methods.html#VeraGridEngine.Simulations.InvestmentsEvaluation.Methods.toot_pint_cba.get_reference_combination">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_reference_combination</span><span class="p">(</span><span class="n">lb</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">|</span> <span class="n">IntVec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">IntVec</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Get the reference-grid combination used as the baseline of the CBA evaluations.</span>
 
 <span class="sd">    :param lb: Lower bound vector.</span>
 <span class="sd">    :type lb: Vec | IntVec</span>
 <span class="sd">    :return: Reference combination.</span>
 <span class="sd">    :rtype: IntVec</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">lb</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span></div>
 
 
@@ -190,8 +191,8 @@
 <div class="viewcode-block" id="get_candidate_activation_value">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.InvestmentsEvaluation.Methods.html#VeraGridEngine.Simulations.InvestmentsEvaluation.Methods.toot_pint_cba.get_candidate_activation_value">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_candidate_activation_value</span><span class="p">(</span><span class="n">ub</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">|</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Get the canonical &quot;project present&quot; value for one decision variable.</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Get the canonical "project present" value for one decision variable.</span>
 
 <span class="sd">    For binary problems this is ``1``. For year-of-entry problems this is the first entry year.</span>
 
@@ -201,7 +202,7 @@
 <span class="sd">    :type idx: int</span>
 <span class="sd">    :return: Activation value for the project.</span>
 <span class="sd">    :rtype: int</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">max_value</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">ub</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span>
 
     <span class="k">if</span> <span class="n">max_value</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">:</span>
@@ -214,8 +215,8 @@
 <div class="viewcode-block" id="get_target_combination">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.InvestmentsEvaluation.Methods.html#VeraGridEngine.Simulations.InvestmentsEvaluation.Methods.toot_pint_cba.get_target_combination">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_target_combination</span><span class="p">(</span><span class="n">n_var</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">lb</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">|</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">ub</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">|</span> <span class="n">IntVec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">IntVec</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Get the &quot;all candidate projects included&quot; combination used for the TOOT ranking proxy.</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Get the "all candidate projects included" combination used for the TOOT ranking proxy.</span>
 
 <span class="sd">    :param n_var: Number of decision variables.</span>
 <span class="sd">    :type n_var: int</span>
@@ -225,7 +226,7 @@
 <span class="sd">    :type ub: Vec | IntVec</span>
 <span class="sd">    :return: Target combination.</span>
 <span class="sd">    :rtype: IntVec</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">combination</span><span class="p">:</span> <span class="n">IntVec</span> <span class="o">=</span> <span class="n">get_reference_combination</span><span class="p">(</span><span class="n">lb</span><span class="o">=</span><span class="n">lb</span><span class="p">)</span>
 
     <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_var</span><span class="p">):</span>
@@ -238,18 +239,18 @@
 <div class="viewcode-block" id="get_capex_objective_index">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.InvestmentsEvaluation.Methods.html#VeraGridEngine.Simulations.InvestmentsEvaluation.Methods.toot_pint_cba.get_capex_objective_index">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_capex_objective_index</span><span class="p">(</span><span class="n">objective_names</span><span class="p">:</span> <span class="n">StrVec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Locate the CAPEX-like objective index.</span>
 
 <span class="sd">    :param objective_names: Objective names of the active problem.</span>
 <span class="sd">    :type objective_names: StrVec</span>
 <span class="sd">    :return: Objective index or ``-1`` if it is not found.</span>
 <span class="sd">    :rtype: int</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">objective_names</span><span class="p">):</span>
         <span class="n">name_txt</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
 
-        <span class="k">if</span> <span class="s2">&quot;capex&quot;</span> <span class="ow">in</span> <span class="n">name_txt</span><span class="p">:</span>
+        <span class="k">if</span> <span class="s2">"capex"</span> <span class="ow">in</span> <span class="n">name_txt</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">idx</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">pass</span>
@@ -257,7 +258,7 @@
     <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">objective_names</span><span class="p">):</span>
         <span class="n">name_txt</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
 
-        <span class="k">if</span> <span class="s2">&quot;financial&quot;</span> <span class="ow">in</span> <span class="n">name_txt</span><span class="p">:</span>
+        <span class="k">if</span> <span class="s2">"financial"</span> <span class="ow">in</span> <span class="n">name_txt</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">idx</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">pass</span>
@@ -269,7 +270,7 @@
 <div class="viewcode-block" id="get_objective_scale">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.InvestmentsEvaluation.Methods.html#VeraGridEngine.Simulations.InvestmentsEvaluation.Methods.toot_pint_cba.get_objective_scale">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_objective_scale</span><span class="p">(</span><span class="n">baseline</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">Vec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Build a scale vector to normalize marginal benefits across objectives.</span>
 
 <span class="sd">    :param baseline: Objective vector of the reference combination.</span>
@@ -278,7 +279,7 @@
 <span class="sd">    :type target: Vec</span>
 <span class="sd">    :return: Normalization scale vector.</span>
 <span class="sd">    :rtype: Vec</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">scale</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">baseline</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">target</span><span class="p">))</span>
     <span class="n">scale</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">scale</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">scale</span></div>
@@ -291,7 +292,7 @@
                              <span class="n">capex_delta</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
                              <span class="n">capex_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
                              <span class="n">scale</span><span class="p">:</span> <span class="n">Vec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Convert a multi-objective marginal improvement into a scalar ranking score.</span>
 
 <span class="sd">    Positive deltas mean the candidate improves the objective because all objectives are minimized.</span>
@@ -306,7 +307,7 @@
 <span class="sd">    :type scale: Vec</span>
 <span class="sd">    :return: Scalar CBA-like ranking score.</span>
 <span class="sd">    :rtype: float</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">benefit_score</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span>
 
     <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">delta_value</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">delta_objectives</span><span class="p">):</span>
@@ -336,7 +337,7 @@
 <div class="viewcode-block" id="get_sorted_project_indices">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.InvestmentsEvaluation.Methods.html#VeraGridEngine.Simulations.InvestmentsEvaluation.Methods.toot_pint_cba.get_sorted_project_indices">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_sorted_project_indices</span><span class="p">(</span><span class="n">scores</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">capex_values</span><span class="p">:</span> <span class="n">Vec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">IntVec</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Sort projects by descending score and ascending CAPEX for deterministic tie-breaking.</span>
 
 <span class="sd">    :param scores: Ranking scores.</span>
@@ -345,7 +346,7 @@
 <span class="sd">    :type capex_values: Vec</span>
 <span class="sd">    :return: Sorted project indices.</span>
 <span class="sd">    :rtype: IntVec</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">indices</span><span class="p">:</span> <span class="n">IntVec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">scores</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">lexsort</span><span class="p">((</span><span class="n">indices</span><span class="p">,</span> <span class="n">capex_values</span><span class="p">,</span> <span class="o">-</span><span class="n">scores</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span></div>
 
@@ -365,7 +366,7 @@
                                   <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                                   <span class="n">record_results</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
                                   <span class="n">cancel_checker</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="nb">bool</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">IntMat</span><span class="p">,</span> <span class="n">Mat</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Build an optional NSGA3 warm-start population from the direct PINT and TOOT evaluations.</span>
 
 <span class="sd">    The returned arrays are plain NumPy matrices so they can be passed to :func:`NSGA_3` without introducing a</span>
@@ -397,7 +398,7 @@
 <span class="sd">    :type cancel_checker: Callable[[], bool] | None</span>
 <span class="sd">    :return: Seed decision vectors and aligned objective vectors.</span>
 <span class="sd">    :rtype: tuple[IntMat, Mat]</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">pop_size</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
         <span class="k">pass</span>
     <span class="k">else</span><span class="p">:</span>
@@ -416,7 +417,7 @@
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">baseline_objectives</span><span class="p">)</span> <span class="o">==</span> <span class="n">n_obj</span><span class="p">:</span>
         <span class="k">pass</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The baseline objective vector size does not match n_obj&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"The baseline objective vector size does not match n_obj"</span><span class="p">)</span>
 
     <span class="n">capex_idx</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">get_capex_objective_index</span><span class="p">(</span><span class="n">objective_names</span><span class="o">=</span><span class="n">objective_names</span><span class="p">)</span>
     <span class="n">objective_scale</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">=</span> <span class="n">get_objective_scale</span><span class="p">(</span><span class="n">baseline</span><span class="o">=</span><span class="n">baseline_objectives</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">target_objectives</span><span class="p">)</span>
@@ -435,14 +436,14 @@
             <span class="k">if</span> <span class="n">report_text</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">pass</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">report_text</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Evaluating project </span><span class="si">{</span><span class="n">idx</span><span class="si">}</span><span class="s2"> with PINT/TOOT warm-start logic...&quot;</span><span class="p">)</span>
+                <span class="n">report_text</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Evaluating project </span><span class="si">{</span><span class="n">idx</span><span class="si">}</span><span class="s2"> with PINT/TOOT warm-start logic..."</span><span class="p">)</span>
 
             <span class="n">activation_value</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">get_candidate_activation_value</span><span class="p">(</span><span class="n">ub</span><span class="o">=</span><span class="n">ub</span><span class="p">,</span> <span class="n">idx</span><span class="o">=</span><span class="n">idx</span><span class="p">)</span>
             <span class="n">pint_combination</span><span class="p">:</span> <span class="n">IntVec</span> <span class="o">=</span> <span class="n">reference_combination</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
             <span class="n">pint_combination</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">activation_value</span>
             <span class="n">pint_combinations</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">pint_combination</span>
 
-            <span class="c1"># PINT gives the single-project &quot;project in&quot; combinations used for the hybrid warm-start.</span>
+            <span class="c1"># PINT gives the single-project "project in" combinations used for the hybrid warm-start.</span>
             <span class="n">pint_objective_vector</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">=</span> <span class="n">obj_func</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">pint_combination</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="n">record_results</span><span class="o">=</span><span class="n">record_results</span><span class="p">)</span>
             <span class="n">pint_objectives</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">pint_objective_vector</span>
             <span class="n">pint_delta</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">=</span> <span class="n">baseline_objectives</span> <span class="o">-</span> <span class="n">pint_objective_vector</span>
@@ -451,7 +452,7 @@
             <span class="n">toot_combination</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">reference_combination</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
             <span class="n">toot_combinations</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">toot_combination</span>
 
-            <span class="c1"># TOOT gives complementary &quot;take one out&quot; combinations that broaden the first NSGA3 generation.</span>
+            <span class="c1"># TOOT gives complementary "take one out" combinations that broaden the first NSGA3 generation.</span>
             <span class="n">toot_objective_vector</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">=</span> <span class="n">obj_func</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">toot_combination</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="n">record_results</span><span class="o">=</span><span class="n">record_results</span><span class="p">)</span>
             <span class="n">toot_objectives</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">toot_objective_vector</span>
             <span class="n">toot_delta</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">=</span> <span class="n">toot_objective_vector</span> <span class="o">-</span> <span class="n">target_objectives</span>
@@ -479,10 +480,10 @@
             <span class="k">if</span> <span class="n">logger</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">pass</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">&quot;PINT/TOOT NSGA3 warm-start score&quot;</span><span class="p">,</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">"PINT/TOOT NSGA3 warm-start score"</span><span class="p">,</span>
                                 <span class="n">device</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">variable_names</span><span class="p">[</span><span class="n">idx</span><span class="p">]),</span>
-                                <span class="n">value</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">project_scores</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
-                                <span class="n">expected_value</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;PINT </span><span class="si">{</span><span class="n">pint_score</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2"> / TOOT </span><span class="si">{</span><span class="n">toot_score</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                                <span class="n">value</span><span class="o">=</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">project_scores</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+                                <span class="n">expected_value</span><span class="o">=</span><span class="sa">f</span><span class="s2">"PINT </span><span class="si">{</span><span class="n">pint_score</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2"> / TOOT </span><span class="si">{</span><span class="n">toot_score</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
     <span class="n">sorted_indices</span><span class="p">:</span> <span class="n">IntVec</span> <span class="o">=</span> <span class="n">get_sorted_project_indices</span><span class="p">(</span><span class="n">scores</span><span class="o">=</span><span class="n">project_scores</span><span class="p">[:</span><span class="n">evaluated_projects</span><span class="p">],</span>
                                                         <span class="n">capex_values</span><span class="o">=</span><span class="n">project_capex</span><span class="p">[:</span><span class="n">evaluated_projects</span><span class="p">])</span>
@@ -555,7 +556,7 @@
                   <span class="n">report_text</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                   <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                   <span class="n">cancel_checker</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="nb">bool</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">IntVec</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Run a CBA-like independent project ranking based on PINT and TOOT evaluations.</span>
 
 <span class="sd">    The function uses the provided objective function directly, like ``NSGA_3`` does. The displayed metrics remain</span>
@@ -583,7 +584,7 @@
 <span class="sd">    :type cancel_checker: Callable[[], bool] | None</span>
 <span class="sd">    :return: Best-ranked combination according to the CBA sequence.</span>
 <span class="sd">    :rtype: IntVec</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">reference_combination</span><span class="p">:</span> <span class="n">IntVec</span> <span class="o">=</span> <span class="n">get_reference_combination</span><span class="p">(</span><span class="n">lb</span><span class="o">=</span><span class="n">lb</span><span class="p">)</span>
     <span class="n">target_combination</span><span class="p">:</span> <span class="n">IntVec</span> <span class="o">=</span> <span class="n">get_target_combination</span><span class="p">(</span><span class="n">n_var</span><span class="o">=</span><span class="n">n_var</span><span class="p">,</span> <span class="n">lb</span><span class="o">=</span><span class="n">lb</span><span class="p">,</span> <span class="n">ub</span><span class="o">=</span><span class="n">ub</span><span class="p">)</span>
 
@@ -601,7 +602,7 @@
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">baseline_objectives</span><span class="p">)</span> <span class="o">==</span> <span class="n">n_obj</span><span class="p">:</span>
         <span class="k">pass</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The baseline objective vector size does not match n_obj&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"The baseline objective vector size does not match n_obj"</span><span class="p">)</span>
 
     <span class="n">capex_idx</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">get_capex_objective_index</span><span class="p">(</span><span class="n">objective_names</span><span class="o">=</span><span class="n">objective_names</span><span class="p">)</span>
     <span class="n">objective_scale</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">=</span> <span class="n">get_objective_scale</span><span class="p">(</span><span class="n">baseline</span><span class="o">=</span><span class="n">baseline_objectives</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">target_objectives</span><span class="p">)</span>
@@ -618,7 +619,7 @@
             <span class="k">if</span> <span class="n">report_text</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">pass</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">report_text</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Evaluating project </span><span class="si">{</span><span class="n">idx</span><span class="si">}</span><span class="s2"> with PINT/TOOT logic...&quot;</span><span class="p">)</span>
+                <span class="n">report_text</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Evaluating project </span><span class="si">{</span><span class="n">idx</span><span class="si">}</span><span class="s2"> with PINT/TOOT logic..."</span><span class="p">)</span>
 
             <span class="n">activation_value</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">get_candidate_activation_value</span><span class="p">(</span><span class="n">ub</span><span class="o">=</span><span class="n">ub</span><span class="p">,</span> <span class="n">idx</span><span class="o">=</span><span class="n">idx</span><span class="p">)</span>
             <span class="n">pint_combination</span><span class="p">:</span> <span class="n">IntVec</span> <span class="o">=</span> <span class="n">reference_combination</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
@@ -659,10 +660,10 @@
             <span class="k">if</span> <span class="n">logger</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">pass</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">&quot;Independent CBA project score&quot;</span><span class="p">,</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">"Independent CBA project score"</span><span class="p">,</span>
                                 <span class="n">device</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">variable_names</span><span class="p">[</span><span class="n">idx</span><span class="p">]),</span>
-                                <span class="n">value</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">project_scores</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
-                                <span class="n">expected_value</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;PINT </span><span class="si">{</span><span class="n">pint_score</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2"> / TOOT </span><span class="si">{</span><span class="n">toot_score</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                                <span class="n">value</span><span class="o">=</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">project_scores</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+                                <span class="n">expected_value</span><span class="o">=</span><span class="sa">f</span><span class="s2">"PINT </span><span class="si">{</span><span class="n">pint_score</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2"> / TOOT </span><span class="si">{</span><span class="n">toot_score</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
     <span class="n">sorted_indices</span><span class="p">:</span> <span class="n">IntVec</span> <span class="o">=</span> <span class="n">get_sorted_project_indices</span><span class="p">(</span><span class="n">scores</span><span class="o">=</span><span class="n">project_scores</span><span class="p">[:</span><span class="n">evaluated_projects</span><span class="p">],</span>
                                                         <span class="n">capex_values</span><span class="o">=</span><span class="n">project_capex</span><span class="p">[:</span><span class="n">evaluated_projects</span><span class="p">])</span>
@@ -682,7 +683,7 @@
                 <span class="k">if</span> <span class="n">report_text</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                     <span class="k">pass</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="n">report_text</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Evaluating cumulative combination ranked up to project </span><span class="si">{</span><span class="n">project_idx</span><span class="si">}</span><span class="s2">...&quot;</span><span class="p">)</span>
+                    <span class="n">report_text</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Evaluating cumulative combination ranked up to project </span><span class="si">{</span><span class="n">project_idx</span><span class="si">}</span><span class="s2">..."</span><span class="p">)</span>
 
                 <span class="n">obj_func</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">cumulative_combination</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="n">record_results</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
@@ -693,8 +694,8 @@
     <span class="k">if</span> <span class="n">logger</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">pass</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">&quot;Independent CBA sequence time (s)&quot;</span><span class="p">,</span>
-                        <span class="n">value</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">et</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">st</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">"Independent CBA sequence time (s)"</span><span class="p">,</span>
+                        <span class="n">value</span><span class="o">=</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">et</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">st</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sorted_indices</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
         <span class="n">best_combination</span><span class="p">:</span> <span class="n">IntVec</span> <span class="o">=</span> <span class="n">reference_combination</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>

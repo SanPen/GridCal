@@ -21,6 +21,7 @@ from VeraGridEngine.Simulations.Rms.problems.rms_problem_template import (
     project_initial_algebraic_state,
 )
 from VeraGridEngine.Simulations.Rms.rms_options import RmsOptions
+from VeraGridEngine.Utils.Symbolic.block import Block
 from VeraGridEngine.Utils.Symbolic.symbolic import Var
 from VeraGridEngine.enumerations import (
     DynamicIntegrationMethod,
@@ -31,7 +32,6 @@ from VeraGridEngine.enumerations import (
     SolverType,
 )
 
-@pytest.mark.skip(reason="Incorrect")
 def test_dgs_v2_first_rms_step_is_finite_and_converged() -> None:
     """Run the tracked Nuactis V2 DGS model through one scalar RMS step.
 
@@ -136,16 +136,38 @@ def test_dgs_v2_first_rms_step_is_finite_and_converged() -> None:
         pf_results=power_flow_results,
     )
     dc_cable: DcLine = grid.dc_lines[0]
-    inductance_parameter: Var = dc_cable.rms_model.api_obj_mapping[
-        ParamPowerFlowReferenceType.dc_line_l_pu_seconds
-    ]
     dynamic_values: tuple[float, float] | None = (
         dc_cable.get_applied_dynamic_values_pu_seconds(Sbase=float(grid.Sbase))
     )
     assert dynamic_values is not None
-    assert problem._static_parameters_values_mapping[
-        inductance_parameter
-    ].value == dynamic_values[0]
+    # Inductance is owned by the model's child event declaration; physical
+    # cable data does not override this established RMS model parameter.
+    inductance_parameter: Var | None = None
+    inductance_owner: Block | None = None
+    inductance_declaration_count: int = 0
+    model_block: Block
+    event_parameter: Var
+    static_parameter: Var
+    for model_block in dc_cable.rms_model.get_all_blocks():
+        # No root or sibling may introduce a competing physical/static L.
+        assert model_block.api_obj_mapping.get(
+            ParamPowerFlowReferenceType.dc_line_l_pu_seconds,
+            None,
+        ) is None
+        for static_parameter in model_block.parameters:
+            assert static_parameter.name != "l"
+        for event_parameter in model_block.event_dict:
+            if event_parameter.name == "l":
+                inductance_parameter = event_parameter
+                inductance_owner = model_block
+                inductance_declaration_count += 1
+            else:
+                pass
+    assert inductance_parameter is not None
+    assert inductance_owner is not None
+    assert inductance_owner is not dc_cable.rms_model
+    assert inductance_declaration_count == 1
+    assert problem.event_params_init_dict[inductance_parameter.uid] == 0.05
     assert len(problem._external_time_uids) == 3
     problem.set_events_group(
         rms_events_group=RmsEventsGroup(name="Nuactis V2 directed step")

@@ -10,6 +10,8 @@ from VeraGridEngine.enumerations import ConverterControlType, SolutionState, Res
 from VeraGridEngine.Simulations.NTC.ntc_ts_results import OptimalNetTransferCapacityTimeSeriesResults
 from VeraGridEngine.Simulations.Clustering.clustering_results import ClusteringResults
 from VeraGridEngine.Simulations.NTC.ntc_opf import run_linear_ntc_opf, NtcVars, get_exchange_proportions
+from VeraGridEngine.Simulations.NTC.ntc_driver import get_ntc_operating_point_as_opf_results
+from VeraGridEngine.Simulations.NTC.ntc_ts_driver import NtcOperatingPoints
 from VeraGridEngine.basic_structures import Logger, Vec, IntVec, ObjVec
 from VeraGridEngine.Utils.MIP.selected_interface import LpModel
 from VeraGridEngine.Devices.types import BRANCH_TYPES
@@ -2349,46 +2351,16 @@ def test_ntc_structural_n1_overload_is_relaxed_not_infeasible() -> None:
     assert np.isclose(float(res.Sf[2].real), 40.0, atol=1.0)
 
 
-def test_ntc_pmode3_screening_exceeds_former_pass_limit() -> None:
-    """Certify every outage on a generated five bus grid beyond the old pass limit.
-
-    The existing two area Pmode3 fixture has four buses. A fifth bus carries a
-    fixed radial load above its line rating, so every added parallel line outage
-    needs its own thermal slack. This forces admission of every group instead
-    of letting numerical witnesses bypass the screening loop regression.
+def run_pmode3_corrective_n1(grid: gce.MultiCircuit) -> gce.OptimalNetTransferCapacityResults:
     """
-    # These describe the removed algorithm, not limits used by the current solver.
-    former_pass_limit = 50
-    former_groups_per_pass = 8
-    contingency_count = former_pass_limit * former_groups_per_pass + 1
+    Run the corrective N-1 NTC of a two-area Pmode3 grid with every contingency group.
 
-    grid = build_two_pmode3_link_grid(set_reference_bus_on_both=True)
-    for bus in grid.buses:
-        if not bus.is_dc:
-            # Keep the nonzero droop linear so this tests screening, not MIP cost.
-            bus.angle_min = -0.04
-            bus.angle_max = 0.04
-
-    radial_bus = gce.Bus(name="radial_load", Vnom=400.0, area=grid.areas[0])
-    radial_load = gce.Load(name="radial_load", P=50.0)
-    radial_line = gce.Line(name="radial", bus_from=grid.buses[0], bus_to=radial_bus,
-                           x=0.01, rate=10.0)
-    grid.add_bus(radial_bus)
-    grid.add_load(radial_bus, radial_load)
-    grid.get_generators()[0].P += radial_load.P
-    grid.add_line(radial_line)
-
-    # Each group outages a distinct parallel AC line. The radial stays connected.
-    for index in range(contingency_count):
-        line = gce.Line(name=f"parallel_{index}", bus_from=grid.buses[0], bus_to=grid.buses[1],
-                        x=0.01, rate=1000.0)
-        grid.add_line(line)
-        group = gce.ContingencyGroup(name=f"outage_{index}")
-        grid.add_contingency_group(group)
-        grid.add_contingency(gce.Contingency(device=line, group=group))
-
-    info = grid.get_inter_aggregation_info(objects_from=[grid.areas[0]], objects_to=[grid.areas[1]])
-    options = gce.OptimalNetTransferCapacityOptions(
+    :param grid: MultiCircuit with its contingency groups already added
+    :return: NTC results
+    """
+    info: gce.InterAggregationInfo = grid.get_inter_aggregation_info(objects_from=[grid.areas[0]],
+                                                                     objects_to=[grid.areas[1]])
+    options: gce.OptimalNetTransferCapacityOptions = gce.OptimalNetTransferCapacityOptions(
         sending_bus_idx=info.idx_bus_from,
         receiving_bus_idx=info.idx_bus_to,
         skip_generation_limits=True,
@@ -2397,26 +2369,64 @@ def test_ntc_pmode3_screening_exceeds_former_pass_limit() -> None:
         corrective_contingencies=True,
         opf_options=gce.OptimalPowerFlowOptions(contingency_groups_used=grid.contingency_groups),
     )
-    driver = gce.OptimalNetTransferCapacityDriver(grid, options)
+    driver: gce.OptimalNetTransferCapacityDriver = gce.OptimalNetTransferCapacityDriver(grid, options)
     driver.run()
-    result = driver.results
-    assert result.converged
-    assert np.isclose(result.inter_area_flows, 500.0, atol=1e-6)
-    assert np.all(np.abs(result.nodal_balance) < 1e-6)
-    assert result.get_solution_state() == SolutionState.Relaxed
-    slack_per_state = radial_load.P - radial_line.rate
-    assert np.isclose(result.get_total_slack_mw(), slack_per_state * (contingency_count + 1), atol=1e-6)
+    return driver.results
 
-    radial_index = int(np.flatnonzero(result.branch_names == radial_line.name)[0])
-    rows = [row for row in result.contingency_flows_list if row[1] == radial_index]
-    assert len(rows) == contingency_count
-    assert {row[2] for row in rows} == set(range(contingency_count))
-    for _, _, _, flow, negative_slack, positive_slack in rows:
-        assert np.isclose(flow, radial_load.P, atol=1e-6)
-        assert np.isclose(positive_slack, slack_per_state, atol=1e-6)
-        assert np.isclose(negative_slack, 0.0, atol=1e-6)
-        assert flow <= radial_line.rate + positive_slack + 1e-6
-        assert flow >= -radial_line.rate - negative_slack - 1e-6
+
+def test_ntc_pmode3_pre_existing_overload_is_not_reflagged() -> None:
+    """A base-case overload that no outage worsens is relaxed once, not once per contingency.
+
+    A fifth bus carries a fixed radial load above its line rating, so the base case can only
+    relax that limit. 
+    """
+    contingency_count: int = 401
+    grid: gce.MultiCircuit = build_two_pmode3_link_grid(set_reference_bus_on_both=True)
+    bus: gce.Bus
+    for bus in grid.buses:
+        if not bus.is_dc:
+            # Keep the nonzero droop linear so this tests screening, not MIP cost.
+            bus.angle_min = -0.04
+            bus.angle_max = 0.04
+        else:
+            pass  # DC voltages keep their own bounds
+
+    radial_bus: gce.Bus = gce.Bus(name="radial_load", Vnom=400.0, area=grid.areas[0])
+    radial_load: gce.Load = gce.Load(name="radial_load", P=50.0)
+    radial_line: gce.Line = gce.Line(name="radial", bus_from=grid.buses[0], bus_to=radial_bus,
+                                     x=0.01, rate=10.0)
+    grid.add_bus(radial_bus)
+    grid.add_load(radial_bus, radial_load)
+    grid.get_generators()[0].P += radial_load.P
+    grid.add_line(radial_line)
+
+    # Each group outages a distinct parallel AC line. The radial stays connected and unchanged
+    index: int
+    for index in range(contingency_count):
+        line: gce.Line = gce.Line(name=f"parallel_{index}", bus_from=grid.buses[0], bus_to=grid.buses[1],
+                                  x=0.01, rate=1000.0)
+        grid.add_line(line)
+        group: gce.ContingencyGroup = gce.ContingencyGroup(name=f"outage_{index}")
+        grid.add_contingency_group(group)
+        grid.add_contingency(gce.Contingency(device=line, group=group))
+
+    result: gce.OptimalNetTransferCapacityResults = run_pmode3_corrective_n1(grid)
+    assert result.converged
+    assert np.isclose(result.inter_area_flows, 500.0, atol=1e-3)
+    assert np.all(np.abs(result.nodal_balance) < 1e-3)  # 1e-3 MW is the engine's own nodal balance tolerance
+    assert result.get_solution_state() == SolutionState.Relaxed
+
+    # the unavoidable overload is relaxed in the base case only
+    assert np.isclose(result.get_total_slack_mw(), radial_load.P - radial_line.rate, atol=1e-3)
+    radial_index: int = int(np.flatnonzero(result.branch_names == radial_line.name)[0])
+    radial_rows: List[Tuple[int, int, int, float, float, float]] = list()
+    row: Tuple[int, int, int, float, float, float]
+    for row in result.contingency_flows_list:
+        if row[1] == radial_index:
+            radial_rows.append(row)
+        else:
+            pass  # another branch
+    assert len(radial_rows) == 0
 
 
 def test_ntc_exchange_proportions_sum_to_one_per_area() -> None:
@@ -2671,6 +2681,41 @@ def test_ntc_pmode3_dc_cable_outage_stops_the_link() -> None:
     dc_flow: float = float(res.Sf[1].real)
     assert dc_flow > 1.0
     assert np.isclose(res.worst_contingency_flow[0], ac_flow + dc_flow, atol=1e-3)
+
+
+def test_ntc_pmode3_locked_droop_regions_match_exact_binaries() -> None:
+    """Locking each corrective droop at its physical region reaches the exact optimum here.
+
+    With penalized limits the contingency droops get no binaries.
+    The strict formulation keeps exact binaries.
+    No limit needs a slack on this grid, so both solve the same problem and must reach the
+    same transfer.
+    """
+    transfers: Vec = np.zeros(2)
+    index: int
+    for index in range(2):
+        grid: gce.MultiCircuit = gce.open_file(get_grid_path("NTC_8_bus_2pmode3_dc_bottleneck.veragrid"))
+        info: gce.InterAggregationInfo = grid.get_inter_aggregation_info(objects_from=[grid.areas[0]],
+                                                                         objects_to=[grid.areas[1]])
+        options: gce.OptimalNetTransferCapacityOptions = gce.OptimalNetTransferCapacityOptions(
+            sending_bus_idx=info.idx_bus_from,
+            receiving_bus_idx=info.idx_bus_to,
+            skip_generation_limits=True,
+            use_branch_exchange_sensitivity=False,
+            strict_formulation=index == 0,
+            consider_contingencies=True,
+            corrective_contingencies=True,
+            opf_options=gce.OptimalPowerFlowOptions(contingency_groups_used=grid.contingency_groups),
+        )
+        driver: gce.OptimalNetTransferCapacityDriver = gce.OptimalNetTransferCapacityDriver(grid, options)
+        driver.run()
+        result: gce.OptimalNetTransferCapacityResults = driver.results
+        assert result.converged
+        assert np.isclose(result.get_total_slack_mw(), 0.0, atol=1e-3)
+        transfers[index] = float(result.inter_area_flows)
+
+    assert np.isclose(transfers[1], transfers[0], atol=0.01)
+    assert np.isclose(transfers[1], 7000.0, atol=0.01)
 
 
 def test_ntc_strict_pmode3_snapshot_report() -> None:
@@ -3262,6 +3307,161 @@ def test_ntc_ts_report_keeps_only_rows_above_loading_threshold() -> None:
 
     res.monitor_logic[:, :] = False
     assert res.mdl(ResultTypes.ContingencyFlowsReport).r == 0
+
+
+def assert_linear_power_flow_reproduces_ntc(grid: gce.MultiCircuit,
+                                            options: gce.OptimalNetTransferCapacityOptions) -> None:
+    """
+    Run the snapshot NTC, pass its results to a linear power flow and compare every flow.
+
+    :param grid: circuit to study
+    :param options: NTC options
+    :return: None
+    """
+    # the NTC operating point to reproduce
+    driver: gce.OptimalNetTransferCapacityDriver = gce.OptimalNetTransferCapacityDriver(grid, options)
+    driver.run()
+    ntc: gce.OptimalNetTransferCapacityResults = driver.results
+    assert ntc.converged
+
+    # the linear power flow fed with that operating point, as the "OPF results to power flow" option does
+    opf_results: gce.OptimalPowerFlowResults = get_ntc_operating_point_as_opf_results(
+        grid=grid,
+        t_idx=None,
+        bus_change=ntc.dSbus,
+        phase_shift=ntc.phase_shift,
+        hvdc_flow=ntc.hvdc_Pf,
+        vsc_flow=ntc.vsc_Pf,
+        transfer_method=options.transfer_method
+    )
+    power_flow: gce.PowerFlowDriver = gce.PowerFlowDriver(
+        grid=grid,
+        options=gce.PowerFlowOptions(solver_type=gce.SolverType.Linear),
+        opf_results=opf_results
+    )
+    power_flow.run()
+    pf: gce.PowerFlowResults = power_flow.results
+    assert pf.converged
+
+    # 1e-3 MW is the engine's own nodal balance tolerance
+    assert np.allclose(np.real(pf.Sf), np.real(np.asarray(ntc.Sf, dtype=complex)), atol=1e-3)
+    assert np.allclose(pf.Pf_hvdc, np.asarray(ntc.hvdc_Pf, dtype=float), atol=1e-3)
+    assert np.allclose(pf.Pfp_vsc, np.asarray(ntc.vsc_Pf, dtype=float), atol=1e-3)
+
+
+def test_linear_power_flow_reproduces_ntc_with_shifter_and_hvdc() -> None:
+    """
+    The "OPF results to power flow" option shows the NTC operating point: a linear power flow fed
+    with the NTC results has exactly the NTC flows, with a controlled phase shifter, a fixed angle
+    transformer, off-nominal taps, an HVDC line and a static generator next to a load, for every
+    transfer method.
+    """
+    method: gce.AvailableTransferMode
+    for method in (gce.AvailableTransferMode.InstalledPower, gce.AvailableTransferMode.Generation,
+                   gce.AvailableTransferMode.Load, gce.AvailableTransferMode.GenerationAndLoad):
+        grid: gce.MultiCircuit = gce.open_file(
+            get_grid_path('IEEE14 - ntc areas_voltages_hvdc_shifter_l10free.gridcal'))
+        grid.transformers2w[6].tap_phase_control_mode = gce.TapPhaseControl.Pf
+        # a load like device that takes no load shedding, so the loads must carry its bus change
+        grid.add_static_generator(bus=grid.buses[12], api_obj=gce.StaticGenerator(name='sgen', P=8.0))
+        info: gce.InterAggregationInfo = grid.get_inter_aggregation_info(objects_from=[grid.areas[0]],
+                                                                         objects_to=[grid.areas[1]])
+        options: gce.OptimalNetTransferCapacityOptions = gce.OptimalNetTransferCapacityOptions(
+            sending_bus_idx=info.idx_bus_from,
+            receiving_bus_idx=info.idx_bus_to,
+            transfer_method=method,
+            skip_generation_limits=True,
+            use_branch_exchange_sensitivity=False,
+        )
+        assert_linear_power_flow_reproduces_ntc(grid=grid, options=options)
+
+
+def test_linear_power_flow_reproduces_ntc_with_converters() -> None:
+    """
+    The linear power flow fed with the NTC results reproduces the optimized converter flows, both
+    for free converters (Pmode1) and for angle droop converters (Pmode3).
+    """
+    droop: bool
+    for droop in (False, True):
+        grid: gce.MultiCircuit = build_two_tie_link_grid(droop=droop)
+        info: gce.InterAggregationInfo = grid.get_inter_aggregation_info(objects_from=[grid.areas[0]],
+                                                                         objects_to=[grid.areas[1]])
+        options: gce.OptimalNetTransferCapacityOptions = gce.OptimalNetTransferCapacityOptions(
+            sending_bus_idx=info.idx_bus_from,
+            receiving_bus_idx=info.idx_bus_to,
+            skip_generation_limits=True,
+            use_branch_exchange_sensitivity=False,
+        )
+        assert_linear_power_flow_reproduces_ntc(grid=grid, options=options)
+
+
+def test_linear_power_flow_time_series_reproduces_ntc_time_series() -> None:
+    """
+    The power flow time series reproduces the NTC flows of every step the NTC solved, whether or
+    not the clustered results were expanded to the whole calendar, and keeps the grid values at
+    the steps the NTC did not solve.
+    """
+    clustered: bool
+    for clustered in (False, True):
+        grid: gce.MultiCircuit = gce.open_file(
+            get_grid_path('IEEE14 - ntc areas_voltages_hvdc_shifter_l10free.gridcal'))
+        grid.transformers2w[6].tap_phase_control_mode = gce.TapPhaseControl.Pf
+        grid.create_profiles(steps=4, step_length=1, step_unit="h")
+        load: gce.Load
+        index: int
+        for index, load in enumerate(grid.get_loads()):
+            load.P_prof.set(load.P * np.array([0.8, 0.9, 1.0, 1.1]) * (1.0 + 0.05 * (index % 3)))
+
+        info: gce.InterAggregationInfo = grid.get_inter_aggregation_info(objects_from=[grid.areas[0]],
+                                                                         objects_to=[grid.areas[1]])
+        options: gce.OptimalNetTransferCapacityOptions = gce.OptimalNetTransferCapacityOptions(
+            sending_bus_idx=info.idx_bus_from,
+            receiving_bus_idx=info.idx_bus_to,
+            transfer_method=gce.AvailableTransferMode.Generation,
+            skip_generation_limits=True,
+            use_branch_exchange_sensitivity=False,
+        )
+
+        # the NTC solves steps 1 and 3. Clustered, they represent steps 0-1 and 2-3
+        clustering: ClusteringResults | None = None
+        if clustered:
+            clustering = ClusteringResults(time_indices=np.array([1, 3]),
+                                           sampled_probabilities=np.array([0.5, 0.5]),
+                                           time_array=grid.time_profile,
+                                           original_sample_idx=np.array([0, 0, 1, 1]))
+        else:
+            pass  # plain time series
+        ntc_driver: gce.OptimalNetTransferCapacityTimeSeriesDriver = gce.OptimalNetTransferCapacityTimeSeriesDriver(
+            grid, options, time_indices=np.array([1, 3]), clustering_results=clustering)
+        ntc_driver.run()
+        ntc: OptimalNetTransferCapacityTimeSeriesResults = ntc_driver.results
+        solved_rows: IntVec = np.array([0, 1])
+        if clustered:
+            ntc.expand_clustered_results()  # what the GUI does after a clustered run
+            solved_rows = np.array([1, 3])
+        else:
+            pass  # one row per solved step
+
+        # a power flow time series fed with the NTC operating points, and a plain one for the unsolved steps
+        linear: gce.PowerFlowOptions = gce.PowerFlowOptions(solver_type=gce.SolverType.Linear)
+        reproduced: gce.PowerFlowTimeSeriesDriver = gce.PowerFlowTimeSeriesDriver(
+            grid, options=linear, time_indices=np.arange(4),
+            ntc_operating_points=NtcOperatingPoints(grid=grid, results=ntc, transfer_method=options.transfer_method))
+        reproduced.run()
+        plain: gce.PowerFlowTimeSeriesDriver = gce.PowerFlowTimeSeriesDriver(grid, options=linear,
+                                                                             time_indices=np.arange(4))
+        plain.run()
+
+        # 1e-3 MW is the engine's own nodal balance tolerance
+        position: int
+        for position in range(2):
+            step: int = (1, 3)[position]
+            row: int = int(solved_rows[position])
+            assert np.allclose(np.real(reproduced.results.Sf[step]), np.real(np.asarray(ntc.Sf[row], dtype=complex)),
+                               atol=1e-3)
+            assert np.allclose(reproduced.results.hvdc_Pf[step], np.asarray(ntc.hvdc_Pf[row], dtype=float), atol=1e-3)
+        for step in (0, 2):
+            assert np.allclose(np.real(reproduced.results.Sf[step]), np.real(plain.results.Sf[step]), atol=1e-3)
 
 
 if __name__ == '__main__':

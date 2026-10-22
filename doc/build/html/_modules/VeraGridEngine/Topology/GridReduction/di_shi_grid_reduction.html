@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Topology.GridReduction.di_shi_grid_reduction &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Topology.GridReduction.di_shi_grid_reduction &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/license.html">📜 License</a></li>
@@ -127,7 +128,7 @@
 <div class="viewcode-block" id="ward_reduction_non_linear">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Topology.GridReduction.html#VeraGridEngine.Topology.GridReduction.di_shi_grid_reduction.ward_reduction_non_linear">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">ward_reduction_non_linear</span><span class="p">(</span><span class="n">nc</span><span class="p">:</span> <span class="n">NumericalCircuit</span><span class="p">,</span> <span class="n">e_buses</span><span class="p">,</span> <span class="n">b_buses</span><span class="p">,</span> <span class="n">i_buses</span><span class="p">,</span> <span class="n">voltage</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span> <span class="n">Sbus</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 
 <span class="sd">    :param nc:</span>
 <span class="sd">    :param e_buses:</span>
@@ -136,7 +137,7 @@
 <span class="sd">    :param voltage:</span>
 <span class="sd">    :param Sbus:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">adm</span> <span class="o">=</span> <span class="n">nc</span><span class="o">.</span><span class="n">get_admittance_matrices</span><span class="p">()</span>
     <span class="n">Ybus</span> <span class="o">=</span> <span class="n">adm</span><span class="o">.</span><span class="n">Ybus</span>
@@ -168,7 +169,7 @@
     <span class="n">Ieq</span> <span class="o">=</span> <span class="o">-</span> <span class="n">YBE</span> <span class="o">@</span> <span class="n">YEE_fact</span><span class="p">(</span><span class="n">IE</span><span class="p">)</span>  <span class="c1"># 2.17</span>
 
     <span class="c1"># now, we compute the new voltages at the internal and boundary (2.15)</span>
-    <span class="n">Ysys</span> <span class="o">=</span> <span class="n">bmat</span><span class="p">(</span><span class="n">blocks</span><span class="o">=</span><span class="p">[[</span><span class="n">YII</span><span class="o">.</span><span class="n">tocsc</span><span class="p">(),</span> <span class="n">YIB</span><span class="o">.</span><span class="n">tocsc</span><span class="p">()],</span> <span class="p">[</span><span class="n">YBI</span><span class="o">.</span><span class="n">tocsc</span><span class="p">(),</span> <span class="n">YBBp</span><span class="o">.</span><span class="n">tocsc</span><span class="p">()]],</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;csc&#39;</span><span class="p">)</span>
+    <span class="n">Ysys</span> <span class="o">=</span> <span class="n">bmat</span><span class="p">(</span><span class="n">blocks</span><span class="o">=</span><span class="p">[[</span><span class="n">YII</span><span class="o">.</span><span class="n">tocsc</span><span class="p">(),</span> <span class="n">YIB</span><span class="o">.</span><span class="n">tocsc</span><span class="p">()],</span> <span class="p">[</span><span class="n">YBI</span><span class="o">.</span><span class="n">tocsc</span><span class="p">(),</span> <span class="n">YBBp</span><span class="o">.</span><span class="n">tocsc</span><span class="p">()]],</span> <span class="nb">format</span><span class="o">=</span><span class="s1">'csc'</span><span class="p">)</span>
     <span class="n">IBp</span> <span class="o">=</span> <span class="n">IB</span> <span class="o">+</span> <span class="n">Ieq</span>  <span class="c1"># IBp = IB - YBE @ YEE_fact(IE)  # 2.14</span>
     <span class="n">Isys</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span><span class="n">II</span><span class="p">,</span> <span class="n">IBp</span><span class="p">]</span>
     <span class="n">V</span> <span class="o">=</span> <span class="n">spsolve</span><span class="p">(</span><span class="n">Ysys</span><span class="p">,</span> <span class="n">Isys</span><span class="p">)</span>
@@ -185,14 +186,14 @@
 <div class="viewcode-block" id="ward_reduction_linear">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Topology.GridReduction.html#VeraGridEngine.Topology.GridReduction.di_shi_grid_reduction.ward_reduction_linear">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">ward_reduction_linear</span><span class="p">(</span><span class="n">Ybus</span><span class="p">:</span> <span class="n">csc_matrix</span><span class="p">,</span> <span class="n">e_buses</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">b_buses</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">i_buses</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 
 <span class="sd">    :param Ybus:</span>
 <span class="sd">    :param e_buses:</span>
 <span class="sd">    :param b_buses:</span>
 <span class="sd">    :param i_buses:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="c1"># slice matrices</span>
     <span class="n">Yii</span> <span class="o">=</span> <span class="n">Ybus</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ix_</span><span class="p">(</span><span class="n">i_buses</span><span class="p">,</span> <span class="n">i_buses</span><span class="p">)]</span>
@@ -234,13 +235,13 @@
 <div class="viewcode-block" id="ward_reduction_linear2">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Topology.GridReduction.html#VeraGridEngine.Topology.GridReduction.di_shi_grid_reduction.ward_reduction_linear2">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">ward_reduction_linear2</span><span class="p">(</span><span class="n">Ybus</span><span class="p">:</span> <span class="n">csc_matrix</span><span class="p">,</span> <span class="n">e_buses</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">i_buses</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 
 <span class="sd">    :param Ybus:</span>
 <span class="sd">    :param e_buses:</span>
 <span class="sd">    :param i_buses:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="c1"># slice matrices</span>
 
@@ -264,12 +265,12 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Topology.GridReduction.html#VeraGridEngine.Topology.GridReduction.di_shi_grid_reduction.get_reduction_sets_1">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_reduction_sets_1</span><span class="p">(</span><span class="n">nc</span><span class="p">:</span> <span class="n">NumericalCircuit</span><span class="p">,</span>
                          <span class="n">reduction_bus_indices</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">IntVec</span><span class="p">,</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">IntVec</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Generate the set of bus indices for grid reduction</span>
 <span class="sd">    :param nc: NumericalCircuit</span>
 <span class="sd">    :param reduction_bus_indices: array of bus indices to reduce (external set)</span>
 <span class="sd">    :return: external, boundary, internal, boundary_branches</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">external_set</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">reduction_bus_indices</span><span class="p">)</span>
     <span class="n">boundary_set</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
@@ -322,7 +323,7 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Topology.GridReduction.html#VeraGridEngine.Topology.GridReduction.di_shi_grid_reduction.create_new_boundary_branches">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">create_new_boundary_branches</span><span class="p">(</span><span class="n">grid</span><span class="p">:</span> <span class="n">MultiCircuit</span><span class="p">,</span> <span class="n">b_buses</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">Yeq_1</span><span class="p">:</span> <span class="n">csc_matrix</span><span class="p">,</span> <span class="n">Ybbp_1</span><span class="p">:</span> <span class="n">csc_matrix</span><span class="p">,</span>
                                  <span class="n">tol</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">use_linear</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 
 <span class="sd">    :param grid:</span>
 <span class="sd">    :param b_buses:</span>
@@ -331,7 +332,7 @@
 <span class="sd">    :param tol:</span>
 <span class="sd">    :param use_linear:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># add boundary equivalent sub-grid: traverse only the triangular</span>
     <span class="n">max_x</span> <span class="o">=</span> <span class="mf">5.0</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">b_buses</span><span class="p">)):</span>
@@ -345,9 +346,9 @@
                     <span class="n">yeq_row_i</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
                     <span class="n">ysh</span> <span class="o">=</span> <span class="n">Ybbp_1</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">yeq_row_i</span><span class="p">)</span>
                     <span class="k">if</span> <span class="n">use_linear</span><span class="p">:</span>
-                        <span class="n">sh</span> <span class="o">=</span> <span class="n">dev</span><span class="o">.</span><span class="n">Shunt</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Equivalent shunt </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">B</span><span class="o">=</span><span class="n">ysh</span><span class="p">,</span> <span class="n">G</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
+                        <span class="n">sh</span> <span class="o">=</span> <span class="n">dev</span><span class="o">.</span><span class="n">Shunt</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">"Equivalent shunt </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">B</span><span class="o">=</span><span class="n">ysh</span><span class="p">,</span> <span class="n">G</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
                     <span class="k">else</span><span class="p">:</span>
-                        <span class="n">sh</span> <span class="o">=</span> <span class="n">dev</span><span class="o">.</span><span class="n">Shunt</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Equivalent shunt </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">B</span><span class="o">=</span><span class="n">ysh</span><span class="o">.</span><span class="n">imag</span><span class="p">,</span> <span class="n">G</span><span class="o">=</span><span class="n">ysh</span><span class="o">.</span><span class="n">real</span><span class="p">)</span>
+                        <span class="n">sh</span> <span class="o">=</span> <span class="n">dev</span><span class="o">.</span><span class="n">Shunt</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">"Equivalent shunt </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">B</span><span class="o">=</span><span class="n">ysh</span><span class="o">.</span><span class="n">imag</span><span class="p">,</span> <span class="n">G</span><span class="o">=</span><span class="n">ysh</span><span class="o">.</span><span class="n">real</span><span class="p">)</span>
                     <span class="n">grid</span><span class="o">.</span><span class="n">add_shunt</span><span class="p">(</span><span class="n">bus</span><span class="o">=</span><span class="n">bus</span><span class="p">,</span> <span class="n">api_obj</span><span class="o">=</span><span class="n">sh</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="c1"># add series reactance</span>
@@ -358,7 +359,7 @@
 
                     <span class="k">if</span> <span class="n">z</span><span class="o">.</span><span class="n">imag</span> <span class="o">&lt;=</span> <span class="n">max_x</span><span class="p">:</span>
                         <span class="n">series_reactance</span> <span class="o">=</span> <span class="n">dev</span><span class="o">.</span><span class="n">SeriesReactance</span><span class="p">(</span>
-                            <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Equivalent boundary impedance </span><span class="si">{</span><span class="n">b_buses</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">b_buses</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                            <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">"Equivalent boundary impedance </span><span class="si">{</span><span class="n">b_buses</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">b_buses</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
                             <span class="n">bus_from</span><span class="o">=</span><span class="n">grid</span><span class="o">.</span><span class="n">buses</span><span class="p">[</span><span class="n">f</span><span class="p">],</span>
                             <span class="n">bus_to</span><span class="o">=</span><span class="n">grid</span><span class="o">.</span><span class="n">buses</span><span class="p">[</span><span class="n">t</span><span class="p">],</span>
                             <span class="n">r</span><span class="o">=</span><span class="n">z</span><span class="o">.</span><span class="n">real</span><span class="p">,</span>
@@ -372,12 +373,12 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Topology.GridReduction.html#VeraGridEngine.Topology.GridReduction.di_shi_grid_reduction.find_gen_relocation">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">find_gen_relocation</span><span class="p">(</span><span class="n">grid</span><span class="p">:</span> <span class="n">MultiCircuit</span><span class="p">,</span>
                         <span class="n">reduction_bus_indices</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">]):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Relocate generators</span>
 <span class="sd">    :param grid: MultiCircuit</span>
 <span class="sd">    :param reduction_bus_indices: array of bus indices to reduce (external set)</span>
 <span class="sd">    :return: None</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">G</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">()</span>
     <span class="n">bus_idx_dict</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">get_bus_index_dict</span><span class="p">()</span>
     <span class="n">external_set</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">reduction_bus_indices</span><span class="p">)</span>
@@ -391,7 +392,7 @@
         <span class="k">if</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">external_set</span><span class="p">:</span>
             <span class="n">external_set</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
             <span class="n">external_gen_set</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
-            <span class="n">external_gen_data</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">k</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="s1">&#39;generator&#39;</span><span class="p">))</span>
+            <span class="n">external_gen_data</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">k</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="s1">'generator'</span><span class="p">))</span>
             <span class="n">G</span><span class="o">.</span><span class="n">add_node</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
 
     <span class="c1"># loop through the branches</span>
@@ -417,7 +418,7 @@
 
     <span class="n">purely_internal_set</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">internal_set</span> <span class="o">-</span> <span class="n">external_gen_set</span><span class="p">)</span>
 
-    <span class="c1"># now, for every generator, we need to find the shortest path in the &quot;purely internal set&quot;</span>
+    <span class="c1"># now, for every generator, we need to find the shortest path in the "purely internal set"</span>
     <span class="k">for</span> <span class="n">elm_idx</span><span class="p">,</span> <span class="n">bus_idx</span><span class="p">,</span> <span class="n">tpe</span> <span class="ow">in</span> <span class="n">external_gen_data</span><span class="p">:</span>
         <span class="c1"># Compute shortest path lengths from this source</span>
         <span class="n">lengths</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">single_source_shortest_path_length</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">bus_idx</span><span class="p">)</span>
@@ -430,7 +431,7 @@
             <span class="n">closest</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">target_distances</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">target_distances</span><span class="o">.</span><span class="n">get</span><span class="p">)</span>
 
             <span class="c1"># relocate</span>
-            <span class="k">if</span> <span class="n">tpe</span> <span class="o">==</span> <span class="s1">&#39;generator&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">tpe</span> <span class="o">==</span> <span class="s1">'generator'</span><span class="p">:</span>
                 <span class="n">grid</span><span class="o">.</span><span class="n">generators</span><span class="p">[</span><span class="n">elm_idx</span><span class="p">]</span><span class="o">.</span><span class="n">bus</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">buses</span><span class="p">[</span><span class="n">closest</span><span class="p">]</span></div>
 
 
@@ -441,7 +442,7 @@
                      <span class="n">reduction_bus_indices</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span>
                      <span class="n">V0</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span>
                      <span class="n">tol</span><span class="o">=</span><span class="mf">1e-8</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">MultiCircuit</span><span class="p">,</span> <span class="n">Logger</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    In-place Grid reduction using the Di-Shi equivalent model</span>
 <span class="sd">    from: Power System Network Reduction for Engineering and Economic Analysis by Di Shi, 2012</span>
 <span class="sd">    and Optimal Generation Investment Planning: Pt 1: Network Equivalents</span>
@@ -449,7 +450,7 @@
 <span class="sd">    :param reduction_bus_indices: Bus indices of the buses to delete</span>
 <span class="sd">    :param V0: Array of voltages for the non-reduced system</span>
 <span class="sd">    :param tol: Tolerance, any equivalent power value under this is omitted</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">logger</span> <span class="o">=</span> <span class="n">Logger</span><span class="p">()</span>
 
     <span class="n">nc</span> <span class="o">=</span> <span class="n">compile_numerical_circuit_at</span><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="n">t_idx</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
@@ -465,15 +466,15 @@
     <span class="n">e_buses</span><span class="p">,</span> <span class="n">b_buses</span><span class="p">,</span> <span class="n">i_buses</span><span class="p">,</span> <span class="n">b_branches</span> <span class="o">=</span> <span class="n">get_reduction_sets_1</span><span class="p">(</span><span class="n">nc</span><span class="o">=</span><span class="n">nc</span><span class="p">,</span> <span class="n">reduction_bus_indices</span><span class="o">=</span><span class="n">reduction_bus_indices</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">e_buses</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">&quot;Nothing to reduce&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">"Nothing to reduce"</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">grid</span><span class="p">,</span> <span class="n">logger</span>
 
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">i_buses</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">&quot;Nothing to keep (null grid as a result)&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">"Nothing to keep (null grid as a result)"</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">grid</span><span class="p">,</span> <span class="n">logger</span>
 
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">b_buses</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">&quot;The reducible and non reducible sets are disjoint and cannot be reduced&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">"The reducible and non reducible sets are disjoint and cannot be reduced"</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">grid</span><span class="p">,</span> <span class="n">logger</span>
 
     <span class="n">adm</span> <span class="o">=</span> <span class="n">nc</span><span class="o">.</span><span class="n">get_admittance_matrices</span><span class="p">()</span>
@@ -507,7 +508,7 @@
 
     <span class="c1"># Step 4 – Relocate loads with inverse power flow ------------------------------------------------------------------</span>
 
-    <span class="c1"># Let&#39;s not forget about the loads! in order to move the external loads such that</span>
+    <span class="c1"># Let's not forget about the loads! in order to move the external loads such that</span>
     <span class="c1"># the reduced flows resemble the original flows (even after brutally moving the generators!),</span>
     <span class="c1"># we need to perform an inverse power flow.</span>
     <span class="c1">#</span>
@@ -517,7 +518,7 @@
     <span class="c1"># Second, we need to form the admittance matrix of the reduced grid</span>
     <span class="c1"># (including the inter-boundary branches), and multiply this admittance matrix</span>
     <span class="c1"># by the original voltage angles for the reduced set of buses.</span>
-    <span class="c1"># This gets us the &quot;final&quot; power injections in the reduced system.</span>
+    <span class="c1"># This gets us the "final" power injections in the reduced system.</span>
     <span class="c1">#</span>
     <span class="c1"># From those, we need to subtract the reduced grid injections.</span>
     <span class="c1"># This will provide us with a vector of new loads that we need</span>
@@ -539,18 +540,18 @@
     <span class="c1"># add loads</span>
     <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">S</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">dSred</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">S</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">tol</span><span class="p">:</span>
-            <span class="n">ld</span> <span class="o">=</span> <span class="n">dev</span><span class="o">.</span><span class="n">Load</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;compensation </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">P</span><span class="o">=</span><span class="n">S</span><span class="o">.</span><span class="n">real</span><span class="p">,</span> <span class="n">Q</span><span class="o">=</span><span class="n">S</span><span class="o">.</span><span class="n">imag</span><span class="p">)</span>
+            <span class="n">ld</span> <span class="o">=</span> <span class="n">dev</span><span class="o">.</span><span class="n">Load</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">"compensation </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">P</span><span class="o">=</span><span class="n">S</span><span class="o">.</span><span class="n">real</span><span class="p">,</span> <span class="n">Q</span><span class="o">=</span><span class="n">S</span><span class="o">.</span><span class="n">imag</span><span class="p">)</span>
             <span class="n">grid</span><span class="o">.</span><span class="n">add_load</span><span class="p">(</span><span class="n">bus</span><span class="o">=</span><span class="n">grid</span><span class="o">.</span><span class="n">buses</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">api_obj</span><span class="o">=</span><span class="n">ld</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">grid</span><span class="p">,</span> <span class="n">logger</span></div>
 
 
 
-<span class="c1"># if __name__ == &#39;__main__&#39;:</span>
+<span class="c1"># if __name__ == '__main__':</span>
 <span class="c1">#     import VeraGridEngine as gce</span>
 <span class="c1">#</span>
-<span class="c1">#     fname = &#39;/home/santi/Documentos/Git/GitHub/VeraGrid/src/tests/data/grids/Matpower/case9.m&#39;</span>
-<span class="c1">#     fname_expected = &#39;/home/santi/Documentos/Git/GitHub/VeraGrid/src/tests/data/grids/Matpower/ieee9_reduced.m&#39;</span>
+<span class="c1">#     fname = '/home/santi/Documentos/Git/GitHub/VeraGrid/src/tests/data/grids/Matpower/case9.m'</span>
+<span class="c1">#     fname_expected = '/home/santi/Documentos/Git/GitHub/VeraGrid/src/tests/data/grids/Matpower/ieee9_reduced.m'</span>
 <span class="c1">#</span>
 <span class="c1">#     reduction_bus_indices_ = np.array([2, 4, 5, 6])</span>
 <span class="c1">#</span>

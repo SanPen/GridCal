@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Compilers.Gslv.activation &mdash; VeraGrid 6.7.13 documentation</title>
+  <title>VeraGridEngine.Compilers.Gslv.activation &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=16fbabd8"></script>
+      <script src="../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -129,12 +129,12 @@
     <span class="n">ConverterControlType</span><span class="p">,</span>
     <span class="n">GeneratorControlMode</span>
 <span class="p">)</span>
-<span class="n">GSLV_RECOMMENDED_VERSION</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;0.9.3&quot;</span>
-<span class="n">GSLV_VERSION</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+<span class="n">GSLV_RECOMMENDED_VERSION</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"0.9.3"</span>
+<span class="n">GSLV_VERSION</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">''</span>
 <span class="n">GSLV_AVAILABLE</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
 
 <span class="c1"># pygslv exports its statically linked HiGHS symbols globally; if it loads before</span>
-<span class="c1"># highspy, the highspy solver resolves against pygslv&#39;s HiGHS and segfaults mid-solve.</span>
+<span class="c1"># highspy, the highspy solver resolves against pygslv's HiGHS and segfaults mid-solve.</span>
 <span class="c1"># Loading highspy first pins the correct symbols. Missing highspy is fine: the except</span>
 <span class="c1"># below only shields the import order, nothing else uses this module reference.</span>
 <span class="c1"># try:</span>
@@ -157,8 +157,8 @@
 
     <span class="k">if</span> <span class="n">GSLV_AVAILABLE</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">pkg</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">GSLV_VERSION</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">pkg</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">GSLV_RECOMMENDED_VERSION</span><span class="p">):</span>
-            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Recommended version for GSLV is </span><span class="si">{</span><span class="n">GSLV_RECOMMENDED_VERSION</span><span class="si">}</span><span class="s2"> &quot;</span>
-                          <span class="sa">f</span><span class="s2">&quot;instead of </span><span class="si">{</span><span class="n">GSLV_VERSION</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Recommended version for GSLV is </span><span class="si">{</span><span class="n">GSLV_RECOMMENDED_VERSION</span><span class="si">}</span><span class="s2"> "</span>
+                          <span class="sa">f</span><span class="s2">"instead of </span><span class="si">{</span><span class="n">GSLV_VERSION</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
     <span class="n">build_status_dict</span> <span class="o">=</span> <span class="p">{</span>
         <span class="n">BuildStatus</span><span class="o">.</span><span class="n">Planned</span><span class="p">:</span> <span class="n">pg</span><span class="o">.</span><span class="n">BuildStatus</span><span class="o">.</span><span class="n">Planned</span><span class="p">,</span>
@@ -261,7 +261,7 @@
 <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
     <span class="n">pg</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">GSLV_AVAILABLE</span> <span class="o">=</span> <span class="kc">False</span>
-    <span class="n">GSLV_VERSION</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+    <span class="n">GSLV_VERSION</span> <span class="o">=</span> <span class="s1">''</span>
 
     <span class="n">build_status_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
     <span class="n">tap_module_control_mode_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
@@ -281,17 +281,17 @@
 <div class="viewcode-block" id="install_gslv_license">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Compilers.Gslv.html#VeraGridEngine.Compilers.Gslv.activation.install_gslv_license">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">install_gslv_license</span><span class="p">(</span><span class="n">fname</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Copy one GSLV license file into VeraGrid&#39;s managed folder.</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Copy one GSLV license file into VeraGrid's managed folder.</span>
 
 <span class="sd">    :param fname: Source license file path.</span>
 <span class="sd">    :return: Success flag and status message.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
-        <span class="c1"># The license must live inside VeraGrid&#39;s managed folder so the wrapper</span>
+        <span class="c1"># The license must live inside VeraGrid's managed folder so the wrapper</span>
         <span class="c1"># can discover it consistently on later runs.</span>
-        <span class="n">folder</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">Path</span><span class="o">.</span><span class="n">home</span><span class="p">()),</span> <span class="s1">&#39;.VeraGrid&#39;</span><span class="p">)</span>
+        <span class="n">folder</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">Path</span><span class="o">.</span><span class="n">home</span><span class="p">()),</span> <span class="s1">'.VeraGrid'</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">folder</span><span class="p">):</span>
             <span class="k">pass</span>
         <span class="k">else</span><span class="p">:</span>
@@ -300,9 +300,9 @@
         <span class="n">name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
         <span class="n">dst</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">folder</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
         <span class="n">shutil</span><span class="o">.</span><span class="n">copyfile</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">dst</span><span class="p">)</span>
-        <span class="k">return</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">&quot;License installed!&quot;</span>
+        <span class="k">return</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">"License installed!"</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">return</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;The file does not exists :(&quot;</span></div>
+        <span class="k">return</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">"The file does not exists :("</span></div>
 
 </pre></div>
 

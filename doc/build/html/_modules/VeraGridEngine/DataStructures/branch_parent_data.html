@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.DataStructures.branch_parent_data &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.DataStructures.branch_parent_data &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/license.html">📜 License</a></li>
@@ -120,37 +121,37 @@
 <div class="viewcode-block" id="BranchParentData">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.branch_parent_data.BranchParentData">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">BranchParentData</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Structure to host all branches data for calculation</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;nelm&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;nbus&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;names&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;idtag&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;dc&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;active&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;rates&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;contingency_rates&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;protection_rates&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;F&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;T&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;mttf&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;mttr&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;contingency_enabled&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;monitor_loading&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;overload_cost&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;original_idx&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;reducible&quot;</span><span class="p">,</span>
+        <span class="s2">"nelm"</span><span class="p">,</span>
+        <span class="s2">"nbus"</span><span class="p">,</span>
+        <span class="s2">"names"</span><span class="p">,</span>
+        <span class="s2">"idtag"</span><span class="p">,</span>
+        <span class="s2">"dc"</span><span class="p">,</span>
+        <span class="s2">"active"</span><span class="p">,</span>
+        <span class="s2">"rates"</span><span class="p">,</span>
+        <span class="s2">"contingency_rates"</span><span class="p">,</span>
+        <span class="s2">"protection_rates"</span><span class="p">,</span>
+        <span class="s2">"F"</span><span class="p">,</span>
+        <span class="s2">"T"</span><span class="p">,</span>
+        <span class="s2">"mttf"</span><span class="p">,</span>
+        <span class="s2">"mttr"</span><span class="p">,</span>
+        <span class="s2">"contingency_enabled"</span><span class="p">,</span>
+        <span class="s2">"monitor_loading"</span><span class="p">,</span>
+        <span class="s2">"overload_cost"</span><span class="p">,</span>
+        <span class="s2">"original_idx"</span><span class="p">,</span>
+        <span class="s2">"reducible"</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nelm</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">nbus</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Branch data arrays</span>
 <span class="sd">        :param nelm: number of elements</span>
 <span class="sd">        :param nbus: number of buses</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nelm</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">nelm</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nbus</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">nbus</span>
 
@@ -164,8 +165,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">contingency_rates</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nelm</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">protection_rates</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nelm</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">F</span><span class="p">:</span> <span class="n">IntVec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nelm</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>  <span class="c1"># indices of the &quot;from&quot; buses</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">T</span><span class="p">:</span> <span class="n">IntVec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nelm</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>  <span class="c1"># indices of the &quot;to&quot; buses</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">F</span><span class="p">:</span> <span class="n">IntVec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nelm</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>  <span class="c1"># indices of the "from" buses</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">T</span><span class="p">:</span> <span class="n">IntVec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nelm</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>  <span class="c1"># indices of the "to" buses</span>
 
         <span class="c1"># reliability</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">mttf</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nelm</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
@@ -181,10 +182,10 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">Cf</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">sp</span><span class="o">.</span><span class="n">csc_matrix</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Bras-bus from connectivity</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># mat = sp.lil_matrix((self.nelm, self.nbus), dtype=int)</span>
         <span class="c1"># for k in range(self.nelm):</span>
         <span class="c1">#     mat[k, self.F[k]] = 1</span>
@@ -195,10 +196,10 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">Ct</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">sp</span><span class="o">.</span><span class="n">csc_matrix</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Bras-bus to connectivity</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># mat = sp.lil_matrix((self.nelm, self.nbus), dtype=int)</span>
         <span class="c1"># for k in range(self.nelm):</span>
         <span class="c1">#     mat[k, self.T[k]] = 1</span>
@@ -211,11 +212,11 @@
 <div class="viewcode-block" id="BranchParentData.monitored_Cf">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.branch_parent_data.BranchParentData.monitored_Cf">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">monitored_Cf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">sp</span><span class="o">.</span><span class="n">csc_matrix</span><span class="p">:</span> <span class="c1"># TODO: @Carlos: Ganancia marginal al coger solo los monitorizados. Por ver si es relevante.</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Bras-bus from connectivity for monitored branches</span>
 <span class="sd">        :param idx: Monitored branches ids</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># mat = sp.lil_matrix((self.nelm, self.nbus), dtype=int)</span>
         <span class="c1"># for k in range(self.nelm):</span>
         <span class="c1">#     mat[k, self.F[k]] = 1</span>
@@ -229,11 +230,11 @@
 <div class="viewcode-block" id="BranchParentData.monitored_Ct">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.branch_parent_data.BranchParentData.monitored_Ct">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">monitored_Ct</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">sp</span><span class="o">.</span><span class="n">csc_matrix</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Bras-bus to connectivity for monitored branches</span>
 <span class="sd">        :param idx: Monitored branches ids</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># mat = sp.lil_matrix((self.nelm, self.nbus), dtype=int)</span>
         <span class="c1"># for k in range(self.nelm):</span>
         <span class="c1">#     mat[k, self.T[k]] = 1</span>
@@ -247,10 +248,10 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">C</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">sp</span><span class="o">.</span><span class="n">csc_matrix</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Branch-bus connectivity matrix</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nelm</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nelm</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)]</span>
         <span class="n">j</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">F</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">T</span><span class="p">]</span>
         <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nelm</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
@@ -259,10 +260,10 @@
 <div class="viewcode-block" id="BranchParentData.size">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.branch_parent_data.BranchParentData.size">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">size</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get size of the structure</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">nelm</span></div>
 
@@ -270,15 +271,15 @@
 <div class="viewcode-block" id="BranchParentData.slice">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.branch_parent_data.BranchParentData.slice">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">slice</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">elm_idx</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">bus_idx</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">bus_map</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span>
-              <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="s2">&quot;BranchParentData&quot;</span><span class="p">,</span> <span class="n">IntVec</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+              <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="s2">"BranchParentData"</span><span class="p">,</span> <span class="n">IntVec</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Slice branch data by given indices</span>
 <span class="sd">        :param elm_idx: array of branch indices</span>
 <span class="sd">        :param bus_idx: array of bus indices</span>
 <span class="sd">        :param bus_map: map from bus index to island bus index {int(o): i for i, o in enumerate(bus_idx)}</span>
 <span class="sd">        :param logger: Logger</span>
 <span class="sd">        :return: new BranchData instance</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span><span class="n">nelm</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">elm_idx</span><span class="p">),</span> <span class="n">nbus</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">bus_idx</span><span class="p">))</span>
 
@@ -308,14 +309,14 @@
             <span class="n">data</span><span class="o">.</span><span class="n">F</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">bus_map</span><span class="p">[</span><span class="n">data</span><span class="o">.</span><span class="n">F</span><span class="p">[</span><span class="n">k</span><span class="p">]]</span>
             <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">F</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">logger</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Branch </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">names</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="si">}</span><span class="s2"> is connected to a disconnected node&quot;</span><span class="p">,</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Branch </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">names</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="si">}</span><span class="s2"> is connected to a disconnected node"</span><span class="p">,</span>
                                      <span class="n">value</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">F</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
                 <span class="n">data</span><span class="o">.</span><span class="n">active</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
 
             <span class="n">data</span><span class="o">.</span><span class="n">T</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">bus_map</span><span class="p">[</span><span class="n">data</span><span class="o">.</span><span class="n">T</span><span class="p">[</span><span class="n">k</span><span class="p">]]</span>
             <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">T</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">logger</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Branch </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">names</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="si">}</span><span class="s2"> is connected to a disconnected node&quot;</span><span class="p">,</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Branch </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">names</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="si">}</span><span class="s2"> is connected to a disconnected node"</span><span class="p">,</span>
                                      <span class="n">value</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">T</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
                 <span class="n">data</span><span class="o">.</span><span class="n">active</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
 
@@ -329,11 +330,11 @@
 
 <div class="viewcode-block" id="BranchParentData.copy">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.branch_parent_data.BranchParentData.copy">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;BranchParentData&quot;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"BranchParentData"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get a deep copy of this object</span>
 <span class="sd">        :return: new BranchData instance</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="n">data</span><span class="p">:</span> <span class="n">BranchParentData</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span><span class="n">nelm</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nelm</span><span class="p">,</span> <span class="n">nbus</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nbus</span><span class="p">)</span>
 
@@ -366,52 +367,52 @@
 <div class="viewcode-block" id="BranchParentData.get_ac_indices">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.branch_parent_data.BranchParentData.get_ac_indices">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_ac_indices</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">IntVec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get ac branch indices</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dc</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span></div>
 
 
 <div class="viewcode-block" id="BranchParentData.get_dc_indices">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.branch_parent_data.BranchParentData.get_dc_indices">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_dc_indices</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">IntVec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get dc branch indices</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dc</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span></div>
 
 
 <div class="viewcode-block" id="BranchParentData.get_monitor_enabled_indices">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.branch_parent_data.BranchParentData.get_monitor_enabled_indices">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_monitor_enabled_indices</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">IntVec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get monitored branch indices</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">monitor_loading</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span></div>
 
 
 <div class="viewcode-block" id="BranchParentData.get_contingency_enabled_indices">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.branch_parent_data.BranchParentData.get_contingency_enabled_indices">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_contingency_enabled_indices</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">IntVec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get contingency branch indices</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">contingency_enabled</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span></div>
 
 
 <div class="viewcode-block" id="BranchParentData.get_inter_areas">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.branch_parent_data.BranchParentData.get_inter_areas">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_inter_areas</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bus_idx_from</span><span class="p">:</span> <span class="n">IntVec</span> <span class="o">|</span> <span class="n">Set</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">bus_idx_to</span><span class="p">:</span> <span class="n">IntVec</span> <span class="o">|</span> <span class="n">Set</span><span class="p">[</span><span class="nb">int</span><span class="p">]):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the Branches that join two areas</span>
 <span class="sd">        :param bus_idx_from: Area from</span>
 <span class="sd">        :param bus_idx_to: Area to</span>
 <span class="sd">        :return: List of (branch index, flow sense w.r.t the area exchange)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="n">lst</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nelm</span><span class="p">):</span>
@@ -425,17 +426,17 @@
 <div class="viewcode-block" id="BranchParentData.to_df">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.branch_parent_data.BranchParentData.to_df">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">to_df</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Create DataFrame with the compiled Branches information</span>
 <span class="sd">        :return: Pandas DataFrame</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">data</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s1">&#39;names&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">names</span><span class="p">,</span>
-            <span class="s1">&#39;active&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">active</span><span class="p">,</span>
-            <span class="s1">&#39;F&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">F</span><span class="p">,</span>
-            <span class="s1">&#39;T&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">T</span><span class="p">,</span>
-            <span class="s1">&#39;Rates&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">rates</span><span class="p">,</span>
-            <span class="s1">&#39;Contingency rates&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">contingency_rates</span><span class="p">,</span>
+            <span class="s1">'names'</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">names</span><span class="p">,</span>
+            <span class="s1">'active'</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">active</span><span class="p">,</span>
+            <span class="s1">'F'</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">F</span><span class="p">,</span>
+            <span class="s1">'T'</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">T</span><span class="p">,</span>
+            <span class="s1">'Rates'</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">rates</span><span class="p">,</span>
+            <span class="s1">'Contingency rates'</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">contingency_rates</span><span class="p">,</span>
         <span class="p">}</span>
         <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">)</span></div>
 
@@ -443,10 +444,10 @@
 <div class="viewcode-block" id="BranchParentData.remap">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.branch_parent_data.BranchParentData.remap">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">remap</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bus_map_arr</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Remapping of the branch buses</span>
 <span class="sd">        :param bus_map_arr: array of old-to-new buses</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nelm</span><span class="p">):</span>
             <span class="n">new_f</span> <span class="o">=</span> <span class="n">bus_map_arr</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">F</span><span class="p">[</span><span class="n">k</span><span class="p">]]</span>
@@ -471,14 +472,14 @@
 
 <div class="viewcode-block" id="BranchParentData.compare">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.branch_parent_data.BranchParentData.compare">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">compare</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="s2">&quot;BranchParentData&quot;</span><span class="p">,</span> <span class="n">tol</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">compare</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="s2">"BranchParentData"</span><span class="p">,</span> <span class="n">tol</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Compare branch-parent fields shared by branch-like structures.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">compare_arr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">F</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">F</span><span class="p">,</span> <span class="n">tol</span><span class="p">,</span> <span class="s1">&#39;BranchData&#39;</span><span class="p">,</span> <span class="s1">&#39;F&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
-        <span class="n">compare_arr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">tol</span><span class="p">,</span> <span class="s1">&#39;BranchData&#39;</span><span class="p">,</span> <span class="s1">&#39;T&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
-        <span class="n">compare_arr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">active</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">active</span><span class="p">,</span> <span class="n">tol</span><span class="p">,</span> <span class="s1">&#39;BranchData&#39;</span><span class="p">,</span> <span class="s1">&#39;active&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
-        <span class="n">compare_arr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rates</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">rates</span><span class="p">,</span> <span class="n">tol</span><span class="p">,</span> <span class="s1">&#39;BranchData&#39;</span><span class="p">,</span> <span class="s1">&#39;rates&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span></div>
+<span class="sd">        """</span>
+        <span class="n">compare_arr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">F</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">F</span><span class="p">,</span> <span class="n">tol</span><span class="p">,</span> <span class="s1">'BranchData'</span><span class="p">,</span> <span class="s1">'F'</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
+        <span class="n">compare_arr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">tol</span><span class="p">,</span> <span class="s1">'BranchData'</span><span class="p">,</span> <span class="s1">'T'</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
+        <span class="n">compare_arr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">active</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">active</span><span class="p">,</span> <span class="n">tol</span><span class="p">,</span> <span class="s1">'BranchData'</span><span class="p">,</span> <span class="s1">'active'</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
+        <span class="n">compare_arr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rates</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">rates</span><span class="p">,</span> <span class="n">tol</span><span class="p">,</span> <span class="s1">'BranchData'</span><span class="p">,</span> <span class="s1">'rates'</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span></div>
 </div>
 
 </pre></div>

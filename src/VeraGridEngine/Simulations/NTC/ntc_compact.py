@@ -181,8 +181,9 @@ def add_clipped_flow(prob: LpModel,
                      rate: float,
                      lower: float,
                      upper: float,
-                     name: str) -> None:
-    """Exact clipped affine law, using at most two binary variables.
+                     name: str,
+                     binary: bool = True) -> tuple[LpVar | None, LpVar | None]:
+    """Exact clipped affine law, using at most two region selectors.
 
     Bounds are bounds on the unclipped power, not a guessed multiple of the
     device rating, as before with the M factor.
@@ -195,8 +196,12 @@ def add_clipped_flow(prob: LpModel,
     :param lower: Lower bound on the unclipped demand.
     :param upper: Upper bound on the unclipped demand.
     :param name: Unique prefix for solver variables and constraints.
-    :return: None.
+    :param binary: Declare the region selectors binary. Continuous selectors give the LP
+                   relaxation, which is exact again once the caller fixes them at 0 or 1.
+    :return: Upper and lower saturation selectors, None where that region cannot be reached.
     """
+    upper_selector: LpVar | None = None
+    lower_selector: LpVar | None = None
     if rate <= 0:
         prob.add_cst(flow == 0.0, name=name + '_zero')
     elif upper <= -rate:
@@ -204,31 +209,32 @@ def add_clipped_flow(prob: LpModel,
     elif lower >= rate:
         prob.add_cst(flow == rate, name=name + '_upper')
     else:
-        binaries: ObjVec = np.empty(2, dtype=object)
-        binary_count: int = 0
         if upper > rate:
-            z: LpVar = prob.add_int(lb=0, ub=1, name=name + '_zu')
+            if binary:
+                upper_selector = prob.add_int(lb=0, ub=1, name=name + '_zu')
+            else:
+                upper_selector = prob.add_var(lb=0, ub=1, name=name + '_zu')
             up: float | LpVar = prob.add_var(lb=0, ub=upper - rate, name=name + '_up')
-            prob.add_cst(up <= (upper - rate) * z, name=name + '_up_bound')
-            prob.add_cst(flow >= rate - 2 * rate * (1 - z), name=name + '_up_flow')
-            binaries[binary_count] = z
-            binary_count += 1
+            prob.add_cst(up <= (upper - rate) * upper_selector, name=name + '_up_bound')
+            prob.add_cst(flow >= rate - 2 * rate * (1 - upper_selector), name=name + '_up_flow')
         else:
             up = 0.0
         if lower < -rate:
-            z = prob.add_int(lb=0, ub=1, name=name + '_zd')
+            if binary:
+                lower_selector = prob.add_int(lb=0, ub=1, name=name + '_zd')
+            else:
+                lower_selector = prob.add_var(lb=0, ub=1, name=name + '_zd')
             dn: float | LpVar = prob.add_var(lb=0, ub=-rate - lower, name=name + '_dn')
-            prob.add_cst(dn <= (-rate - lower) * z, name=name + '_dn_bound')
-            prob.add_cst(flow <= -rate + 2 * rate * (1 - z), name=name + '_dn_flow')
-            binaries[binary_count] = z
-            binary_count += 1
+            prob.add_cst(dn <= (-rate - lower) * lower_selector, name=name + '_dn_bound')
+            prob.add_cst(flow <= -rate + 2 * rate * (1 - lower_selector), name=name + '_dn_flow')
         else:
             dn = 0.0
-        if binary_count == 2:
-            prob.add_cst(prob.sum(binaries) <= 1, name=name + '_one_region')
+        if upper_selector is not None and lower_selector is not None:
+            prob.add_cst(upper_selector + lower_selector <= 1, name=name + '_one_region')
         else:
-            pass  # One saturation binary cannot select conflicting regions.
+            pass  # One saturation selector cannot select conflicting regions.
         prob.add_cst(flow == demand - up + dn, name=name + '_law')
+    return upper_selector, lower_selector
 
 
 class Converter:
@@ -288,7 +294,8 @@ class PassiveResponse:
         m: int = nc.nbr
         self.f: IntVec = bd.F
         self.t: IntVec = bd.T
-        x: Vec = np.where(bd.dc, bd.R, bd.X)
+        # AC branches carry their tap module, as in the linear model and the NTC flow equations
+        x: Vec = np.where(bd.dc, bd.R, bd.X * nc.active_branch_data.tap_module)
         self.b: Vec = np.zeros(m)
         live: IntVec = np.flatnonzero(bd.active)
         self.live: IntVec = live
@@ -469,6 +476,9 @@ class CompactState:
         'droops',
         'variables',
         'exact',
+        'upper_selectors',
+        'lower_selectors',
+        'relaxed',
         'rows',
         'bus_rows',
     )
@@ -564,6 +574,11 @@ class CompactState:
         self.droops: IntVec = np.flatnonzero(droop_mask)
         self.variables: ObjVec | None = None
         self.exact: bool = False
+        # Droop region selectors per converter, and whether they are still continuous and free
+        # Making them continuous allows for x10 speed gains
+        self.upper_selectors: ObjVec = np.full(self.qn, None, dtype=object)
+        self.lower_selectors: ObjVec = np.full(self.qn, None, dtype=object)
+        self.relaxed: bool = False
         self.rows: BoolVec = np.zeros(nc.nbr, dtype=bool)
         self.bus_rows: BoolVec = np.zeros(nc.nbus, dtype=bool)
 
@@ -730,6 +745,8 @@ class CompactState:
                 error = max(error, abs(float(initial[k]) - expected))
             if error <= self.owner.mip_feasibility_tolerance:
                 return initial
+            elif self.exact and self.relaxed:
+                return None  # The solve loop locks the regions of this relaxed block and solves again.
             elif self.exact:
                 self.owner.logger.add_error('Solved corrective droop exceeds the physical tolerance',
                                             device=str(self.index), value=error * self.owner.nc.Sbase)
@@ -738,6 +755,45 @@ class CompactState:
                 return self._find_numeric_witness(base, initial)
         else:
             return self._find_numeric_witness(base, initial)
+
+    def lock_regions(self: CompactState, base: OperatingPoint, point: Vec | None) -> None:
+        """Fix every droop region selector of this block at the region of a physical state.
+
+        With fixed selectors the clipped law is linear and exact, so the corrective block needs
+        no binaries. When the solution already obeys the law it stays feasible. 
+
+        :param base: Numerical base operating point.
+        :param point: Physical compact unknowns, or None to take the response the network
+                      settles to at this base point.
+        :return: None.
+        """
+        k: int
+        if point is None:
+            initial: Vec = evaluate_vector(self.owner.prob, cast(ObjVec, self.variables))
+            point = self._find_numeric_witness(base, initial)
+            if point is None:
+                point = initial  # Without a physical witness, keep the regions of the solution.
+            else:
+                pass  # The witness gives the physical regions at this base point.
+        else:
+            pass  # The solved state already obeys the clipped law.
+        for k in self.droops:
+            item: Converter = cast(Converter, self.converters[k])
+            demand: tuple[Vec, float | LpVar | LpExp] = self.demand(base, k)
+            unclipped: float = float(demand[1]) + float(demand[0] @ point)
+            upper_selector: LpVar | None = cast(LpVar | None, self.upper_selectors[k])
+            lower_selector: LpVar | None = cast(LpVar | None, self.lower_selectors[k])
+            if upper_selector is not None:
+                upper_value: float = 1.0 if unclipped > item.rate else 0.0
+                self.owner.prob.set_var_bounds(var=upper_selector, lb=upper_value, ub=upper_value)
+            else:
+                pass  # This droop cannot saturate upwards.
+            if lower_selector is not None:
+                lower_value: float = 1.0 if unclipped < -item.rate else 0.0
+                self.owner.prob.set_var_bounds(var=lower_selector, lb=lower_value, ub=lower_value)
+            else:
+                pass  # This droop cannot saturate downwards.
+        self.relaxed = False
 
     def _find_numeric_witness(self: CompactState, base: OperatingPoint, initial: Vec) -> Vec | None:
         """Search a bounded set of exact droop regions without modifying the master.
@@ -807,7 +863,7 @@ class CompactState:
                     evaluated_state: tuple[Vec, Vec] = self.evaluate(base, candidate)
                     potential: Vec = evaluated_state[0]
                     flow: Vec = evaluated_state[1]
-                    violations: tuple[IntVec, IntVec] = self.violations(potential, flow)
+                    violations: tuple[IntVec, IntVec] = self.violations(potential, flow, base.flow)
                     score: int = len(violations[0]) + len(violations[1])
                     if score < best_score:
                         best = candidate
@@ -837,17 +893,27 @@ class CompactState:
         flow[self.out] = 0.
         return potential, flow
 
-    def violations(self: CompactState, potential: Vec, flow: Vec) -> tuple[IntVec, IntVec]:
+    def violations(self: CompactState, potential: Vec, flow: Vec, base_flow: Vec) -> tuple[IntVec, IntVec]:
         """Locate potential and monitored thermal-limit violations.
+
+        A branch already overloaded in the base case (its limit relaxed there) is a violation
+        only when this outage worsens it by more than the worsening tolerance. Otherwise the
+        same unavoidable overload would flag every contingency group of the hour.
 
         :param potential: Post-contingency AC angles and DC voltages.
         :param flow: Post-contingency passive branch powers in per unit.
+        :param base_flow: Base-case passive branch powers in per unit.
         :return: Violating bus and branch indices.
         """
         owner: CompactContingencies = self.owner
         net: PassiveResponse = self.owner.net
         buses: IntVec = np.flatnonzero((potential < net.lower - 1e-7) | (potential > net.upper + 1e-7))
-        rows: IntVec = np.flatnonzero(owner.monitor & (np.abs(flow) > owner.rates + 1e-6))
+        base_magnitude: Vec = np.abs(base_flow)
+        # the contingency rating, raised to the base-case flow (plus the tolerance) where that is already over it
+        limit: Vec = np.where(base_magnitude > owner.rates,
+                              base_magnitude + owner.worsening_tolerance * owner.rates,
+                              owner.rates)
+        rows: IntVec = np.flatnonzero(owner.monitor & (np.abs(flow) > limit + 1e-6))
         return buses, rows
 
     def admit(self: CompactState, buses: IntVec, rows: IntVec) -> int:
@@ -901,11 +967,19 @@ class CompactState:
                 local: int = droop_control[1]
                 p0: float = droop_control[2]
                 slope: float = droop_control[3]
-                a: float = slope * (owner.net.lower[ref] - owner.net.upper[local])
-                b: float = slope * (owner.net.upper[ref] - owner.net.lower[local])
-                add_clipped_flow(prob, self.variables[k], constant + linear_dot(owner.prob, row, self.variables),
-                                 item.rate, p0 + min(a, b), p0 + max(a, b), f'{prefix}_droop_{k}')
+                # The default +-2 pi bus angle limits give a big-M ~125 times the converter rating.
+                # AC angle differences beyond 90 degrees are not physical, so bound the span there
+                a: float = slope * max(owner.net.lower[ref] - owner.net.upper[local], -np.pi / 2)
+                b: float = slope * min(owner.net.upper[ref] - owner.net.lower[local], np.pi / 2)
+                selectors: tuple[LpVar | None, LpVar | None] = add_clipped_flow(
+                    prob, self.variables[k], constant + linear_dot(owner.prob, row, self.variables),
+                    item.rate, p0 + min(a, b), p0 + max(a, b), f'{prefix}_droop_{k}', binary=owner.strict)
+                self.upper_selectors[k] = selectors[0]
+                self.lower_selectors[k] = selectors[1]
             self.exact = True
+            # With penalized limits the selectors start relaxed and the solve loop locks them at a
+            # physical region, so contingencies add no binaries. 
+            self.relaxed = not owner.strict
             added += 1
         else:
             pass  # The exact clipped controller equations are already present.
@@ -961,6 +1035,7 @@ class CompactContingencies:
         'final_base',
         'complete',
         'absorb_islands',
+        'worsening_tolerance',
     )
 
     def __init__(self: CompactContingencies,
@@ -970,8 +1045,9 @@ class CompactContingencies:
                  prob: LpModel,
                  logger: Logger,
                  strict: bool = False,
-                 droop_tolerance_mw: float = 0.01,
-                 absorb_islands: bool = False) -> None:
+                 droop_tolerance_mw: float = 0.1,
+                 absorb_islands: bool = False,
+                 worsening_tolerance: float = 0.02) -> None:
         """Initialize shared responses and fixed-capacity contingency bookkeeping.
 
         :param nc: Compiled numerical circuit for the current time step.
@@ -980,9 +1056,11 @@ class CompactContingencies:
         :param prob: Solver model owning the symbolic expressions.
         :param logger: Destination for diagnostics and certification failures.
         :param strict: Enforce hard contingency limits instead of penalized overload slacks.
-        :param droop_tolerance_mw: Solved droop-law tolerance in MW, defaults to 10 kW.
+        :param droop_tolerance_mw: Solved droop law tolerance in MW. 
         :param absorb_islands: Absorb every part a contingency cuts off, even where converters could
                                rebalance it. Used only as the feasibility retry.
+        :param worsening_tolerance: Fraction of the contingency rating by which an outage may worsen
+                                    a branch already overloaded.
         :return: None.
         """
         hvdc_control: HvdcControlType
@@ -995,6 +1073,7 @@ class CompactContingencies:
         self.logger: Logger = logger
         self.strict: bool = strict
         self.mip_feasibility_tolerance: float = droop_tolerance_mw / nc.Sbase
+        self.worsening_tolerance: float = worsening_tolerance
         self.vsc_control_lookup: dict[int, Control] = dict()
         for vsc_control in Control:
             self.vsc_control_lookup[vsc_control.idx()] = vsc_control
@@ -1094,21 +1173,20 @@ class CompactContingencies:
     def solve(self: CompactContingencies,
               objective: float | LpVar | LpExp,
               status: int,
-              batch_size: int = 8,
               robust: bool = False,
               show_logs: bool = False,
               progress: SolverProgress | None = None) -> int:
         """Admit constraints until every selected contingency is certified.
 
-        Each pass that requires another solve must add a new block or limit.
-        Per group, at most two blocks (balance and exact control), one bound
-        pair per bus and one limit pair per monitored branch can be admitted.
+        Every pass admits all violated groups, as the Pmode1 path does. Each pass that
+        requires another solve must add a new block or limit, or lock a relaxed droop block.
+        Per group, at most three steps (balance, exact control and its locking), one bound
+        pair per bus and one limit pair per monitored branch can be added.
         This gives a finite pass bound, including a final pass
         to certify the last solution. Already admitted components stay in place.
 
         :param objective: Base-case optimization objective.
         :param status: Status of the preceding base-case solve.
-        :param batch_size: Positive number of pending groups to admit per solve.
         :param robust: Enable the backend's existing robust solution mode.
         :param show_logs: Display backend optimization logs.
         :param progress: Optional typed adapter for GUI progress messages.
@@ -1119,97 +1197,101 @@ class CompactContingencies:
         self.complete = False
         self.final_base = None
         self.witnesses.fill(None)
-        if batch_size <= 0:
+        components_per_group: int = 3 + self.nc.nbus + int(np.count_nonzero(self.monitor))
+        max_screening_passes: int = len(self.states) * components_per_group + 1
+        screening_pass: int = 0
+        # A bounded counter guarantees termination
+        while (screening_pass < max_screening_passes
+               and status == self.prob.OPTIMAL and not self.complete):
+            screening_pass += 1
+            base: OperatingPoint = self.symbolic_base.evaluate(self.prob)
+            # Fixed size work arrays avoid growing per contingency records.
+            pending: BoolVec = np.zeros(len(self.states), dtype=bool)
+            pending_buses: ObjVec = np.empty(len(self.states), dtype=object)
+            pending_rows: ObjVec = np.empty(len(self.states), dtype=object)
+            witnesses: ObjVec = np.empty(len(self.states), dtype=object)
+            witnesses.fill(None)
+            locked: int = 0
+            c = 0
+            while c < len(self.states) and status == self.prob.OPTIMAL:
+                state: CompactState | None = cast(CompactState | None, self.states[c])
+                if state is None:
+                    state = CompactState(self, c)
+                else:
+                    pass  # Reuse the admitted compact state for this contingency.
+                value: Vec | None = state.numeric(base)
+                if value is None:
+                    if state.exact and state.relaxed:
+                        # The relaxed droop law broke. Hold each droop at the region the network
+                        # response takes at this base point, which keeps the block linear.
+                        state.lock_regions(base, None)
+                        locked += 1
+                    elif state.exact:
+                        status = self.prob.NOT_SOLVED
+                    else:
+                        pending[c] = True
+                        pending_buses[c] = np.empty(0, dtype=int)
+                        pending_rows[c] = np.flatnonzero(self.monitor)
+                else:
+                    if state.exact and state.relaxed:
+                        # Lock a block that already obeys the law at its current regions, so later
+                        # passes cannot exploit its relaxation. The current optimum stays feasible.
+                        state.lock_regions(base, value)
+                    else:
+                        pass  # Binary, locked or not yet admitted droop control.
+                    evaluated_state: tuple[Vec, Vec] = state.evaluate(base, value)
+                    potential: Vec = evaluated_state[0]
+                    flow: Vec = evaluated_state[1]
+                    violations: tuple[IntVec, IntVec] = state.violations(potential, flow, base.flow)
+                    buses: IntVec = violations[0]
+                    rows: IntVec = violations[1]
+                    # Admitted thermal rows may have explicit penalized slacks.
+                    rows = rows[~state.rows[rows]]
+                    buses = buses[~state.bus_rows[buses]]
+                    if len(buses) or len(rows):
+                        pending[c] = True
+                        pending_buses[c] = buses
+                        pending_rows[c] = rows
+                    else:
+                        pass  # The witness already satisfies all unrepresented limits.
+                    witnesses[c] = value
+                c += 1
+
+            if status != self.prob.OPTIMAL:
+                pass  # A failed physical check cannot certify the partial pass.
+            else:
+                pending_indices: IntVec = np.flatnonzero(pending)
+                if len(pending_indices) == 0 and locked == 0:
+                    self.complete = True
+                    self.final_base = base
+                    self.witnesses = witnesses
+                else:
+                    # A locked block changed the master too, so it also needs another solve.
+                    added: int = locked
+                    for selected_index in range(len(pending_indices)):
+                        c = int(pending_indices[selected_index])
+                        state = cast(CompactState | None, self.states[c])
+                        if state is None:
+                            state = CompactState(self, c)
+                            self.states[c] = state
+                        else:
+                            pass  # Add new limits to the existing compact block.
+                        added += state.admit(pending_buses[c], pending_rows[c])
+                    if added <= 0:
+                        status = self.prob.NOT_SOLVED
+                    else:
+                        self.prob.minimize(objective + self.objective)
+                        if progress is not None:
+                            progress.report('Solving compact corrective NTC constraints...')
+                        else:
+                            pass  # The numerical solve also supports headless callers.
+                        status = self.prob.solve(robust=robust, show_logs=show_logs)
+
+        if status == self.prob.OPTIMAL and not self.complete:
+            # Even an exhausted safety bound cannot accept an unchecked solution.
             status = self.prob.NOT_SOLVED
         else:
-            components_per_group: int = 2 + self.nc.nbus + int(np.count_nonzero(self.monitor))
-            max_screening_passes: int = len(self.states) * components_per_group + 1
-            screening_pass: int = 0
-            # A bounded counter guarantees termination
-            while (screening_pass < max_screening_passes
-                   and status == self.prob.OPTIMAL and not self.complete):
-                screening_pass += 1
-                base: OperatingPoint = self.symbolic_base.evaluate(self.prob)
-                # Fixed size work arrays avoid growing per contingency records.
-                scores: Vec = np.full(len(self.states), -np.inf, dtype=float)
-                pending_buses: ObjVec = np.empty(len(self.states), dtype=object)
-                pending_rows: ObjVec = np.empty(len(self.states), dtype=object)
-                witnesses: ObjVec = np.empty(len(self.states), dtype=object)
-                witnesses.fill(None)
-                c = 0
-                while c < len(self.states) and status == self.prob.OPTIMAL:
-                    state: CompactState | None = cast(CompactState | None, self.states[c])
-                    if state is None:
-                        state = CompactState(self, c)
-                    else:
-                        pass  # Reuse the admitted compact state for this contingency.
-                    value: Vec | None = state.numeric(base)
-                    if value is None:
-                        if state.exact:
-                            status = self.prob.NOT_SOLVED
-                        else:
-                            scores[c] = np.inf
-                            pending_buses[c] = np.empty(0, dtype=int)
-                            pending_rows[c] = np.flatnonzero(self.monitor)
-                    else:
-                        evaluated_state: tuple[Vec, Vec] = state.evaluate(base, value)
-                        potential: Vec = evaluated_state[0]
-                        flow: Vec = evaluated_state[1]
-                        violations: tuple[IntVec, IntVec] = state.violations(potential, flow)
-                        buses: IntVec = violations[0]
-                        rows: IntVec = violations[1]
-                        # Admitted thermal rows may have explicit penalized slacks.
-                        rows = rows[~state.rows[rows]]
-                        buses = buses[~state.bus_rows[buses]]
-                        if len(buses) or len(rows):
-                            score: float = max(np.max((np.abs(flow[rows]) - self.rates[rows])
-                                               / np.maximum(self.rates[rows], 1e-6), initial=0.),
-                                        np.max(np.maximum(potential[buses] - self.net.upper[buses],
-                                                          self.net.lower[buses] - potential[buses]), initial=0.))
-                            scores[c] = float(score)
-                            pending_buses[c] = buses
-                            pending_rows[c] = rows
-                        else:
-                            pass  # The witness already satisfies all unrepresented limits.
-                        witnesses[c] = value
-                    c += 1
-
-                if status != self.prob.OPTIMAL:
-                    pass  # A failed physical check cannot certify the partial pass.
-                else:
-                    pending_indices: IntVec = np.flatnonzero(scores > -np.inf)
-                    if len(pending_indices) == 0:
-                        self.complete = True
-                        self.final_base = base
-                        self.witnesses = witnesses
-                    else:
-                        order: IntVec = np.argsort(-scores[pending_indices], kind='stable')
-                        selected: IntVec = pending_indices[order[:batch_size]]
-                        added: int = 0
-                        for selected_index in range(len(selected)):
-                            c = int(selected[selected_index])
-                            state = cast(CompactState | None, self.states[c])
-                            if state is None:
-                                state = CompactState(self, c)
-                                self.states[c] = state
-                            else:
-                                pass  # Add new limits to the existing compact block.
-                            added += state.admit(pending_buses[c], pending_rows[c])
-                        if added <= 0:
-                            status = self.prob.NOT_SOLVED
-                        else:
-                            self.prob.minimize(objective + self.objective)
-                            if progress is not None:
-                                progress.report('Solving compact corrective NTC constraints...')
-                            else:
-                                pass  # The numerical solve also supports headless callers.
-                            status = self.prob.solve(robust=robust, show_logs=show_logs)
-
-            if status == self.prob.OPTIMAL and not self.complete:
-                # Even an exhausted safety bound cannot accept an unchecked solution.
-                status = self.prob.NOT_SOLVED
-            else:
-                pass  # Preserve a certified solution or the backend failure status.
+            pass  # Preserve a certified solution or the backend failure status.
         return status
 
     def numeric_state(self: CompactContingencies, c: int) -> tuple[Vec, Vec, Vec]:

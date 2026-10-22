@@ -17,6 +17,7 @@ from VeraGridEngine.enumerations import (
     FaultType,
     JMartiDataSourceMode,
     ShuntConnectionType,
+    TheveninSourceVoltageMode,
     VarPowerFlowReferenceType,
     WindingType,
 )
@@ -187,7 +188,12 @@ def get_blocktype2template_builder_dict() -> Dict[BlockType, type[TemplateDefini
     """
     return dict(((BlockType.MIN, basic_block_templates.MinimumTemplate),
                  (BlockType.MAX, basic_block_templates.MaximumTemplate),
+                 (BlockType.INTEGRATOR, basic_block_templates.IntegratorTemplate),
+                 (BlockType.STARTUP_FREEZE_INTEGRATOR,
+                  basic_block_templates.StartupFreezeIntegratorTemplate),
+                 (BlockType.DERIVATIVE, basic_block_templates.DerivativeTemplate),
                  (BlockType.FAULT_EMT, emt_templates.FaultEmtTemplate),
+                 (BlockType.EMT_THEVENIN, emt_templates.TheveninSourceEmtTemplate),
                  (BlockType.SWITCH_EMT, emt_templates.SwitchEmtTemplate),
                  (BlockType.GROUNDING_LINK_EMT, emt_templates.GroundingLinkEmtTemplate),
                  (BlockType.INDUCTION_MOTOR_EMT, emt_templates.InductionMotorEmtTemplate),
@@ -566,7 +572,13 @@ def initialize_template_builder_from_block(builder: TemplateDefinition,
         else:
             pass
 
-    if block_type in (BlockType.EMT_JMARTI_LINE, BlockType.GFL_VSC_HVDC_RMS):
+    if block_type in (
+        BlockType.EMT_JMARTI_LINE,
+        BlockType.GFL_VSC_HVDC_RMS,
+        BlockType.INTEGRATOR,
+        BlockType.STARTUP_FREEZE_INTEGRATOR,
+        BlockType.DERIVATIVE,
+    ):
         stored_configuration: object = block.modal_template_config
         if isinstance(stored_configuration, dict):
             configuration_name: str
@@ -587,6 +599,28 @@ def initialize_template_builder_from_block(builder: TemplateDefinition,
                     pass
         else:
             pass
+    else:
+        pass
+
+    if block_type == BlockType.EMT_THEVENIN:
+        # The canonical immutable marker survives save/load and instance copies.
+        # Legacy Blocks without a marker retain the balanced builder default.
+        mode_property: TemplateProp | None = builder.params_dict.get("source_voltage_mode", None)
+        source_block: Block
+        for source_block in block.get_all_blocks():
+            mode_variable: Var
+            mode_expression: Expr
+            for mode_variable, mode_expression in source_block.parameters.items():
+                if (mode_property is not None and mode_variable.name == "source_voltage_mode"
+                        and isinstance(mode_expression, Const)):
+                    if mode_expression.value == 0.0:
+                        mode_property.value = TheveninSourceVoltageMode.Balanced
+                    elif mode_expression.value == 1.0:
+                        mode_property.value = TheveninSourceVoltageMode.Phase
+                    else:
+                        raise ValueError("Invalid Thevenin source voltage mode marker")
+                else:
+                    pass
     else:
         pass
 
@@ -647,10 +681,9 @@ def initialize_template_builder_from_block(builder: TemplateDefinition,
         BlockType.VSC_ACTIVE_CONTROL_RMS,
         BlockType.VSC_REACTIVE_CONTROL_RMS,
     ):
-        # Block metadata accelerates an in-memory reopen, but the serialized
-        # symbolic format does not retain arbitrary Python attributes. Recover
-        # the two structural controller selections from the generated child
-        # names so save/close/reopen remains deterministic as well.
+        # Current files persist the template settings, but older files do not.
+        # Recover controller modes from the generated child names on every open:
+        # the symbolic structure is authoritative if metadata is missing or stale.
         child_names: set[str] = set()
         candidate_block: Block
         for candidate_block in block.get_all_blocks():

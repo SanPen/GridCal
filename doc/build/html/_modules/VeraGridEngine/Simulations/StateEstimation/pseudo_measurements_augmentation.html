@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Simulations.StateEstimation.pseudo_measurements_augmentation &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Simulations.StateEstimation.pseudo_measurements_augmentation &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/license.html">📜 License</a></li>
@@ -112,20 +113,20 @@
 <div class="viewcode-block" id="PseudoMeasurement">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.StateEstimation.html#VeraGridEngine.Simulations.StateEstimation.pseudo_measurements_augmentation.PseudoMeasurement">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">PseudoMeasurement</span><span class="p">(</span><span class="n">MeasurementTemplate</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    PseudoMeasurement class.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;bus&quot;</span><span class="p">,)</span>
+<span class="sd">    """</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"bus"</span><span class="p">,)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
             <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
             <span class="n">sigma</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
             <span class="n">api_obj</span><span class="p">:</span> <span class="n">Bus</span><span class="p">,</span>
-            <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+            <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">,</span>
             <span class="n">idtag</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        PseudoMeasurement constructor.</span>
 
 <span class="sd">        :param value: Per-unit value of pseudo measurement</span>
@@ -133,7 +134,7 @@
 <span class="sd">        :param api_obj: Bus object this pseudo measurement belongs to</span>
 <span class="sd">        :param name: Name of the measurement</span>
 <span class="sd">        :param idtag: Unique identifier tag</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">MeasurementTemplate</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
             <span class="n">value</span><span class="o">=</span><span class="n">value</span><span class="p">,</span>
@@ -153,24 +154,24 @@
 <div class="viewcode-block" id="PseudoMeasurement.get_value_pu">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.StateEstimation.html#VeraGridEngine.Simulations.StateEstimation.pseudo_measurements_augmentation.PseudoMeasurement.get_value_pu">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_value_pu</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Sbase</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get value in per unit.</span>
 
 <span class="sd">        :param Sbase: Base power</span>
 <span class="sd">        :return: Value per unit</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">/</span> <span class="n">Sbase</span></div>
 
 
 <div class="viewcode-block" id="PseudoMeasurement.get_standard_deviation_pu">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.StateEstimation.html#VeraGridEngine.Simulations.StateEstimation.pseudo_measurements_augmentation.PseudoMeasurement.get_standard_deviation_pu">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_standard_deviation_pu</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Sbase</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get standard deviation in per unit.</span>
 
 <span class="sd">        :param Sbase: Base power</span>
 <span class="sd">        :return: Standard deviation per unit</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma</span> <span class="o">/</span> <span class="n">Sbase</span></div>
 </div>
 
@@ -179,10 +180,10 @@
 <div class="viewcode-block" id="build_neighbors">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.StateEstimation.html#VeraGridEngine.Simulations.StateEstimation.pseudo_measurements_augmentation.build_neighbors">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">build_neighbors</span><span class="p">(</span><span class="n">Cf</span><span class="p">,</span> <span class="n">Ct</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Build neighbor list per bus from connectivity matrices.</span>
 <span class="sd">    Cf, Ct: sparse branch-to-bus incidence matrices</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">n_buses</span> <span class="o">=</span> <span class="n">Cf</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
     <span class="n">neighbors</span> <span class="o">=</span> <span class="p">[[]</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_buses</span><span class="p">)]</span>
 
@@ -203,10 +204,10 @@
 <div class="viewcode-block" id="compute_power_injection">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.StateEstimation.html#VeraGridEngine.Simulations.StateEstimation.pseudo_measurements_augmentation.compute_power_injection">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">compute_power_injection</span><span class="p">(</span><span class="n">bus</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">Ybus</span><span class="p">,</span> <span class="n">neighbors</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute AC active and reactive power injection for a bus using neighbors.</span>
 <span class="sd">    neighbors: prebuilt list of lists, neighbors[i] = list of neighbor bus indices</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">Vi</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">V</span><span class="p">[</span><span class="n">bus</span><span class="p">])</span>
     <span class="n">thetai</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">angle</span><span class="p">(</span><span class="n">V</span><span class="p">[</span><span class="n">bus</span><span class="p">])</span>
     <span class="n">Pi</span><span class="p">,</span> <span class="n">Qi</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span>
@@ -235,10 +236,10 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.StateEstimation.html#VeraGridEngine.Simulations.StateEstimation.pseudo_measurements_augmentation.add_pseudo_measurements">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">add_pseudo_measurements</span><span class="p">(</span><span class="n">se_input</span><span class="p">,</span> <span class="n">unobservable_buses</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">Ybus</span><span class="p">,</span> <span class="n">neighbors</span><span class="p">,</span> <span class="n">bus_dict</span><span class="p">,</span>
                             <span class="n">sigma_pseudo</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">Sbase</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Extend se_input with pseudo-measurements for unobservable buses.</span>
 <span class="sd">    neighbors: prebuilt neighbor list per bus</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">for</span> <span class="n">bus_idx</span> <span class="ow">in</span> <span class="n">unobservable_buses</span><span class="p">:</span>
         <span class="n">Pi</span><span class="p">,</span> <span class="n">Qi</span> <span class="o">=</span> <span class="n">compute_power_injection</span><span class="p">(</span><span class="n">bus_idx</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">Ybus</span><span class="p">,</span> <span class="n">neighbors</span><span class="p">)</span>
 
@@ -256,9 +257,9 @@
 
         <span class="c1"># Get the Bus object for this bus_idx</span>
         <span class="n">bus_obj</span> <span class="o">=</span> <span class="n">bus_dict</span><span class="p">[</span><span class="n">bus_idx</span><span class="p">]</span>
-        <span class="n">pm_p</span> <span class="o">=</span> <span class="n">PseudoMeasurement</span><span class="p">(</span><span class="n">Pi</span> <span class="o">*</span> <span class="n">Sbase</span><span class="p">,</span> <span class="n">sigma_pseudo</span><span class="p">,</span> <span class="n">bus_obj</span><span class="p">,</span> <span class="s2">&quot;pseudo&quot;</span><span class="p">)</span>
+        <span class="n">pm_p</span> <span class="o">=</span> <span class="n">PseudoMeasurement</span><span class="p">(</span><span class="n">Pi</span> <span class="o">*</span> <span class="n">Sbase</span><span class="p">,</span> <span class="n">sigma_pseudo</span><span class="p">,</span> <span class="n">bus_obj</span><span class="p">,</span> <span class="s2">"pseudo"</span><span class="p">)</span>
         <span class="n">pm_q</span> <span class="o">=</span> <span class="n">PseudoMeasurement</span><span class="p">(</span><span class="n">Qi</span> <span class="o">*</span> <span class="n">Sbase</span><span class="p">,</span> <span class="n">sigma_pseudo</span><span class="p">,</span> <span class="n">bus_obj</span><span class="p">,</span>
-                                 <span class="s2">&quot;pseudo&quot;</span><span class="p">,</span> <span class="p">)</span>  <span class="c1"># converted later to pu in get_measurements</span>
+                                 <span class="s2">"pseudo"</span><span class="p">,</span> <span class="p">)</span>  <span class="c1"># converted later to pu in get_measurements</span>
         <span class="n">se_input</span><span class="o">.</span><span class="n">p_idx</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bus_idx</span><span class="p">)</span>  <span class="c1"># or appropriate index mapping</span>
         <span class="n">se_input</span><span class="o">.</span><span class="n">p_inj</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pm_p</span><span class="p">)</span>
 
@@ -267,10 +268,10 @@
 
         <span class="k">if</span> <span class="n">logger</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;Pseudo-measurement added at bus </span><span class="si">{</span><span class="n">bus_obj</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
-                <span class="n">device</span><span class="o">=</span><span class="s2">&quot;pseudo&quot;</span><span class="p">,</span>
-                <span class="n">device_class</span><span class="o">=</span><span class="s2">&quot;virtual&quot;</span><span class="p">,</span>
-                <span class="n">device_property</span><span class="o">=</span><span class="s2">&quot;P, Q&quot;</span><span class="p">,</span>
+                <span class="sa">f</span><span class="s2">"Pseudo-measurement added at bus </span><span class="si">{</span><span class="n">bus_obj</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+                <span class="n">device</span><span class="o">=</span><span class="s2">"pseudo"</span><span class="p">,</span>
+                <span class="n">device_class</span><span class="o">=</span><span class="s2">"virtual"</span><span class="p">,</span>
+                <span class="n">device_property</span><span class="o">=</span><span class="s2">"P, Q"</span><span class="p">,</span>
                 <span class="n">value</span><span class="o">=</span><span class="p">(</span><span class="n">Pi</span><span class="p">,</span> <span class="n">Qi</span><span class="p">)</span>
             <span class="p">)</span>
 

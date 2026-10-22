@@ -199,13 +199,30 @@ def configure_gencls_block(
     parameters: GenclsRmsParameters,
     vfactory: VarFactory,
 ) -> None:
-    """Apply one GENCLS parameter record to a machine block.
+    """Configure a classical machine with a dynamic or fixed rotor.
+
+    Positive acceleration time enables the swing equation and electrical-angle
+    integration. Exactly zero acceleration time selects a prescribed internal
+    voltage source: rotor angle and speed retain their initialized values with
+    identically zero derivatives. This is a structural choice, not division by
+    a small substitute inertia. The stator equations still calculate changing
+    electrical power and current during network disturbances.
+
+    Reconfiguration reconstructs both rotor equations, so switching back from
+    fixed-rotor to positive-inertia behavior restores the original dynamics.
 
     :param block: GENCLS machine block.
     :param parameters: Numerical parameter record.
     :param vfactory: Shared variable factory.
     :return: None.
+    :raises ValueError: Nonfinite settings, negative inertia or invalid machine base dynamics.
     """
+    if not all(math.isfinite(value) for value in (parameters.fn,parameters.d,parameters.m,parameters.ra,parameters.xd1)):
+        raise ValueError('Classical machine settings must be finite')
+    elif parameters.fn <= 0 or parameters.m < 0 or parameters.xd1 <= 0:
+        raise ValueError('Classical machine frequency/reactance must be positive and inertia nonnegative')
+    else:
+        pass
     names: tuple[str, ...] = ("fn", "D", "M", "Ra", "Xd_prime")
     values: tuple[float, ...] = (
         parameters.fn, parameters.d, parameters.m, parameters.ra, parameters.xd1,
@@ -226,6 +243,17 @@ def configure_gencls_block(
             raise ValueError(
                 f"Expected one GENCLS parameter {parameter_name!r}; found {len(matches)}."
             )
+    # Rebuild the structural choice explicitly; numerical parameter updates
+    # alone cannot represent a prescribed rotor at exactly zero inertia.
+    if parameters.m == 0:
+        block.state_eqs = list((sym.Const(0.0),sym.Const(0.0)))
+    else:
+        symbols: dict[str,Var] = dict()
+        for registry in (block.init_eqs,block.parameters,block.event_dict):
+            for variable in registry:
+                symbols[variable.name] = variable
+        block.state_eqs = list((sym.Const(2*math.pi)*symbols['fn']*(symbols['omega']-sym.Const(1.0)),
+            (symbols['Tm']-symbols['Te']-symbols['D']*(symbols['omega']-sym.Const(1.0)))/symbols['M']))
 
 
 def get_complete_gencls_rms_template(

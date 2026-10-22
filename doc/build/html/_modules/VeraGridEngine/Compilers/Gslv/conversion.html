@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Compilers.Gslv.conversion &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Compilers.Gslv.conversion &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/license.html">📜 License</a></li>
@@ -170,65 +171,65 @@
 <div class="viewcode-block" id="GslvDicts">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Compilers.Gslv.html#VeraGridEngine.Compilers.Gslv.conversion.GslvDicts">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">GslvDicts</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Hold the VeraGrid-to-GSLV object lookup dictionaries produced during conversion.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;area_dict&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;zone_dict&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;substation_dict&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;voltage_level_dict&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;country_dict&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;facility_dict&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;market_unit_dict&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;modelling_authorities_dict&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;branch_groups_dict&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;municipalities_dict&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;regions_dict&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;con_groups_dict&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;inv_groups_dict&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;technology_dict&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;fuel_dict&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;emission_gas_dict&quot;</span><span class="p">,</span>
+        <span class="s2">"area_dict"</span><span class="p">,</span>
+        <span class="s2">"zone_dict"</span><span class="p">,</span>
+        <span class="s2">"substation_dict"</span><span class="p">,</span>
+        <span class="s2">"voltage_level_dict"</span><span class="p">,</span>
+        <span class="s2">"country_dict"</span><span class="p">,</span>
+        <span class="s2">"facility_dict"</span><span class="p">,</span>
+        <span class="s2">"market_unit_dict"</span><span class="p">,</span>
+        <span class="s2">"modelling_authorities_dict"</span><span class="p">,</span>
+        <span class="s2">"branch_groups_dict"</span><span class="p">,</span>
+        <span class="s2">"municipalities_dict"</span><span class="p">,</span>
+        <span class="s2">"regions_dict"</span><span class="p">,</span>
+        <span class="s2">"con_groups_dict"</span><span class="p">,</span>
+        <span class="s2">"inv_groups_dict"</span><span class="p">,</span>
+        <span class="s2">"technology_dict"</span><span class="p">,</span>
+        <span class="s2">"fuel_dict"</span><span class="p">,</span>
+        <span class="s2">"emission_gas_dict"</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Initialize every conversion lookup dictionary before the conversion stages fill them.</span>
 
 <span class="sd">        :return: None.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">area_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Area</span><span class="p">,</span> <span class="s2">&quot;pg.Area&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+<span class="sd">        """</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">area_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Area</span><span class="p">,</span> <span class="s2">"pg.Area"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">zone_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Zone</span><span class="p">,</span> <span class="s2">&quot;pg.Zone&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">zone_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Zone</span><span class="p">,</span> <span class="s2">"pg.Zone"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">substation_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Substation</span><span class="p">,</span> <span class="s2">&quot;pg.Substation&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">substation_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Substation</span><span class="p">,</span> <span class="s2">"pg.Substation"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">voltage_level_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">VoltageLevel</span><span class="p">,</span> <span class="s2">&quot;pg.VoltageLevel&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">voltage_level_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">VoltageLevel</span><span class="p">,</span> <span class="s2">"pg.VoltageLevel"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">country_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Country</span><span class="p">,</span> <span class="s2">&quot;pg.Country&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">country_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Country</span><span class="p">,</span> <span class="s2">"pg.Country"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">facility_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Facility</span><span class="p">,</span> <span class="s2">&quot;pg.Facility&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">facility_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Facility</span><span class="p">,</span> <span class="s2">"pg.Facility"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">market_unit_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">MarketUnit</span><span class="p">,</span> <span class="s2">&quot;pg.MarketUnit&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">market_unit_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">MarketUnit</span><span class="p">,</span> <span class="s2">"pg.MarketUnit"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">modelling_authorities_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">ModellingAuthority</span><span class="p">,</span> <span class="s2">&quot;pg.ModellingAuthority&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">modelling_authorities_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">ModellingAuthority</span><span class="p">,</span> <span class="s2">"pg.ModellingAuthority"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">branch_groups_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">BranchGroup</span><span class="p">,</span> <span class="s2">&quot;pg.BranchGroup&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">branch_groups_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">BranchGroup</span><span class="p">,</span> <span class="s2">"pg.BranchGroup"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">municipalities_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Municipality</span><span class="p">,</span> <span class="s2">&quot;pg.Municipality&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">municipalities_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Municipality</span><span class="p">,</span> <span class="s2">"pg.Municipality"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">regions_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Region</span><span class="p">,</span> <span class="s2">&quot;pg.Region&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">regions_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Region</span><span class="p">,</span> <span class="s2">"pg.Region"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">con_groups_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">ContingencyGroup</span><span class="p">,</span> <span class="s2">&quot;pg.ContingencyGroup&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">con_groups_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">ContingencyGroup</span><span class="p">,</span> <span class="s2">"pg.ContingencyGroup"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">inv_groups_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">InvestmentsGroup</span><span class="p">,</span> <span class="s2">&quot;pg.InvestmentGroup&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">inv_groups_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">InvestmentsGroup</span><span class="p">,</span> <span class="s2">"pg.InvestmentGroup"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">technology_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Technology</span><span class="p">,</span> <span class="s2">&quot;pg.Technology&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">technology_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Technology</span><span class="p">,</span> <span class="s2">"pg.Technology"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">fuel_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Fuel</span><span class="p">,</span> <span class="s2">&quot;pg.Fuel&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fuel_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Fuel</span><span class="p">,</span> <span class="s2">"pg.Fuel"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">emission_gas_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">EmissionGas</span><span class="p">,</span> <span class="s2">&quot;pg.EmissionGas&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">emission_gas_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">EmissionGas</span><span class="p">,</span> <span class="s2">"pg.EmissionGas"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span></div>
 
 
 
@@ -239,8 +240,8 @@
             <span class="n">time_indices</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">IntVec</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
             <span class="n">override_branch_controls</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
             <span class="n">opf_results</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="n">OptimalPowerFlowResults</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">add_three_phase_data</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="s2">&quot;pg.MultiCircuit&quot;</span><span class="p">,</span> <span class="n">GslvDicts</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+            <span class="n">add_three_phase_data</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="s2">"pg.MultiCircuit"</span><span class="p">,</span> <span class="n">GslvDicts</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Convert VeraGrid circuit to GSLV</span>
 <span class="sd">    :param circuit: MultiCircuit</span>
 <span class="sd">    :param use_time_series: compile the time series from VeraGrid? otherwise just the snapshot</span>
@@ -249,7 +250,7 @@
 <span class="sd">    :param opf_results:</span>
 <span class="sd">    :param add_three_phase_data: Export explicit three-phase device data when possible.</span>
 <span class="sd">    :return: pg.MultiCircuit instance</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">dicts</span> <span class="o">=</span> <span class="n">GslvDicts</span><span class="p">()</span>
 
@@ -468,22 +469,22 @@
 <div class="viewcode-block" id="FakeAdmittances">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Compilers.Gslv.html#VeraGridEngine.Compilers.Gslv.conversion.FakeAdmittances">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">FakeAdmittances</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Fake admittances class needed to make the translation</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s1">&#39;Ybus&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;Yf&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;Yt&#39;</span><span class="p">,</span>
+        <span class="s1">'Ybus'</span><span class="p">,</span>
+        <span class="s1">'Yf'</span><span class="p">,</span>
+        <span class="s1">'Yt'</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Build one placeholder admittance container.</span>
 
 <span class="sd">        :return: None.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">Ybus</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">Yf</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">Yt</span> <span class="o">=</span> <span class="kc">None</span></div>
@@ -493,12 +494,12 @@
 <div class="viewcode-block" id="get_snapshots_from_gslv">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Compilers.Gslv.html#VeraGridEngine.Compilers.Gslv.conversion.get_snapshots_from_gslv">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_snapshots_from_gslv</span><span class="p">(</span><span class="n">circuit</span><span class="p">:</span> <span class="n">MultiCircuit</span><span class="p">,</span> <span class="n">override_branch_controls</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">NumericalCircuit</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 
 <span class="sd">    :param circuit:</span>
 <span class="sd">    :param override_branch_controls:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">gslv_grid</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">to_gslv</span><span class="p">(</span><span class="n">circuit</span><span class="p">,</span>
                            <span class="n">use_time_series</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
@@ -551,7 +552,7 @@
         <span class="n">data</span><span class="o">.</span><span class="n">admittances_</span><span class="o">.</span><span class="n">Yt</span> <span class="o">=</span> <span class="n">adm</span><span class="o">.</span><span class="n">Yt</span>
 
         <span class="c1"># The current wrapper does not expose NumericalCircuit::getLinearAdmittanceMatrices.</span>
-        <span class="c1"># The compatibility layer keeps VeraGrid&#39;s expected fields populated from the available admittance matrices.</span>
+        <span class="c1"># The compatibility layer keeps VeraGrid's expected fields populated from the available admittance matrices.</span>
         <span class="n">data</span><span class="o">.</span><span class="n">Bbus_</span> <span class="o">=</span> <span class="o">-</span><span class="n">adm</span><span class="o">.</span><span class="n">Ybus</span><span class="o">.</span><span class="n">imag</span>
         <span class="n">data</span><span class="o">.</span><span class="n">Bf_</span> <span class="o">=</span> <span class="o">-</span><span class="n">adm</span><span class="o">.</span><span class="n">Yf</span><span class="o">.</span><span class="n">imag</span>
 

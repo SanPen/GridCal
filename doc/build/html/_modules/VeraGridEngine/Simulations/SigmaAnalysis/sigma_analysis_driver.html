@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Simulations.SigmaAnalysis.sigma_analysis_driver &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Simulations.SigmaAnalysis.sigma_analysis_driver &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/license.html">📜 License</a></li>
@@ -128,30 +129,30 @@
 <div class="viewcode-block" id="SigmaAnalysisResults">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SigmaAnalysis.html#VeraGridEngine.Simulations.SigmaAnalysis.sigma_analysis_driver.SigmaAnalysisResults">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">SigmaAnalysisResults</span><span class="p">(</span><span class="n">ResultsTemplate</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    SigmaAnalysisResults</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">LOCAL_RESULTS_DECLARATIONS</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;lambda_value&#39;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
-        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;bus_names&#39;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">StrVec</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
-        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;Sbus&#39;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">CxVec</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
-        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;distances&#39;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">Vec</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
-        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;sigma_re&#39;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">Vec</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
-        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;sigma_im&#39;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">Vec</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'lambda_value'</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'bus_names'</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">StrVec</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'Sbus'</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">CxVec</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'distances'</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">Vec</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'sigma_re'</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">Vec</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'sigma_im'</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">Vec</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
     <span class="p">)</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;n&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;lambda_value&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;bus_names&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Sbus&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;distances&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;sigma_re&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;sigma_im&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;elapsed&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;converged&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;convergence_reports&quot;</span><span class="p">,</span>
+        <span class="s2">"n"</span><span class="p">,</span>
+        <span class="s2">"lambda_value"</span><span class="p">,</span>
+        <span class="s2">"bus_names"</span><span class="p">,</span>
+        <span class="s2">"Sbus"</span><span class="p">,</span>
+        <span class="s2">"distances"</span><span class="p">,</span>
+        <span class="s2">"sigma_re"</span><span class="p">,</span>
+        <span class="s2">"sigma_im"</span><span class="p">,</span>
+        <span class="s2">"elapsed"</span><span class="p">,</span>
+        <span class="s2">"converged"</span><span class="p">,</span>
+        <span class="s2">"convergence_reports"</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
@@ -164,7 +165,7 @@
 
         <span class="n">ResultsTemplate</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
-            <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Sigma analysis&#39;</span><span class="p">,</span>
+            <span class="n">name</span><span class="o">=</span><span class="s1">'Sigma analysis'</span><span class="p">,</span>
             <span class="n">available_results</span><span class="o">=</span><span class="n">available_results</span><span class="p">,</span>
             <span class="n">time_array</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
             <span class="n">clustering_results</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -194,8 +195,8 @@
 
 <div class="viewcode-block" id="SigmaAnalysisResults.apply_from_island">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SigmaAnalysis.html#VeraGridEngine.Simulations.SigmaAnalysis.sigma_analysis_driver.SigmaAnalysisResults.apply_from_island">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">apply_from_island</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">results</span><span class="p">:</span> <span class="s2">&quot;SigmaAnalysisResults&quot;</span><span class="p">,</span> <span class="n">b_idx</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">apply_from_island</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">results</span><span class="p">:</span> <span class="s2">"SigmaAnalysisResults"</span><span class="p">,</span> <span class="n">b_idx</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Apply results from another island circuit to the circuit results represented</span>
 <span class="sd">        here.</span>
 
@@ -206,7 +207,7 @@
 <span class="sd">            **b_idx**: bus original indices</span>
 
 <span class="sd">            **elm_idx**: branch original indices</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">Sbus</span><span class="p">[</span><span class="n">b_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">Sbus</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">distances</span><span class="p">[</span><span class="n">b_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">distances</span>
@@ -222,13 +223,13 @@
 <div class="viewcode-block" id="SigmaAnalysisResults.mdl">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SigmaAnalysis.html#VeraGridEngine.Simulations.SigmaAnalysis.sigma_analysis_driver.SigmaAnalysisResults.mdl">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">mdl</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">result_type</span><span class="p">:</span> <span class="n">ResultTypes</span><span class="p">,</span> <span class="n">indices</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">names</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ResultsTable</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :param result_type:</span>
 <span class="sd">        :param indices:</span>
 <span class="sd">        :param names:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="k">if</span> <span class="n">indices</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">names</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">names</span><span class="p">)))</span>
@@ -238,8 +239,8 @@
 
             <span class="k">if</span> <span class="n">result_type</span> <span class="o">==</span> <span class="n">ResultTypes</span><span class="o">.</span><span class="n">SigmaDistances</span><span class="p">:</span>
                 <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">distances</span><span class="p">[</span><span class="n">indices</span><span class="p">])</span>
-                <span class="n">y_label</span> <span class="o">=</span> <span class="s1">&#39;(p.u.)&#39;</span>
-                <span class="n">title</span> <span class="o">=</span> <span class="s1">&#39;Sigma distances &#39;</span>
+                <span class="n">y_label</span> <span class="o">=</span> <span class="s1">'(p.u.)'</span>
+                <span class="n">title</span> <span class="o">=</span> <span class="s1">'Sigma distances '</span>
 
                 <span class="k">return</span> <span class="n">ResultsTable</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">y</span><span class="p">,</span>
                                     <span class="n">index</span><span class="o">=</span><span class="n">labels</span><span class="p">,</span>
@@ -252,8 +253,8 @@
 
             <span class="k">elif</span> <span class="n">result_type</span> <span class="o">==</span> <span class="n">ResultTypes</span><span class="o">.</span><span class="n">SigmaReal</span><span class="p">:</span>
                 <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma_re</span><span class="p">[</span><span class="n">indices</span><span class="p">]</span>
-                <span class="n">y_label</span> <span class="o">=</span> <span class="s1">&#39;(deg)&#39;</span>
-                <span class="n">title</span> <span class="o">=</span> <span class="s1">&#39;Real sigma &#39;</span>
+                <span class="n">y_label</span> <span class="o">=</span> <span class="s1">'(deg)'</span>
+                <span class="n">title</span> <span class="o">=</span> <span class="s1">'Real sigma '</span>
 
                 <span class="k">return</span> <span class="n">ResultsTable</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">y</span><span class="p">,</span>
                                     <span class="n">index</span><span class="o">=</span><span class="n">labels</span><span class="p">,</span>
@@ -266,8 +267,8 @@
 
             <span class="k">elif</span> <span class="n">result_type</span> <span class="o">==</span> <span class="n">ResultTypes</span><span class="o">.</span><span class="n">SigmaImag</span><span class="p">:</span>
                 <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma_im</span><span class="p">[</span><span class="n">indices</span><span class="p">]</span>
-                <span class="n">y_label</span> <span class="o">=</span> <span class="s1">&#39;(p.u.)&#39;</span>
-                <span class="n">title</span> <span class="o">=</span> <span class="s1">&#39;Imaginary Sigma &#39;</span>
+                <span class="n">y_label</span> <span class="o">=</span> <span class="s1">'(p.u.)'</span>
+                <span class="n">title</span> <span class="o">=</span> <span class="s1">'Imaginary Sigma '</span>
 
                 <span class="k">return</span> <span class="n">ResultsTable</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">y</span><span class="p">,</span>
                                     <span class="n">index</span><span class="o">=</span><span class="n">labels</span><span class="p">,</span>
@@ -280,13 +281,13 @@
 
             <span class="k">elif</span> <span class="n">result_type</span> <span class="o">==</span> <span class="n">ResultTypes</span><span class="o">.</span><span class="n">SigmaPlusDistances</span><span class="p">:</span>
                 <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">c_</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">sigma_re</span><span class="p">[</span><span class="n">indices</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma_im</span><span class="p">[</span><span class="n">indices</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">distances</span><span class="p">[</span><span class="n">indices</span><span class="p">]]</span>
-                <span class="n">y_label</span> <span class="o">=</span> <span class="s1">&#39;(p.u.)&#39;</span>
-                <span class="n">title</span> <span class="o">=</span> <span class="s1">&#39;Sigma and distances&#39;</span>
+                <span class="n">y_label</span> <span class="o">=</span> <span class="s1">'(p.u.)'</span>
+                <span class="n">title</span> <span class="o">=</span> <span class="s1">'Sigma and distances'</span>
 
                 <span class="n">mdl</span> <span class="o">=</span> <span class="n">ResultsTable</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">y</span><span class="p">,</span>
                                    <span class="n">index</span><span class="o">=</span><span class="n">labels</span><span class="p">,</span>
                                    <span class="n">idx_device_type</span><span class="o">=</span><span class="n">DeviceType</span><span class="o">.</span><span class="n">BusDevice</span><span class="p">,</span>
-                                   <span class="n">columns</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="s1">&#39;σ real&#39;</span><span class="p">,</span> <span class="s1">&#39;σ imaginary&#39;</span><span class="p">,</span> <span class="s1">&#39;Distances&#39;</span><span class="p">]),</span>
+                                   <span class="n">columns</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="s1">'σ real'</span><span class="p">,</span> <span class="s1">'σ imaginary'</span><span class="p">,</span> <span class="s1">'Distances'</span><span class="p">]),</span>
                                    <span class="n">cols_device_type</span><span class="o">=</span><span class="n">DeviceType</span><span class="o">.</span><span class="n">NoDevice</span><span class="p">,</span>
                                    <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">,</span>
                                    <span class="n">ylabel</span><span class="o">=</span><span class="n">y_label</span><span class="p">,</span>
@@ -294,7 +295,7 @@
                 <span class="k">return</span> <span class="n">mdl</span>
 
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Unsupported result type: &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">result_type</span><span class="p">))</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">'Unsupported result type: '</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">result_type</span><span class="p">))</span>
 
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">None</span></div>
@@ -314,7 +315,7 @@
                        <span class="n">dpr_control_discrete_shunts</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
                        <span class="n">dpr_control_qv_droop</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
                        <span class="n">dpr_distributed_slack</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SigmaAnalysisResults</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Multiple islands power flow (this is the most generic power flow function)</span>
 <span class="sd">    :param multi_circuit: MultiCircuit instance</span>
 <span class="sd">    :param options: PowerFlowOptions instance</span>
@@ -327,7 +328,7 @@
 <span class="sd">    :param dpr_control_qv_droop: Apply generator QV droop controls in DPR sigma.</span>
 <span class="sd">    :param dpr_distributed_slack: Apply distributed slack in DPR sigma. If None, use the power-flow option.</span>
 <span class="sd">    :return: PowerFlowResults instance</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">multi_circuit</span><span class="o">.</span><span class="n">buses</span><span class="p">)</span>
     <span class="n">active_control_q</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">control_Q</span> <span class="k">if</span> <span class="n">dpr_control_q</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">dpr_control_q</span>
     <span class="n">active_distributed_slack</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">distributed_slack</span> <span class="k">if</span> <span class="n">dpr_distributed_slack</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">dpr_distributed_slack</span>
@@ -376,9 +377,9 @@
         <span class="c1"># replace_bus_types(bus_types)</span>
 
         <span class="c1"># if 4 in bus_types:</span>
-        <span class="c1">#     raise Exception(&quot;Handled bus types don&#39;t match&quot;)</span>
+        <span class="c1">#     raise Exception("Handled bus types don't match")</span>
         <span class="c1"># if 5 in bus_types:</span>
-        <span class="c1">#     raise Exception(&quot;Handled bus types don&#39;t match&quot;)</span>
+        <span class="c1">#     raise Exception("Handled bus types don't match")</span>
 
         <span class="c1"># for i in range(island.nbus):</span>
         <span class="c1">#     if bus_types[i] == BusMode.PQV_tpe.value: # PQV to PQ</span>
@@ -436,7 +437,7 @@
                         <span class="n">sig_re</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
                         <span class="n">sig_im</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
                 <span class="k">except</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">LinAlgError</span><span class="p">:</span>
-                    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;numpy.linalg.LinAlgError: Matrix is singular to machine precision.&#39;</span><span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s1">'numpy.linalg.LinAlgError: Matrix is singular to machine precision.'</span><span class="p">)</span>
                     <span class="n">sig_re</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
                     <span class="n">sig_im</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
 
@@ -455,7 +456,7 @@
                 <span class="n">results</span><span class="o">.</span><span class="n">apply_from_island</span><span class="p">(</span><span class="n">island_results</span><span class="p">,</span> <span class="n">island</span><span class="o">.</span><span class="n">bus_data</span><span class="o">.</span><span class="n">original_idx</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">classical_sigma</span><span class="p">:</span>
-                    <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="s2">&quot;Handled bus types don&#39;t match&quot;</span><span class="p">)</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="s2">"Handled bus types don't match"</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="c1"># DPR sigma follows the controlled DPR power-flow path. Control changes are model restarts, so the</span>
                     <span class="c1"># sigma values are computed from the accepted DPR segments of the final settled controlled model.</span>
@@ -506,7 +507,7 @@
                     <span class="c1"># merge the results from this island</span>
                     <span class="n">results</span><span class="o">.</span><span class="n">apply_from_island</span><span class="p">(</span><span class="n">island_results</span><span class="p">,</span> <span class="n">island</span><span class="o">.</span><span class="n">bus_data</span><span class="o">.</span><span class="n">original_idx</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="s1">&#39;No slack nodes in the island&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="s1">'No slack nodes in the island'</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
 
     <span class="c1"># expand voltages if there was a bus topology reduction</span>
     <span class="k">if</span> <span class="n">nc</span><span class="o">.</span><span class="n">topology_performed</span><span class="p">:</span>
@@ -521,16 +522,16 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SigmaAnalysis.html#VeraGridEngine.Simulations.SigmaAnalysis.sigma_analysis_driver.sigma_distance">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">nopython</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">sigma_distance</span><span class="p">(</span><span class="n">sigma_real</span><span class="p">,</span> <span class="n">sigma_imag</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Distance to the collapse in the sigma space</span>
 
 <span class="sd">    The boundary curve is given by y = sqrt(1/4 + x)</span>
 
 <span class="sd">    the distance is d = sqrt((x-a)^2 + (sqrt(1/4+ x) - b)^2)</span>
 
-<span class="sd">    the derivative of this is d&#39;=(2 (-a + x) + (-b + sqrt(1/4 + x))/sqrt(1/4 + x))/(2 sqrt((-a + x)^2 + (-b + sqrt(1/4 + x))^2))</span>
+<span class="sd">    the derivative of this is d'=(2 (-a + x) + (-b + sqrt(1/4 + x))/sqrt(1/4 + x))/(2 sqrt((-a + x)^2 + (-b + sqrt(1/4 + x))^2))</span>
 
-<span class="sd">    Making d&#39;=0, and solving for x, we obtain:</span>
+<span class="sd">    Making d'=0, and solving for x, we obtain:</span>
 
 <span class="sd">    x1 = 1/12 (-64 a^3 + 48 a^2</span>
 <span class="sd">               + 12 sqrt(3) sqrt(-64 a^3 b^2 + 48 a^2 b^2 - 12 a b^2 + 108 b^4 + b^2)</span>
@@ -548,7 +549,7 @@
 <span class="sd">    :param sigma_real: Sigma real array</span>
 <span class="sd">    :param sigma_imag: Sigma imag array</span>
 <span class="sd">    :return: distance of the sigma point to the curve sqrt(0.25 + x)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">sigma_real</span><span class="p">)</span>
     <span class="n">x1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
 
@@ -590,18 +591,18 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SigmaAnalysis.html#VeraGridEngine.Simulations.SigmaAnalysis.sigma_analysis_driver.SigmaAnalysisDriver">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">SigmaAnalysisDriver</span><span class="p">(</span><span class="n">DriverTemplate</span><span class="p">):</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;options&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;t_idx&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;classical_sigma&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;dpr_use_stored_guess&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;dpr_control_q&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;dpr_control_discrete_shunts&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;dpr_control_qv_droop&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;dpr_distributed_slack&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;convergence_reports&quot;</span><span class="p">,</span>
+        <span class="s2">"options"</span><span class="p">,</span>
+        <span class="s2">"t_idx"</span><span class="p">,</span>
+        <span class="s2">"classical_sigma"</span><span class="p">,</span>
+        <span class="s2">"dpr_use_stored_guess"</span><span class="p">,</span>
+        <span class="s2">"dpr_control_q"</span><span class="p">,</span>
+        <span class="s2">"dpr_control_discrete_shunts"</span><span class="p">,</span>
+        <span class="s2">"dpr_control_qv_droop"</span><span class="p">,</span>
+        <span class="s2">"dpr_distributed_slack"</span><span class="p">,</span>
+        <span class="s2">"convergence_reports"</span><span class="p">,</span>
     <span class="p">)</span>
 
-    <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;Sigma Analysis&#39;</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s1">'Sigma Analysis'</span>
     <span class="n">tpe</span> <span class="o">=</span> <span class="n">SimulationTypes</span><span class="o">.</span><span class="n">SigmaAnalysis_run</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
@@ -614,7 +615,7 @@
                  <span class="n">dpr_control_discrete_shunts</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
                  <span class="n">dpr_control_qv_droop</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
                  <span class="n">dpr_distributed_slack</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        PowerFlowDriver class constructor</span>
 <span class="sd">        :param grid: MultiCircuit instance</span>
 <span class="sd">        :param options: PowerFlowOptions instance</span>
@@ -625,7 +626,7 @@
 <span class="sd">        :param dpr_control_discrete_shunts: Apply discrete shunt controls in DPR sigma.</span>
 <span class="sd">        :param dpr_control_qv_droop: Apply generator QV droop controls in DPR sigma.</span>
 <span class="sd">        :param dpr_distributed_slack: Apply distributed slack in DPR sigma. If None, use the power-flow option.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">DriverTemplate</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">grid</span><span class="o">=</span><span class="n">grid</span><span class="p">)</span>
 
         <span class="c1"># Options to use</span>
@@ -649,22 +650,22 @@
 <div class="viewcode-block" id="SigmaAnalysisDriver.get_steps">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SigmaAnalysis.html#VeraGridEngine.Simulations.SigmaAnalysis.sigma_analysis_driver.SigmaAnalysisDriver.get_steps">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_steps</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="nb">list</span><span class="p">()</span></div>
 
 
 <div class="viewcode-block" id="SigmaAnalysisDriver.run">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SigmaAnalysis.html#VeraGridEngine.Simulations.SigmaAnalysis.sigma_analysis_driver.SigmaAnalysisDriver.run">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Pack run_pf for the QThread</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">tic</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s2">&quot;Compiling and configuring...&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s2">"Compiling and configuring..."</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">results</span> <span class="o">=</span> <span class="n">multi_island_sigma</span><span class="p">(</span><span class="n">multi_circuit</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="p">,</span>
                                           <span class="n">options</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">,</span>
                                           <span class="n">logger</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="p">,</span>

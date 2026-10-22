@@ -34,7 +34,6 @@ from VeraGridEngine.IO.manufacturer_native.runtime_host import (
 from VeraGridEngine.IO.manufacturer_native.worker_artifact import (
     ManufacturerNativeWorkerArtifact,
     resolve_manufacturer_native_worker,
-    resolve_packaged_windows_x86_worker,
 )
 from VeraGridEngine.IO.native_compiler.compiler_interface import NativeCompilerSelection
 from VeraGridEngine.IO.manufacturer_native.worker_protocol import (
@@ -491,15 +490,13 @@ def inspect_manufacturer_native(source_path: str | Path,
     if worker_artifact is not None:
         artifact: ManufacturerNativeWorkerArtifact = worker_artifact
     else:
-        if platform == IeeeCigreDllPlatform.WINDOWS_X86:
-            artifact = resolve_packaged_windows_x86_worker()
-        else:
-            # Resolve the exact compiler snapshot and reverify the worker just
-            # before staging vendor bytes; a changed saved profile is ignored.
-            artifact = resolve_manufacturer_native_worker(
-                selection=compiler_selection,
-                prepare_if_missing=True,
-            )
+        # Resolve the exact compiler snapshot for either worker architecture
+        # before staging vendor bytes; a changed saved profile is ignored.
+        artifact = resolve_manufacturer_native_worker(
+            selection=compiler_selection,
+            prepare_if_missing=True,
+            platform=platform,
+        )
     if artifact.platform != platform:
         raise ValueError("Prepared manufacturer worker platform differs from the selected binary")
     else:
@@ -550,7 +547,7 @@ def inspect_manufacturer_native(source_path: str | Path,
                 + response.diagnostic
             )
         elif response.worker_sha256 != worker_identity:
-            raise ValueError("Native worker response identity differs from its manifest")
+            raise ValueError("Native worker response identity differs from the selected artifact")
         else:
             pass
         close_frame: bytes = encode_manufacturer_native_worker_request(

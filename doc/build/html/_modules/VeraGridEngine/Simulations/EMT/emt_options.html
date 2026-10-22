@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Simulations.EMT.emt_options &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Simulations.EMT.emt_options &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/license.html">📜 License</a></li>
@@ -120,100 +121,100 @@
 <div class="viewcode-block" id="EmtOptions">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.html#VeraGridEngine.Simulations.EMT.emt_options.EmtOptions">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">EmtOptions</span><span class="p">(</span><span class="n">OptionsTemplate</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    EMT simulation options</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;time_step&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;simulation_time&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;tolerance&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;solver_type&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;integration_method&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;verbose&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;initialization_method&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;problem_type&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;init_newton_tol&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;init_newton_max_iter&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;init_newton_backtracking&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;init_dense_threshold&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;init_ptc_dtau0&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;init_ptc_dtau_min&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;init_ptc_dtau_max&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;init_ptc_max_iter&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;init_allow_state_equilibrium&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;init_fix_pf_bus_voltages&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;newton_compute_dense_cond&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;newton_enable_fallback&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;newton_enable_index1_check&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;newton_enable_backtracking&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;newton_step_norm_explode&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;newton_dense_cond_warn&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;newton_dense_cond_max_n&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;newton_index1_max_block_n&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;newton_index1_warn_pivot_ratio&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;newton_index1_fail_pivot_ratio&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;newton_backtracking_beta&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;newton_backtracking_min_alpha&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;newton_backtracking_max_iter&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;compiled_warmup_policy&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;sparse_solver&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;external_sparse_solver_directory&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;external_sparse_solver_plugin_name&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;allow_internal_sparse_fallback&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;fmi_state_event_time_tolerance&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;fmi_state_event_max_iterations&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;fmi_me_newton_absolute_tolerance&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;fmi_me_newton_relative_tolerance&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;fmi_me_newton_max_iterations&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;fmi_me_max_continuous_states&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;fmi_me_max_runtime_evaluations_per_step&quot;</span><span class="p">,</span>
+        <span class="s2">"time_step"</span><span class="p">,</span>
+        <span class="s2">"simulation_time"</span><span class="p">,</span>
+        <span class="s2">"tolerance"</span><span class="p">,</span>
+        <span class="s2">"solver_type"</span><span class="p">,</span>
+        <span class="s2">"integration_method"</span><span class="p">,</span>
+        <span class="s2">"verbose"</span><span class="p">,</span>
+        <span class="s2">"initialization_method"</span><span class="p">,</span>
+        <span class="s2">"problem_type"</span><span class="p">,</span>
+        <span class="s2">"init_newton_tol"</span><span class="p">,</span>
+        <span class="s2">"init_newton_max_iter"</span><span class="p">,</span>
+        <span class="s2">"init_newton_backtracking"</span><span class="p">,</span>
+        <span class="s2">"init_dense_threshold"</span><span class="p">,</span>
+        <span class="s2">"init_ptc_dtau0"</span><span class="p">,</span>
+        <span class="s2">"init_ptc_dtau_min"</span><span class="p">,</span>
+        <span class="s2">"init_ptc_dtau_max"</span><span class="p">,</span>
+        <span class="s2">"init_ptc_max_iter"</span><span class="p">,</span>
+        <span class="s2">"init_allow_state_equilibrium"</span><span class="p">,</span>
+        <span class="s2">"init_fix_pf_bus_voltages"</span><span class="p">,</span>
+        <span class="s2">"newton_compute_dense_cond"</span><span class="p">,</span>
+        <span class="s2">"newton_enable_fallback"</span><span class="p">,</span>
+        <span class="s2">"newton_enable_index1_check"</span><span class="p">,</span>
+        <span class="s2">"newton_enable_backtracking"</span><span class="p">,</span>
+        <span class="s2">"newton_step_norm_explode"</span><span class="p">,</span>
+        <span class="s2">"newton_dense_cond_warn"</span><span class="p">,</span>
+        <span class="s2">"newton_dense_cond_max_n"</span><span class="p">,</span>
+        <span class="s2">"newton_index1_max_block_n"</span><span class="p">,</span>
+        <span class="s2">"newton_index1_warn_pivot_ratio"</span><span class="p">,</span>
+        <span class="s2">"newton_index1_fail_pivot_ratio"</span><span class="p">,</span>
+        <span class="s2">"newton_backtracking_beta"</span><span class="p">,</span>
+        <span class="s2">"newton_backtracking_min_alpha"</span><span class="p">,</span>
+        <span class="s2">"newton_backtracking_max_iter"</span><span class="p">,</span>
+        <span class="s2">"compiled_warmup_policy"</span><span class="p">,</span>
+        <span class="s2">"sparse_solver"</span><span class="p">,</span>
+        <span class="s2">"external_sparse_solver_directory"</span><span class="p">,</span>
+        <span class="s2">"external_sparse_solver_plugin_name"</span><span class="p">,</span>
+        <span class="s2">"allow_internal_sparse_fallback"</span><span class="p">,</span>
+        <span class="s2">"fmi_state_event_time_tolerance"</span><span class="p">,</span>
+        <span class="s2">"fmi_state_event_max_iterations"</span><span class="p">,</span>
+        <span class="s2">"fmi_me_newton_absolute_tolerance"</span><span class="p">,</span>
+        <span class="s2">"fmi_me_newton_relative_tolerance"</span><span class="p">,</span>
+        <span class="s2">"fmi_me_newton_max_iterations"</span><span class="p">,</span>
+        <span class="s2">"fmi_me_max_continuous_states"</span><span class="p">,</span>
+        <span class="s2">"fmi_me_max_runtime_evaluations_per_step"</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="n">LOCAL_PROPERTY_DECLARATIONS</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">GCProp</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;time_step&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;simulation_time&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;tolerance&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;solver_type&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">EmtSolverTypes</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;integration_method&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">DynamicIntegrationMethod</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;verbose&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;initialization_method&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">EmtInitializationMethod</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;problem_type&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">EmtProblemTypes</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;init_newton_tol&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;init_newton_max_iter&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;init_newton_backtracking&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">bool</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;init_dense_threshold&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;init_ptc_dtau0&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;init_ptc_dtau_min&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;init_ptc_dtau_max&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;init_ptc_max_iter&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;init_allow_state_equilibrium&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">bool</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;init_fix_pf_bus_voltages&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">bool</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;newton_compute_dense_cond&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">bool</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;newton_enable_fallback&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">bool</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;newton_enable_index1_check&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">bool</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;newton_enable_backtracking&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">bool</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;newton_step_norm_explode&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;newton_dense_cond_warn&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;newton_dense_cond_max_n&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;newton_index1_max_block_n&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;newton_index1_warn_pivot_ratio&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;newton_index1_fail_pivot_ratio&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;newton_backtracking_beta&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;newton_backtracking_min_alpha&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;newton_backtracking_max_iter&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;compiled_warmup_policy&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">StructuralCompiledWarmupPolicy</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;sparse_solver&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">SparseSolver</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;external_sparse_solver_directory&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">str</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;external_sparse_solver_plugin_name&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">str</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;allow_internal_sparse_fallback&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">bool</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;fmi_state_event_time_tolerance&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;fmi_state_event_max_iterations&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;fmi_me_newton_absolute_tolerance&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;fmi_me_newton_relative_tolerance&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;fmi_me_newton_max_iterations&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;fmi_me_max_continuous_states&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;fmi_me_max_runtime_evaluations_per_step&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"time_step"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"simulation_time"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"tolerance"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"solver_type"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">EmtSolverTypes</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"integration_method"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">DynamicIntegrationMethod</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"verbose"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"initialization_method"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">EmtInitializationMethod</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"problem_type"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">EmtProblemTypes</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"init_newton_tol"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"init_newton_max_iter"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"init_newton_backtracking"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">bool</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"init_dense_threshold"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"init_ptc_dtau0"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"init_ptc_dtau_min"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"init_ptc_dtau_max"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"init_ptc_max_iter"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"init_allow_state_equilibrium"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">bool</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"init_fix_pf_bus_voltages"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">bool</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"newton_compute_dense_cond"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">bool</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"newton_enable_fallback"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">bool</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"newton_enable_index1_check"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">bool</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"newton_enable_backtracking"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">bool</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"newton_step_norm_explode"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"newton_dense_cond_warn"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"newton_dense_cond_max_n"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"newton_index1_max_block_n"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"newton_index1_warn_pivot_ratio"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"newton_index1_fail_pivot_ratio"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"newton_backtracking_beta"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"newton_backtracking_min_alpha"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"newton_backtracking_max_iter"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"compiled_warmup_policy"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">StructuralCompiledWarmupPolicy</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"sparse_solver"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">SparseSolver</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"external_sparse_solver_directory"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">str</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"external_sparse_solver_plugin_name"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">str</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"allow_internal_sparse_fallback"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">bool</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"fmi_state_event_time_tolerance"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"fmi_state_event_max_iterations"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"fmi_me_newton_absolute_tolerance"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"fmi_me_newton_relative_tolerance"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"fmi_me_newton_max_iterations"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"fmi_me_max_continuous_states"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"fmi_me_max_runtime_evaluations_per_step"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
@@ -250,8 +251,8 @@
                  <span class="n">newton_backtracking_max_iter</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">6</span><span class="p">,</span>
                  <span class="n">compiled_warmup_policy</span><span class="p">:</span> <span class="n">StructuralCompiledWarmupPolicy</span> <span class="o">=</span> <span class="n">StructuralCompiledWarmupPolicy</span><span class="o">.</span><span class="n">Adaptive</span><span class="p">,</span>
                  <span class="n">sparse_solver</span><span class="p">:</span> <span class="n">SparseSolver</span> <span class="o">=</span> <span class="n">SparseSolver</span><span class="o">.</span><span class="n">SuperLU</span><span class="p">,</span>
-                 <span class="n">external_sparse_solver_directory</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-                 <span class="n">external_sparse_solver_plugin_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+                 <span class="n">external_sparse_solver_directory</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">,</span>
+                 <span class="n">external_sparse_solver_plugin_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">,</span>
                  <span class="n">allow_internal_sparse_fallback</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
                  <span class="n">fmi_state_event_time_tolerance</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-9</span><span class="p">,</span>
                  <span class="n">fmi_state_event_max_iterations</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">32</span><span class="p">,</span>
@@ -260,7 +261,7 @@
                  <span class="n">fmi_me_newton_max_iterations</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">20</span><span class="p">,</span>
                  <span class="n">fmi_me_max_continuous_states</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">128</span><span class="p">,</span>
                  <span class="n">fmi_me_max_runtime_evaluations_per_step</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100000</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        EmtOptions</span>
 <span class="sd">        :param time_step: time step of the simulations (s)</span>
 <span class="sd">        :param simulation_time: simulation time (s)</span>
@@ -274,9 +275,9 @@
 <span class="sd">        :param fmi_me_max_continuous_states: Maximum dense FMI ME state dimension.</span>
 <span class="sd">        :param fmi_me_max_runtime_evaluations_per_step: Shared runtime-call limit for one FMI ME step.</span>
 <span class="sd">        :return: None.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
-        <span class="n">OptionsTemplate</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;EmtSimulationOptions&#39;</span><span class="p">)</span>
+        <span class="n">OptionsTemplate</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">'EmtSimulationOptions'</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">time_step</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">time_step</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">simulation_time</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">simulation_time</span>
@@ -323,7 +324,7 @@
             <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s2">&quot;EMT FMI state-event time tolerance must be finite and positive&quot;</span>
+                <span class="s2">"EMT FMI state-event time tolerance must be finite and positive"</span>
             <span class="p">)</span>
         <span class="k">if</span> <span class="p">(</span>
             <span class="nb">isinstance</span><span class="p">(</span><span class="n">fmi_state_event_max_iterations</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
@@ -335,7 +336,7 @@
             <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s2">&quot;EMT FMI state-event maximum iterations must be a positive integer&quot;</span>
+                <span class="s2">"EMT FMI state-event maximum iterations must be a positive integer"</span>
             <span class="p">)</span>
         <span class="k">if</span> <span class="p">(</span>
             <span class="n">math</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">fmi_me_newton_absolute_tolerance</span><span class="p">)</span>
@@ -346,7 +347,7 @@
             <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s2">&quot;EMT FMI ME Newton absolute tolerance must be finite and positive&quot;</span>
+                <span class="s2">"EMT FMI ME Newton absolute tolerance must be finite and positive"</span>
             <span class="p">)</span>
         <span class="k">if</span> <span class="p">(</span>
             <span class="n">math</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">fmi_me_newton_relative_tolerance</span><span class="p">)</span>
@@ -357,7 +358,7 @@
             <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s2">&quot;EMT FMI ME Newton relative tolerance must be finite and positive&quot;</span>
+                <span class="s2">"EMT FMI ME Newton relative tolerance must be finite and positive"</span>
             <span class="p">)</span>
         <span class="k">if</span> <span class="p">(</span>
             <span class="nb">isinstance</span><span class="p">(</span><span class="n">fmi_me_newton_max_iterations</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
@@ -367,7 +368,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">fmi_me_newton_max_iterations</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">fmi_me_newton_max_iterations</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s2">&quot;EMT FMI ME Newton iteration limit must be an integer between 1 and 100&quot;</span>
+                <span class="s2">"EMT FMI ME Newton iteration limit must be an integer between 1 and 100"</span>
             <span class="p">)</span>
         <span class="k">if</span> <span class="p">(</span>
             <span class="nb">isinstance</span><span class="p">(</span><span class="n">fmi_me_max_continuous_states</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
@@ -377,7 +378,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">fmi_me_max_continuous_states</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">fmi_me_max_continuous_states</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s2">&quot;EMT FMI ME state limit must be an integer between 1 and 128&quot;</span>
+                <span class="s2">"EMT FMI ME state limit must be an integer between 1 and 128"</span>
             <span class="p">)</span>
         <span class="k">if</span> <span class="p">(</span>
             <span class="nb">isinstance</span><span class="p">(</span><span class="n">fmi_me_max_runtime_evaluations_per_step</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
@@ -389,8 +390,8 @@
             <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s2">&quot;EMT FMI ME runtime evaluation limit must be an integer between &quot;</span>
-                <span class="s2">&quot;1 and 10000000&quot;</span>
+                <span class="s2">"EMT FMI ME runtime evaluation limit must be an integer between "</span>
+                <span class="s2">"1 and 10000000"</span>
             <span class="p">)</span></div>
 
 </pre></div>

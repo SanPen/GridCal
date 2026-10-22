@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Utils.NumericalMethods.MVRSM_original &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Utils.NumericalMethods.MVRSM_original &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/license.html">📜 License</a></li>
@@ -138,10 +139,10 @@
 <div class="viewcode-block" id="relu">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.NumericalMethods.html#VeraGridEngine.Utils.NumericalMethods.MVRSM_original.relu">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">relu</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    The Rectified Linear Unit (ReLU) function.</span>
 <span class="sd">    :param x: the input and output vector</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">x</span><span class="p">)</span></div>
 
 
@@ -149,11 +150,11 @@
 <div class="viewcode-block" id="relu_deriv">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.NumericalMethods.html#VeraGridEngine.Utils.NumericalMethods.MVRSM_original.relu_deriv">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">relu_deriv</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    The derivative of the rectified linear unit function,</span>
 <span class="sd">    defined with `relu_deriv(0) = 0.5`.</span>
 <span class="sd">    :param x: the input and output vector</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">heaviside</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">x</span><span class="p">)</span></div>
 
 
@@ -161,21 +162,21 @@
 <div class="viewcode-block" id="SurrogateModel">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.NumericalMethods.html#VeraGridEngine.Utils.NumericalMethods.MVRSM_original.SurrogateModel">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">SurrogateModel</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    SurrogateModel</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;m&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;c&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;W&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;b&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;P&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;bounds&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;scratch&quot;</span><span class="p">,</span>
+        <span class="s2">"m"</span><span class="p">,</span>
+        <span class="s2">"c"</span><span class="p">,</span>
+        <span class="s2">"W"</span><span class="p">,</span>
+        <span class="s2">"b"</span><span class="p">,</span>
+        <span class="s2">"P"</span><span class="p">,</span>
+        <span class="s2">"bounds"</span><span class="p">,</span>
+        <span class="s2">"scratch"</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">reg</span><span class="p">,</span> <span class="n">bounds</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Container for the surrogate model data, defined as a linear combination of</span>
 <span class="sd">        `m` basis functions whose weights `c` are to be trained. The basis function</span>
 <span class="sd">        `Φ_k(x)` is a ReLU with input `z_k(x)`, a linear function with weights `W_{k, ·}ᵀ`</span>
@@ -187,14 +188,14 @@
 <span class="sd">        :param b: the `z_k(x)` functions biases (m×1 vector).</span>
 <span class="sd">        :param reg: the regularization parameter.</span>
 <span class="sd">        :param bounds: the decision variable bounds.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">m</span> <span class="o">=</span> <span class="n">m</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">c</span> <span class="o">=</span> <span class="n">c</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">W</span> <span class="o">=</span> <span class="n">W</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">b</span> <span class="o">=</span> <span class="n">b</span>
         <span class="c1"># RLS covariance matrix, stored in column-major order (we *almost* exclusively</span>
         <span class="c1"># treat this matrix with BLAS routines).</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">P</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">m</span><span class="p">,</span> <span class="n">m</span><span class="p">),</span> <span class="n">order</span><span class="o">=</span><span class="s1">&#39;F&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">P</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">m</span><span class="p">,</span> <span class="n">m</span><span class="p">),</span> <span class="n">order</span><span class="o">=</span><span class="s1">'F'</span><span class="p">)</span>
         <span class="n">np</span><span class="o">.</span><span class="n">fill_diagonal</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">P</span><span class="p">,</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">reg</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span> <span class="o">=</span> <span class="n">bounds</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">scratch</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>  <span class="c1"># vector to store temporary results and avoid unnecessary allocations.</span>
@@ -202,14 +203,14 @@
 <div class="viewcode-block" id="SurrogateModel.init">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.NumericalMethods.html#VeraGridEngine.Utils.NumericalMethods.MVRSM_original.SurrogateModel.init">[docs]</a>
     <span class="nd">@classmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">init</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">lb</span><span class="p">,</span> <span class="n">ub</span><span class="p">,</span> <span class="n">num_int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;SurrogateModel&#39;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">init</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">lb</span><span class="p">,</span> <span class="n">ub</span><span class="p">,</span> <span class="n">num_int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">'SurrogateModel'</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Initializes a surrogate model.</span>
 <span class="sd">        :param d: the number of (discrete and continuous) decision variables.</span>
 <span class="sd">        :param lb: the lower bound of the decision variable values.</span>
 <span class="sd">        :param ub: the upper bound of the decision variable values.</span>
 <span class="sd">        :param num_int: the number of discrete decision variables (`0 ≤ num_int ≤ d`).</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># Define the basis functions parameters.</span>
         <span class="n">W</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># weights</span>
         <span class="n">b</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># biases</span>
@@ -292,7 +293,7 @@
         <span class="c1">#     b2 = np.dot(W_cont[k], corner_2)</span>
         <span class="c1">#</span>
         <span class="c1">#     if b1 &gt; b2:</span>
-        <span class="c1">#         print(&#39;Warning: b1&gt;b2. This may lead to problems.&#39;)</span>
+        <span class="c1">#         print('Warning: b1&gt;b2. This may lead to problems.')</span>
         <span class="c1">#</span>
         <span class="c1">#     # Add the same number of basis functions as for the discrete variables.</span>
         <span class="c1">#     for j in range(math.ceil(int_basis_count / num_int)):</span>
@@ -321,11 +322,11 @@
 <div class="viewcode-block" id="SurrogateModel.phi">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.NumericalMethods.html#VeraGridEngine.Utils.NumericalMethods.MVRSM_original.SurrogateModel.phi">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">phi</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Evaluates the basis functions at `x`.</span>
 <span class="sd">        :param x: the decision variable values</span>
 <span class="sd">        :param out: the vector in which to put the result; `None` to allocate.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">W</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">out</span><span class="p">)</span>
         <span class="n">z</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">b</span>
         <span class="k">return</span> <span class="n">relu</span><span class="p">(</span><span class="n">z</span><span class="p">)</span></div>
@@ -334,11 +335,11 @@
 <div class="viewcode-block" id="SurrogateModel.phi_deriv">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.NumericalMethods.html#VeraGridEngine.Utils.NumericalMethods.MVRSM_original.SurrogateModel.phi_deriv">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">phi_deriv</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Evaluates the derivatives of the basis functions with respect to `x`.</span>
 <span class="sd">        :param x: the decision variable values</span>
 <span class="sd">        :param out: the vector in which to put the result; `None` to allocate.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">W</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">out</span><span class="p">)</span>
         <span class="n">z</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">b</span>
         <span class="k">return</span> <span class="n">relu_deriv</span><span class="p">(</span><span class="n">z</span><span class="p">)</span></div>
@@ -347,11 +348,11 @@
 <div class="viewcode-block" id="SurrogateModel.update">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.NumericalMethods.html#VeraGridEngine.Utils.NumericalMethods.MVRSM_original.SurrogateModel.update">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Updates the model upon the observation of a new data point `(x, y)`.</span>
 <span class="sd">        :param x: the decision variables values</span>
 <span class="sd">        :param y: the objective function value `y(x)`</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">phi</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">phi</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>  <span class="c1"># basis function values for k = 1, ..., m.</span>
 
         <span class="c1"># Recursive least squares algorithm</span>
@@ -366,10 +367,10 @@
 <div class="viewcode-block" id="SurrogateModel.g">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.NumericalMethods.html#VeraGridEngine.Utils.NumericalMethods.MVRSM_original.SurrogateModel.g">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">g</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Evaluates the surrogate model at `x`.</span>
 <span class="sd">        :param x: the decision variable values.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">phi</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">phi</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">inner</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">c</span><span class="p">,</span> <span class="n">phi</span><span class="p">)</span></div>
 
@@ -377,10 +378,10 @@
 <div class="viewcode-block" id="SurrogateModel.g_jac">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.NumericalMethods.html#VeraGridEngine.Utils.NumericalMethods.MVRSM_original.SurrogateModel.g_jac">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">g_jac</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Evaluates the Jacobian of the model at `x`.</span>
 <span class="sd">        :param x: the decision variable values.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">phi_prime</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">phi_deriv</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">scratch</span><span class="p">)</span>
         <span class="n">b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">c</span><span class="p">,</span> <span class="n">phi_prime</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">scratch</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">W</span><span class="p">)</span>  <span class="c1"># 1×d vector</span></div>
@@ -389,12 +390,12 @@
 <div class="viewcode-block" id="SurrogateModel.minimum">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.NumericalMethods.html#VeraGridEngine.Utils.NumericalMethods.MVRSM_original.SurrogateModel.minimum">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">minimum</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x0</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Find a minimum of the surrogate model approximately.</span>
 <span class="sd">        :param x0: the initial guess.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">res</span> <span class="o">=</span> <span class="n">minimize</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">g</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;L-BFGS-B&#39;</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">,</span> <span class="n">jac</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">g_jac</span><span class="p">,</span>
-                       <span class="n">options</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;maxiter&#39;</span><span class="p">:</span> <span class="mi">20</span><span class="p">,</span> <span class="s1">&#39;maxfun&#39;</span><span class="p">:</span> <span class="mi">20</span><span class="p">})</span>
+<span class="sd">        """</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="n">minimize</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">g</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">'L-BFGS-B'</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">,</span> <span class="n">jac</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">g_jac</span><span class="p">,</span>
+                       <span class="n">options</span><span class="o">=</span><span class="p">{</span><span class="s1">'maxiter'</span><span class="p">:</span> <span class="mi">20</span><span class="p">,</span> <span class="s1">'maxfun'</span><span class="p">:</span> <span class="mi">20</span><span class="p">})</span>
         <span class="k">return</span> <span class="n">res</span><span class="o">.</span><span class="n">x</span></div>
 </div>
 
@@ -403,14 +404,14 @@
 <div class="viewcode-block" id="scale">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.NumericalMethods.html#VeraGridEngine.Utils.NumericalMethods.MVRSM_original.scale">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">scale</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">y0</span><span class="p">,</span> <span class="n">scale_threshold</span><span class="o">=</span><span class="mf">1e-8</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Scale the objective with respect to the initial objective value,</span>
 <span class="sd">    causing the optimum to lie below zero. This helps exploration and</span>
 <span class="sd">    prevents the algorithm from getting stuck at the boundary.</span>
 <span class="sd">    :param y: the objective function value.</span>
 <span class="sd">    :param y0: the initial objective function value, `y(x0)`.</span>
 <span class="sd">    :param scale_threshold: value under which no scaling is done</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">y</span> <span class="o">-=</span> <span class="n">y0</span>
     <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">y0</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">scale_threshold</span><span class="p">:</span>
         <span class="n">y</span> <span class="o">/=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">y0</span><span class="p">)</span>
@@ -421,12 +422,12 @@
 <div class="viewcode-block" id="normalize_md">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.NumericalMethods.html#VeraGridEngine.Utils.NumericalMethods.MVRSM_original.normalize_md">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">normalize_md</span><span class="p">(</span><span class="n">y_no_normalized</span><span class="p">,</span> <span class="n">norm_factors</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Computes the normalization of y_no_normalized --&gt; y_normalized=(y_no_normalized-y_min)/(y_max-y_min).</span>
 <span class="sd">    :param y_no_normalized: The no normalized objective function values: np.array.shape[1]=n_objectives .</span>
 <span class="sd">    :param norm_factors: Tuple of arrays where 1st array is maximum values of y and second minimum values.</span>
 <span class="sd">    :return: the value `y_normalized` such that `normalize_md(y_no_normalized, y0) = y_normalized`.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">max_min</span> <span class="o">=</span> <span class="n">norm_factors</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">norm_factors</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
     <span class="n">max_min</span><span class="p">[</span><span class="n">max_min</span> <span class="o">==</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
 
@@ -437,12 +438,12 @@
 <div class="viewcode-block" id="inv_normalize_md">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.NumericalMethods.html#VeraGridEngine.Utils.NumericalMethods.MVRSM_original.inv_normalize_md">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">inv_normalize_md</span><span class="p">(</span><span class="n">y_normalized</span><span class="p">,</span> <span class="n">norm_factors</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Computes the inverse of normalize_md(y_no_normalized, norm_factors).</span>
 <span class="sd">    :param y_normalized: The normalized objective function values: np.array.shape[1]=n_objectives .</span>
 <span class="sd">    :param norm_factors: Tuple of arrays where 1st array is maximum values of y and second minimum values.</span>
 <span class="sd">    :return: the value `y_no_normalized` such that `inv_normalize_md(y_normalized, y0) = y_no_normalized`.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">max_min</span> <span class="o">=</span> <span class="n">norm_factors</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">norm_factors</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
 
@@ -453,11 +454,11 @@
 <div class="viewcode-block" id="get_norm_factors">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.NumericalMethods.html#VeraGridEngine.Utils.NumericalMethods.MVRSM_original.get_norm_factors">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_norm_factors</span><span class="p">(</span><span class="n">scaling_values</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Computes the factors used to normalize objective function criteria..</span>
 <span class="sd">    :param scaling_values: Array with all the criteria obtained during random evaluation process.</span>
 <span class="sd">    :return: Tuple of arrays where 1st array is maximum values of y and second minimum values.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">terms_max</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">scaling_values</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
     <span class="n">terms_min</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">scaling_values</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 
@@ -468,13 +469,13 @@
 <div class="viewcode-block" id="inv_scale">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.NumericalMethods.html#VeraGridEngine.Utils.NumericalMethods.MVRSM_original.inv_scale">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">inv_scale</span><span class="p">(</span><span class="n">y_scaled</span><span class="p">,</span> <span class="n">y0</span><span class="p">,</span> <span class="n">scale_threshold</span><span class="o">=</span><span class="mf">1e-8</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Computes the inverse function of `scale(y, y0)`.</span>
 <span class="sd">    :param y_scaled: the scaled objective function value.</span>
 <span class="sd">    :param y0: the initial objective function value, `y(x0)`.</span>
 <span class="sd">    :param scale_threshold: value under which no scaling is done</span>
 <span class="sd">    :return: the value `y` such that `scale(y, y0) = y_scaled`.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">y0</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">scale_threshold</span><span class="p">:</span>
         <span class="n">y_scaled</span> <span class="o">*=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">y0</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">y_scaled</span> <span class="o">+</span> <span class="n">y0</span></div>
@@ -485,7 +486,7 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.NumericalMethods.html#VeraGridEngine.Utils.NumericalMethods.MVRSM_original.MVRSM_minimize">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">MVRSM_minimize</span><span class="p">(</span><span class="n">obj_func</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">lb</span><span class="p">,</span> <span class="n">ub</span><span class="p">,</span> <span class="n">num_int</span><span class="p">,</span> <span class="n">max_evals</span><span class="p">,</span> <span class="n">rand_evals</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">obj_threshold</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(),</span>
                    <span class="n">stop_crit</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rand_search_bias</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">log_times</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">scale_threshold</span><span class="o">=</span><span class="mf">1e-8</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 
 <span class="sd">    :param obj_func: objective function</span>
 <span class="sd">    :param x0: Initial solution</span>
@@ -501,7 +502,7 @@
 <span class="sd">    :param log_times:</span>
 <span class="sd">    :param scale_threshold: value under which no scaling is done</span>
 <span class="sd">    :return: best x, best y, SurrogateModel</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">d</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">x0</span><span class="p">)</span>  <span class="c1"># number of decision variables</span>
     <span class="k">assert</span> <span class="n">num_int</span> <span class="o">==</span> <span class="n">d</span>  <span class="c1"># [GTEP] This is a modified version that only supports discrete variables.</span>
 
@@ -537,7 +538,7 @@
         <span class="n">model</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">log_times</span><span class="p">:</span>
             <span class="c1"># noinspection PyUnboundLocalVariable</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Update time: </span><span class="si">{</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">update_start</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'Update time: </span><span class="si">{</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">update_start</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">i</span> <span class="o">&gt;=</span> <span class="n">rand_evals</span><span class="p">:</span>
             <span class="c1"># Minimize surrogate model</span>
@@ -546,7 +547,7 @@
             <span class="n">next_x</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">best_x</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">log_times</span><span class="p">:</span>
                 <span class="c1"># noinspection PyUnboundLocalVariable</span>
-                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Minimization time: </span><span class="si">{</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">min_start</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'Minimization time: </span><span class="si">{</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">min_start</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
 
             <span class="c1"># Round discrete variables to the nearest integer.</span>
             <span class="n">next_x</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">num_int</span><span class="p">]</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">out</span><span class="o">=</span><span class="n">next_x</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">num_int</span><span class="p">])</span>
@@ -556,7 +557,7 @@
 
             <span class="c1"># Check if minimizer really gives better result</span>
             <span class="c1"># if model.g(next_X) &gt; model.g(x) + 1e-8:</span>
-            <span class="c1"># print(&#39;Warning: minimization of the surrogate model yielded a worse solution&#39;)</span>
+            <span class="c1"># print('Warning: minimization of the surrogate model yielded a worse solution')</span>
 
         <span class="c1"># Perform exploration to prevent the algorithm from getting stuck in local minima</span>
         <span class="c1"># of the surrogate model.</span>
@@ -606,7 +607,7 @@
 
         <span class="k">if</span> <span class="n">log_times</span><span class="p">:</span>
             <span class="c1"># noinspection PyUnboundLocalVariable</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Iteration time: </span><span class="si">{</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">iter_start</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'Iteration time: </span><span class="si">{</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">iter_start</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">best_x</span><span class="p">,</span> <span class="n">inv_scale</span><span class="p">(</span><span class="n">best_y</span><span class="p">,</span> <span class="n">y0</span><span class="p">,</span> <span class="n">scale_threshold</span><span class="p">),</span> <span class="n">model</span></div>
 

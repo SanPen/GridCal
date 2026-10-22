@@ -46,6 +46,9 @@ def _serialize_grounding_contract_as_version_three(block: Block) -> dict[str, ob
     legacy_contract["rms_terminal_power_contributions"] = []
     legacy_contract.pop("emt_internal_grounding_link")
     legacy_contract.pop("rms_physical_measurement_point")
+    legacy_contract.pop("emt_finite_reciprocal_source_mode_var_uid")
+    legacy_contract.pop("modal_template_kind")
+    legacy_contract.pop("modal_template_config")
 
     # The child is parsed first, so its own contract must also match the legacy
     # schema before the parent migration inspects their shared symbolic UIDs.
@@ -60,6 +63,9 @@ def _serialize_grounding_contract_as_version_three(block: Block) -> dict[str, ob
         legacy_child_contract["rms_terminal_power_contributions"] = []
         legacy_child_contract.pop("emt_internal_grounding_link")
         legacy_child_contract.pop("rms_physical_measurement_point")
+        legacy_child_contract.pop("emt_finite_reciprocal_source_mode_var_uid")
+        legacy_child_contract.pop("modal_template_kind")
+        legacy_child_contract.pop("modal_template_config")
     else:
         pass
     return legacy_data

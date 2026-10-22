@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Compilers.Gslv.Devices.associations &mdash; VeraGrid 6.5.26 documentation</title>
+  <title>VeraGridEngine.Compilers.Gslv.Devices.associations &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../../_static/documentation_options.js?v=c62e3d9e"></script>
+      <script src="../../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/license.html">📜 License</a></li>
@@ -119,13 +120,13 @@
 
 <div class="viewcode-block" id="convert_technology">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Compilers.Gslv.Devices.html#VeraGridEngine.Compilers.Gslv.Devices.associations.convert_technology">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">convert_technology</span><span class="p">(</span><span class="n">elm</span><span class="p">:</span> <span class="n">Technology</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;pg.Technology&quot;</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">convert_technology</span><span class="p">(</span><span class="n">elm</span><span class="p">:</span> <span class="n">Technology</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"pg.Technology"</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Convert one VeraGrid technology into one GSLV technology.</span>
 
 <span class="sd">    :param elm: VeraGrid technology.</span>
 <span class="sd">    :return: GSLV technology.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">technology</span><span class="p">:</span> <span class="n">pg</span><span class="o">.</span><span class="n">Technology</span> <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">Technology</span><span class="p">(</span><span class="n">idtag</span><span class="o">=</span><span class="n">elm</span><span class="o">.</span><span class="n">idtag</span><span class="p">,</span> <span class="n">code</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">elm</span><span class="o">.</span><span class="n">code</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="n">elm</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
     <span class="n">technology</span><span class="o">.</span><span class="n">name2</span> <span class="o">=</span> <span class="n">elm</span><span class="o">.</span><span class="n">name2</span>
     <span class="n">technology</span><span class="o">.</span><span class="n">name3</span> <span class="o">=</span> <span class="n">elm</span><span class="o">.</span><span class="n">name3</span>
@@ -137,13 +138,13 @@
 
 <div class="viewcode-block" id="convert_fuel">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Compilers.Gslv.Devices.html#VeraGridEngine.Compilers.Gslv.Devices.associations.convert_fuel">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">convert_fuel</span><span class="p">(</span><span class="n">elm</span><span class="p">:</span> <span class="n">Fuel</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;pg.Fuel&quot;</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">convert_fuel</span><span class="p">(</span><span class="n">elm</span><span class="p">:</span> <span class="n">Fuel</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"pg.Fuel"</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Convert one VeraGrid fuel into one GSLV fuel.</span>
 
 <span class="sd">    :param elm: VeraGrid fuel.</span>
 <span class="sd">    :return: GSLV fuel.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">fuel</span><span class="p">:</span> <span class="n">pg</span><span class="o">.</span><span class="n">Fuel</span> <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">Fuel</span><span class="p">(</span><span class="n">idtag</span><span class="o">=</span><span class="n">elm</span><span class="o">.</span><span class="n">idtag</span><span class="p">,</span> <span class="n">code</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">elm</span><span class="o">.</span><span class="n">code</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="n">elm</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
     <span class="n">fuel</span><span class="o">.</span><span class="n">cost</span> <span class="o">=</span> <span class="n">elm</span><span class="o">.</span><span class="n">cost</span>
     <span class="n">fuel</span><span class="o">.</span><span class="n">color</span> <span class="o">=</span> <span class="n">elm</span><span class="o">.</span><span class="n">color</span>
@@ -153,13 +154,13 @@
 
 <div class="viewcode-block" id="convert_emission_gas">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Compilers.Gslv.Devices.html#VeraGridEngine.Compilers.Gslv.Devices.associations.convert_emission_gas">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">convert_emission_gas</span><span class="p">(</span><span class="n">elm</span><span class="p">:</span> <span class="n">EmissionGas</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;pg.EmissionGas&quot;</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">convert_emission_gas</span><span class="p">(</span><span class="n">elm</span><span class="p">:</span> <span class="n">EmissionGas</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"pg.EmissionGas"</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Convert one VeraGrid emission gas into one GSLV emission gas.</span>
 
 <span class="sd">    :param elm: VeraGrid emission gas.</span>
 <span class="sd">    :return: GSLV emission gas.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">emission_gas</span><span class="p">:</span> <span class="n">pg</span><span class="o">.</span><span class="n">EmissionGas</span> <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">EmissionGas</span><span class="p">(</span><span class="n">idtag</span><span class="o">=</span><span class="n">elm</span><span class="o">.</span><span class="n">idtag</span><span class="p">,</span> <span class="n">code</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">elm</span><span class="o">.</span><span class="n">code</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="n">elm</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
     <span class="n">emission_gas</span><span class="o">.</span><span class="n">cost</span> <span class="o">=</span> <span class="n">elm</span><span class="o">.</span><span class="n">cost</span>
     <span class="n">emission_gas</span><span class="o">.</span><span class="n">color</span> <span class="o">=</span> <span class="n">elm</span><span class="o">.</span><span class="n">color</span>
@@ -169,14 +170,14 @@
 
 <div class="viewcode-block" id="add_technologies">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Compilers.Gslv.Devices.html#VeraGridEngine.Compilers.Gslv.Devices.associations.add_technologies">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">add_technologies</span><span class="p">(</span><span class="n">circuit</span><span class="p">:</span> <span class="n">MultiCircuit</span><span class="p">,</span> <span class="n">gslv_grid</span><span class="p">:</span> <span class="s2">&quot;pg.MultiCircuit&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Technology</span><span class="p">,</span> <span class="s2">&quot;pg.Technology&quot;</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">add_technologies</span><span class="p">(</span><span class="n">circuit</span><span class="p">:</span> <span class="n">MultiCircuit</span><span class="p">,</span> <span class="n">gslv_grid</span><span class="p">:</span> <span class="s2">"pg.MultiCircuit"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Technology</span><span class="p">,</span> <span class="s2">"pg.Technology"</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Add every VeraGrid technology to the target GSLV grid.</span>
 
 <span class="sd">    :param circuit: VeraGrid circuit.</span>
 <span class="sd">    :param gslv_grid: GSLV circuit.</span>
 <span class="sd">    :return: VeraGrid-to-GSLV technology lookup.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">technology_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Technology</span><span class="p">,</span> <span class="n">pg</span><span class="o">.</span><span class="n">Technology</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
 
     <span class="k">for</span> <span class="n">elm</span> <span class="ow">in</span> <span class="n">circuit</span><span class="o">.</span><span class="n">technologies</span><span class="p">:</span>
@@ -190,14 +191,14 @@
 
 <div class="viewcode-block" id="add_fuels">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Compilers.Gslv.Devices.html#VeraGridEngine.Compilers.Gslv.Devices.associations.add_fuels">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">add_fuels</span><span class="p">(</span><span class="n">circuit</span><span class="p">:</span> <span class="n">MultiCircuit</span><span class="p">,</span> <span class="n">gslv_grid</span><span class="p">:</span> <span class="s2">&quot;pg.MultiCircuit&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Fuel</span><span class="p">,</span> <span class="s2">&quot;pg.Fuel&quot;</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">add_fuels</span><span class="p">(</span><span class="n">circuit</span><span class="p">:</span> <span class="n">MultiCircuit</span><span class="p">,</span> <span class="n">gslv_grid</span><span class="p">:</span> <span class="s2">"pg.MultiCircuit"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Fuel</span><span class="p">,</span> <span class="s2">"pg.Fuel"</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Add every VeraGrid fuel to the target GSLV grid.</span>
 
 <span class="sd">    :param circuit: VeraGrid circuit.</span>
 <span class="sd">    :param gslv_grid: GSLV circuit.</span>
 <span class="sd">    :return: VeraGrid-to-GSLV fuel lookup.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">fuel_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Fuel</span><span class="p">,</span> <span class="n">pg</span><span class="o">.</span><span class="n">Fuel</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
 
     <span class="k">for</span> <span class="n">elm</span> <span class="ow">in</span> <span class="n">circuit</span><span class="o">.</span><span class="n">fuels</span><span class="p">:</span>
@@ -211,14 +212,14 @@
 
 <div class="viewcode-block" id="add_emission_gases">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Compilers.Gslv.Devices.html#VeraGridEngine.Compilers.Gslv.Devices.associations.add_emission_gases">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">add_emission_gases</span><span class="p">(</span><span class="n">circuit</span><span class="p">:</span> <span class="n">MultiCircuit</span><span class="p">,</span> <span class="n">gslv_grid</span><span class="p">:</span> <span class="s2">&quot;pg.MultiCircuit&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="n">EmissionGas</span><span class="p">,</span> <span class="s2">&quot;pg.EmissionGas&quot;</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">add_emission_gases</span><span class="p">(</span><span class="n">circuit</span><span class="p">:</span> <span class="n">MultiCircuit</span><span class="p">,</span> <span class="n">gslv_grid</span><span class="p">:</span> <span class="s2">"pg.MultiCircuit"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="n">EmissionGas</span><span class="p">,</span> <span class="s2">"pg.EmissionGas"</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Add every VeraGrid emission gas to the target GSLV grid.</span>
 
 <span class="sd">    :param circuit: VeraGrid circuit.</span>
 <span class="sd">    :param gslv_grid: GSLV circuit.</span>
 <span class="sd">    :return: VeraGrid-to-GSLV emission gas lookup.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">emission_gas_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">EmissionGas</span><span class="p">,</span> <span class="n">pg</span><span class="o">.</span><span class="n">EmissionGas</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
 
     <span class="k">for</span> <span class="n">elm</span> <span class="ow">in</span> <span class="n">circuit</span><span class="o">.</span><span class="n">emission_gases</span><span class="p">:</span>

@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Templates.Rms.st2cut_stabilizer_rms_template &mdash; VeraGrid 6.5.26 documentation</title>
+  <title>VeraGridEngine.Templates.Rms.st2cut_stabilizer_rms_template &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=c62e3d9e"></script>
+      <script src="../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/license.html">📜 License</a></li>
@@ -106,7 +107,7 @@
 <span class="c1"># License, v. 2.0. If a copy of the MPL was not distributed with this</span>
 <span class="c1"># file, You can obtain one at https://mozilla.org/MPL/2.0/.</span>
 <span class="c1"># SPDX-License-Identifier: MPL-2.0</span>
-<span class="sd">&quot;&quot;&quot;Standard ST2CUT dual-input power-system stabilizer RMS model.&quot;&quot;&quot;</span>
+<span class="sd">"""Standard ST2CUT dual-input power-system stabilizer RMS model."""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
@@ -124,7 +125,7 @@
 <div class="viewcode-block" id="St2cutInputMode">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Templates.Rms.html#VeraGridEngine.Templates.Rms.st2cut_stabilizer_rms_template.St2cutInputMode">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">St2cutInputMode</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;WECC ST2CUT input modes supported by this standard realization.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""WECC ST2CUT input modes supported by this standard realization."""</span>
 
     <span class="n">ROTOR_SPEED</span> <span class="o">=</span> <span class="mi">1</span>
     <span class="n">ELECTRICAL_POWER</span> <span class="o">=</span> <span class="mi">3</span></div>
@@ -134,30 +135,30 @@
 <div class="viewcode-block" id="St2cutRmsParameters">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Templates.Rms.html#VeraGridEngine.Templates.Rms.st2cut_stabilizer_rms_template.St2cutRmsParameters">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">St2cutRmsParameters</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Numerical parameters for one ST2CUT stabilizer.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Numerical parameters for one ST2CUT stabilizer."""</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;mode&quot;</span><span class="p">,</span> <span class="s2">&quot;k1&quot;</span><span class="p">,</span> <span class="s2">&quot;t1&quot;</span><span class="p">,</span> <span class="s2">&quot;t3&quot;</span><span class="p">,</span> <span class="s2">&quot;t4&quot;</span><span class="p">,</span> <span class="s2">&quot;t5&quot;</span><span class="p">,</span> <span class="s2">&quot;t6&quot;</span><span class="p">,</span> <span class="s2">&quot;t7&quot;</span><span class="p">,</span> <span class="s2">&quot;t8&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;t9&quot;</span><span class="p">,</span> <span class="s2">&quot;t10&quot;</span><span class="p">,</span> <span class="s2">&quot;lsmax&quot;</span><span class="p">,</span> <span class="s2">&quot;lsmin&quot;</span><span class="p">,</span> <span class="s2">&quot;power_scale&quot;</span><span class="p">,</span>
+        <span class="s2">"mode"</span><span class="p">,</span> <span class="s2">"k1"</span><span class="p">,</span> <span class="s2">"t1"</span><span class="p">,</span> <span class="s2">"t3"</span><span class="p">,</span> <span class="s2">"t4"</span><span class="p">,</span> <span class="s2">"t5"</span><span class="p">,</span> <span class="s2">"t6"</span><span class="p">,</span> <span class="s2">"t7"</span><span class="p">,</span> <span class="s2">"t8"</span><span class="p">,</span>
+        <span class="s2">"t9"</span><span class="p">,</span> <span class="s2">"t10"</span><span class="p">,</span> <span class="s2">"lsmax"</span><span class="p">,</span> <span class="s2">"lsmin"</span><span class="p">,</span> <span class="s2">"power_scale"</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">:</span> <span class="s2">&quot;St2cutRmsParameters&quot;</span><span class="p">,</span>
+        <span class="bp">self</span><span class="p">:</span> <span class="s2">"St2cutRmsParameters"</span><span class="p">,</span>
         <span class="n">mode</span><span class="p">:</span> <span class="n">St2cutInputMode</span><span class="p">,</span>
         <span class="n">values</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
         <span class="n">power_scale</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Store one ST2CUT parameter record.</span>
+<span class="w">        </span><span class="sd">"""Store one ST2CUT parameter record.</span>
 
 <span class="sd">        :param mode: Primary input-signal selection.</span>
 <span class="sd">        :param values: ``K1,T1,T3,T4,T5,T6,T7,T8,T9,T10,LSMAX,LSMIN``.</span>
 <span class="sd">        :param power_scale: Machine-to-system rating ratio ``Sn/Sbase``.</span>
 <span class="sd">        :return: None.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">values</span><span class="p">)</span> <span class="o">==</span> <span class="mi">12</span><span class="p">:</span>
             <span class="k">pass</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;ST2CUT requires 12 values; received </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">values</span><span class="p">)</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"ST2CUT requires 12 values; received </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">values</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">mode</span><span class="p">:</span> <span class="n">St2cutInputMode</span> <span class="o">=</span> <span class="n">mode</span>
         <span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">k1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">t1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">t3</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">t4</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">t5</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">t6</span><span class="p">,</span>
@@ -168,14 +169,14 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_parameter</span><span class="p">(</span><span class="n">block</span><span class="p">:</span> <span class="n">Block</span><span class="p">,</span> <span class="n">vfactory</span><span class="p">:</span> <span class="n">VarFactory</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Var</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Add one event parameter.</span>
+<span class="w">    </span><span class="sd">"""Add one event parameter.</span>
 
 <span class="sd">    :param block: Owning block.</span>
 <span class="sd">    :param vfactory: Shared variable factory.</span>
 <span class="sd">    :param name: Parameter name.</span>
 <span class="sd">    :param value: Default value.</span>
 <span class="sd">    :return: Parameter variable.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">variable</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
     <span class="n">block</span><span class="o">.</span><span class="n">event_dict</span><span class="p">[</span><span class="n">variable</span><span class="p">]</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_const</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="n">value</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">variable</span>
@@ -189,9 +190,9 @@
     <span class="n">include_input_lag</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
     <span class="n">include_second_lead_lag</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
     <span class="n">include_third_lead_lag</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
-    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;ST2CUT stabilizer RMS template&quot;</span><span class="p">,</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"ST2CUT stabilizer RMS template"</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RmsModelTemplate</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Build the WECC structural variants of ST2CUT.</span>
+<span class="w">    </span><span class="sd">"""Build the WECC structural variants of ST2CUT.</span>
 
 <span class="sd">    :param vfactory: Shared symbolic variable factory.</span>
 <span class="sd">    :param input_mode: Rotor-speed or electrical-power input.</span>
@@ -200,33 +201,33 @@
 <span class="sd">    :param include_third_lead_lag: Retain ``LL3_x`` when ``T10`` is nonzero.</span>
 <span class="sd">    :param name: Template name.</span>
 <span class="sd">    :return: ST2CUT stabilizer template.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">template</span><span class="p">:</span> <span class="n">RmsModelTemplate</span> <span class="o">=</span> <span class="n">RmsModelTemplate</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
     <span class="n">template</span><span class="o">.</span><span class="n">tpe</span> <span class="o">=</span> <span class="n">DeviceType</span><span class="o">.</span><span class="n">GeneratorDevice</span>
-    <span class="n">omega_var</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;omega_&quot;</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s2">&quot;omega_reference&quot;</span><span class="p">)</span>
-    <span class="n">te_var</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;Te_&quot;</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s2">&quot;te_reference&quot;</span><span class="p">)</span>
+    <span class="n">omega_var</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"omega_"</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s2">"omega_reference"</span><span class="p">)</span>
+    <span class="n">te_var</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"Te_"</span><span class="p">,</span> <span class="n">shared_reference</span><span class="o">=</span><span class="s2">"te_reference"</span><span class="p">)</span>
     <span class="n">l1_state</span><span class="p">:</span> <span class="n">Var</span> <span class="o">|</span> <span class="kc">None</span>
     <span class="k">if</span> <span class="n">include_input_lag</span><span class="p">:</span>
-        <span class="n">l1_state</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;L1_y&quot;</span><span class="p">)</span>
+        <span class="n">l1_state</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"L1_y"</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">l1_state</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="n">wo_state</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;WO_x&quot;</span><span class="p">)</span>
-    <span class="n">ll1_state</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;LL1_x&quot;</span><span class="p">)</span>
+    <span class="n">wo_state</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"WO_x"</span><span class="p">)</span>
+    <span class="n">ll1_state</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"LL1_x"</span><span class="p">)</span>
     <span class="n">ll2_state</span><span class="p">:</span> <span class="n">Var</span> <span class="o">|</span> <span class="kc">None</span>
     <span class="k">if</span> <span class="n">include_second_lead_lag</span><span class="p">:</span>
-        <span class="n">ll2_state</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;LL2_x&quot;</span><span class="p">)</span>
+        <span class="n">ll2_state</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"LL2_x"</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">ll2_state</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">ll3_state</span><span class="p">:</span> <span class="n">Var</span> <span class="o">|</span> <span class="kc">None</span>
     <span class="k">if</span> <span class="n">include_third_lead_lag</span><span class="p">:</span>
-        <span class="n">ll3_state</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;LL3_x&quot;</span><span class="p">)</span>
+        <span class="n">ll3_state</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"LL3_x"</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">ll3_state</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="n">output_var</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;vsout&quot;</span><span class="p">)</span>
+    <span class="n">output_var</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"vsout"</span><span class="p">)</span>
     <span class="n">block</span><span class="p">:</span> <span class="n">Block</span> <span class="o">=</span> <span class="n">Block</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
     <span class="n">names</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;K1&quot;</span><span class="p">,</span> <span class="s2">&quot;T1&quot;</span><span class="p">,</span> <span class="s2">&quot;T3&quot;</span><span class="p">,</span> <span class="s2">&quot;T4&quot;</span><span class="p">,</span> <span class="s2">&quot;T5&quot;</span><span class="p">,</span> <span class="s2">&quot;T6&quot;</span><span class="p">,</span> <span class="s2">&quot;T7&quot;</span><span class="p">,</span> <span class="s2">&quot;T8&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;T9&quot;</span><span class="p">,</span> <span class="s2">&quot;T10&quot;</span><span class="p">,</span> <span class="s2">&quot;LSMAX&quot;</span><span class="p">,</span> <span class="s2">&quot;LSMIN&quot;</span><span class="p">,</span> <span class="s2">&quot;power_scale&quot;</span><span class="p">,</span>
+        <span class="s2">"K1"</span><span class="p">,</span> <span class="s2">"T1"</span><span class="p">,</span> <span class="s2">"T3"</span><span class="p">,</span> <span class="s2">"T4"</span><span class="p">,</span> <span class="s2">"T5"</span><span class="p">,</span> <span class="s2">"T6"</span><span class="p">,</span> <span class="s2">"T7"</span><span class="p">,</span> <span class="s2">"T8"</span><span class="p">,</span>
+        <span class="s2">"T9"</span><span class="p">,</span> <span class="s2">"T10"</span><span class="p">,</span> <span class="s2">"LSMAX"</span><span class="p">,</span> <span class="s2">"LSMIN"</span><span class="p">,</span> <span class="s2">"power_scale"</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">defaults</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
         <span class="mf">5.5</span><span class="p">,</span> <span class="mf">0.03</span><span class="p">,</span> <span class="mf">10.0</span><span class="p">,</span> <span class="mf">10.0</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">,</span> <span class="mf">0.04</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span>
@@ -316,16 +317,16 @@
     <span class="n">parameters</span><span class="p">:</span> <span class="n">St2cutRmsParameters</span><span class="p">,</span>
     <span class="n">vfactory</span><span class="p">:</span> <span class="n">VarFactory</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Configure one ST2CUT block.</span>
+<span class="w">    </span><span class="sd">"""Configure one ST2CUT block.</span>
 
 <span class="sd">    :param block: ST2CUT symbolic block.</span>
 <span class="sd">    :param parameters: Numerical record.</span>
 <span class="sd">    :param vfactory: Shared variable factory.</span>
 <span class="sd">    :return: None.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">names</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;K1&quot;</span><span class="p">,</span> <span class="s2">&quot;T1&quot;</span><span class="p">,</span> <span class="s2">&quot;T3&quot;</span><span class="p">,</span> <span class="s2">&quot;T4&quot;</span><span class="p">,</span> <span class="s2">&quot;T5&quot;</span><span class="p">,</span> <span class="s2">&quot;T6&quot;</span><span class="p">,</span> <span class="s2">&quot;T7&quot;</span><span class="p">,</span> <span class="s2">&quot;T8&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;T9&quot;</span><span class="p">,</span> <span class="s2">&quot;T10&quot;</span><span class="p">,</span> <span class="s2">&quot;LSMAX&quot;</span><span class="p">,</span> <span class="s2">&quot;LSMIN&quot;</span><span class="p">,</span> <span class="s2">&quot;power_scale&quot;</span><span class="p">,</span>
+        <span class="s2">"K1"</span><span class="p">,</span> <span class="s2">"T1"</span><span class="p">,</span> <span class="s2">"T3"</span><span class="p">,</span> <span class="s2">"T4"</span><span class="p">,</span> <span class="s2">"T5"</span><span class="p">,</span> <span class="s2">"T6"</span><span class="p">,</span> <span class="s2">"T7"</span><span class="p">,</span> <span class="s2">"T8"</span><span class="p">,</span>
+        <span class="s2">"T9"</span><span class="p">,</span> <span class="s2">"T10"</span><span class="p">,</span> <span class="s2">"LSMAX"</span><span class="p">,</span> <span class="s2">"LSMIN"</span><span class="p">,</span> <span class="s2">"power_scale"</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">values</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
         <span class="n">parameters</span><span class="o">.</span><span class="n">k1</span><span class="p">,</span> <span class="n">parameters</span><span class="o">.</span><span class="n">t1</span><span class="p">,</span> <span class="n">parameters</span><span class="o">.</span><span class="n">t3</span><span class="p">,</span> <span class="n">parameters</span><span class="o">.</span><span class="n">t4</span><span class="p">,</span>
@@ -343,7 +344,7 @@
             <span class="n">block</span><span class="o">.</span><span class="n">event_dict</span><span class="p">[</span><span class="n">matches</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_const</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="n">value</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">parameter_name</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;Expected one ST2CUT parameter </span><span class="si">{</span><span class="n">parameter_name</span><span class="si">!r}</span><span class="s2">; found </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">matches</span><span class="p">)</span><span class="si">}</span><span class="s2">.&quot;</span>
+                <span class="sa">f</span><span class="s2">"Expected one ST2CUT parameter </span><span class="si">{</span><span class="n">parameter_name</span><span class="si">!r}</span><span class="s2">; found </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">matches</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span>
             <span class="p">)</span></div>
 
 </pre></div>

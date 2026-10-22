@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Utils.MIP.selected_interface &mdash; VeraGrid 6.7.13 documentation</title>
+  <title>VeraGridEngine.Utils.MIP.selected_interface &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=16fbabd8"></script>
+      <script src="../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -108,9 +108,9 @@
 <span class="c1"># file, You can obtain one at https://mozilla.org/MPL/2.0/.  </span>
 <span class="c1"># SPDX-License-Identifier: MPL-2.0</span>
 
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 <span class="sd">Uncomment the appropriate interface imports to use: Pulp or OrTools</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">TypeAlias</span><span class="p">,</span> <span class="n">TYPE_CHECKING</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">highspy</span><span class="w"> </span><span class="kn">import</span> <span class="n">Highs</span><span class="p">,</span> <span class="n">HighsModelStatus</span>
@@ -157,12 +157,12 @@
 <div class="viewcode-block" id="is_infeasible">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.MIP.html#VeraGridEngine.Utils.MIP.selected_interface.is_infeasible">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">is_infeasible</span><span class="p">(</span><span class="n">model</span><span class="p">:</span> <span class="n">LpModel</span><span class="p">,</span> <span class="n">status</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check whether a solve established infeasibility before relaxing limits.</span>
+<span class="w">    </span><span class="sd">"""Check whether a solve established infeasibility before relaxing limits.</span>
 
 <span class="sd">    :param model: Solver interface owning the solved model.</span>
 <span class="sd">    :param status: Status returned by the solver interface.</span>
 <span class="sd">    :return: True only when the available solver status confirms infeasibility.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">infeasible</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">status</span> <span class="o">==</span> <span class="n">model</span><span class="o">.</span><span class="n">INFEASIBLE</span>
     <span class="k">if</span> <span class="p">(</span><span class="n">infeasible</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">PulpLpModel</span><span class="p">)</span>
             <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">solver</span><span class="p">,</span> <span class="n">HiGHS</span><span class="p">)</span>
@@ -180,10 +180,10 @@
 <div class="viewcode-block" id="get_available_mip_frameworks">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.MIP.html#VeraGridEngine.Utils.MIP.selected_interface.get_available_mip_frameworks">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_available_mip_frameworks</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">MIPFramework</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Get list of available frameworks</span>
 <span class="sd">    :return: List[MIPFramework]</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">lst</span> <span class="o">=</span> <span class="p">[</span><span class="n">MIPFramework</span><span class="o">.</span><span class="n">PuLP</span><span class="p">]</span>
 
     <span class="k">if</span> <span class="n">ORTOOLS_AVAILABLE</span><span class="p">:</span>
@@ -196,12 +196,12 @@
 <div class="viewcode-block" id="get_model_instance">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.MIP.html#VeraGridEngine.Utils.MIP.selected_interface.get_model_instance">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_model_instance</span><span class="p">(</span><span class="n">tpe</span><span class="p">:</span> <span class="n">MIPFramework</span><span class="p">,</span> <span class="n">solver_type</span><span class="p">:</span> <span class="n">MIPSolvers</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">LpModel</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Get an instance of the solver framework and the selected solver</span>
 <span class="sd">    :param tpe: MIPInterface framework</span>
 <span class="sd">    :param solver_type: MIPSolvers</span>
 <span class="sd">    :return: OrToolsLpModel or PulpLpModel</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">tpe</span> <span class="o">==</span> <span class="n">MIPFramework</span><span class="o">.</span><span class="n">OrTools</span> <span class="ow">and</span> <span class="n">ORTOOLS_AVAILABLE</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">OrToolsLpModel</span><span class="p">(</span><span class="n">solver_type</span><span class="p">)</span>
     <span class="k">elif</span> <span class="n">tpe</span> <span class="o">==</span> <span class="n">MIPFramework</span><span class="o">.</span><span class="n">PuLP</span><span class="p">:</span>
@@ -214,11 +214,11 @@
 <div class="viewcode-block" id="get_available_mip_solvers">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.MIP.html#VeraGridEngine.Utils.MIP.selected_interface.get_available_mip_solvers">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_available_mip_solvers</span><span class="p">(</span><span class="n">tpe</span><span class="p">:</span> <span class="n">MIPFramework</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Get the solvers available in the selected interface</span>
 <span class="sd">    :param tpe:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">tpe</span> <span class="o">==</span> <span class="n">MIPFramework</span><span class="o">.</span><span class="n">OrTools</span> <span class="ow">and</span> <span class="n">ORTOOLS_AVAILABLE</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">get_ortools_available_mip_solvers</span><span class="p">()</span>
     <span class="k">elif</span> <span class="n">tpe</span> <span class="o">==</span> <span class="n">MIPFramework</span><span class="o">.</span><span class="n">PuLP</span><span class="p">:</span>
@@ -230,14 +230,14 @@
 
 <div class="viewcode-block" id="join">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.MIP.html#VeraGridEngine.Utils.MIP.selected_interface.join">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">join</span><span class="p">(</span><span class="n">init</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">vals</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;_&quot;</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">join</span><span class="p">(</span><span class="n">init</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">vals</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">sep</span><span class="o">=</span><span class="s2">"_"</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Generate naming string</span>
 <span class="sd">    :param init: initial string</span>
 <span class="sd">    :param vals: concatenation of indices</span>
 <span class="sd">    :param sep: separator</span>
 <span class="sd">    :return: naming string</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="n">init</span> <span class="o">+</span> <span class="n">sep</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">vals</span><span class="p">])</span></div>
 
 
@@ -245,25 +245,25 @@
 <div class="viewcode-block" id="lpDot">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.MIP.html#VeraGridEngine.Utils.MIP.selected_interface.lpDot">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">lpDot</span><span class="p">(</span><span class="n">mat</span><span class="p">:</span> <span class="n">csc_matrix</span><span class="p">,</span> <span class="n">arr</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">ObjVec</span><span class="p">,</span> <span class="n">ObjMat</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">ObjVec</span><span class="p">,</span> <span class="n">ObjMat</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    CSC matrix-vector or CSC matrix-matrix dot product (A x b)</span>
 <span class="sd">    :param mat: CSC sparse matrix (A)</span>
 <span class="sd">    :param arr: dense vector or matrix of object type (b)</span>
 <span class="sd">    :return: vector or matrix result of the product</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">n_rows</span><span class="p">,</span> <span class="n">n_cols</span> <span class="o">=</span> <span class="n">mat</span><span class="o">.</span><span class="n">shape</span>
 
     <span class="c1"># check dimensional compatibility</span>
     <span class="k">assert</span> <span class="p">(</span><span class="n">n_cols</span> <span class="o">==</span> <span class="n">arr</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 
     <span class="c1"># check that the sparse matrix is indeed of CSC format</span>
-    <span class="k">if</span> <span class="n">mat</span><span class="o">.</span><span class="n">format</span> <span class="o">!=</span> <span class="s1">&#39;csc&#39;</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;lpDot: Sparse matrix must be in CSC format&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">mat</span><span class="o">.</span><span class="n">format</span> <span class="o">!=</span> <span class="s1">'csc'</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">"lpDot: Sparse matrix must be in CSC format"</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">arr</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Uni-dimensional sparse matrix - vector product</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">res</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_rows</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">arr</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_cols</span><span class="p">):</span>
             <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">mat</span><span class="o">.</span><span class="n">indptr</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">mat</span><span class="o">.</span><span class="n">indptr</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]):</span>
@@ -274,13 +274,13 @@
         <span class="k">return</span> <span class="n">res</span>
 
     <span class="k">elif</span> <span class="n">arr</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Multi-dimensional sparse matrix - matrix product</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">cols_vec</span> <span class="o">=</span> <span class="n">arr</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
         <span class="n">res</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_rows</span><span class="p">,</span> <span class="n">cols_vec</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">arr</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
 
-        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">cols_vec</span><span class="p">):</span>  <span class="c1"># for each column of the matrix &quot;vec&quot;, do the matrix vector product</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">cols_vec</span><span class="p">):</span>  <span class="c1"># for each column of the matrix "vec", do the matrix vector product</span>
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_cols</span><span class="p">):</span>
                 <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">mat</span><span class="o">.</span><span class="n">indptr</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">mat</span><span class="o">.</span><span class="n">indptr</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]):</span>
                     <span class="n">j</span> <span class="o">=</span> <span class="n">mat</span><span class="o">.</span><span class="n">indices</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span>  <span class="c1"># row index</span>
@@ -290,7 +290,7 @@
         <span class="k">return</span> <span class="n">res</span>
 
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;lpDot: Unsupported number of dimensions&quot;</span><span class="p">)</span></div>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">"lpDot: Unsupported number of dimensions"</span><span class="p">)</span></div>
 
 
 
@@ -299,7 +299,7 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">lpDot1D_changes</span><span class="p">(</span><span class="n">mat</span><span class="p">:</span> <span class="n">csc_matrix</span><span class="p">,</span>
                     <span class="n">arr</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">ObjVec</span><span class="p">,</span> <span class="n">ObjMat</span><span class="p">],</span>
                     <span class="n">row_filter</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">BoolVec</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">ObjVec</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    CSC matrix-vector or CSC matrix-matrix dot product (A x b)</span>
 
 <span class="sd">    Every product term builds an LP expression object, which is by far the most expensive</span>
@@ -310,20 +310,20 @@
 <span class="sd">    :param arr: dense vector or matrix of object type (b)</span>
 <span class="sd">    :param row_filter: per row flag, True for the rows the caller needs. None builds every row.</span>
 <span class="sd">    :return: vector or matrix result of the product, and the list of rows that were written</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">n_rows</span><span class="p">,</span> <span class="n">n_cols</span> <span class="o">=</span> <span class="n">mat</span><span class="o">.</span><span class="n">shape</span>
 
     <span class="c1"># check dimensional compatibility</span>
     <span class="k">assert</span> <span class="p">(</span><span class="n">n_cols</span> <span class="o">==</span> <span class="n">arr</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 
     <span class="c1"># check that the sparse matrix is indeed of CSC format</span>
-    <span class="k">if</span> <span class="n">mat</span><span class="o">.</span><span class="n">format</span> <span class="o">!=</span> <span class="s1">&#39;csc&#39;</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;lpDot: Sparse matrix must be in CSC format&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">mat</span><span class="o">.</span><span class="n">format</span> <span class="o">!=</span> <span class="s1">'csc'</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">"lpDot: Sparse matrix must be in CSC format"</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">arr</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Uni-dimensional sparse matrix - vector product</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="n">row_filter</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="c1"># no restriction was requested so every row is wanted </span>
             <span class="n">wanted</span><span class="p">:</span> <span class="n">BoolVec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">n_rows</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
@@ -355,7 +355,7 @@
         <span class="k">return</span> <span class="n">res</span><span class="p">,</span> <span class="n">indices</span>
 
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;lpDot1D_changes: Unsupported number of dimensions&quot;</span><span class="p">)</span></div>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">"lpDot1D_changes: Unsupported number of dimensions"</span><span class="p">)</span></div>
 
 </pre></div>
 

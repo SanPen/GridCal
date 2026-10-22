@@ -894,9 +894,18 @@ class BinOp(Expr):
         if self.op == "/":
             return (du * v - u * dv) / (v ** Const(2))
         if self.op == "**":
+            du = du.simplify()
+            dv = dv.simplify()
             if isinstance(v, Const) and v.value is not None:
                 # numeric exponent
                 return Const(v.value) * (u ** Const(v.value - 1)) * du
+            elif isinstance(dv, Const) and dv.value == 0:
+                # A parameter-valued exponent is constant with respect to a
+                # state derivative. Avoid the removable log(0) and 0/0 terms.
+                if isinstance(du, Const) and du.value == 0:
+                    return Const(0)
+                else:
+                    return v * (u ** (v - Const(1))) * du
             else:
                 # general exponent: u**v = exp(v*log u)
                 return self * (dv * log(u) + du * v / u)
@@ -1268,6 +1277,16 @@ def _differentiate_unary_function(op: str, u: Expr, du: Expr) -> Expr:
         return abs_diff(u, du)
     elif op == "heaviside":
         return heaviside_diff(u, du)
+    elif op == "real":
+        # RMS unknowns are real coordinates even when intermediate power and
+        # voltage expressions are complex, so projection commutes with d/dx.
+        return real(du)
+    elif op == "imag":
+        return imag(du)
+    elif op == "conj":
+        # Conjugation commutes with a real-coordinate derivative. This is not
+        # a holomorphic derivative with respect to a complex unknown.
+        return conj(du)
     else:
         raise ValueError(f"No derivative defined for {op}")
 
@@ -1307,7 +1326,7 @@ def _binary_function_to_python(name: str, arg1: str, arg2: str) -> str:
     :return: NumPy-compatible Python expression source.
     """
     if name == "atan2":
-        source: str = f"np.arctan2({arg2}, {arg1})"
+        source: str = f"np.arctan2({arg1}, {arg2})"
     elif name == "min":
         source = f"np.minimum({arg1}, {arg2})"
     elif name == "max":
@@ -2202,8 +2221,16 @@ def _precedence(expr: Expr) -> int:
         else:
             return 0
     elif isinstance(expr, UnOp):
-        return 40
-    elif isinstance(expr, (Const, Var)):
+        # Python exponentiation binds more tightly than unary negation.
+        return 25
+    elif isinstance(expr, Const):
+        # A negative literal is a unary expression in Python, so a power base
+        # needs parentheses just as a symbolic negation does. Keep its exact repr.
+        if repr(expr.value).startswith("-"):
+            return 25
+        else:
+            return 100
+    elif isinstance(expr, Var):
         return 100
     elif isinstance(expr, Func):
         return 50
@@ -2215,11 +2242,24 @@ def _precedence(expr: Expr) -> int:
 
 def expression2numba(expr: Expr,
                      compiler_names_dict: Dict[int, str],
-                     parent_prec: int = 0) -> str:
+                     parent_prec: int = 0,
+                     expression_names: Dict[int, str] | None = None) -> str:
+    """Emit Python while retaining ordered symbolic operations and grouping.
+
+    :param expr: Expression to render without modifying its graph.
+    :param compiler_names_dict: Declared variable UID to runtime binding.
+    :param parent_prec: Precedence required by the enclosing operator.
+    :param expression_names: Optional node identity to previously emitted scalar temporary.
+    :return: Numba-compatible source preserving operand order and parentheses.
     """
-    Emit a precedence-aware, Numba-friendly Python expression.
-    Parentheses are added only when required.
-    """
+    if expression_names is not None:
+        expression_name: str | None = expression_names.get(id(expr), None)
+        if expression_name is not None:
+            return expression_name
+        else:
+            pass
+    else:
+        pass
 
     my_prec = _precedence(expr)
 
@@ -2229,6 +2269,17 @@ def expression2numba(expr: Expr,
     elif isinstance(expr, Var):
         if expr.uid in compiler_names_dict:
             s = compiler_names_dict[expr.uid]
+            # Finite initialization boundaries can bind a Var to a literal or
+            # compound expression. Preserve that value as one operand instead
+            # of letting its textual operators escape the symbolic grouping.
+            if parent_prec > 0:
+                bound_expression: ast.expr = ast.parse(s, mode="eval").body
+                if isinstance(bound_expression, (ast.Name, ast.Subscript, ast.Attribute, ast.Call, ast.Constant)):
+                    pass
+                else:
+                    my_prec = 0
+            else:
+                pass
         elif expr.name in {"time", "glob_time"}:
             s = "glob_time"
         else:
@@ -2237,25 +2288,24 @@ def expression2numba(expr: Expr,
     elif isinstance(expr, UnOp):
         operand = expression2numba(expr.operand,
                                    compiler_names_dict,
-                                   my_prec)
+                                   my_prec, expression_names)
         s = f"-{operand}"
 
     elif isinstance(expr, BinOp):
-        left = expression2numba(expr.left,
-                                compiler_names_dict,
-                                my_prec)
-
-        # +1 enforces left associativity
-        right = expression2numba(expr.right,
-                                 compiler_names_dict,
-                                 my_prec + 1)
+        # Power associates to the right; all other supported operators keep
+        # their original left grouping. Preserve the AST rather than relying on
+        # Python's implicit association for nested powers or negative bases.
+        left_prec: int = my_prec + 1 if expr.op == "**" else my_prec
+        right_prec: int = my_prec if expr.op == "**" else my_prec + 1
+        left = expression2numba(expr.left, compiler_names_dict, left_prec, expression_names)
+        right = expression2numba(expr.right, compiler_names_dict, right_prec, expression_names)
 
         s = f"{left} {expr.op} {right}"
 
     elif isinstance(expr, Func):
         arg = expression2numba(expr.arg,
                                compiler_names_dict,
-                               0)
+                               0, expression_names)
         if expr.op == "heaviside":
             s = f"_heaviside({arg})"
         elif expr.op == "rand":
@@ -2266,8 +2316,8 @@ def expression2numba(expr: Expr,
             s = f"np.{expr.op}({arg})"
 
     elif isinstance(expr, Func2):
-        arg1 = expression2numba(expr.arg1, compiler_names_dict, 0)
-        arg2 = expression2numba(expr.arg2, compiler_names_dict, 0)
+        arg1 = expression2numba(expr.arg1, compiler_names_dict, 0, expression_names)
+        arg2 = expression2numba(expr.arg2, compiler_names_dict, 0, expression_names)
         s = _binary_function_to_python(name=expr.name, arg1=arg1, arg2=arg2)
 
     else:

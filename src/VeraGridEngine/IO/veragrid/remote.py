@@ -6,6 +6,7 @@ from __future__ import annotations
 import os
 from typing import Dict, Union, Any
 from uuid import uuid4, getnode
+from VeraGridEngine.Utils.optional_dependencies import optional_dependency_failure
 import numpy as np
 
 from VeraGridEngine.Devices.multi_circuit import MultiCircuit
@@ -16,13 +17,16 @@ from VeraGridEngine.IO.file_system import get_create_veragrid_folder
 from VeraGridEngine.Simulations.driver_handler import create_driver
 from VeraGridEngine.Simulations.types import DRIVER_OBJECTS, RESULTS_OBJECTS
 
+# Remote access is optional: a broken requests installation must not block local studies.
 try:
     import requests
+    from requests import get, post
 
     REQUESTS_AVAILABLE = True
-except AttributeError as e:
-    print(f"VeraGridEngine/IO/veragrid/remote.py: Error with requests -> {e}")
+    REQUESTS_UNAVAILABLE_REASON: str = ""
+except (ImportError, AttributeError, OSError, RuntimeError, ValueError, TypeError) as error:
     REQUESTS_AVAILABLE = False
+    REQUESTS_UNAVAILABLE_REASON = optional_dependency_failure("requests", error)
 
 
 class RemoteInstruction:
@@ -197,7 +201,7 @@ def get_certificate(base_url: str, certificate_path: str, pwd: str, logger: Logg
             logger.add_error(msg=f"General exception error", value=str(e))
             return False
     else:
-        logger.add_error(msg=f"requests not available due to an error on import")
+        logger.add_error(msg=f"requests unavailable: {REQUESTS_UNAVAILABLE_REASON}")
         return False
 
 
@@ -258,7 +262,7 @@ def send_json_data(json_data: Dict[str, Union[str, Dict[str, Dict[str, str]]]],
             print("requests.exceptions.JSONDecodeError: ", e)
             return response.text, False
     else:
-        print(f"Requests not available due to an error on import")
+        print(f"Requests unavailable: {REQUESTS_UNAVAILABLE_REASON}")
 
 
 def run_job(grid: MultiCircuit, job: RemoteJob) -> DRIVER_OBJECTS | None:

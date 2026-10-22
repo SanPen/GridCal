@@ -15,12 +15,78 @@ from VeraGridEngine.Simulations.NTC.ntc_driver import (
     collect_contingency_group_device_names,
     collect_phase_shifter_indices,
     select_ntc_contingency_groups,
+    get_ntc_operating_point_as_opf_results,
 )
+from VeraGridEngine.Simulations.OPF.opf_results import OptimalPowerFlowResults
 from VeraGridEngine.Simulations.NTC.ntc_ts_results import OptimalNetTransferCapacityTimeSeriesResults
 from VeraGridEngine.Simulations.driver_template import TimeSeriesDriverTemplate
 from VeraGridEngine.Simulations.Clustering.clustering_results import ClusteringResults
 from VeraGridEngine.basic_structures import Logger, IntVec
-from VeraGridEngine.enumerations import SimulationTypes
+from VeraGridEngine.enumerations import SimulationTypes, AvailableTransferMode
+
+
+class NtcOperatingPoints:
+    """
+    The operating points of an NTC time series, served one time step at a time as OPF results,
+    so a power flow time series reproduces the NTC flows of every time step the NTC solved.
+    """
+    __slots__ = (
+        "grid",
+        "results",
+        "transfer_method",
+        "rows",
+    )
+
+    def __init__(self,
+                 grid: MultiCircuit,
+                 results: OptimalNetTransferCapacityTimeSeriesResults,
+                 transfer_method: AvailableTransferMode) -> None:
+        """
+        Locate the results row of every time step the NTC solved.
+
+        :param grid: circuit the NTC was solved on
+        :param results: NTC time series results, with or without the clusters expanded
+        :param transfer_method: transfer method of that NTC run
+        """
+        self.grid: MultiCircuit = grid
+        self.results: OptimalNetTransferCapacityTimeSeriesResults = results
+        self.transfer_method: AvailableTransferMode = transfer_method
+
+        # Only the solved steps hold an NTC solution
+        solved: IntVec
+        solved_rows: IntVec
+        if results.clustering_results is not None:
+            solved = np.asarray(results.clustering_results.time_indices, dtype=int)
+            if len(results.inter_area_flows) == len(results.clustering_results.time_array):
+                solved_rows = solved
+            else:
+                solved_rows = np.arange(len(solved), dtype=int)
+        else:
+            solved = np.asarray(results.time_indices, dtype=int)
+            solved_rows = np.arange(len(solved), dtype=int)
+
+        # row of the results for every time step, -1 where the NTC did not solve it
+        self.rows: IntVec = np.full(grid.get_time_number(), -1, dtype=int)
+        self.rows[solved] = solved_rows
+
+    def get_at(self, t: int) -> OptimalPowerFlowResults | None:
+        """
+        NTC operating point of a time step.
+
+        :param t: time step
+        :return: OPF results holding the NTC operating point, or None where the NTC did not solve it
+        """
+        row: int = int(self.rows[t])
+        if row < 0:
+            return None
+        else:
+            return get_ntc_operating_point_as_opf_results(grid=self.grid,
+                                                          t_idx=t,
+                                                          bus_change=self.results.dSbus[row, :],
+                                                          phase_shift=self.results.phase_shift[row, :],
+                                                          hvdc_flow=self.results.hvdc_Pf[row, :],
+                                                          vsc_flow=self.results.vsc_Pf[row, :],
+                                                          transfer_method=self.transfer_method)
 
 
 class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):

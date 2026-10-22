@@ -5,8 +5,10 @@
 
 from __future__ import annotations
 
-from typing import Dict
+from typing import Any, Dict
 
+import numba as nb
+from numba import types
 import numpy as np
 from scipy.sparse import csc_matrix
 from scipy.sparse.linalg import SuperLU, splu
@@ -20,6 +22,31 @@ from VeraGridEngine.basic_structures import Vec
 from VeraGridEngine.enumerations import SparseSolver
 
 
+def _build_permute_csc_signature() -> Any:
+    """
+    Return the eager signature of the CSC permutation helper.
+
+    :return: Eager helper signature.
+    :rtype: Any
+    """
+    float64_vector_tpe: Any = types.Array(types.float64, 1, "C")
+    int32_vector_tpe: Any = types.Array(types.int32, 1, "C")
+    return types.void(float64_vector_tpe, int32_vector_tpe, int32_vector_tpe, int32_vector_tpe, float64_vector_tpe)
+
+
+def _build_scatter_permuted_solution_signature() -> Any:
+    """
+    Return the eager signature of the solution scatter helper.
+
+    :return: Eager helper signature.
+    :rtype: Any
+    """
+    float64_vector_tpe: Any = types.Array(types.float64, 1, "C")
+    int32_vector_tpe: Any = types.Array(types.int32, 1, "C")
+    return types.void(float64_vector_tpe, int32_vector_tpe, float64_vector_tpe)
+
+
+@nb.jit(_build_permute_csc_signature(), cache=True, fastmath=True)
 def _permute_csc_data_by_columns(
         source_data: Vec,
         source_indptr: np.ndarray,
@@ -32,11 +59,11 @@ def _permute_csc_data_by_columns(
 
     :param source_data: Numeric values in the original column order.
     :type source_data: Vec
-    :param source_indptr: Original CSC column pointer.
+    :param source_indptr: Original CSC column pointer (int32).
     :type source_indptr: np.ndarray
-    :param column_perm: Persistent destination-to-source column permutation.
+    :param column_perm: Persistent destination-to-source column permutation (int32).
     :type column_perm: np.ndarray
-    :param target_indptr: Target CSC column pointer.
+    :param target_indptr: Target CSC column pointer (int32).
     :type target_indptr: np.ndarray
     :param target_data: Destination numeric buffer.
     :type target_data: Vec
@@ -59,6 +86,7 @@ def _permute_csc_data_by_columns(
         dst_col += 1
 
 
+@nb.jit(_build_scatter_permuted_solution_signature(), cache=True, fastmath=True)
 def _scatter_permuted_solution_to_original_order(
         permuted_solution: Vec,
         inverse_column_perm: np.ndarray,
@@ -69,7 +97,7 @@ def _scatter_permuted_solution_to_original_order(
 
     :param permuted_solution: Solution in permuted order.
     :type permuted_solution: Vec
-    :param inverse_column_perm: Mapping from original index to permuted index.
+    :param inverse_column_perm: Mapping from original index to permuted index (int32).
     :type inverse_column_perm: np.ndarray
     :param out_solution: Destination vector in original order.
     :type out_solution: Vec

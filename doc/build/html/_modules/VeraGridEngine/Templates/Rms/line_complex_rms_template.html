@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Templates.Rms.line_complex_rms_template &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Templates.Rms.line_complex_rms_template &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/license.html">📜 License</a></li>
@@ -118,8 +119,8 @@
 
 <div class="viewcode-block" id="get_line_complex_rms_template">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Templates.Rms.html#VeraGridEngine.Templates.Rms.line_complex_rms_template.get_line_complex_rms_template">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">get_line_complex_rms_template</span><span class="p">(</span><span class="n">vfactory</span><span class="p">:</span> <span class="n">VarFactory</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Line_complex_rms_template&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RmsModelTemplate</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_line_complex_rms_template</span><span class="p">(</span><span class="n">vfactory</span><span class="p">:</span> <span class="n">VarFactory</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"Line_complex_rms_template"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RmsModelTemplate</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Get the complex phasor-based RMS template model of the Line with TRULY MULTILINEAR equations.</span>
 <span class="sd">    </span>
 <span class="sd">    This template uses complex phasor representation where:</span>
@@ -142,7 +143,7 @@
 <span class="sd">    :param vfactory: Variable factory for creating variables</span>
 <span class="sd">    :param name: Name of the template</span>
 <span class="sd">    :return: RmsModelTemplate with complex multilinear line equations</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">templ</span> <span class="o">=</span> <span class="n">RmsModelTemplate</span><span class="p">()</span>
     <span class="n">templ</span><span class="o">.</span><span class="n">tpe</span> <span class="o">=</span> <span class="n">DeviceType</span><span class="o">.</span><span class="n">LineDevice</span>
     <span class="n">templ</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
@@ -150,32 +151,32 @@
     <span class="c1"># Inputs: complex voltages at from and to buses</span>
     <span class="c1"># We use separate real/imaginary inputs for compilation,</span>
     <span class="c1"># but conceptually they form complex voltages Vf and Vt</span>
-    <span class="n">inputs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Var</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;Vrf&quot;</span><span class="p">),</span>   <span class="c1"># From bus real</span>
-                         <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;Vif&quot;</span><span class="p">),</span>   <span class="c1"># From bus imag</span>
-                         <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;Vrt&quot;</span><span class="p">),</span>   <span class="c1"># To bus real</span>
-                         <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;Vit&quot;</span><span class="p">)]</span>   <span class="c1"># To bus imag</span>
+    <span class="n">inputs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Var</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"Vrf"</span><span class="p">),</span>   <span class="c1"># From bus real</span>
+                         <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"Vif"</span><span class="p">),</span>   <span class="c1"># From bus imag</span>
+                         <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"Vrt"</span><span class="p">),</span>   <span class="c1"># To bus real</span>
+                         <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"Vit"</span><span class="p">)]</span>   <span class="c1"># To bus imag</span>
 
     <span class="c1"># Complex current outputs (from and to buses)</span>
     <span class="c1"># These are calculated using LINEAR equations</span>
-    <span class="n">If_complex</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;If_complex&quot;</span><span class="p">)</span>  <span class="c1"># Complex current at from bus</span>
-    <span class="n">It_complex</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;It_complex&quot;</span><span class="p">)</span>  <span class="c1"># Complex current at to bus</span>
+    <span class="n">If_complex</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"If_complex"</span><span class="p">)</span>  <span class="c1"># Complex current at from bus</span>
+    <span class="n">It_complex</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"It_complex"</span><span class="p">)</span>  <span class="c1"># Complex current at to bus</span>
     
     <span class="c1"># Real/imaginary components of current (for compilation)</span>
-    <span class="n">Ir_f</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;Ir_f&quot;</span><span class="p">)</span>  <span class="c1"># Real current from</span>
-    <span class="n">Ii_f</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;Ii_f&quot;</span><span class="p">)</span>  <span class="c1"># Imag current from</span>
-    <span class="n">Ir_t</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;Ir_t&quot;</span><span class="p">)</span>  <span class="c1"># Real current to</span>
-    <span class="n">Ii_t</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;Ii_t&quot;</span><span class="p">)</span>  <span class="c1"># Imag current to</span>
+    <span class="n">Ir_f</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"Ir_f"</span><span class="p">)</span>  <span class="c1"># Real current from</span>
+    <span class="n">Ii_f</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"Ii_f"</span><span class="p">)</span>  <span class="c1"># Imag current from</span>
+    <span class="n">Ir_t</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"Ir_t"</span><span class="p">)</span>  <span class="c1"># Real current to</span>
+    <span class="n">Ii_t</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"Ii_t"</span><span class="p">)</span>  <span class="c1"># Imag current to</span>
 
     <span class="c1"># Power outputs (derived from complex current and voltage)</span>
-    <span class="n">Pf</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;Pf&quot;</span><span class="p">)</span>
-    <span class="n">Qf</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;Qf&quot;</span><span class="p">)</span>
-    <span class="n">Pt</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;Pt&quot;</span><span class="p">)</span>
-    <span class="n">Qt</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;Qt&quot;</span><span class="p">)</span>
+    <span class="n">Pf</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"Pf"</span><span class="p">)</span>
+    <span class="n">Qf</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"Qf"</span><span class="p">)</span>
+    <span class="n">Pt</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"Pt"</span><span class="p">)</span>
+    <span class="n">Qt</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"Qt"</span><span class="p">)</span>
 
     <span class="c1"># Parameters: line admittance Y = g + j*b</span>
-    <span class="n">g</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;g&quot;</span><span class="p">)</span>    <span class="c1"># Conductance (real part of Y)</span>
-    <span class="n">b</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;b&quot;</span><span class="p">)</span>    <span class="c1"># Susceptance (imag part of Y)</span>
-    <span class="n">bsh</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;bsh&quot;</span><span class="p">)</span>  <span class="c1"># Shunt susceptance</span>
+    <span class="n">g</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"g"</span><span class="p">)</span>    <span class="c1"># Conductance (real part of Y)</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"b"</span><span class="p">)</span>    <span class="c1"># Susceptance (imag part of Y)</span>
+    <span class="n">bsh</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"bsh"</span><span class="p">)</span>  <span class="c1"># Shunt susceptance</span>
 
     <span class="c1"># Set default parameter values</span>
     <span class="n">templ</span><span class="o">.</span><span class="n">block</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="n">g</span><span class="p">]</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_const</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
@@ -272,7 +273,7 @@
 
     <span class="n">templ</span><span class="o">.</span><span class="n">block</span><span class="o">.</span><span class="n">in_vars</span> <span class="o">=</span> <span class="n">inputs</span>
 
-    <span class="n">templ</span><span class="o">.</span><span class="n">comment</span> <span class="o">=</span> <span class="s1">&#39;AC line RMS complex-voltage model&#39;</span>
+    <span class="n">templ</span><span class="o">.</span><span class="n">comment</span> <span class="o">=</span> <span class="s1">'AC line RMS complex-voltage model'</span>
     <span class="k">return</span> <span class="n">templ</span></div>
 
 
@@ -281,7 +282,7 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Templates.Rms.html#VeraGridEngine.Templates.Rms.line_complex_rms_template.get_line_complex_current_equations">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_line_complex_current_equations</span><span class="p">(</span><span class="n">Vrf</span><span class="p">:</span> <span class="n">Var</span><span class="p">,</span> <span class="n">Vif</span><span class="p">:</span> <span class="n">Var</span><span class="p">,</span> <span class="n">Vrt</span><span class="p">:</span> <span class="n">Var</span><span class="p">,</span> <span class="n">Vit</span><span class="p">:</span> <span class="n">Var</span><span class="p">,</span> 
                                        <span class="n">g</span><span class="p">:</span> <span class="n">Var</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">Var</span><span class="p">,</span> <span class="n">bsh</span><span class="p">:</span> <span class="n">Var</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Calculate complex current using MULTILINEAR equations.</span>
 <span class="sd">    </span>
 <span class="sd">    This is the core innovation: current is linear in voltage!</span>
@@ -294,7 +295,7 @@
 <span class="sd">    :param b: Line susceptance</span>
 <span class="sd">    :param bsh: Shunt susceptance</span>
 <span class="sd">    :return: Tuple of (Ir_f, Ii_f, Ir_t, Ii_t) current components</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># From bus current: If = Y*(Vf-Vt) + j*(bsh/2)*Vf</span>
     <span class="n">Ir_f</span> <span class="o">=</span> <span class="n">g</span> <span class="o">*</span> <span class="p">(</span><span class="n">Vrf</span> <span class="o">-</span> <span class="n">Vrt</span><span class="p">)</span> <span class="o">-</span> <span class="n">b</span> <span class="o">*</span> <span class="p">(</span><span class="n">Vif</span> <span class="o">-</span> <span class="n">Vit</span><span class="p">)</span> <span class="o">-</span> <span class="p">(</span><span class="n">bsh</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">Vif</span>
     <span class="n">Ii_f</span> <span class="o">=</span> <span class="n">g</span> <span class="o">*</span> <span class="p">(</span><span class="n">Vif</span> <span class="o">-</span> <span class="n">Vit</span><span class="p">)</span> <span class="o">+</span> <span class="n">b</span> <span class="o">*</span> <span class="p">(</span><span class="n">Vrf</span> <span class="o">-</span> <span class="n">Vrt</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">bsh</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">Vrf</span>
@@ -310,7 +311,7 @@
 <div class="viewcode-block" id="calculate_complex_power">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Templates.Rms.html#VeraGridEngine.Templates.Rms.line_complex_rms_template.calculate_complex_power">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">calculate_complex_power</span><span class="p">(</span><span class="n">Vr</span><span class="p">:</span> <span class="n">Var</span><span class="p">,</span> <span class="n">Vi</span><span class="p">:</span> <span class="n">Var</span><span class="p">,</span> <span class="n">Ir</span><span class="p">:</span> <span class="n">Var</span><span class="p">,</span> <span class="n">Ii</span><span class="p">:</span> <span class="n">Var</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Calculate complex power from voltage and current.</span>
 <span class="sd">    </span>
 <span class="sd">    S = V * conj(I) = (Vr + j*Vi)*(Ir - j*Ii)</span>
@@ -322,7 +323,7 @@
 <span class="sd">    :param Ir: Current real part</span>
 <span class="sd">    :param Ii: Current imaginary part</span>
 <span class="sd">    :return: Tuple of (P, Q)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">P</span> <span class="o">=</span> <span class="n">Vr</span> <span class="o">*</span> <span class="n">Ir</span> <span class="o">+</span> <span class="n">Vi</span> <span class="o">*</span> <span class="n">Ii</span>
     <span class="n">Q</span> <span class="o">=</span> <span class="n">Vi</span> <span class="o">*</span> <span class="n">Ir</span> <span class="o">-</span> <span class="n">Vr</span> <span class="o">*</span> <span class="n">Ii</span>
     <span class="k">return</span> <span class="n">P</span><span class="p">,</span> <span class="n">Q</span></div>

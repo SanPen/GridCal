@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.DataStructures.fluid_node_data &mdash; VeraGrid 6.7.13 documentation</title>
+  <title>VeraGridEngine.DataStructures.fluid_node_data &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=16fbabd8"></script>
+      <script src="../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/js/theme.js"></script>
@@ -114,28 +114,28 @@
 <div class="viewcode-block" id="FluidNodeData">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.fluid_node_data.FluidNodeData">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">FluidNodeData</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    FluidNodeData</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;nelm&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;names&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;idtag&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;min_level&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;max_level&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;min_soc&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;max_soc&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;initial_level&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;inflow&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;spillage_cost&quot;</span><span class="p">,</span>
+        <span class="s2">"nelm"</span><span class="p">,</span>
+        <span class="s2">"names"</span><span class="p">,</span>
+        <span class="s2">"idtag"</span><span class="p">,</span>
+        <span class="s2">"min_level"</span><span class="p">,</span>
+        <span class="s2">"max_level"</span><span class="p">,</span>
+        <span class="s2">"min_soc"</span><span class="p">,</span>
+        <span class="s2">"max_soc"</span><span class="p">,</span>
+        <span class="s2">"initial_level"</span><span class="p">,</span>
+        <span class="s2">"inflow"</span><span class="p">,</span>
+        <span class="s2">"spillage_cost"</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nelm</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Fluid node data arrays</span>
 <span class="sd">        :param nelm: number of fluid nodes</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nelm</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">nelm</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">names</span><span class="p">:</span> <span class="n">StrVec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">nelm</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">)</span>
@@ -152,21 +152,21 @@
 <div class="viewcode-block" id="FluidNodeData.size">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.fluid_node_data.FluidNodeData.size">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">size</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get size of the structure</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">nelm</span></div>
 
 
 <div class="viewcode-block" id="FluidNodeData.copy">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.fluid_node_data.FluidNodeData.copy">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;FluidNodeData&quot;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"FluidNodeData"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get deep copy of this structure</span>
 <span class="sd">        :return: new FluidNodeData instance</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="n">data</span> <span class="o">=</span> <span class="n">FluidNodeData</span><span class="p">(</span><span class="n">nelm</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nelm</span><span class="p">)</span>
 

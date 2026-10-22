@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Simulations.Rms.rms_problem_factory &mdash; VeraGrid 6.7.13 documentation</title>
+  <title>VeraGridEngine.Simulations.Rms.rms_problem_factory &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=16fbabd8"></script>
+      <script src="../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -137,7 +137,7 @@
                       <span class="n">pf_results</span><span class="p">:</span> <span class="n">PowerFlowResults</span><span class="p">,</span>
                       <span class="n">progress_signal</span><span class="p">:</span> <span class="n">DummySignal</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                       <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RmsProblemTemplate</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Build the RMS problem implementation selected in the simulation options.</span>
 
 <span class="sd">    :param grid: Electrical grid whose devices define the RMS problem.</span>
@@ -146,11 +146,11 @@
 <span class="sd">    :param progress_signal: Optional signal used to publish numeric progress.</span>
 <span class="sd">    :param logger: Optional logger owned by the simulation driver.</span>
 <span class="sd">    :return: Configured RMS problem ready for numerical integration.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">options</span><span class="o">.</span><span class="n">problem_type</span> <span class="ow">in</span> <span class="n">RMS_PROBLEM_CLASS_MAP</span><span class="p">:</span>
         <span class="n">problem_cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">RmsProblemTemplate</span><span class="p">]</span> <span class="o">=</span> <span class="n">RMS_PROBLEM_CLASS_MAP</span><span class="p">[</span><span class="n">options</span><span class="o">.</span><span class="n">problem_type</span><span class="p">]</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unsupported RMS problem type: </span><span class="si">{</span><span class="n">options</span><span class="o">.</span><span class="n">problem_type</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unsupported RMS problem type: </span><span class="si">{</span><span class="n">options</span><span class="o">.</span><span class="n">problem_type</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">problem_cls</span><span class="p">(</span>
         <span class="n">grid</span><span class="o">=</span><span class="n">grid</span><span class="p">,</span>

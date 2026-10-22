@@ -5,11 +5,15 @@
 import os
 import hmac
 from pathlib import Path
-from fastapi import FastAPI, Header, HTTPException, Response, Query
+from fastapi import Depends, FastAPI, Header, HTTPException, Response, Query
 from fastapi.responses import FileResponse, RedirectResponse
 
 from VeraGridServer.endpoints import register_in_master
 from VeraGridServer.endpoints import register_sub_servers
+from VeraGridServer.interactive import WebSessionManager
+from VeraGridServer.endpoints import circuits, interactive_calculations, ws_telemetry
+from VeraGridServer.endpoints.file_management import verify_api_key_header
+from VeraGridServer.endpoints.objects import create_objects_router
 from VeraGridServer.endpoints import calculations
 from VeraGridServer.endpoints import jobs
 from VeraGridServer.endpoints import admin
@@ -25,6 +29,11 @@ from datetime import datetime, timedelta
 import ipaddress
 
 app = FastAPI()
+app.state.circuit_sessions = WebSessionManager()
+app.include_router(circuits.router, dependencies=[Depends(verify_api_key_header)])
+app.include_router(interactive_calculations.router, dependencies=[Depends(verify_api_key_header)])
+app.include_router(create_objects_router(), dependencies=[Depends(verify_api_key_header)])
+app.include_router(ws_telemetry.router)
 app.include_router(register_in_master.router)
 app.include_router(register_sub_servers.router)
 app.include_router(calculations.router)

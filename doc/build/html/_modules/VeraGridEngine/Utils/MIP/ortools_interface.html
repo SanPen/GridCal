@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Utils.MIP.ortools_interface &mdash; VeraGrid 6.7.13 documentation</title>
+  <title>VeraGridEngine.Utils.MIP.ortools_interface &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=16fbabd8"></script>
+      <script src="../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -108,11 +108,11 @@
 <span class="c1"># file, You can obtain one at https://mozilla.org/MPL/2.0/.</span>
 <span class="c1"># SPDX-License-Identifier: MPL-2.0</span>
 
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 <span class="sd">This module abstracts the synthax of ORTOOLS out</span>
 <span class="sd">so that in the future it can be exchanged with some</span>
 <span class="sd">other solver interface easily</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Callable</span>
@@ -128,17 +128,17 @@
 
 
 <span class="c1"># this avoids displaying all the solver logger information, should only be called once</span>
-<span class="c1"># init.CppBridge.init_logging(&quot;&quot;)</span>
+<span class="c1"># init.CppBridge.init_logging("")</span>
 
 
 <div class="viewcode-block" id="get_ortools_available_mip_solvers">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.MIP.html#VeraGridEngine.Utils.MIP.ortools_interface.get_ortools_available_mip_solvers">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_ortools_available_mip_solvers</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Get a list of candidate solvers</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">candidates</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;SCIP&#39;</span><span class="p">,</span> <span class="s1">&#39;CBC&#39;</span><span class="p">,</span> <span class="s1">&#39;CPLEX&#39;</span><span class="p">,</span> <span class="s1">&#39;GUROBI&#39;</span><span class="p">,</span> <span class="s1">&#39;XPRESS&#39;</span><span class="p">,</span> <span class="s1">&#39;HIGHS&#39;</span><span class="p">,</span> <span class="s1">&#39;GLOP&#39;</span><span class="p">,</span> <span class="s1">&#39;PDLP&#39;</span><span class="p">]</span>
+<span class="sd">    """</span>
+    <span class="n">candidates</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'SCIP'</span><span class="p">,</span> <span class="s1">'CBC'</span><span class="p">,</span> <span class="s1">'CPLEX'</span><span class="p">,</span> <span class="s1">'GUROBI'</span><span class="p">,</span> <span class="s1">'XPRESS'</span><span class="p">,</span> <span class="s1">'HIGHS'</span><span class="p">,</span> <span class="s1">'GLOP'</span><span class="p">,</span> <span class="s1">'PDLP'</span><span class="p">]</span>
     <span class="n">res</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
     <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">candidates</span><span class="p">:</span>
         <span class="n">solver</span> <span class="o">=</span> <span class="n">model_builder</span><span class="o">.</span><span class="n">Solver</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
@@ -161,10 +161,10 @@
         <span class="n">time_limit</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Returns a string of solver-specific parameters suitable for</span>
 <span class="sd">    model_builder.Solver.SetSolverSpecificParametersAsString(...).</span>
-<span class="sd">    :param solver: one of &quot;SCIP&quot;, &quot;CBC&quot;, &quot;CPLEX&quot;, &quot;GUROBI&quot;, &quot;XPRESS&quot;, &quot;HIGHS&quot;, &quot;GLOP&quot;, &quot;PDLP&quot;</span>
+<span class="sd">    :param solver: one of "SCIP", "CBC", "CPLEX", "GUROBI", "XPRESS", "HIGHS", "GLOP", "PDLP"</span>
 <span class="sd">    :param relative_gap: relative optimality gap tolerance</span>
 <span class="sd">    :param abs_gap: absolute optimality gap tolerance</span>
 <span class="sd">    :param primal_feasibility_tolerance:</span>
@@ -173,91 +173,91 @@
 <span class="sd">    :param time_limit: time limit in seconds (if supported)</span>
 <span class="sd">    :param verbose: whether to enable verbose solver output</span>
 <span class="sd">    :return: parameter string</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">s</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">solver</span> <span class="o">==</span> <span class="s2">&quot;HIGHS&quot;</span><span class="p">:</span>
+<span class="sd">    """</span>
+    <span class="n">s</span> <span class="o">=</span> <span class="s2">""</span>
+    <span class="k">if</span> <span class="n">solver</span> <span class="o">==</span> <span class="s2">"HIGHS"</span><span class="p">:</span>
         <span class="c1"># https://ergo-code.github.io/HiGHS/dev/options/definitions/</span>
         <span class="c1"># also: https://www.gams.com/50/docs/S_HIGHS.html</span>
-        <span class="n">s</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;primal_residual_tolerance = </span><span class="si">{</span><span class="n">relative_gap</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
-        <span class="n">s</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;mip_abs_gap = </span><span class="si">{</span><span class="n">abs_gap</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
-        <span class="n">s</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;primal_feasibility_tolerance = </span><span class="si">{</span><span class="n">primal_feasibility_tolerance</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
-        <span class="n">s</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;dual_feasibility_tolerance = </span><span class="si">{</span><span class="n">dual_feasibility_tolerance</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
-        <span class="n">s</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;optimality_tolerance = </span><span class="si">{</span><span class="n">optimality_tolerance</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="n">s</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">"primal_residual_tolerance = </span><span class="si">{</span><span class="n">relative_gap</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span>
+        <span class="n">s</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">"mip_abs_gap = </span><span class="si">{</span><span class="n">abs_gap</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span>
+        <span class="n">s</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">"primal_feasibility_tolerance = </span><span class="si">{</span><span class="n">primal_feasibility_tolerance</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span>
+        <span class="n">s</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">"dual_feasibility_tolerance = </span><span class="si">{</span><span class="n">dual_feasibility_tolerance</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span>
+        <span class="n">s</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">"optimality_tolerance = </span><span class="si">{</span><span class="n">optimality_tolerance</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span>
         <span class="k">if</span> <span class="n">time_limit</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">s</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;time_limit = </span><span class="si">{</span><span class="n">time_limit</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="n">s</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">"time_limit = </span><span class="si">{</span><span class="n">time_limit</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span>
         <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-            <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;log_to_console = true</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="n">s</span> <span class="o">+=</span> <span class="s2">"log_to_console = true</span><span class="se">\n</span><span class="s2">"</span>
 
-    <span class="k">elif</span> <span class="n">solver</span> <span class="o">==</span> <span class="s2">&quot;CBC&quot;</span><span class="p">:</span>
-        <span class="n">s</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;RELATIVE_MIP_GAP = </span><span class="si">{</span><span class="n">relative_gap</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
-        <span class="n">s</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;ABSOLUTE_MIP_GAP = </span><span class="si">{</span><span class="n">abs_gap</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+    <span class="k">elif</span> <span class="n">solver</span> <span class="o">==</span> <span class="s2">"CBC"</span><span class="p">:</span>
+        <span class="n">s</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">"RELATIVE_MIP_GAP = </span><span class="si">{</span><span class="n">relative_gap</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span>
+        <span class="n">s</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">"ABSOLUTE_MIP_GAP = </span><span class="si">{</span><span class="n">abs_gap</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span>
         <span class="k">if</span> <span class="n">time_limit</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">s</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;MAX_TIME_IN_SECONDS = </span><span class="si">{</span><span class="n">time_limit</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="n">s</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">"MAX_TIME_IN_SECONDS = </span><span class="si">{</span><span class="n">time_limit</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span>
         <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-            <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;VERBOSE = 1</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="n">s</span> <span class="o">+=</span> <span class="s2">"VERBOSE = 1</span><span class="se">\n</span><span class="s2">"</span>
 
-    <span class="k">elif</span> <span class="n">solver</span> <span class="o">==</span> <span class="s2">&quot;SCIP&quot;</span><span class="p">:</span>
-        <span class="n">s</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;limits/gap = </span><span class="si">{</span><span class="n">relative_gap</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
-        <span class="n">s</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;limits/absgap = </span><span class="si">{</span><span class="n">abs_gap</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+    <span class="k">elif</span> <span class="n">solver</span> <span class="o">==</span> <span class="s2">"SCIP"</span><span class="p">:</span>
+        <span class="n">s</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">"limits/gap = </span><span class="si">{</span><span class="n">relative_gap</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span>
+        <span class="n">s</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">"limits/absgap = </span><span class="si">{</span><span class="n">abs_gap</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span>
         <span class="k">if</span> <span class="n">time_limit</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">s</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;limits/time = </span><span class="si">{</span><span class="n">time_limit</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="n">s</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">"limits/time = </span><span class="si">{</span><span class="n">time_limit</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span>
         <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-            <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;display/verblevel = 4</span><span class="se">\n</span><span class="s2">&quot;</span>
-        <span class="n">s</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;numerics/feastol = </span><span class="si">{</span><span class="n">primal_feasibility_tolerance</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
-        <span class="n">s</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;numerics/dualfeastol = </span><span class="si">{</span><span class="n">dual_feasibility_tolerance</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="n">s</span> <span class="o">+=</span> <span class="s2">"display/verblevel = 4</span><span class="se">\n</span><span class="s2">"</span>
+        <span class="n">s</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">"numerics/feastol = </span><span class="si">{</span><span class="n">primal_feasibility_tolerance</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span>
+        <span class="n">s</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">"numerics/dualfeastol = </span><span class="si">{</span><span class="n">dual_feasibility_tolerance</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span>
 
-    <span class="k">elif</span> <span class="n">solver</span> <span class="o">==</span> <span class="s2">&quot;GLOP&quot;</span><span class="p">:</span>
+    <span class="k">elif</span> <span class="n">solver</span> <span class="o">==</span> <span class="s2">"GLOP"</span><span class="p">:</span>
         <span class="c1"># GLOP is for continuous LP; gap tolerances less relevant, focus on feasibility tolerance</span>
-        <span class="n">s</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;primal_tolerance = </span><span class="si">{</span><span class="n">primal_feasibility_tolerance</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
-        <span class="n">s</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;dual_tolerance = </span><span class="si">{</span><span class="n">dual_feasibility_tolerance</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="n">s</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">"primal_tolerance = </span><span class="si">{</span><span class="n">primal_feasibility_tolerance</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span>
+        <span class="n">s</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">"dual_tolerance = </span><span class="si">{</span><span class="n">dual_feasibility_tolerance</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span>
         <span class="k">if</span> <span class="n">time_limit</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">s</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;time_limit = </span><span class="si">{</span><span class="n">time_limit</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="n">s</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">"time_limit = </span><span class="si">{</span><span class="n">time_limit</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span>
         <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-            <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;log_to_console = true</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="n">s</span> <span class="o">+=</span> <span class="s2">"log_to_console = true</span><span class="se">\n</span><span class="s2">"</span>
 
-    <span class="k">elif</span> <span class="n">solver</span> <span class="o">==</span> <span class="s2">&quot;CPLEX&quot;</span><span class="p">:</span>
+    <span class="k">elif</span> <span class="n">solver</span> <span class="o">==</span> <span class="s2">"CPLEX"</span><span class="p">:</span>
         <span class="c1"># Use CPLEX parameter names in the string</span>
-        <span class="n">s</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;CPXPARAM_MIP_Tolerances_MIPGap = </span><span class="si">{</span><span class="n">relative_gap</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
-        <span class="n">s</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;CPXPARAM_MIP_Tolerances_AbsMIPGap = </span><span class="si">{</span><span class="n">abs_gap</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="n">s</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">"CPXPARAM_MIP_Tolerances_MIPGap = </span><span class="si">{</span><span class="n">relative_gap</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span>
+        <span class="n">s</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">"CPXPARAM_MIP_Tolerances_AbsMIPGap = </span><span class="si">{</span><span class="n">abs_gap</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span>
         <span class="k">if</span> <span class="n">time_limit</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">s</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;CPXPARAM_TimeLimit = </span><span class="si">{</span><span class="n">time_limit</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="n">s</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">"CPXPARAM_TimeLimit = </span><span class="si">{</span><span class="n">time_limit</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span>
         <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-            <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;CPXPARAM_MIP_Display = 4</span><span class="se">\n</span><span class="s2">&quot;</span>
-        <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;CPXPARAM_Simplex_Tolerances_Feasibility = 1e-7</span><span class="se">\n</span><span class="s2">&quot;</span>
-        <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;CPXPARAM_Simplex_Tolerances_Optimality = 1e-7</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="n">s</span> <span class="o">+=</span> <span class="s2">"CPXPARAM_MIP_Display = 4</span><span class="se">\n</span><span class="s2">"</span>
+        <span class="n">s</span> <span class="o">+=</span> <span class="s2">"CPXPARAM_Simplex_Tolerances_Feasibility = 1e-7</span><span class="se">\n</span><span class="s2">"</span>
+        <span class="n">s</span> <span class="o">+=</span> <span class="s2">"CPXPARAM_Simplex_Tolerances_Optimality = 1e-7</span><span class="se">\n</span><span class="s2">"</span>
 
-    <span class="k">elif</span> <span class="n">solver</span> <span class="o">==</span> <span class="s2">&quot;GUROBI&quot;</span><span class="p">:</span>
+    <span class="k">elif</span> <span class="n">solver</span> <span class="o">==</span> <span class="s2">"GUROBI"</span><span class="p">:</span>
         <span class="c1"># Use Gurobi parameter names in string</span>
-        <span class="n">s</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;MIPGap = </span><span class="si">{</span><span class="n">relative_gap</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
-        <span class="n">s</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;MIPGapAbs = </span><span class="si">{</span><span class="n">abs_gap</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="n">s</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">"MIPGap = </span><span class="si">{</span><span class="n">relative_gap</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span>
+        <span class="n">s</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">"MIPGapAbs = </span><span class="si">{</span><span class="n">abs_gap</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span>
         <span class="k">if</span> <span class="n">time_limit</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">s</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;TimeLimit = </span><span class="si">{</span><span class="n">time_limit</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="n">s</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">"TimeLimit = </span><span class="si">{</span><span class="n">time_limit</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span>
         <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-            <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;OutputFlag = 1</span><span class="se">\n</span><span class="s2">&quot;</span>
-        <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;FeasibilityTol = 1e-8</span><span class="se">\n</span><span class="s2">&quot;</span>
-        <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;OptimalityTol = 1e-8</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="n">s</span> <span class="o">+=</span> <span class="s2">"OutputFlag = 1</span><span class="se">\n</span><span class="s2">"</span>
+        <span class="n">s</span> <span class="o">+=</span> <span class="s2">"FeasibilityTol = 1e-8</span><span class="se">\n</span><span class="s2">"</span>
+        <span class="n">s</span> <span class="o">+=</span> <span class="s2">"OptimalityTol = 1e-8</span><span class="se">\n</span><span class="s2">"</span>
 
-    <span class="k">elif</span> <span class="n">solver</span> <span class="o">==</span> <span class="s2">&quot;XPRESS&quot;</span><span class="p">:</span>
-        <span class="n">s</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;miprelstop = </span><span class="si">{</span><span class="n">relative_gap</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
-        <span class="n">s</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;mipabsstop = </span><span class="si">{</span><span class="n">abs_gap</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+    <span class="k">elif</span> <span class="n">solver</span> <span class="o">==</span> <span class="s2">"XPRESS"</span><span class="p">:</span>
+        <span class="n">s</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">"miprelstop = </span><span class="si">{</span><span class="n">relative_gap</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span>
+        <span class="n">s</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">"mipabsstop = </span><span class="si">{</span><span class="n">abs_gap</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span>
         <span class="k">if</span> <span class="n">time_limit</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">s</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;maxtime = </span><span class="si">{</span><span class="n">time_limit</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="n">s</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">"maxtime = </span><span class="si">{</span><span class="n">time_limit</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span>
         <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-            <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;outputlog = 1</span><span class="se">\n</span><span class="s2">&quot;</span>
-        <span class="n">s</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;feastol = </span><span class="si">{</span><span class="n">primal_feasibility_tolerance</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
-        <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;opt_tol = 1e-8</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="n">s</span> <span class="o">+=</span> <span class="s2">"outputlog = 1</span><span class="se">\n</span><span class="s2">"</span>
+        <span class="n">s</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">"feastol = </span><span class="si">{</span><span class="n">primal_feasibility_tolerance</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span>
+        <span class="n">s</span> <span class="o">+=</span> <span class="s2">"opt_tol = 1e-8</span><span class="se">\n</span><span class="s2">"</span>
 
-    <span class="k">elif</span> <span class="n">solver</span> <span class="o">==</span> <span class="s2">&quot;PDLP&quot;</span><span class="p">:</span>
-        <span class="n">s</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;relative_optimality_tolerance = </span><span class="si">{</span><span class="n">relative_gap</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
-        <span class="n">s</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;absolute_optimality_tolerance = </span><span class="si">{</span><span class="n">abs_gap</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+    <span class="k">elif</span> <span class="n">solver</span> <span class="o">==</span> <span class="s2">"PDLP"</span><span class="p">:</span>
+        <span class="n">s</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">"relative_optimality_tolerance = </span><span class="si">{</span><span class="n">relative_gap</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span>
+        <span class="n">s</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">"absolute_optimality_tolerance = </span><span class="si">{</span><span class="n">abs_gap</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span>
         <span class="k">if</span> <span class="n">time_limit</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">s</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;time_limit = </span><span class="si">{</span><span class="n">time_limit</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="n">s</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">"time_limit = </span><span class="si">{</span><span class="n">time_limit</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span>
         <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-            <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;log_to_console = true</span><span class="se">\n</span><span class="s2">&quot;</span>
-        <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;termination_check_frequency = 1000</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="n">s</span> <span class="o">+=</span> <span class="s2">"log_to_console = true</span><span class="se">\n</span><span class="s2">"</span>
+        <span class="n">s</span> <span class="o">+=</span> <span class="s2">"termination_check_frequency = 1000</span><span class="se">\n</span><span class="s2">"</span>
 
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">s</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="s2">""</span>
 
     <span class="k">return</span> <span class="n">s</span></div>
 
@@ -266,13 +266,13 @@
 <div class="viewcode-block" id="OrToolsLpModel">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.MIP.html#VeraGridEngine.Utils.MIP.ortools_interface.OrToolsLpModel">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">OrToolsLpModel</span><span class="p">(</span><span class="n">AbstractLpModel</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    LPModel implementation for ORTOOLS</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;solver&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;model&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;_var_names&quot;</span><span class="p">,</span>
+        <span class="s2">"solver"</span><span class="p">,</span>
+        <span class="s2">"model"</span><span class="p">,</span>
+        <span class="s2">"_var_names"</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="n">OPTIMAL</span> <span class="o">=</span> <span class="n">SolveStatus</span><span class="o">.</span><span class="n">OPTIMAL</span>
@@ -281,7 +281,7 @@
     <span class="n">INFINITY</span> <span class="o">=</span> <span class="mf">1e20</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">solver_type</span><span class="p">:</span> <span class="n">MIPSolvers</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">solver_type</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;OrTools&quot;</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">solver_type</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"OrTools"</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">solver_type</span><span class="p">:</span> <span class="n">MIPSolvers</span> <span class="o">=</span> <span class="n">solver_type</span>
 
@@ -291,7 +291,7 @@
         <span class="p">)</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">solver_is_supported</span><span class="p">():</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The solver </span><span class="si">{</span><span class="n">solver_type</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2"> is not supported&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">"The solver </span><span class="si">{</span><span class="n">solver_type</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2"> is not supported"</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model_builder</span><span class="o">.</span><span class="n">Model</span><span class="p">()</span>
 
@@ -307,12 +307,12 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.MIP.html#VeraGridEngine.Utils.MIP.ortools_interface.OrToolsLpModel.set_var_bounds">[docs]</a>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">set_var_bounds</span><span class="p">(</span><span class="n">var</span><span class="p">:</span> <span class="n">LpVar</span><span class="p">,</span> <span class="n">lb</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">ub</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Modify the bounds of a variable</span>
 <span class="sd">        :param var: LpVar instance to modify</span>
 <span class="sd">        :param lb: lower bound value</span>
 <span class="sd">        :param ub: upper bound value</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">LpVar</span><span class="p">):</span>
             <span class="n">var</span><span class="o">.</span><span class="n">lower_bound</span> <span class="o">=</span> <span class="n">lb</span>
             <span class="n">var</span><span class="o">.</span><span class="n">upper_bound</span> <span class="o">=</span> <span class="n">ub</span></div>
@@ -320,69 +320,69 @@
 
 <div class="viewcode-block" id="OrToolsLpModel.save_model">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.MIP.html#VeraGridEngine.Utils.MIP.ortools_interface.OrToolsLpModel.save_model">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">save_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;ntc_opf_problem.lp&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">save_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"ntc_opf_problem.lp"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Save problem in LP format</span>
 <span class="sd">        :param file_name: name of the file (.lp or .mps supported)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># save the problem in LP format to debug</span>
-        <span class="k">if</span> <span class="n">file_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.lp&#39;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">file_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">'.lp'</span><span class="p">):</span>
             <span class="n">lp_content</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">export_to_lp_string</span><span class="p">(</span><span class="n">obfuscate</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">file_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.mps&#39;</span><span class="p">):</span>
+        <span class="k">elif</span> <span class="n">file_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">'.mps'</span><span class="p">):</span>
             <span class="n">lp_content</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">export_to_mps_string</span><span class="p">(</span><span class="n">obfuscate</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Unsupported file format&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">'Unsupported file format'</span><span class="p">)</span>
 
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file_name</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file_name</span><span class="p">,</span> <span class="s2">"w"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
             <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">lp_content</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="OrToolsLpModel.model_as_string">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.MIP.html#VeraGridEngine.Utils.MIP.ortools_interface.OrToolsLpModel.model_as_string">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">model_as_string</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Model as string</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">lp_content</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">export_to_lp_string</span><span class="p">(</span><span class="n">obfuscate</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">lp_content</span></div>
 
 
 <div class="viewcode-block" id="OrToolsLpModel.add_int">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.MIP.html#VeraGridEngine.Utils.MIP.ortools_interface.OrToolsLpModel.add_int">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">add_int</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lb</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">ub</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">LpVar</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_int</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lb</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">ub</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">LpVar</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Make integer LP var</span>
 <span class="sd">        :param lb: lower bound</span>
 <span class="sd">        :param ub: upper bound</span>
 <span class="sd">        :param name: name (optional)</span>
 <span class="sd">        :return: LpVar</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">new_int_var</span><span class="p">(</span><span class="n">lb</span><span class="o">=</span><span class="n">lb</span><span class="p">,</span> <span class="n">ub</span><span class="o">=</span><span class="n">ub</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="OrToolsLpModel.add_bin">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.MIP.html#VeraGridEngine.Utils.MIP.ortools_interface.OrToolsLpModel.add_bin">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">add_bin</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">LpVar</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_bin</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">LpVar</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Make integer LP var</span>
 <span class="sd">        :param name: name (optional)</span>
 <span class="sd">        :return: LpVar</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">new_int_var</span><span class="p">(</span><span class="n">lb</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">ub</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="OrToolsLpModel.add_var">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.MIP.html#VeraGridEngine.Utils.MIP.ortools_interface.OrToolsLpModel.add_var">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">add_var</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lb</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">ub</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">LpVar</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_var</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lb</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">ub</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">LpVar</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Make floating point LP var</span>
 <span class="sd">        :param lb: lower bound</span>
 <span class="sd">        :param ub: upper bound</span>
 <span class="sd">        :param name: name (optional)</span>
 <span class="sd">        :return: LpVar</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_var_names</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Variable name already defined: </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s1">'Variable name already defined: </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_var_names</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
 
@@ -391,15 +391,15 @@
 
 <div class="viewcode-block" id="OrToolsLpModel.add_cst">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.MIP.html#VeraGridEngine.Utils.MIP.ortools_interface.OrToolsLpModel.add_cst">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">add_cst</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cst</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">LpCstBounded</span><span class="p">,</span> <span class="n">LpExp</span><span class="p">,</span> <span class="nb">bool</span><span class="p">],</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">LpCst</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_cst</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cst</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">LpCstBounded</span><span class="p">,</span> <span class="n">LpExp</span><span class="p">,</span> <span class="nb">bool</span><span class="p">],</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">LpCst</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Add constraint to the model</span>
 <span class="sd">        :param cst: constraint object (or general expression)</span>
 <span class="sd">        :param name: name of the constraint (optional)</span>
 <span class="sd">        :return: Constraint object</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_var_names</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Constraint name already defined: </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s1">'Constraint name already defined: </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_var_names</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
 
@@ -413,42 +413,42 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.MIP.html#VeraGridEngine.Utils.MIP.ortools_interface.OrToolsLpModel.sum">[docs]</a>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">sum</span><span class="p">(</span><span class="n">cst</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">LpExp</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">LpExp</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Add sum of the constraints to the model</span>
 <span class="sd">        :param cst: constraint object (or general expression)</span>
 <span class="sd">        :return: Constraint object</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="nb">sum</span><span class="p">(</span><span class="n">cst</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="OrToolsLpModel.minimize">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.MIP.html#VeraGridEngine.Utils.MIP.ortools_interface.OrToolsLpModel.minimize">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">minimize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj_function</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">LpExp</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Set the objective function with minimization sense</span>
 <span class="sd">        :param obj_function: expression to minimize</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">minimize</span><span class="p">(</span><span class="n">linear_expr</span><span class="o">=</span><span class="n">obj_function</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="OrToolsLpModel.pass_through_file">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.MIP.html#VeraGridEngine.Utils.MIP.ortools_interface.OrToolsLpModel.pass_through_file">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">pass_through_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fname</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;pass_thought_file.lp&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">model_builder</span><span class="o">.</span><span class="n">Model</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">pass_through_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fname</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"pass_thought_file.lp"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">model_builder</span><span class="o">.</span><span class="n">Model</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :param fname:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">save_model</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
 
         <span class="n">mdl</span> <span class="o">=</span> <span class="n">model_builder</span><span class="o">.</span><span class="n">Model</span><span class="p">()</span>
 
-        <span class="k">if</span> <span class="n">fname</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.lp&#39;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">fname</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">'.lp'</span><span class="p">):</span>
             <span class="n">mdl</span><span class="o">.</span><span class="n">import_from_lp_file</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">fname</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.mps&#39;</span><span class="p">):</span>
+        <span class="k">elif</span> <span class="n">fname</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">'.mps'</span><span class="p">):</span>
             <span class="n">mdl</span><span class="o">.</span><span class="n">import_from_mps_file</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Unsupported file format&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">'Unsupported file format'</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">mdl</span></div>
 
 
@@ -456,17 +456,17 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.MIP.html#VeraGridEngine.Utils.MIP.ortools_interface.OrToolsLpModel.solve">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">solve</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">robust</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">show_logs</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
               <span class="n">progress_text</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Solve the model</span>
 <span class="sd">        :param robust: Relax the problem if infeasible</span>
 <span class="sd">        :param show_logs</span>
 <span class="sd">        :param progress_text:</span>
 <span class="sd">        :return: integer value matching OPTIMAL or not</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">enable_output</span><span class="p">(</span><span class="n">show_logs</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">progress_text</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">progress_text</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Solving model with </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">solver_type</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">...&quot;</span><span class="p">)</span>
+            <span class="n">progress_text</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Solving model with </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">solver_type</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">..."</span><span class="p">)</span>
 
         <span class="n">original_mdl</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span>
         <span class="n">status</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">original_mdl</span><span class="p">)</span>
@@ -477,18 +477,18 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">originally_infeasible</span> <span class="o">=</span> <span class="kc">True</span>
 
             <span class="k">if</span> <span class="n">robust</span><span class="p">:</span>
-<span class="w">                </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">                </span><span class="sd">"""</span>
 <span class="sd">                We are going to create a deep clone of the model,</span>
 <span class="sd">                add a slack variable to each constraint and minimize</span>
 <span class="sd">                the sum of the newly added slack vars.</span>
 <span class="sd">                This LP model will be always optimal.</span>
 <span class="sd">                After the solution, we inspect the slack vars added</span>
 <span class="sd">                if any of those is &gt; 0, then the constraint where it</span>
-<span class="sd">                was added needs &quot;slacking&quot;, therefore we add that slack</span>
+<span class="sd">                was added needs "slacking", therefore we add that slack</span>
 <span class="sd">                to the original model, and add the slack to the original </span>
 <span class="sd">                objective function. This way we relax the model while</span>
 <span class="sd">                bringing it to optimality.</span>
-<span class="sd">                &quot;&quot;&quot;</span>
+<span class="sd">                """</span>
 
                 <span class="c1"># deep copy of the original model</span>
                 <span class="n">debug_model</span> <span class="o">=</span> <span class="n">original_mdl</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>
@@ -499,7 +499,7 @@
                 <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">cst</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">debug_model</span><span class="o">.</span><span class="n">get_linear_constraints</span><span class="p">()):</span>
                     <span class="c1"># create a new slack var in the problem</span>
                     <span class="n">sl</span> <span class="o">=</span> <span class="n">debug_model</span><span class="o">.</span><span class="n">new_var</span><span class="p">(</span><span class="n">lb</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">ub</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">INFINITY</span><span class="p">,</span> <span class="n">is_integer</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-                                             <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;Slk_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">_</span><span class="si">{</span><span class="n">cst</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+                                             <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s1">'Slk_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">_</span><span class="si">{</span><span class="n">cst</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
 
                     <span class="c1"># add the variable to the new objective function</span>
                     <span class="n">debugging_f_obj</span> <span class="o">+=</span> <span class="n">sl</span>
@@ -526,7 +526,7 @@
 
                 <span class="c1"># solve the debug model</span>
                 <span class="k">if</span> <span class="n">progress_text</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="n">progress_text</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Solving debug model with </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">solver_type</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">...&quot;</span><span class="p">)</span>
+                    <span class="n">progress_text</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Solving debug model with </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">solver_type</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">..."</span><span class="p">)</span>
 
                 <span class="c1"># we create a new solver to handle the debug model</span>
                 <span class="n">debug_solver</span> <span class="o">=</span> <span class="n">model_builder</span><span class="o">.</span><span class="n">Solver</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">solver_type</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
@@ -555,7 +555,7 @@
 
                             <span class="c1"># add the slack in the main model</span>
                             <span class="n">sl2</span> <span class="o">=</span> <span class="n">original_mdl</span><span class="o">.</span><span class="n">new_var</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">INFINITY</span><span class="p">,</span> <span class="n">is_integer</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-                                                       <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;Slk_rlx_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">_</span><span class="si">{</span><span class="n">cst_name</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+                                                       <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s1">'Slk_rlx_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">_</span><span class="si">{</span><span class="n">cst_name</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
                             <span class="bp">self</span><span class="o">.</span><span class="n">relaxed_slacks</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">i</span><span class="p">,</span> <span class="n">sl2</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">))</span>  <span class="c1"># the 0.0 value will be read later</span>
 
                             <span class="c1"># add the slack to the original objective function</span>
@@ -569,7 +569,7 @@
 
                     <span class="c1"># solve the modified (original) model</span>
                     <span class="k">if</span> <span class="n">progress_text</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                        <span class="n">progress_text</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Solving relaxed model with </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">solver_type</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">...&quot;</span><span class="p">)</span>
+                        <span class="n">progress_text</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Solving relaxed model with </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">solver_type</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">..."</span><span class="p">)</span>
                     <span class="n">status</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">original_mdl</span><span class="p">)</span>
 
                     <span class="k">if</span> <span class="n">status</span> <span class="o">==</span> <span class="n">OrToolsLpModel</span><span class="o">.</span><span class="n">OPTIMAL</span><span class="p">:</span>
@@ -580,12 +580,12 @@
                             <span class="bp">self</span><span class="o">.</span><span class="n">relaxed_slacks</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span>
 
                             <span class="c1"># logg this</span>
-                            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s2">&quot;Relaxed problem&quot;</span><span class="p">,</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s2">"Relaxed problem"</span><span class="p">,</span>
                                                     <span class="n">device</span><span class="o">=</span><span class="n">original_mdl</span><span class="o">.</span><span class="n">linear_constraint_from_index</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
                                                     <span class="n">value</span><span class="o">=</span><span class="n">val</span><span class="p">)</span>
 
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s2">&quot;Unable to relax the model, the debug model failed&quot;</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s2">"Unable to relax the model, the debug model failed"</span><span class="p">)</span>
 
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">pass</span>
@@ -596,20 +596,20 @@
 <div class="viewcode-block" id="OrToolsLpModel.fobj_value">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.MIP.html#VeraGridEngine.Utils.MIP.ortools_interface.OrToolsLpModel.fobj_value">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">fobj_value</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the objective function value</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">objective_value</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="OrToolsLpModel.is_mip">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.MIP.html#VeraGridEngine.Utils.MIP.ortools_interface.OrToolsLpModel.is_mip">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">is_mip</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Is this Model a MIP?</span>
 <span class="sd">        :return: Bool</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">get_variables</span><span class="p">():</span>
             <span class="k">if</span> <span class="n">var</span><span class="o">.</span><span class="n">Integer</span><span class="p">():</span>
                 <span class="k">return</span> <span class="kc">True</span>
@@ -620,11 +620,11 @@
 <div class="viewcode-block" id="OrToolsLpModel.get_value">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.MIP.html#VeraGridEngine.Utils.MIP.ortools_interface.OrToolsLpModel.get_value">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="n">LpVar</span><span class="p">,</span> <span class="n">LpExp</span><span class="p">,</span> <span class="n">LpCst</span><span class="p">,</span> <span class="n">LpCstBounded</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the value of a variable stored in a numpy array of objects</span>
 <span class="sd">        :param x: solver object (it may be a LP var or a number)</span>
 <span class="sd">        :return: result or zero</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">LpVar</span><span class="p">):</span>
             <span class="n">val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">LpExp</span><span class="p">):</span>
@@ -635,7 +635,7 @@
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
             <span class="k">return</span> <span class="n">x</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Unrecognized type </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">"Unrecognized type </span><span class="si">{}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
 
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
             <span class="k">return</span> <span class="n">val</span>
@@ -646,15 +646,15 @@
 <div class="viewcode-block" id="OrToolsLpModel.get_dual_value">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.MIP.html#VeraGridEngine.Utils.MIP.ortools_interface.OrToolsLpModel.get_dual_value">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_dual_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">LpCst</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the dual value of a variable stored in a numpy array of objects</span>
 <span class="sd">        :param x: constraint</span>
 <span class="sd">        :return: result or zero</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">LpCst</span><span class="p">):</span>
             <span class="n">val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">dual_value</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Unrecognized type </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">"Unrecognized type </span><span class="si">{}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
 
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
             <span class="k">return</span> <span class="n">val</span>
@@ -665,30 +665,30 @@
 <div class="viewcode-block" id="OrToolsLpModel.status2string">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.MIP.html#VeraGridEngine.Utils.MIP.ortools_interface.OrToolsLpModel.status2string">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">status2string</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stat</span><span class="p">:</span> <span class="n">SolveStatus</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Convert ortools status to string</span>
 <span class="sd">        :param stat:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="n">stat</span> <span class="o">==</span> <span class="n">SolveStatus</span><span class="o">.</span><span class="n">OPTIMAL</span><span class="p">:</span>
-            <span class="k">return</span> <span class="s2">&quot;optimal&quot;</span>
+            <span class="k">return</span> <span class="s2">"optimal"</span>
         <span class="k">if</span> <span class="n">stat</span> <span class="o">==</span> <span class="n">SolveStatus</span><span class="o">.</span><span class="n">FEASIBLE</span><span class="p">:</span>
-            <span class="k">return</span> <span class="s2">&quot;feasible&quot;</span>
+            <span class="k">return</span> <span class="s2">"feasible"</span>
         <span class="k">if</span> <span class="n">stat</span> <span class="o">==</span> <span class="n">SolveStatus</span><span class="o">.</span><span class="n">INFEASIBLE</span><span class="p">:</span>
-            <span class="k">return</span> <span class="s2">&quot;infeasible&quot;</span>
+            <span class="k">return</span> <span class="s2">"infeasible"</span>
         <span class="k">if</span> <span class="n">stat</span> <span class="o">==</span> <span class="n">SolveStatus</span><span class="o">.</span><span class="n">UNBOUNDED</span><span class="p">:</span>
-            <span class="k">return</span> <span class="s2">&quot;unbounded&quot;</span>
+            <span class="k">return</span> <span class="s2">"unbounded"</span>
         <span class="k">if</span> <span class="n">stat</span> <span class="o">==</span> <span class="n">SolveStatus</span><span class="o">.</span><span class="n">ABNORMAL</span><span class="p">:</span>
-            <span class="k">return</span> <span class="s2">&quot;abnormal&quot;</span>
+            <span class="k">return</span> <span class="s2">"abnormal"</span>
         <span class="k">if</span> <span class="n">stat</span> <span class="o">==</span> <span class="n">SolveStatus</span><span class="o">.</span><span class="n">MODEL_INVALID</span><span class="p">:</span>
-            <span class="k">return</span> <span class="s2">&quot;model invalid&quot;</span>
+            <span class="k">return</span> <span class="s2">"model invalid"</span>
         <span class="k">if</span> <span class="n">stat</span> <span class="o">==</span> <span class="n">SolveStatus</span><span class="o">.</span><span class="n">NOT_SOLVED</span><span class="p">:</span>
-            <span class="k">return</span> <span class="s2">&quot;not solved&quot;</span>
+            <span class="k">return</span> <span class="s2">"not solved"</span>
         <span class="k">if</span> <span class="n">stat</span> <span class="o">==</span> <span class="n">SolveStatus</span><span class="o">.</span><span class="n">INVALID_SOLVER_PARAMETERS</span><span class="p">:</span>
-            <span class="k">return</span> <span class="s2">&quot;invalid solver params&quot;</span>
+            <span class="k">return</span> <span class="s2">"invalid solver params"</span>
         <span class="k">if</span> <span class="n">stat</span> <span class="o">==</span> <span class="n">SolveStatus</span><span class="o">.</span><span class="n">MODEL_IS_VALID</span><span class="p">:</span>
-            <span class="k">return</span> <span class="s2">&quot;model is valid&quot;</span>
-        <span class="k">return</span> <span class="s1">&#39;unknown&#39;</span></div>
+            <span class="k">return</span> <span class="s2">"model is valid"</span>
+        <span class="k">return</span> <span class="s1">'unknown'</span></div>
 </div>
 
 </pre></div>

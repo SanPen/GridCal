@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Utils.Symbolic.dynamic_connection_intent &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Utils.Symbolic.dynamic_connection_intent &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/license.html">📜 License</a></li>
@@ -118,24 +119,24 @@
 <div class="viewcode-block" id="ConnectionIntentVariable">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.dynamic_connection_intent.ConnectionIntentVariable">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">ConnectionIntentVariable</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Expose the immutable variable identity required by intent parsing.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Expose the immutable variable identity required by intent parsing."""</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">()</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">non_mutable_uid</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the stable symbolic variable identifier.</span>
+<span class="w">        </span><span class="sd">"""Return the stable symbolic variable identifier.</span>
 
 <span class="sd">        :return: Stable variable identifier.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="o">...</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">ref</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">VarPowerFlowReferenceType</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the semantic power-flow reference carried by the variable.</span>
+<span class="w">        </span><span class="sd">"""Return the semantic power-flow reference carried by the variable.</span>
 
 <span class="sd">        :return: Semantic variable reference or ``None`` when it has none.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="o">...</span></div>
 
 
@@ -143,41 +144,41 @@
 <div class="viewcode-block" id="ConnectionIntentBlock">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.dynamic_connection_intent.ConnectionIntentBlock">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">ConnectionIntentBlock</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Expose the bounded block structure required by intent parsing.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Expose the bounded block structure required by intent parsing."""</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">()</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">uid</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the block identifier.</span>
+<span class="w">        </span><span class="sd">"""Return the block identifier.</span>
 
 <span class="sd">        :return: Stable block identifier.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="o">...</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">in_vars</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">ConnectionIntentVariable</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the block input variables.</span>
+<span class="w">        </span><span class="sd">"""Return the block input variables.</span>
 
 <span class="sd">        :return: Ordered input variables.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="o">...</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">out_vars</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">ConnectionIntentVariable</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the block output variables.</span>
+<span class="w">        </span><span class="sd">"""Return the block output variables.</span>
 
 <span class="sd">        :return: Ordered output variables.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="o">...</span>
 
 <div class="viewcode-block" id="ConnectionIntentBlock.get_all_blocks">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.dynamic_connection_intent.ConnectionIntentBlock.get_all_blocks">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">get_all_blocks</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Sequence</span><span class="p">[</span><span class="s2">&quot;ConnectionIntentBlock&quot;</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return this block and its bounded descendants.</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_all_blocks</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Sequence</span><span class="p">[</span><span class="s2">"ConnectionIntentBlock"</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">"""Return this block and its bounded descendants.</span>
 
 <span class="sd">        :return: Ordered block traversal.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="o">...</span></div>
 </div>
 
@@ -186,46 +187,46 @@
 <div class="viewcode-block" id="DynamicConnectionIntentOrigin">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.dynamic_connection_intent.DynamicConnectionIntentOrigin">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">DynamicConnectionIntentOrigin</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Describe who established a dynamic root-interface connection.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
-    <span class="n">USER</span> <span class="o">=</span> <span class="s2">&quot;USER&quot;</span>
-    <span class="n">TEMPLATE_DERIVED</span> <span class="o">=</span> <span class="s2">&quot;TEMPLATE_DERIVED&quot;</span></div>
+    <span class="n">USER</span> <span class="o">=</span> <span class="s2">"USER"</span>
+    <span class="n">TEMPLATE_DERIVED</span> <span class="o">=</span> <span class="s2">"TEMPLATE_DERIVED"</span></div>
 
 
 
 <div class="viewcode-block" id="DynamicConnectionIntentDirection">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.dynamic_connection_intent.DynamicConnectionIntentDirection">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">DynamicConnectionIntentDirection</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Describe the direction of a dynamic root-interface connection.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
-    <span class="n">INPUT</span> <span class="o">=</span> <span class="s2">&quot;INPUT&quot;</span>
-    <span class="n">OUTPUT</span> <span class="o">=</span> <span class="s2">&quot;OUTPUT&quot;</span></div>
+    <span class="n">INPUT</span> <span class="o">=</span> <span class="s2">"INPUT"</span>
+    <span class="n">OUTPUT</span> <span class="o">=</span> <span class="s2">"OUTPUT"</span></div>
 
 
 
 <div class="viewcode-block" id="DynamicConnectionIntent">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.dynamic_connection_intent.DynamicConnectionIntent">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">DynamicConnectionIntent</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Store the current desired state of one dynamic root-interface connection.</span>
 
 <span class="sd">    The object records one effective connection state rather than an edit</span>
 <span class="sd">    history. An active intent may remain temporarily unavailable when a phase</span>
 <span class="sd">    disappears from the current topology and can be materialized again when</span>
 <span class="sd">    that phase returns.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;_origin&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;_root_reference&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;_direction&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;_internal_block_uid&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;_internal_variable_uid&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;_suppressed&quot;</span><span class="p">,</span>
+        <span class="s2">"_origin"</span><span class="p">,</span>
+        <span class="s2">"_root_reference"</span><span class="p">,</span>
+        <span class="s2">"_direction"</span><span class="p">,</span>
+        <span class="s2">"_internal_block_uid"</span><span class="p">,</span>
+        <span class="s2">"_internal_variable_uid"</span><span class="p">,</span>
+        <span class="s2">"_suppressed"</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
@@ -235,7 +236,7 @@
                  <span class="n">internal_block_uid</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
                  <span class="n">internal_variable_uid</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
                  <span class="n">suppressed</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Initialize one connection intent.</span>
 
 <span class="sd">        :param origin: Component that established the connection.</span>
@@ -244,7 +245,7 @@
 <span class="sd">        :param internal_block_uid: Stable UID of the connected internal block.</span>
 <span class="sd">        :param internal_variable_uid: Non-mutable UID of the connected internal variable.</span>
 <span class="sd">        :param suppressed: Whether an automatic connection is intentionally disabled.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_origin</span><span class="p">:</span> <span class="n">DynamicConnectionIntentOrigin</span> <span class="o">=</span> <span class="n">origin</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_root_reference</span><span class="p">:</span> <span class="n">VarPowerFlowReferenceType</span> <span class="o">=</span> <span class="n">root_reference</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_direction</span><span class="p">:</span> <span class="n">DynamicConnectionIntentDirection</span> <span class="o">=</span> <span class="n">direction</span>
@@ -255,113 +256,113 @@
 <div class="viewcode-block" id="DynamicConnectionIntent.get_origin">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.dynamic_connection_intent.DynamicConnectionIntent.get_origin">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_origin</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DynamicConnectionIntentOrigin</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return who established the connection.</span>
 
 <span class="sd">        :return: Intent origin.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_origin</span></div>
 
 
 <div class="viewcode-block" id="DynamicConnectionIntent.get_root_reference">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.dynamic_connection_intent.DynamicConnectionIntent.get_root_reference">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_root_reference</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">VarPowerFlowReferenceType</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return the semantic root-interface reference.</span>
 
 <span class="sd">        :return: Root-interface reference.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_root_reference</span></div>
 
 
 <div class="viewcode-block" id="DynamicConnectionIntent.set_root_reference">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.dynamic_connection_intent.DynamicConnectionIntent.set_root_reference">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">set_root_reference</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">root_reference</span><span class="p">:</span> <span class="n">VarPowerFlowReferenceType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Replace a legacy root reference with its canonical reference.</span>
 
 <span class="sd">        :param root_reference: Canonical root-interface reference.</span>
 <span class="sd">        :return: None.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_root_reference</span> <span class="o">=</span> <span class="n">root_reference</span></div>
 
 
 <div class="viewcode-block" id="DynamicConnectionIntent.get_direction">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.dynamic_connection_intent.DynamicConnectionIntent.get_direction">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_direction</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DynamicConnectionIntentDirection</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return the connection direction.</span>
 
 <span class="sd">        :return: Connection direction.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_direction</span></div>
 
 
 <div class="viewcode-block" id="DynamicConnectionIntent.get_internal_block_uid">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.dynamic_connection_intent.DynamicConnectionIntent.get_internal_block_uid">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_internal_block_uid</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return the connected internal block UID.</span>
 
 <span class="sd">        :return: Internal block UID.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_internal_block_uid</span></div>
 
 
 <div class="viewcode-block" id="DynamicConnectionIntent.get_internal_variable_uid">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.dynamic_connection_intent.DynamicConnectionIntent.get_internal_variable_uid">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_internal_variable_uid</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return the connected internal variable non-mutable UID.</span>
 
 <span class="sd">        :return: Internal variable UID.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_internal_variable_uid</span></div>
 
 
 <div class="viewcode-block" id="DynamicConnectionIntent.set_internal_variable_uid">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.dynamic_connection_intent.DynamicConnectionIntent.set_internal_variable_uid">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">set_internal_variable_uid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">internal_variable_uid</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Replace an unavailable port identity with its semantic successor.</span>
+<span class="w">        </span><span class="sd">"""Replace an unavailable port identity with its semantic successor.</span>
 
 <span class="sd">        :param internal_variable_uid: Current non-mutable UID of the internal variable.</span>
 <span class="sd">        :return: None.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_internal_variable_uid</span> <span class="o">=</span> <span class="n">internal_variable_uid</span></div>
 
 
 <div class="viewcode-block" id="DynamicConnectionIntent.is_suppressed">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.dynamic_connection_intent.DynamicConnectionIntent.is_suppressed">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">is_suppressed</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return whether the connection is intentionally disabled.</span>
 
 <span class="sd">        :return: ``True`` when the intent must not be materialized.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_suppressed</span></div>
 
 
 <div class="viewcode-block" id="DynamicConnectionIntent.set_suppressed">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.dynamic_connection_intent.DynamicConnectionIntent.set_suppressed">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">set_suppressed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">suppressed</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Set whether the connection is intentionally disabled.</span>
 
 <span class="sd">        :param suppressed: New suppression state.</span>
 <span class="sd">        :return: None.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_suppressed</span> <span class="o">=</span> <span class="n">suppressed</span></div>
 
 
 <div class="viewcode-block" id="DynamicConnectionIntent.has_same_identity">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.dynamic_connection_intent.DynamicConnectionIntent.has_same_identity">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">has_same_identity</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="s2">&quot;DynamicConnectionIntent&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">has_same_identity</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="s2">"DynamicConnectionIntent"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Compare the semantic identity used to replace an existing intent.</span>
 
 <span class="sd">        :param other: Intent to compare.</span>
 <span class="sd">        :return: ``True`` when both objects describe the same connection and origin.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_origin</span> <span class="o">!=</span> <span class="n">other</span><span class="o">.</span><span class="n">get_origin</span><span class="p">():</span>
             <span class="k">return</span> <span class="kc">False</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_root_reference</span> <span class="o">!=</span> <span class="n">other</span><span class="o">.</span><span class="n">get_root_reference</span><span class="p">():</span>
@@ -378,12 +379,12 @@
 
 <div class="viewcode-block" id="DynamicConnectionIntent.copy">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.dynamic_connection_intent.DynamicConnectionIntent.copy">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;DynamicConnectionIntent&quot;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"DynamicConnectionIntent"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Create a detached copy with the same semantic state.</span>
 
 <span class="sd">        :return: Copied connection intent.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">DynamicConnectionIntent</span><span class="p">(</span>
             <span class="n">origin</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_origin</span><span class="p">,</span>
             <span class="n">root_reference</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_root_reference</span><span class="p">,</span>
@@ -399,30 +400,30 @@
 <div class="viewcode-block" id="dynamic_connection_intent_to_dict">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.dynamic_connection_intent.dynamic_connection_intent_to_dict">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">dynamic_connection_intent_to_dict</span><span class="p">(</span><span class="n">intent</span><span class="p">:</span> <span class="n">DynamicConnectionIntent</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">bool</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Convert one typed intent at the persistence boundary.</span>
 
 <span class="sd">    :param intent: Runtime connection intent.</span>
 <span class="sd">    :return: Named JSON-compatible intent fields.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="nb">dict</span><span class="p">({</span>
-        <span class="s2">&quot;origin&quot;</span><span class="p">:</span> <span class="n">intent</span><span class="o">.</span><span class="n">get_origin</span><span class="p">()</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
-        <span class="s2">&quot;root_ref&quot;</span><span class="p">:</span> <span class="n">intent</span><span class="o">.</span><span class="n">get_root_reference</span><span class="p">()</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
-        <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="n">intent</span><span class="o">.</span><span class="n">get_direction</span><span class="p">()</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
-        <span class="s2">&quot;internal_block_uid&quot;</span><span class="p">:</span> <span class="n">intent</span><span class="o">.</span><span class="n">get_internal_block_uid</span><span class="p">(),</span>
-        <span class="s2">&quot;internal_variable_uid&quot;</span><span class="p">:</span> <span class="n">intent</span><span class="o">.</span><span class="n">get_internal_variable_uid</span><span class="p">(),</span>
-        <span class="s2">&quot;suppressed&quot;</span><span class="p">:</span> <span class="n">intent</span><span class="o">.</span><span class="n">is_suppressed</span><span class="p">(),</span>
+        <span class="s2">"origin"</span><span class="p">:</span> <span class="n">intent</span><span class="o">.</span><span class="n">get_origin</span><span class="p">()</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+        <span class="s2">"root_ref"</span><span class="p">:</span> <span class="n">intent</span><span class="o">.</span><span class="n">get_root_reference</span><span class="p">()</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+        <span class="s2">"direction"</span><span class="p">:</span> <span class="n">intent</span><span class="o">.</span><span class="n">get_direction</span><span class="p">()</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+        <span class="s2">"internal_block_uid"</span><span class="p">:</span> <span class="n">intent</span><span class="o">.</span><span class="n">get_internal_block_uid</span><span class="p">(),</span>
+        <span class="s2">"internal_variable_uid"</span><span class="p">:</span> <span class="n">intent</span><span class="o">.</span><span class="n">get_internal_variable_uid</span><span class="p">(),</span>
+        <span class="s2">"suppressed"</span><span class="p">:</span> <span class="n">intent</span><span class="o">.</span><span class="n">is_suppressed</span><span class="p">(),</span>
     <span class="p">})</span></div>
 
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_parse_origin</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="nb">object</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DynamicConnectionIntentOrigin</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Parse one persisted origin without exposing strings to runtime code.</span>
 
 <span class="sd">    :param value: Persisted candidate value.</span>
 <span class="sd">    :return: Parsed origin or ``None`` when invalid.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">result</span><span class="p">:</span> <span class="n">DynamicConnectionIntentOrigin</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">DynamicConnectionIntentOrigin</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
@@ -434,18 +435,18 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_parse_direction</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">object</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">DynamicConnectionIntentDirection</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Parse the current direction field or its legacy equivalents.</span>
 
 <span class="sd">    :param data: Persisted intent fields.</span>
 <span class="sd">    :return: Parsed direction or ``None`` when invalid.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">direction_value</span><span class="p">:</span> <span class="nb">object</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;direction&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+<span class="sd">    """</span>
+    <span class="n">direction_value</span><span class="p">:</span> <span class="nb">object</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"direction"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
 
     <span class="c1"># The internal legacy direction is authoritative because old branch files</span>
     <span class="c1"># could persist an incorrect graphical root direction.</span>
     <span class="k">if</span> <span class="n">direction_value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">direction_value</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;internal_port_direction&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;root_direction&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
+        <span class="n">direction_value</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"internal_port_direction"</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"root_direction"</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">pass</span>
 
@@ -462,12 +463,12 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_parse_root_reference</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="nb">object</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">VarPowerFlowReferenceType</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Parse one persisted root reference.</span>
 
 <span class="sd">    :param value: Persisted reference value.</span>
 <span class="sd">    :return: Parsed reference or ``None`` when invalid.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">result</span><span class="p">:</span> <span class="n">VarPowerFlowReferenceType</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">VarPowerFlowReferenceType</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
@@ -480,13 +481,13 @@
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_find_internal_block</span><span class="p">(</span><span class="n">root_block</span><span class="p">:</span> <span class="n">ConnectionIntentBlock</span><span class="p">,</span>
                          <span class="n">internal_block_uid</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ConnectionIntentBlock</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Locate the internal block referenced by one intent.</span>
 
 <span class="sd">    :param root_block: Root block that owns the intent collection.</span>
 <span class="sd">    :param internal_block_uid: Persisted child block UID.</span>
 <span class="sd">    :return: Matching block or ``None`` when absent.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">candidate_block</span><span class="p">:</span> <span class="n">ConnectionIntentBlock</span>
 
     <span class="k">for</span> <span class="n">candidate_block</span> <span class="ow">in</span> <span class="n">root_block</span><span class="o">.</span><span class="n">get_all_blocks</span><span class="p">():</span>
@@ -501,15 +502,15 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">_resolve_internal_variable_uid</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">object</span><span class="p">],</span>
                                    <span class="n">internal_block</span><span class="p">:</span> <span class="n">ConnectionIntentBlock</span><span class="p">,</span>
                                    <span class="n">direction</span><span class="p">:</span> <span class="n">DynamicConnectionIntentDirection</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Resolve the stable variable UID, including the legacy positional format.</span>
 
 <span class="sd">    :param data: Persisted intent fields.</span>
 <span class="sd">    :param internal_block: Connected internal block.</span>
 <span class="sd">    :param direction: Connection direction.</span>
 <span class="sd">    :return: Non-mutable variable UID or ``None`` when the reference is invalid.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">variable_uid_value</span><span class="p">:</span> <span class="nb">object</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;internal_variable_uid&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+<span class="sd">    """</span>
+    <span class="n">variable_uid_value</span><span class="p">:</span> <span class="nb">object</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"internal_variable_uid"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
     <span class="n">port_index_value</span><span class="p">:</span> <span class="nb">object</span>
     <span class="n">variables</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">ConnectionIntentVariable</span><span class="p">]</span>
     <span class="n">candidate_var</span><span class="p">:</span> <span class="n">ConnectionIntentVariable</span>
@@ -529,7 +530,7 @@
     <span class="k">else</span><span class="p">:</span>
         <span class="k">pass</span>
 
-    <span class="n">port_index_value</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;internal_port_index&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">port_index_value</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"internal_port_index"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">port_index_value</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">port_index_value</span><span class="p">,</span> <span class="nb">bool</span><span class="p">):</span>
         <span class="k">if</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">port_index_value</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">variables</span><span class="p">):</span>
             <span class="k">return</span> <span class="n">variables</span><span class="p">[</span><span class="n">port_index_value</span><span class="p">]</span><span class="o">.</span><span class="n">non_mutable_uid</span>
@@ -543,7 +544,7 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.dynamic_connection_intent.reconcile_dynamic_connection_intent_target">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">reconcile_dynamic_connection_intent_target</span><span class="p">(</span><span class="n">intent</span><span class="p">:</span> <span class="n">DynamicConnectionIntent</span><span class="p">,</span>
                                                <span class="n">root_block</span><span class="p">:</span> <span class="n">ConnectionIntentBlock</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Resolve an intent against a current internal target when possible.</span>
+<span class="w">    </span><span class="sd">"""Resolve an intent against a current internal target when possible.</span>
 
 <span class="sd">    Root-interface availability is deliberately not part of this check. An</span>
 <span class="sd">    intent must survive a temporary topology change when its external phase is</span>
@@ -553,7 +554,7 @@
 <span class="sd">    :param intent: Runtime connection intent to inspect.</span>
 <span class="sd">    :param root_block: Root block that owns the intent collection.</span>
 <span class="sd">    :return: ``True`` when the internal block and direction-specific variable exist.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">internal_block</span><span class="p">:</span> <span class="n">ConnectionIntentBlock</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">_find_internal_block</span><span class="p">(</span>
         <span class="n">root_block</span><span class="o">=</span><span class="n">root_block</span><span class="p">,</span>
         <span class="n">internal_block_uid</span><span class="o">=</span><span class="n">intent</span><span class="o">.</span><span class="n">get_internal_block_uid</span><span class="p">(),</span>
@@ -600,7 +601,7 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.dynamic_connection_intent.is_legacy_suppressed_connection_intent_tombstone">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">is_legacy_suppressed_connection_intent_tombstone</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">object</span><span class="p">],</span>
                                                      <span class="n">root_block</span><span class="p">:</span> <span class="n">ConnectionIntentBlock</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Recognize a valid old suppression record whose internal target was deleted.</span>
+<span class="w">    </span><span class="sd">"""Recognize a valid old suppression record whose internal target was deleted.</span>
 
 <span class="sd">    Earlier editors retained suppression records after replacing an internal</span>
 <span class="sd">    block. Those records are harmless history and should not generate an open</span>
@@ -610,14 +611,14 @@
 <span class="sd">    :param data: Persisted connection-intent fields.</span>
 <span class="sd">    :param root_block: Fully reconstructed root block used to resolve the target.</span>
 <span class="sd">    :return: ``True`` only for a well-formed suppressed record with a missing target.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">origin</span><span class="p">:</span> <span class="n">DynamicConnectionIntentOrigin</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">_parse_origin</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;origin&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
+<span class="sd">    """</span>
+    <span class="n">origin</span><span class="p">:</span> <span class="n">DynamicConnectionIntentOrigin</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">_parse_origin</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"origin"</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
     <span class="n">direction</span><span class="p">:</span> <span class="n">DynamicConnectionIntentDirection</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">_parse_direction</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">)</span>
-    <span class="n">root_reference</span><span class="p">:</span> <span class="n">VarPowerFlowReferenceType</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">_parse_root_reference</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;root_ref&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
-    <span class="n">internal_block_uid_value</span><span class="p">:</span> <span class="nb">object</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;internal_block_uid&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-    <span class="n">internal_variable_uid_value</span><span class="p">:</span> <span class="nb">object</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;internal_variable_uid&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-    <span class="n">internal_port_index_value</span><span class="p">:</span> <span class="nb">object</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;internal_port_index&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-    <span class="n">suppressed_value</span><span class="p">:</span> <span class="nb">object</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;suppressed&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+    <span class="n">root_reference</span><span class="p">:</span> <span class="n">VarPowerFlowReferenceType</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">_parse_root_reference</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"root_ref"</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
+    <span class="n">internal_block_uid_value</span><span class="p">:</span> <span class="nb">object</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"internal_block_uid"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">internal_variable_uid_value</span><span class="p">:</span> <span class="nb">object</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"internal_variable_uid"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">internal_port_index_value</span><span class="p">:</span> <span class="nb">object</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"internal_port_index"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">suppressed_value</span><span class="p">:</span> <span class="nb">object</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"suppressed"</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
     <span class="n">internal_block</span><span class="p">:</span> <span class="n">ConnectionIntentBlock</span> <span class="o">|</span> <span class="kc">None</span>
     <span class="n">internal_variable_uid</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span>
     <span class="n">has_stable_variable_reference</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="p">(</span>
@@ -630,7 +631,7 @@
     <span class="p">)</span>
 
     <span class="c1"># A tombstone must still be structurally valid. This keeps corrupted data</span>
-    <span class="c1"># visible to the parser&#39;s warning path instead of silently discarding it.</span>
+    <span class="c1"># visible to the parser's warning path instead of silently discarding it.</span>
     <span class="k">if</span> <span class="n">origin</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">direction</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">root_reference</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">False</span>
     <span class="k">elif</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">internal_block_uid_value</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">internal_block_uid_value</span><span class="p">,</span> <span class="nb">bool</span><span class="p">):</span>
@@ -666,18 +667,18 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.dynamic_connection_intent.dynamic_connection_intent_from_dict">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">dynamic_connection_intent_from_dict</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">object</span><span class="p">],</span>
                                         <span class="n">root_block</span><span class="p">:</span> <span class="n">ConnectionIntentBlock</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DynamicConnectionIntent</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Build one typed intent from current or legacy persisted fields.</span>
 
 <span class="sd">    :param data: Persisted intent fields.</span>
 <span class="sd">    :param root_block: Root block used to validate internal identities.</span>
 <span class="sd">    :return: Parsed intent or ``None`` when any required field is invalid.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">origin</span><span class="p">:</span> <span class="n">DynamicConnectionIntentOrigin</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">_parse_origin</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;origin&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
+<span class="sd">    """</span>
+    <span class="n">origin</span><span class="p">:</span> <span class="n">DynamicConnectionIntentOrigin</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">_parse_origin</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"origin"</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
     <span class="n">direction</span><span class="p">:</span> <span class="n">DynamicConnectionIntentDirection</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">_parse_direction</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">)</span>
-    <span class="n">root_reference</span><span class="p">:</span> <span class="n">VarPowerFlowReferenceType</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">_parse_root_reference</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;root_ref&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
-    <span class="n">internal_block_uid_value</span><span class="p">:</span> <span class="nb">object</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;internal_block_uid&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-    <span class="n">suppressed_value</span><span class="p">:</span> <span class="nb">object</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;suppressed&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+    <span class="n">root_reference</span><span class="p">:</span> <span class="n">VarPowerFlowReferenceType</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">_parse_root_reference</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"root_ref"</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
+    <span class="n">internal_block_uid_value</span><span class="p">:</span> <span class="nb">object</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"internal_block_uid"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">suppressed_value</span><span class="p">:</span> <span class="nb">object</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"suppressed"</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
     <span class="n">internal_block</span><span class="p">:</span> <span class="n">ConnectionIntentBlock</span> <span class="o">|</span> <span class="kc">None</span>
     <span class="n">internal_variable_uid</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span>
 

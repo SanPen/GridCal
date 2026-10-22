@@ -27,7 +27,7 @@ from VeraGridEngine.Templates.Rms.line_rms_template import get_line_rms_template
 from VeraGridEngine.Templates.Rms.load_rms_template import get_load_rms_template
 from VeraGridEngine.Utils.Symbolic.block import Block, build_name_to_var_lookup
 from VeraGridEngine.Utils.Symbolic.bus_rms_template import initialize_bus_rms
-from VeraGridEngine.Utils.Symbolic.symbolic import Const, Expr, Var, symbolic_to_string
+from VeraGridEngine.Utils.Symbolic.symbolic import Const, Expr, Var, expression2numba
 from VeraGridEngine.Utils.Symbolic.templates_common_functions import set_rms_model
 from VeraGridEngine.enumerations import (
     BranchImpedanceMode,
@@ -228,13 +228,16 @@ def _run_rms_driver(grid: MultiCircuit, pf_results: PowerFlowResults) -> RmsSimu
     return driver
 
 
-def _equation_strings(equations: list[Expr]) -> tuple[str, ...]:
-    """Convert symbolic equations into an identity-independent representation.
+def _equation_strings(equations: list[Expr], problem: RmsProblemDae) -> tuple[str, ...]:
+    """Compare equations by solver bindings rather than mutable display names.
 
     :param equations: Symbolic equations from one compiled problem.
-    :return: Sorted equation strings.
+    :param problem: Problem defining the ordered runtime variable bindings.
+    :return: Sorted expressions using identical positional names in both workflows.
     """
-    return tuple(sorted(_canonical_rms_runtime_text(symbolic_to_string(equation)) for equation in equations))
+    # The compiler mapping distinguishes FROM and TO even when both bus voltage
+    # variables are displayed as Vm/Va after connection propagation.
+    return tuple(sorted(expression2numba(equation, problem._compiler_names_dict) for equation in equations))
 
 
 def _canonical_rms_runtime_text(runtime_text: str) -> str:
@@ -290,8 +293,8 @@ def _assert_problem_equivalence(script_problem: RmsProblemDae, gui_problem: RmsP
     assert [variable.name for variable in script_problem.variable_parameters] == [
         variable.name for variable in gui_problem.variable_parameters
     ]
-    assert _equation_strings(script_problem.state_eqs) == _equation_strings(gui_problem.state_eqs)
-    assert _equation_strings(script_problem.algebraic_eqs) == _equation_strings(gui_problem.algebraic_eqs)
+    assert _equation_strings(script_problem.state_eqs, script_problem) == _equation_strings(gui_problem.state_eqs, gui_problem)
+    assert _equation_strings(script_problem.algebraic_eqs, script_problem) == _equation_strings(gui_problem.algebraic_eqs, gui_problem)
     assert _constant_values(script_problem.get_parameters_values()) == _constant_values(
         gui_problem.get_parameters_values()
     )

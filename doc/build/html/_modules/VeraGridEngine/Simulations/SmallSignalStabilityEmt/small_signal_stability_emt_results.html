@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Simulations.SmallSignalStabilityEmt.small_signal_stability_emt_results &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Simulations.SmallSignalStabilityEmt.small_signal_stability_emt_results &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/license.html">📜 License</a></li>
@@ -120,7 +121,7 @@
 <div class="viewcode-block" id="SmallSignalStabilityEmtResults">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SmallSignalStabilityEmt.html#VeraGridEngine.Simulations.SmallSignalStabilityEmt.small_signal_stability_emt_results.SmallSignalStabilityEmtResults">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">SmallSignalStabilityEmtResults</span><span class="p">(</span><span class="n">ResultsTemplate</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Container and processor for EMT Floquet Small-Signal Stability results.</span>
 
 <span class="sd">    Handles the mapping of discrete Floquet multipliers (Z-domain) to continuous</span>
@@ -133,31 +134,31 @@
 <span class="sd">    :param left_vecs: Left eigenvectors from adjoint problem (columns)</span>
 <span class="sd">    :param period: Cycle period T (s)</span>
 <span class="sd">    :param stat_vars: List of state variables</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">LOCAL_RESULTS_DECLARATIONS</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;multipliers&#39;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">CxVec</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
-        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;right_vecs&#39;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">CxMat</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
-        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;left_vecs&#39;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">CxMat</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
-        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;period&#39;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
-        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;eigenvalues&#39;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">CxVec</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
-        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;damping_ratios&#39;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">Vec</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
-        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;conjugate_frequencies&#39;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">Vec</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
-        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;participation_factors&#39;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">Mat</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
-        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;stat_vars_array&#39;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">StrVec</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'multipliers'</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">CxVec</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'right_vecs'</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">CxMat</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'left_vecs'</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">CxMat</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'period'</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'eigenvalues'</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">CxVec</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'damping_ratios'</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">Vec</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'conjugate_frequencies'</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">Vec</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'participation_factors'</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">Mat</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'stat_vars_array'</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">StrVec</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
     <span class="p">)</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;multipliers&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;right_vecs&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;left_vecs&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;period&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;stat_vars&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;eigenvalues&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;damping_ratios&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;conjugate_frequencies&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;participation_factors&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;stat_vars_array&quot;</span><span class="p">,</span>
+        <span class="s2">"multipliers"</span><span class="p">,</span>
+        <span class="s2">"right_vecs"</span><span class="p">,</span>
+        <span class="s2">"left_vecs"</span><span class="p">,</span>
+        <span class="s2">"period"</span><span class="p">,</span>
+        <span class="s2">"stat_vars"</span><span class="p">,</span>
+        <span class="s2">"eigenvalues"</span><span class="p">,</span>
+        <span class="s2">"damping_ratios"</span><span class="p">,</span>
+        <span class="s2">"conjugate_frequencies"</span><span class="p">,</span>
+        <span class="s2">"participation_factors"</span><span class="p">,</span>
+        <span class="s2">"stat_vars_array"</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
@@ -166,7 +167,7 @@
                  <span class="n">left_vecs</span><span class="p">:</span> <span class="n">CxMat</span><span class="p">,</span>
                  <span class="n">period</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
                  <span class="n">stat_vars</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Var</span><span class="p">]):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Initializes the container results.</span>
 
 <span class="sd">        :param multipliers: Floquet multipliers (eigenvalues of Monodromy Matrix).</span>
@@ -174,11 +175,11 @@
 <span class="sd">        :param left_vecs: Left eigenvectors from the adjoint problem (columns).</span>
 <span class="sd">        :param period: Limit cycle period T in seconds.</span>
 <span class="sd">        :param stat_vars: List of symbolic state variables involved in the modes.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="n">ResultsTemplate</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
-            <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Small Signal Stability Emt Results&#39;</span><span class="p">,</span>
+            <span class="n">name</span><span class="o">=</span><span class="s1">'Small Signal Stability Emt Results'</span><span class="p">,</span>
             <span class="n">available_results</span><span class="o">=</span><span class="p">[</span>
                 <span class="n">ResultTypes</span><span class="o">.</span><span class="n">Modes</span><span class="p">,</span>
                 <span class="n">ResultTypes</span><span class="o">.</span><span class="n">ParticipationFactors</span><span class="p">,</span>
@@ -208,19 +209,19 @@
         <span class="c1"># Internal computation of bi-orthonormal Participation Factors</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">participation_factors</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_pf</span><span class="p">()</span>
 
-        <span class="n">stat_names</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">v</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">stat_vars</span><span class="p">]</span>
+        <span class="n">stat_names</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">v</span><span class="si">}</span><span class="s2">"</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">stat_vars</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">stat_vars_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">stat_names</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">str_</span><span class="p">)</span>
 
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_compute_pf</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Mat</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Calculates bi-orthonormal Participation Factors.</span>
 
 <span class="sd">        Uses the left (adjoint) and right eigenvectors to compute the relative</span>
 <span class="sd">        participation of each state variable in each Floquet mode.</span>
 
 <span class="sd">        :return: A real-valued matrix of shape (n_states, n_modes).</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="n">n_states</span><span class="p">,</span> <span class="n">n_modes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">right_vecs</span><span class="o">.</span><span class="n">shape</span>
         <span class="n">PF</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_states</span><span class="p">,</span> <span class="n">n_modes</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
@@ -242,13 +243,13 @@
 <div class="viewcode-block" id="SmallSignalStabilityEmtResults.mdl">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SmallSignalStabilityEmt.html#VeraGridEngine.Simulations.SmallSignalStabilityEmt.small_signal_stability_emt_results.SmallSignalStabilityEmtResults.mdl">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">mdl</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">result_type</span><span class="p">:</span> <span class="n">ResultTypes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ResultsTable</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Export results as ResultsTable for the VeraGrid UI/Engine.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Export results as ResultsTable for the VeraGrid UI/Engine."""</span>
         <span class="k">if</span> <span class="n">result_type</span> <span class="o">==</span> <span class="n">ResultTypes</span><span class="o">.</span><span class="n">ParticipationFactors</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">ResultsTable</span><span class="p">(</span>
                 <span class="n">data</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">participation_factors</span><span class="p">,</span>
                 <span class="n">index</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">stat_vars_array</span><span class="p">,</span>
-                <span class="n">columns</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="sa">f</span><span class="s2">&quot;Mode </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">multipliers</span><span class="p">))],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">str_</span><span class="p">),</span>
-                <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Floquet Participation Factors&quot;</span><span class="p">,</span>
+                <span class="n">columns</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="sa">f</span><span class="s2">"Mode </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">"</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">multipliers</span><span class="p">))],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">str_</span><span class="p">),</span>
+                <span class="n">title</span><span class="o">=</span><span class="s2">"Floquet Participation Factors"</span><span class="p">,</span>
                 <span class="n">idx_device_type</span><span class="o">=</span><span class="n">DeviceType</span><span class="o">.</span><span class="n">NoDevice</span><span class="p">,</span>
                 <span class="n">cols_device_type</span><span class="o">=</span><span class="n">DeviceType</span><span class="o">.</span><span class="n">NoDevice</span>
             <span class="p">)</span>
@@ -257,9 +258,9 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">damping_ratios</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">conjugate_frequencies</span><span class="p">]</span>
             <span class="k">return</span> <span class="n">ResultsTable</span><span class="p">(</span>
                 <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span>
-                <span class="n">index</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="sa">f</span><span class="s2">&quot;Mode </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">multipliers</span><span class="p">))],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">str_</span><span class="p">),</span>
-                <span class="n">columns</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="s2">&quot;Mu Re&quot;</span><span class="p">,</span> <span class="s2">&quot;Mu Im&quot;</span><span class="p">,</span> <span class="s2">&quot;|Mu|&quot;</span><span class="p">,</span> <span class="s2">&quot;Damp Ratio&quot;</span><span class="p">,</span> <span class="s2">&quot;Freq [Hz]&quot;</span><span class="p">]),</span>
-                <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Floquet Stability Multipliers&quot;</span><span class="p">,</span>
+                <span class="n">index</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="sa">f</span><span class="s2">"Mode </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">"</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">multipliers</span><span class="p">))],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">str_</span><span class="p">),</span>
+                <span class="n">columns</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="s2">"Mu Re"</span><span class="p">,</span> <span class="s2">"Mu Im"</span><span class="p">,</span> <span class="s2">"|Mu|"</span><span class="p">,</span> <span class="s2">"Damp Ratio"</span><span class="p">,</span> <span class="s2">"Freq [Hz]"</span><span class="p">]),</span>
+                <span class="n">title</span><span class="o">=</span><span class="s2">"Floquet Stability Multipliers"</span><span class="p">,</span>
                 <span class="n">idx_device_type</span><span class="o">=</span><span class="n">DeviceType</span><span class="o">.</span><span class="n">NoDevice</span><span class="p">,</span>
                 <span class="n">cols_device_type</span><span class="o">=</span><span class="n">DeviceType</span><span class="o">.</span><span class="n">NoDevice</span>
             <span class="p">)</span>
@@ -268,8 +269,8 @@
             <span class="n">row_indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">multipliers</span><span class="p">))</span>
 
             <span class="k">return</span> <span class="n">ResultsTable</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">c_</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">multipliers</span><span class="o">.</span><span class="n">real</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">multipliers</span><span class="o">.</span><span class="n">imag</span><span class="p">],</span>
-                                <span class="n">columns</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="s1">&#39;Real&#39;</span><span class="p">,</span> <span class="s1">&#39;Imag&#39;</span><span class="p">]),</span>
-                                <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Z-Domain Plot&quot;</span>
+                                <span class="n">columns</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="s1">'Real'</span><span class="p">,</span> <span class="s1">'Imag'</span><span class="p">]),</span>
+                                <span class="n">title</span><span class="o">=</span><span class="s2">"Z-Domain Plot"</span>
                                 <span class="p">,</span><span class="n">index</span><span class="o">=</span><span class="n">row_indices</span>
                                 <span class="p">,</span><span class="n">cols_device_type</span><span class="o">=</span><span class="n">DeviceType</span><span class="o">.</span><span class="n">NoDevice</span>
                                 <span class="p">,</span><span class="n">idx_device_type</span><span class="o">=</span><span class="n">DeviceType</span><span class="o">.</span><span class="n">NoDevice</span> <span class="p">)</span>
@@ -279,25 +280,25 @@
 <div class="viewcode-block" id="SmallSignalStabilityEmtResults.report_stability">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SmallSignalStabilityEmt.html#VeraGridEngine.Simulations.SmallSignalStabilityEmt.small_signal_stability_emt_results.SmallSignalStabilityEmtResults.report_stability">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">report_stability</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Generates a standard stability report string based on the spectral radius.</span>
 
 <span class="sd">        :return: Formatted stability assessment string.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">rho</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">multipliers</span><span class="p">))</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;Spectral Radius rho=</span><span class="si">{</span><span class="n">rho</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">. </span><span class="si">{</span><span class="s1">&#39;STABLE&#39;</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">rho</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="mf">1.0001</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s1">&#39;UNSTABLE&#39;</span><span class="si">}</span><span class="s2">.&quot;</span></div>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">"Spectral Radius rho=</span><span class="si">{</span><span class="n">rho</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">. </span><span class="si">{</span><span class="s1">'STABLE'</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">rho</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="mf">1.0001</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s1">'UNSTABLE'</span><span class="si">}</span><span class="s2">."</span></div>
 
 
 <div class="viewcode-block" id="SmallSignalStabilityEmtResults.validate_spectral_gaps">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SmallSignalStabilityEmt.html#VeraGridEngine.Simulations.SmallSignalStabilityEmt.small_signal_stability_emt_results.SmallSignalStabilityEmtResults.validate_spectral_gaps">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">validate_spectral_gaps</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">h_step</span><span class="p">:</span><span class="nb">float</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">Tuple</span><span class="p">[</span><span class="n">BoolVec</span><span class="p">,</span> <span class="n">Vec</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Evaluates the metric compactness of ALL calculated modes.</span>
 <span class="sd">        Uses the discretization step (h) as the numerical noise floor (tolerance).</span>
 
 <span class="sd">        :param h_step: Problem integration step (e.g., 1e-4)</span>
 <span class="sd">        :return: Tuple (is_isolated_array, spectral_gaps_array)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">multipliers</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">multipliers</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([]),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
 

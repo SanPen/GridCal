@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Utils.Symbolic.diagnostic &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Utils.Symbolic.diagnostic &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/license.html">📜 License</a></li>
@@ -130,7 +131,7 @@
 
 <span class="n">Array1D</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
 
-<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">'''</span>
 <span class="sd">Per-solve context containing state, metrics, and diagnostics for the Newton solver.</span>
 
 <span class="sd">    ---</span>
@@ -146,16 +147,16 @@
 <span class="sd">       - Nullables: `Optional[float]` must be converted to `std::optional&lt;double&gt;`.</span>
 <span class="sd">       - Logging: You will lose the auto-generated `__repr__`. You MUST manually</span>
 <span class="sd">         implement `friend std::ostream&amp; operator &lt;&lt;` to support logging.</span>
-<span class="sd">       - Equality: Implement `operator==` (or use C++20 `default`) to match Python&#39;s behavior.</span>
+<span class="sd">       - Equality: Implement `operator==` (or use C++20 `default`) to match Python's behavior.</span>
 <span class="sd">       - Initialization: Use C++20 designated initializers (`.field = val`) to mimic</span>
-<span class="sd">         Python&#39;s keyword arguments.</span>
+<span class="sd">         Python's keyword arguments.</span>
 <span class="sd">    ---</span>
-<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">'''</span>
 
 <div class="viewcode-block" id="NewtonDiagnosticsConfig">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.diagnostic.NewtonDiagnosticsConfig">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">NewtonDiagnosticsConfig</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Configuration for Newton linear-solve diagnostics.</span>
 
 <span class="sd">    Attributes:</span>
@@ -173,23 +174,23 @@
 <span class="sd">        backtracking_min_alpha: Minimum accepted Newton step scaling.</span>
 <span class="sd">        backtracking_max_iter: Maximum number of backtracking reductions.</span>
 <span class="sd">        log_level: Logging level for warnings.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;step_norm_explode&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;dense_cond_warn&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;compute_dense_cond&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;dense_cond_max_n&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;enable_fallback&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;enable_index1_check&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;index1_max_block_n&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;index1_warn_pivot_ratio&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;index1_fail_pivot_ratio&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;enable_backtracking&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;backtracking_beta&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;backtracking_min_alpha&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;backtracking_max_iter&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;max_newton_step_inf&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;log_level&quot;</span><span class="p">,</span>
+        <span class="s2">"step_norm_explode"</span><span class="p">,</span>
+        <span class="s2">"dense_cond_warn"</span><span class="p">,</span>
+        <span class="s2">"compute_dense_cond"</span><span class="p">,</span>
+        <span class="s2">"dense_cond_max_n"</span><span class="p">,</span>
+        <span class="s2">"enable_fallback"</span><span class="p">,</span>
+        <span class="s2">"enable_index1_check"</span><span class="p">,</span>
+        <span class="s2">"index1_max_block_n"</span><span class="p">,</span>
+        <span class="s2">"index1_warn_pivot_ratio"</span><span class="p">,</span>
+        <span class="s2">"index1_fail_pivot_ratio"</span><span class="p">,</span>
+        <span class="s2">"enable_backtracking"</span><span class="p">,</span>
+        <span class="s2">"backtracking_beta"</span><span class="p">,</span>
+        <span class="s2">"backtracking_min_alpha"</span><span class="p">,</span>
+        <span class="s2">"backtracking_max_iter"</span><span class="p">,</span>
+        <span class="s2">"max_newton_step_inf"</span><span class="p">,</span>
+        <span class="s2">"log_level"</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
@@ -231,7 +232,7 @@
 <div class="viewcode-block" id="NewtonSolveContext">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.diagnostic.NewtonSolveContext">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">NewtonSolveContext</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Per-solve context, passed by the caller.</span>
 
 <span class="sd">    The decorator updates diagnostic fields (used_fallback, cond_est, step_norm, failure_msg).</span>
@@ -240,29 +241,29 @@
 <span class="sd">        t: Current simulation time.</span>
 <span class="sd">        step_idx: Time-step index.</span>
 <span class="sd">        newton_iter: Newton iteration index within the time-step.</span>
-<span class="sd">        phase: Text label (e.g. &quot;jit&quot;, &quot;implicit&quot;, &quot;pseudo&quot;, &quot;init&quot;).</span>
+<span class="sd">        phase: Text label (e.g. "jit", "implicit", "pseudo", "init").</span>
 <span class="sd">        method: Integration method label, if available.</span>
-<span class="sd">        solver: Text label (e.g. &quot;dense&quot;, &quot;sparse&quot;).</span>
+<span class="sd">        solver: Text label (e.g. "dense", "sparse").</span>
 <span class="sd">        used_fallback: Set True if fallback was used.</span>
 <span class="sd">        cond_est: Estimated condition number (dense only, optional).</span>
 <span class="sd">        step_norm2: ||dx||_2</span>
 <span class="sd">        step_norm_inf: ||dx||_inf</span>
 <span class="sd">        failure_msg: If the primary solver failed, store a short error description.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;t&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;step_idx&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;newton_iter&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;phase&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;method&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;solver&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;used_fallback&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;cond_est&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;step_norm2&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;step_norm_inf&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;failure_msg&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;res_norm_inf&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;index1_pivot_ratio&quot;</span><span class="p">,</span>
+        <span class="s2">"t"</span><span class="p">,</span>
+        <span class="s2">"step_idx"</span><span class="p">,</span>
+        <span class="s2">"newton_iter"</span><span class="p">,</span>
+        <span class="s2">"phase"</span><span class="p">,</span>
+        <span class="s2">"method"</span><span class="p">,</span>
+        <span class="s2">"solver"</span><span class="p">,</span>
+        <span class="s2">"used_fallback"</span><span class="p">,</span>
+        <span class="s2">"cond_est"</span><span class="p">,</span>
+        <span class="s2">"step_norm2"</span><span class="p">,</span>
+        <span class="s2">"step_norm_inf"</span><span class="p">,</span>
+        <span class="s2">"failure_msg"</span><span class="p">,</span>
+        <span class="s2">"res_norm_inf"</span><span class="p">,</span>
+        <span class="s2">"index1_pivot_ratio"</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
@@ -271,8 +272,8 @@
         <span class="n">step_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">newton_iter</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">phase</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-        <span class="n">method</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-        <span class="n">solver</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">method</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">,</span>
+        <span class="n">solver</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">,</span>
         <span class="n">used_fallback</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">cond_est</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">step_norm2</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -297,9 +298,9 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_emit</span><span class="p">(</span><span class="n">logger</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">logging</span><span class="o">.</span><span class="n">Logger</span><span class="p">],</span> <span class="n">level</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">msg</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Emit a message either via logger (if configured) or via print as a fallback.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">logger</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="p">(</span><span class="n">logger</span><span class="o">.</span><span class="n">handlers</span> <span class="ow">or</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span><span class="o">.</span><span class="n">handlers</span><span class="p">):</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">level</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
@@ -308,8 +309,8 @@
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_format_ctx</span><span class="p">(</span><span class="n">ctx</span><span class="p">:</span> <span class="n">NewtonSolveContext</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
     <span class="k">return</span> <span class="p">(</span>
-        <span class="sa">f</span><span class="s2">&quot;t=</span><span class="si">{</span><span class="n">ctx</span><span class="o">.</span><span class="n">t</span><span class="si">:</span><span class="s2">.6g</span><span class="si">}</span><span class="s2">, step=</span><span class="si">{</span><span class="n">ctx</span><span class="o">.</span><span class="n">step_idx</span><span class="si">}</span><span class="s2">, it=</span><span class="si">{</span><span class="n">ctx</span><span class="o">.</span><span class="n">newton_iter</span><span class="si">}</span><span class="s2">, &quot;</span>
-        <span class="sa">f</span><span class="s2">&quot;phase=</span><span class="si">{</span><span class="n">ctx</span><span class="o">.</span><span class="n">phase</span><span class="si">}</span><span class="s2">, method=</span><span class="si">{</span><span class="n">ctx</span><span class="o">.</span><span class="n">method</span><span class="si">}</span><span class="s2">, solver=</span><span class="si">{</span><span class="n">ctx</span><span class="o">.</span><span class="n">solver</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="sa">f</span><span class="s2">"t=</span><span class="si">{</span><span class="n">ctx</span><span class="o">.</span><span class="n">t</span><span class="si">:</span><span class="s2">.6g</span><span class="si">}</span><span class="s2">, step=</span><span class="si">{</span><span class="n">ctx</span><span class="o">.</span><span class="n">step_idx</span><span class="si">}</span><span class="s2">, it=</span><span class="si">{</span><span class="n">ctx</span><span class="o">.</span><span class="n">newton_iter</span><span class="si">}</span><span class="s2">, "</span>
+        <span class="sa">f</span><span class="s2">"phase=</span><span class="si">{</span><span class="n">ctx</span><span class="o">.</span><span class="n">phase</span><span class="si">}</span><span class="s2">, method=</span><span class="si">{</span><span class="n">ctx</span><span class="o">.</span><span class="n">method</span><span class="si">}</span><span class="s2">, solver=</span><span class="si">{</span><span class="n">ctx</span><span class="o">.</span><span class="n">solver</span><span class="si">}</span><span class="s2">"</span>
     <span class="p">)</span>
 
 <div class="viewcode-block" id="with_newton_diagnostics">
@@ -318,13 +319,13 @@
     <span class="n">primary_solve</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Array1D</span><span class="p">],</span> <span class="n">Array1D</span><span class="p">],</span>
     <span class="o">*</span><span class="p">,</span>
     <span class="n">fallback_solve</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Array1D</span><span class="p">],</span> <span class="n">Array1D</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">collector</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="s2">&quot;NewtonTraceCollector&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">collector</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="s2">"NewtonTraceCollector"</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">config</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">NewtonDiagnosticsConfig</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">logger</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">logging</span><span class="o">.</span><span class="n">Logger</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">solver_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="n">solver_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">,</span>
     <span class="n">matrix_getter</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="n">Any</span><span class="p">],</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Array1D</span><span class="p">,</span> <span class="n">NewtonSolveContext</span><span class="p">],</span> <span class="n">Array1D</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Decorate a linear solver with Jacobian conditioning diagnostics and fallback LS solve.</span>
 
 <span class="sd">    Args:</span>
@@ -338,7 +339,7 @@
 
 <span class="sd">    Returns:</span>
 <span class="sd">        A callable solve(A, b, ctx) -&gt; x, which updates ctx with diagnostics info.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">cfg</span> <span class="o">=</span> <span class="n">config</span> <span class="ow">or</span> <span class="n">NewtonDiagnosticsConfig</span><span class="p">()</span>
     <span class="n">log</span> <span class="o">=</span> <span class="n">logger</span> <span class="ow">or</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
@@ -358,13 +359,13 @@
                         <span class="n">_emit</span><span class="p">(</span>
                             <span class="n">log</span><span class="p">,</span>
                             <span class="n">cfg</span><span class="o">.</span><span class="n">log_level</span><span class="p">,</span>
-                            <span class="sa">f</span><span class="s2">&quot;[NewtonDiag] Ill-conditioned dense Jacobian (cond=</span><span class="si">{</span><span class="n">cond</span><span class="si">:</span><span class="s2">.3e</span><span class="si">}</span><span class="s2">). </span><span class="si">{</span><span class="n">_format_ctx</span><span class="p">(</span><span class="n">ctx</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                            <span class="sa">f</span><span class="s2">"[NewtonDiag] Ill-conditioned dense Jacobian (cond=</span><span class="si">{</span><span class="n">cond</span><span class="si">:</span><span class="s2">.3e</span><span class="si">}</span><span class="s2">). </span><span class="si">{</span><span class="n">_format_ctx</span><span class="p">(</span><span class="n">ctx</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
                         <span class="p">)</span>
                 <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                     <span class="n">_emit</span><span class="p">(</span>
                         <span class="n">log</span><span class="p">,</span>
                         <span class="n">cfg</span><span class="o">.</span><span class="n">log_level</span><span class="p">,</span>
-                        <span class="sa">f</span><span class="s2">&quot;[NewtonDiag] cond(A) failed (</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">). </span><span class="si">{</span><span class="n">_format_ctx</span><span class="p">(</span><span class="n">ctx</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                        <span class="sa">f</span><span class="s2">"[NewtonDiag] cond(A) failed (</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">). </span><span class="si">{</span><span class="n">_format_ctx</span><span class="p">(</span><span class="n">ctx</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
                     <span class="p">)</span>
 
         <span class="c1"># ---- Primary solve (with rank-warning promotion for sparse) ----</span>
@@ -375,19 +376,19 @@
             <span class="k">if</span> <span class="n">sp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">spla</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">sp</span><span class="o">.</span><span class="n">issparse</span><span class="p">(</span><span class="n">diag_matrix</span><span class="p">):</span>
                 <span class="c1"># SciPy may emit MatrixRankWarning instead of raising; promote it to exception.</span>
                 <span class="k">with</span> <span class="n">warnings</span><span class="o">.</span><span class="n">catch_warnings</span><span class="p">():</span>
-                    <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s2">&quot;error&quot;</span><span class="p">,</span> <span class="n">MatrixRankWarning</span><span class="p">)</span>
+                    <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s2">"error"</span><span class="p">,</span> <span class="n">MatrixRankWarning</span><span class="p">)</span>
                     <span class="n">x</span> <span class="o">=</span> <span class="n">primary_solve</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">x</span> <span class="o">=</span> <span class="n">primary_solve</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">x</span><span class="p">)):</span>
-                <span class="k">raise</span> <span class="ne">FloatingPointError</span><span class="p">(</span><span class="s2">&quot;Primary solve returned NaN/Inf.&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">FloatingPointError</span><span class="p">(</span><span class="s2">"Primary solve returned NaN/Inf."</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="n">ctx</span><span class="o">.</span><span class="n">failure_msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="n">ctx</span><span class="o">.</span><span class="n">failure_msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span>
             <span class="n">_emit</span><span class="p">(</span>
                 <span class="n">log</span><span class="p">,</span>
                 <span class="n">cfg</span><span class="o">.</span><span class="n">log_level</span><span class="p">,</span>
-                <span class="sa">f</span><span class="s2">&quot;[NewtonDiag] Linear solve failed -&gt; </span><span class="si">{</span><span class="n">ctx</span><span class="o">.</span><span class="n">failure_msg</span><span class="si">}</span><span class="s2">. </span><span class="si">{</span><span class="n">_format_ctx</span><span class="p">(</span><span class="n">ctx</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="sa">f</span><span class="s2">"[NewtonDiag] Linear solve failed -&gt; </span><span class="si">{</span><span class="n">ctx</span><span class="o">.</span><span class="n">failure_msg</span><span class="si">}</span><span class="s2">. </span><span class="si">{</span><span class="n">_format_ctx</span><span class="p">(</span><span class="n">ctx</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
             <span class="p">)</span>
 
             <span class="k">if</span> <span class="ow">not</span> <span class="n">cfg</span><span class="o">.</span><span class="n">enable_fallback</span><span class="p">:</span>
@@ -401,12 +402,12 @@
             <span class="n">_emit</span><span class="p">(</span>
                 <span class="n">log</span><span class="p">,</span>
                 <span class="n">cfg</span><span class="o">.</span><span class="n">log_level</span><span class="p">,</span>
-                <span class="sa">f</span><span class="s2">&quot;[NewtonDiag] Attempting least-squares fallback. </span><span class="si">{</span><span class="n">_format_ctx</span><span class="p">(</span><span class="n">ctx</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="sa">f</span><span class="s2">"[NewtonDiag] Attempting least-squares fallback. </span><span class="si">{</span><span class="n">_format_ctx</span><span class="p">(</span><span class="n">ctx</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
             <span class="p">)</span>
             <span class="n">x</span> <span class="o">=</span> <span class="n">fb</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">x</span><span class="p">)):</span>
-                <span class="k">raise</span> <span class="ne">FloatingPointError</span><span class="p">(</span><span class="s2">&quot;Fallback solve returned NaN/Inf.&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">FloatingPointError</span><span class="p">(</span><span class="s2">"Fallback solve returned NaN/Inf."</span><span class="p">)</span>
 
         <span class="c1"># ---- Step norm monitoring ----</span>
         <span class="n">n2</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
@@ -418,7 +419,7 @@
             <span class="n">_emit</span><span class="p">(</span>
                 <span class="n">log</span><span class="p">,</span>
                 <span class="n">cfg</span><span class="o">.</span><span class="n">log_level</span><span class="p">,</span>
-                <span class="sa">f</span><span class="s2">&quot;[NewtonDiag] Exploding Newton step (||dx||2=</span><span class="si">{</span><span class="n">n2</span><span class="si">:</span><span class="s2">.3e</span><span class="si">}</span><span class="s2">, ||dx||inf=</span><span class="si">{</span><span class="n">ninf</span><span class="si">:</span><span class="s2">.3e</span><span class="si">}</span><span class="s2">). </span><span class="si">{</span><span class="n">_format_ctx</span><span class="p">(</span><span class="n">ctx</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="sa">f</span><span class="s2">"[NewtonDiag] Exploding Newton step (||dx||2=</span><span class="si">{</span><span class="n">n2</span><span class="si">:</span><span class="s2">.3e</span><span class="si">}</span><span class="s2">, ||dx||inf=</span><span class="si">{</span><span class="n">ninf</span><span class="si">:</span><span class="s2">.3e</span><span class="si">}</span><span class="s2">). </span><span class="si">{</span><span class="n">_format_ctx</span><span class="p">(</span><span class="n">ctx</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
             <span class="p">)</span>
 
         <span class="c1"># ---- Trace collection (optional)----</span>
@@ -448,7 +449,7 @@
     <span class="n">config</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">NewtonDiagnosticsConfig</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">logger</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">logging</span><span class="o">.</span><span class="n">Logger</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Optionally validate the algebraic Jacobian block associated with an index-1 DAE.</span>
 
 <span class="sd">    The check is intentionally conservative and size-limited so it does not penalize</span>
@@ -461,7 +462,7 @@
 <span class="sd">    :param config: Newton diagnostics configuration.</span>
 <span class="sd">    :param logger: Optional logger.</span>
 <span class="sd">    :return: Estimated pivot-ratio indicator or ``None`` when the check is skipped.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">cfg</span> <span class="o">=</span> <span class="n">config</span> <span class="ow">or</span> <span class="n">NewtonDiagnosticsConfig</span><span class="p">()</span>
     <span class="n">log</span> <span class="o">=</span> <span class="n">logger</span> <span class="ow">or</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
@@ -485,12 +486,12 @@
 
         <span class="k">try</span><span class="p">:</span>
             <span class="k">with</span> <span class="n">warnings</span><span class="o">.</span><span class="n">catch_warnings</span><span class="p">():</span>
-                <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s2">&quot;error&quot;</span><span class="p">,</span> <span class="n">LinAlgWarning</span><span class="p">)</span>
+                <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s2">"error"</span><span class="p">,</span> <span class="n">LinAlgWarning</span><span class="p">)</span>
                 <span class="n">lu_data</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">sla</span><span class="o">.</span><span class="n">lu_factor</span><span class="p">(</span><span class="n">gy</span><span class="p">)</span>
             <span class="n">diag_u</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">lu_data</span><span class="p">))</span>
             <span class="n">scale</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">gy</span><span class="p">))),</span> <span class="mf">1.0</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;[NewtonDiag] index-1 dense check failed (</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">). </span><span class="si">{</span><span class="n">_format_ctx</span><span class="p">(</span><span class="n">ctx</span><span class="p">)</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">ctx</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s1">&#39;&#39;</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"[NewtonDiag] index-1 dense check failed (</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">). </span><span class="si">{</span><span class="n">_format_ctx</span><span class="p">(</span><span class="n">ctx</span><span class="p">)</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">ctx</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s1">''</span><span class="si">}</span><span class="s2">"</span>
             <span class="n">_emit</span><span class="p">(</span><span class="n">log</span><span class="p">,</span> <span class="n">cfg</span><span class="o">.</span><span class="n">log_level</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
 
@@ -498,18 +499,18 @@
         <span class="n">gy</span> <span class="o">=</span> <span class="n">jacobian</span><span class="p">[</span><span class="n">n_state</span><span class="p">:,</span> <span class="n">n_state</span><span class="p">:]</span><span class="o">.</span><span class="n">tocsc</span><span class="p">()</span>
 
         <span class="k">if</span> <span class="n">gy</span><span class="o">.</span><span class="n">nnz</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;[NewtonDiag] Empty algebraic Jacobian block detected. </span><span class="si">{</span><span class="n">_format_ctx</span><span class="p">(</span><span class="n">ctx</span><span class="p">)</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">ctx</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s1">&#39;&#39;</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"[NewtonDiag] Empty algebraic Jacobian block detected. </span><span class="si">{</span><span class="n">_format_ctx</span><span class="p">(</span><span class="n">ctx</span><span class="p">)</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">ctx</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s1">''</span><span class="si">}</span><span class="s2">"</span>
             <span class="n">_emit</span><span class="p">(</span><span class="n">log</span><span class="p">,</span> <span class="n">cfg</span><span class="o">.</span><span class="n">log_level</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
 
         <span class="k">try</span><span class="p">:</span>
             <span class="k">with</span> <span class="n">warnings</span><span class="o">.</span><span class="n">catch_warnings</span><span class="p">():</span>
-                <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s2">&quot;error&quot;</span><span class="p">,</span> <span class="n">MatrixRankWarning</span><span class="p">)</span>
+                <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s2">"error"</span><span class="p">,</span> <span class="n">MatrixRankWarning</span><span class="p">)</span>
                 <span class="n">lu_obj</span> <span class="o">=</span> <span class="n">spla</span><span class="o">.</span><span class="n">splu</span><span class="p">(</span><span class="n">gy</span><span class="p">)</span>
             <span class="n">diag_u</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">lu_obj</span><span class="o">.</span><span class="n">U</span><span class="o">.</span><span class="n">diagonal</span><span class="p">())</span>
             <span class="n">scale</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">gy</span><span class="o">.</span><span class="n">data</span><span class="p">))),</span> <span class="mf">1.0</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;[NewtonDiag] index-1 sparse check failed (</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">). </span><span class="si">{</span><span class="n">_format_ctx</span><span class="p">(</span><span class="n">ctx</span><span class="p">)</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">ctx</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s1">&#39;&#39;</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"[NewtonDiag] index-1 sparse check failed (</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">). </span><span class="si">{</span><span class="n">_format_ctx</span><span class="p">(</span><span class="n">ctx</span><span class="p">)</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">ctx</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s1">''</span><span class="si">}</span><span class="s2">"</span>
             <span class="n">_emit</span><span class="p">(</span><span class="n">log</span><span class="p">,</span> <span class="n">cfg</span><span class="o">.</span><span class="n">log_level</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
 
@@ -526,8 +527,8 @@
 
     <span class="k">if</span> <span class="n">pivot_ratio</span> <span class="o">&lt;</span> <span class="n">cfg</span><span class="o">.</span><span class="n">index1_fail_pivot_ratio</span><span class="p">:</span>
         <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;[NewtonDiag] Likely index-1 violation or near-singular g_y block &quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;(pivot_ratio=</span><span class="si">{</span><span class="n">pivot_ratio</span><span class="si">:</span><span class="s2">.3e</span><span class="si">}</span><span class="s2">). </span><span class="si">{</span><span class="n">_format_ctx</span><span class="p">(</span><span class="n">ctx</span><span class="p">)</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">ctx</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s1">&#39;&#39;</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">"[NewtonDiag] Likely index-1 violation or near-singular g_y block "</span>
+            <span class="sa">f</span><span class="s2">"(pivot_ratio=</span><span class="si">{</span><span class="n">pivot_ratio</span><span class="si">:</span><span class="s2">.3e</span><span class="si">}</span><span class="s2">). </span><span class="si">{</span><span class="n">_format_ctx</span><span class="p">(</span><span class="n">ctx</span><span class="p">)</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">ctx</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s1">''</span><span class="si">}</span><span class="s2">"</span>
         <span class="p">)</span>
         <span class="n">_emit</span><span class="p">(</span><span class="n">log</span><span class="p">,</span> <span class="n">cfg</span><span class="o">.</span><span class="n">log_level</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
         <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
@@ -536,7 +537,7 @@
         <span class="n">_emit</span><span class="p">(</span>
             <span class="n">log</span><span class="p">,</span>
             <span class="n">cfg</span><span class="o">.</span><span class="n">log_level</span><span class="p">,</span>
-            <span class="sa">f</span><span class="s2">&quot;[NewtonDiag] Weak algebraic Jacobian block (pivot_ratio=</span><span class="si">{</span><span class="n">pivot_ratio</span><span class="si">:</span><span class="s2">.3e</span><span class="si">}</span><span class="s2">). </span><span class="si">{</span><span class="n">_format_ctx</span><span class="p">(</span><span class="n">ctx</span><span class="p">)</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">ctx</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s1">&#39;&#39;</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="sa">f</span><span class="s2">"[NewtonDiag] Weak algebraic Jacobian block (pivot_ratio=</span><span class="si">{</span><span class="n">pivot_ratio</span><span class="si">:</span><span class="s2">.3e</span><span class="si">}</span><span class="s2">). </span><span class="si">{</span><span class="n">_format_ctx</span><span class="p">(</span><span class="n">ctx</span><span class="p">)</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">ctx</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s1">''</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
         <span class="p">)</span>
 
     <span class="k">return</span> <span class="n">pivot_ratio</span></div>
@@ -555,7 +556,7 @@
     <span class="n">evaluate_residual</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Array1D</span><span class="p">,</span> <span class="n">Array1D</span><span class="p">],</span> <span class="nb">float</span><span class="p">],</span>
     <span class="n">config</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">NewtonDiagnosticsConfig</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Optionally apply backtracking to a Newton step.</span>
 
 <span class="sd">    The full Newton step is kept as the default behavior. When backtracking is enabled,</span>
@@ -570,7 +571,7 @@
 <span class="sd">    :param evaluate_residual: Callback ``evaluate_residual(trial_x, trial_res) -&gt; res_norm``.</span>
 <span class="sd">    :param config: Newton diagnostics configuration.</span>
 <span class="sd">    :return: None</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">cfg</span> <span class="o">=</span> <span class="n">config</span> <span class="ow">or</span> <span class="n">NewtonDiagnosticsConfig</span><span class="p">()</span>
 
     <span class="k">if</span> <span class="ow">not</span> <span class="n">cfg</span><span class="o">.</span><span class="n">enable_backtracking</span><span class="p">:</span>
@@ -606,7 +607,7 @@
 <div class="viewcode-block" id="dense_lstsq_fallback">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.diagnostic.dense_lstsq_fallback">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">dense_lstsq_fallback</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">Array1D</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Array1D</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Dense least-squares fallback using np.linalg.lstsq.</span>
 
 <span class="sd">    Args:</span>
@@ -615,7 +616,7 @@
 
 <span class="sd">    Returns:</span>
 <span class="sd">        x: Least-squares solution.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">x</span><span class="p">,</span> <span class="o">*</span><span class="n">_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">lstsq</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">rcond</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">x</span></div>
 
@@ -623,7 +624,7 @@
 <div class="viewcode-block" id="sparse_lsqr_fallback">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.diagnostic.sparse_lsqr_fallback">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">sparse_lsqr_fallback</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">Array1D</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Array1D</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Sparse least-squares fallback using scipy.sparse.linalg.lsqr.</span>
 
 <span class="sd">    Args:</span>
@@ -632,9 +633,9 @@
 
 <span class="sd">    Returns:</span>
 <span class="sd">        x: LSQR solution.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">spla</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;SciPy is required for sparse LSQR fallback.&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">"SciPy is required for sparse LSQR fallback."</span><span class="p">)</span>
     <span class="n">x</span> <span class="o">=</span> <span class="n">spla</span><span class="o">.</span><span class="n">lsqr</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
     <span class="k">return</span> <span class="n">x</span></div>
 
@@ -642,18 +643,18 @@
 <div class="viewcode-block" id="NewtonTraceCollector">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.diagnostic.NewtonTraceCollector">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">NewtonTraceCollector</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Collects numerical diagnostics during a simulation run.</span>
 <span class="sd">    Designed for post-analysis and research purposes.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;records&quot;</span><span class="p">,</span> <span class="s2">&quot;residual_records&quot;</span><span class="p">)</span>
+<span class="sd">    """</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"records"</span><span class="p">,</span> <span class="s2">"residual_records"</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Initialize an empty Newton trace collector.</span>
 
 <span class="sd">        :return: None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">records</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">residual_records</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
 
@@ -668,7 +669,7 @@
         <span class="n">cond</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">fallback</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Append one Newton diagnostics record.</span>
 
 <span class="sd">        :param ctx: Per-iteration Newton context.</span>
@@ -677,31 +678,31 @@
 <span class="sd">        :param cond: Optional dense Jacobian condition estimate.</span>
 <span class="sd">        :param fallback: Whether the least-squares fallback was used.</span>
 <span class="sd">        :return: None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">records</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
-            <span class="s2">&quot;t&quot;</span><span class="p">:</span> <span class="n">ctx</span><span class="o">.</span><span class="n">t</span><span class="p">,</span>
-            <span class="s2">&quot;step&quot;</span><span class="p">:</span> <span class="n">ctx</span><span class="o">.</span><span class="n">step_idx</span><span class="p">,</span>
-            <span class="s2">&quot;newton_iter&quot;</span><span class="p">:</span> <span class="n">ctx</span><span class="o">.</span><span class="n">newton_iter</span><span class="p">,</span>
-            <span class="s2">&quot;phase&quot;</span><span class="p">:</span> <span class="n">ctx</span><span class="o">.</span><span class="n">phase</span><span class="p">,</span>
-            <span class="s2">&quot;method&quot;</span><span class="p">:</span> <span class="n">ctx</span><span class="o">.</span><span class="n">method</span><span class="p">,</span>
-            <span class="s2">&quot;solver&quot;</span><span class="p">:</span> <span class="n">ctx</span><span class="o">.</span><span class="n">solver</span><span class="p">,</span>
-            <span class="s2">&quot;res_norm_inf&quot;</span><span class="p">:</span> <span class="n">res_norm</span><span class="p">,</span>
-            <span class="s2">&quot;dx_norm_2&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">dx</span><span class="p">)</span> <span class="k">if</span> <span class="n">dx</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="s2">&quot;dx_norm_inf&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">dx</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span> <span class="k">if</span> <span class="n">dx</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="s2">&quot;cond_J&quot;</span><span class="p">:</span> <span class="n">cond</span><span class="p">,</span>
-            <span class="s2">&quot;index1_pivot_ratio&quot;</span><span class="p">:</span> <span class="n">ctx</span><span class="o">.</span><span class="n">index1_pivot_ratio</span><span class="p">,</span>
-            <span class="s2">&quot;used_fallback&quot;</span><span class="p">:</span> <span class="n">fallback</span><span class="p">,</span>
+            <span class="s2">"t"</span><span class="p">:</span> <span class="n">ctx</span><span class="o">.</span><span class="n">t</span><span class="p">,</span>
+            <span class="s2">"step"</span><span class="p">:</span> <span class="n">ctx</span><span class="o">.</span><span class="n">step_idx</span><span class="p">,</span>
+            <span class="s2">"newton_iter"</span><span class="p">:</span> <span class="n">ctx</span><span class="o">.</span><span class="n">newton_iter</span><span class="p">,</span>
+            <span class="s2">"phase"</span><span class="p">:</span> <span class="n">ctx</span><span class="o">.</span><span class="n">phase</span><span class="p">,</span>
+            <span class="s2">"method"</span><span class="p">:</span> <span class="n">ctx</span><span class="o">.</span><span class="n">method</span><span class="p">,</span>
+            <span class="s2">"solver"</span><span class="p">:</span> <span class="n">ctx</span><span class="o">.</span><span class="n">solver</span><span class="p">,</span>
+            <span class="s2">"res_norm_inf"</span><span class="p">:</span> <span class="n">res_norm</span><span class="p">,</span>
+            <span class="s2">"dx_norm_2"</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">dx</span><span class="p">)</span> <span class="k">if</span> <span class="n">dx</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="s2">"dx_norm_inf"</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">dx</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span> <span class="k">if</span> <span class="n">dx</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="s2">"cond_J"</span><span class="p">:</span> <span class="n">cond</span><span class="p">,</span>
+            <span class="s2">"index1_pivot_ratio"</span><span class="p">:</span> <span class="n">ctx</span><span class="o">.</span><span class="n">index1_pivot_ratio</span><span class="p">,</span>
+            <span class="s2">"used_fallback"</span><span class="p">:</span> <span class="n">fallback</span><span class="p">,</span>
         <span class="p">})</span></div>
 
 
 <div class="viewcode-block" id="NewtonTraceCollector.to_dataframe">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.diagnostic.NewtonTraceCollector.to_dataframe">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">to_dataframe</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Convert the collected records into a pandas DataFrame.</span>
 
 <span class="sd">        :return: DataFrame with Newton diagnostics records.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
         <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">records</span><span class="p">)</span></div>
 
@@ -716,7 +717,7 @@
         <span class="n">top_k</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span>
         <span class="n">debug_info</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Record one residual snapshot with top offending equation indices.</span>
 
 <span class="sd">        :param ctx: Per-iteration Newton context.</span>
@@ -724,32 +725,32 @@
 <span class="sd">        :param top_k: Number of largest-magnitude residual entries to keep.</span>
 <span class="sd">        :param debug_info: Optional residual metadata aligned with residual indices.</span>
 <span class="sd">        :return: None.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="n">residual</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">return</span>
         <span class="n">k</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">top_k</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">residual</span><span class="o">.</span><span class="n">size</span><span class="p">))))</span>
         <span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argpartition</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">residual</span><span class="p">),</span> <span class="o">-</span><span class="n">k</span><span class="p">)[</span><span class="o">-</span><span class="n">k</span><span class="p">:]</span>
-        <span class="n">idx</span> <span class="o">=</span> <span class="n">idx</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">residual</span><span class="p">[</span><span class="n">idx</span><span class="p">]),</span> <span class="n">kind</span><span class="o">=</span><span class="s2">&quot;stable&quot;</span><span class="p">)[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="n">idx</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">residual</span><span class="p">[</span><span class="n">idx</span><span class="p">]),</span> <span class="n">kind</span><span class="o">=</span><span class="s2">"stable"</span><span class="p">)[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span>
         <span class="n">top_rows</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="n">idx</span><span class="p">:</span>
             <span class="n">row</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
-                <span class="s2">&quot;eq_idx&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">ii</span><span class="p">),</span>
-                <span class="s2">&quot;res&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">residual</span><span class="p">[</span><span class="n">ii</span><span class="p">]),</span>
-                <span class="s2">&quot;abs_res&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">residual</span><span class="p">[</span><span class="n">ii</span><span class="p">])),</span>
+                <span class="s2">"eq_idx"</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">ii</span><span class="p">),</span>
+                <span class="s2">"res"</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">residual</span><span class="p">[</span><span class="n">ii</span><span class="p">]),</span>
+                <span class="s2">"abs_res"</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">residual</span><span class="p">[</span><span class="n">ii</span><span class="p">])),</span>
             <span class="p">}</span>
             <span class="k">if</span> <span class="n">debug_info</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="nb">int</span><span class="p">(</span><span class="n">ii</span><span class="p">)</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">debug_info</span><span class="p">):</span>
                 <span class="n">info</span> <span class="o">=</span> <span class="n">debug_info</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">ii</span><span class="p">)]</span>
-                <span class="n">row</span><span class="p">[</span><span class="s2">&quot;kind&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;kind&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
-                <span class="n">row</span><span class="p">[</span><span class="s2">&quot;label&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;label&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
-                <span class="n">row</span><span class="p">[</span><span class="s2">&quot;var_name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;var_name&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
+                <span class="n">row</span><span class="p">[</span><span class="s2">"kind"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"kind"</span><span class="p">,</span> <span class="s2">""</span><span class="p">))</span>
+                <span class="n">row</span><span class="p">[</span><span class="s2">"label"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"label"</span><span class="p">,</span> <span class="s2">""</span><span class="p">))</span>
+                <span class="n">row</span><span class="p">[</span><span class="s2">"var_name"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"var_name"</span><span class="p">,</span> <span class="s2">""</span><span class="p">))</span>
             <span class="n">top_rows</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">residual_records</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
-            <span class="s2">&quot;t&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">ctx</span><span class="o">.</span><span class="n">t</span><span class="p">),</span>
-            <span class="s2">&quot;step&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">ctx</span><span class="o">.</span><span class="n">step_idx</span><span class="p">),</span>
-            <span class="s2">&quot;newton_iter&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">ctx</span><span class="o">.</span><span class="n">newton_iter</span><span class="p">),</span>
-            <span class="s2">&quot;res_norm_inf&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">residual</span><span class="p">))),</span>
-            <span class="s2">&quot;top&quot;</span><span class="p">:</span> <span class="n">top_rows</span><span class="p">,</span>
+            <span class="s2">"t"</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">ctx</span><span class="o">.</span><span class="n">t</span><span class="p">),</span>
+            <span class="s2">"step"</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">ctx</span><span class="o">.</span><span class="n">step_idx</span><span class="p">),</span>
+            <span class="s2">"newton_iter"</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">ctx</span><span class="o">.</span><span class="n">newton_iter</span><span class="p">),</span>
+            <span class="s2">"res_norm_inf"</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">residual</span><span class="p">))),</span>
+            <span class="s2">"top"</span><span class="p">:</span> <span class="n">top_rows</span><span class="p">,</span>
         <span class="p">})</span></div>
 </div>
 

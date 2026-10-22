@@ -34,6 +34,7 @@ from VeraGridEngine.Templates.Emt.bergeron_line_emt_template import get_bergeron
 from VeraGridEngine.Templates.Emt.load_RLC_emt_template import (
     get_grounding_link_emt_template,
     get_shunt_r_emt_template,
+    get_shunt_rlc_combo_emt_template,
 )
 from VeraGridEngine.Templates.Emt.thevenin_equivalent_emt_generator_template import get_generator_thevenin_rl_emt_template_with_ref
 from VeraGridEngine.Utils.Symbolic.bus_emt_template import get_bus_emt_template
@@ -718,6 +719,9 @@ def _restore_version_three_grounding_block(
     legacy_contract["rms_terminal_power_contributions"] = []
     legacy_contract.pop("emt_internal_grounding_link")
     legacy_contract.pop("rms_physical_measurement_point")
+    legacy_contract.pop("emt_finite_reciprocal_source_mode_var_uid")
+    legacy_contract.pop("modal_template_kind")
+    legacy_contract.pop("modal_template_config")
     legacy_children_data: object = legacy_data["children"]
     assert isinstance(legacy_children_data, list)
     legacy_child_data: object
@@ -729,6 +733,9 @@ def _restore_version_three_grounding_block(
         legacy_child_contract["rms_terminal_power_contributions"] = []
         legacy_child_contract.pop("emt_internal_grounding_link")
         legacy_child_contract.pop("rms_physical_measurement_point")
+        legacy_child_contract.pop("emt_finite_reciprocal_source_mode_var_uid")
+        legacy_child_contract.pop("modal_template_kind")
+        legacy_child_contract.pop("modal_template_config")
     else:
         pass
     return Block.parse(data=legacy_data)
@@ -801,6 +808,48 @@ def test_connection_validation_rejects_disconnected_legacy_ground_decoy() -> Non
 
     with pytest.raises(EmtTopologyError, match="Floating bus phases detected"):
         problem._validate_connections()
+
+
+def test_connection_validation_does_not_ground_an_unmapped_bus_neutral_through_a_grounded_star() -> None:
+    """Keep the bus neutral floating when only internal star-point grounds touch it.
+
+    Two grounded-star loads on phase A own internal grounds but no neutral
+    terminal, so phase A has two elements while the bus neutral has none.
+    Counting their internal grounds would wrongly connect the bus neutral.
+
+    :return: None.
+    """
+    grid: gce.MultiCircuit = gce.MultiCircuit(Sbase=100.0, fbase=50.0)
+    bus: gce.Bus = gce.Bus(name="StarBus", Vnom=20.0)
+    grid.add_bus(bus)
+    bus.emt_model = _make_external_mapping_block(
+        refs=list((VarPowerFlowReferenceType.v_A, VarPowerFlowReferenceType.v_N)),
+        name_suffix="star_bus",
+    )
+    load_name: str
+    for load_name in ("GroundedStarLoad1", "GroundedStarLoad2"):
+        load: gce.Load = gce.Load(name=load_name, P=1.0, Q=0.0)
+        grid.add_load(bus=bus, api_obj=load)
+        load.emt_model = get_shunt_rlc_combo_emt_template(
+            vf=grid.var_factory,
+            include_r=True,
+            include_l=False,
+            include_c=False,
+            phA=True,
+            phB=False,
+            phC=False,
+            connection_type=ShuntConnectionType.GroundedStar,
+            name=load_name,
+        ).block
+    problem: EmtProblemDae = _build_interface_validation_problem(grid=grid)
+
+    raised: pytest.ExceptionInfo
+    with pytest.raises(EmtTopologyError) as raised:
+        problem._validate_connections()
+    message: str = str(raised.value)
+    assert "phase 'v_N' is floating (connected to 0 element(s)" in message
+    assert "phase 'v_A'" not in message
+    assert "internal_ground:" not in message
 
 
 def test_emt_template_assignment_materializes_missing_bus_shell() -> None:

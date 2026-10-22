@@ -11,7 +11,7 @@ from VeraGridEngine.Simulations.PowerFlow3ph.power_flow_worker_3ph import multi_
 from VeraGridEngine.Simulations.PowerFlow3ph.power_flow_results_3ph import PowerFlowResults3Ph
 from VeraGridEngine.Devices.multi_circuit import MultiCircuit
 from VeraGridEngine.Simulations.driver_template import DriverTemplate
-from VeraGridEngine.Compilers.Gslv.activation import GSLV_AVAILABLE
+from VeraGridEngine.Compilers.Gslv.activation import GSLV_AVAILABLE, GSLV_UNAVAILABLE_REASON
 from VeraGridEngine.Compilers.Gslv.Simulations.power_flow_3ph import (
     gslv_pf_3ph,
     translate_gslv_pf_3ph_results,
@@ -129,7 +129,7 @@ class PowerFlowDriver3Ph(DriverTemplate):
         # The three-phase driver can only stay on GSLV when that engine is present.
         if self.engine == EngineType.GSLV and not GSLV_AVAILABLE:
             self.engine = EngineType.VeraGrid
-            self.logger.add_warning('Failed back to VeraGrid')
+            self.logger.add_warning(f'GSLV unavailable: {GSLV_UNAVAILABLE_REASON}; falling back to VeraGrid')
         else:
             pass
 

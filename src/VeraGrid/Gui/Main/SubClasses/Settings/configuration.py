@@ -462,20 +462,29 @@ class ConfigurationMain(ResultsMain):
 
     def get_config_structure(self) -> Dict[str, Dict[str, Any]]:
         """
-        Get the settings configuration dictionary
-        This serves to collect automatically the settings
-        and apply the incomming setting automatically as well
-        :return: Dict[name, Dict[name, QtWidget]
+        Get the persistent GUI preferences used by both save and restore.
+
+        Language is handled by get_gui_config_data/apply_gui_config and server
+        settings by ServerMain. Circuit data, searches, and model-dependent
+        selections are not global preferences.
+
+        :return: Settings sections mapped to their GUI controls.
         """
         return {
             "graphics": {
                 "dark_mode": self.ui.dark_mode_checkBox,
                 "palette": self.ui.palette_comboBox,
-                # "min_node_size": self.ui.min_node_size_spinBox,
-                # "max_node_size": self.ui.max_node_size_spinBox,
-                # "min_branch_size": self.ui.min_branch_size_spinBox,
-                # "max_branch_size": self.ui.max_branch_size_spinBox,
-                # "width_based_flow": self.ui.branch_width_based_on_flow_checkBox,
+                "min_node_size": self.ui.min_node_size_spinBox,
+                "max_node_size": self.ui.max_node_size_spinBox,
+                "min_branch_size": self.ui.min_branch_size_spinBox,
+                "max_branch_size": self.ui.max_branch_size_spinBox,
+                "width_based_flow": self.ui.branch_width_based_on_flow_checkBox,
+                "arrow_size": self.ui.arrow_size_size_spinBox,
+                "explosion_factor": self.ui.explosion_factor_doubleSpinBox,
+                "ask_before_applying_layout": self.ui.ask_before_appliying_layout_checkBox,
+                "automatic_layout": self.ui.automatic_layout_comboBox,
+                "use_schematic_objects_color": self.ui.use_schematic_objects_color_checkBox,
+                "resolution_factor": self.ui.resolution_factor_spinBox,
                 "map_tile_provider": self.ui.tile_provider_comboBox,
                 "video_fps": self.ui.fps_spinBox
             },
@@ -514,7 +523,10 @@ class ConfigurationMain(ResultsMain):
             },
             "linear": {
                 "ptdf_threshold": self.ui.ptdf_threshold_doubleSpinBox,
-                "lodf_threshold": self.ui.lodf_threshold_doubleSpinBox
+                "lodf_threshold": self.ui.lodf_threshold_doubleSpinBox,
+                "correct_nonsense_values": self.ui.ptdf_correct_nonsense_values_checkBox,
+                "distributed_slack": self.ui.ptdf_distributed_slack_checkBox,
+                "use_jacobian": self.ui.ptdf_use_jacobian_checkBox,
             },
             "power_flow": {
                 "solver": self.ui.solver_comboBox,
@@ -574,6 +586,7 @@ class ConfigurationMain(ResultsMain):
                 "ips_trust_radius": self.ui.ips_trust_radius_doubleSpinBox,
                 "ips_init_with_pf": self.ui.ips_initialize_with_pf_checkBox,
                 "ips_control_Qlimits": self.ui.ips_control_Qlimits_checkBox,
+                "ips_verbose": self.ui.ips_verbose_spinBox,
             },
             "continuation_power_flow": {
                 "max_iterations": self.ui.vs_max_iterations_spinBox,
@@ -601,6 +614,8 @@ class ConfigurationMain(ResultsMain):
                 "branch_rating_contribution": self.ui.ntcLoadRuleSpinBox,
 
                 "ntc_opt_consider_contingencies": self.ui.consider_ntc_contingencies_checkBox,
+                "strict_formulation": self.ui.strict_ntc_formulation_checkBox,
+                "use_pf_values_for_atc": self.ui.usePfValuesForAtcCheckBox,
             },
             "nodal_hosting_capacity": {
                 "method": self.ui.nodal_capacity_method_comboBox,
@@ -608,6 +623,7 @@ class ConfigurationMain(ResultsMain):
             },
             "contingencies": {
                 "contingencies_engine": self.ui.contingencyEngineComboBox,
+                "filter_by": self.ui.contingency_filter_by_comboBox,
                 "use_srap": self.ui.use_srap_checkBox,
                 "srap_max_power": self.ui.srap_limit_doubleSpinBox,
                 "srap_top_n": self.ui.srap_top_n_SpinBox,
@@ -626,6 +642,8 @@ class ConfigurationMain(ResultsMain):
                 # "cgmes_dc_as_hvdclines": self.ui.cgmes_dc_as_hvdclines_checkBox,
             },
             "dyn": {
+                "problem": self.ui.rms_problem_comboBox,
+                "small_signal_modes_number": self.ui.rms_small_signal_modes_number_spinBox,
                 "rms_int_method_comboBox": self.ui.rms_integration_method_comboBox,
                 "rms_initialization_method": self.ui.rms_initialization_method_comboBox,
                 "tolerance_rms_spinBox": self.ui.tolerance_rms_spinBox,
@@ -633,7 +651,38 @@ class ConfigurationMain(ResultsMain):
                 "h_spinBox": self.ui.rms_h_spinBox,
 
                 "ss_assessment_time_spinBox_2": self.ui.rms_ss_assessment_time_spinBox
-            }
+            },
+            "emt": {
+                "integration_method": self.ui.emt_integration_method_comboBox,
+                "initialization_method": self.ui.emt_initialization_method_comboBox,
+                "problem": self.ui.emt_problem_comboBox,
+                "solver_type": self.ui.emt_solver_type_comboBox,
+                "tolerance": self.ui.tolerance_emt_spinBox,
+                "simulation_time": self.ui.emt_sim_time_spinBox,
+                "step_size": self.ui.emt_h_spinBox,
+                "ss_assessment_time": self.ui.emt_ss_assessment_time_spinBox,
+                "small_signal_modes_number": self.ui.emt_small_signal_modes_number_spinBox,
+                "sss_target_period": self.ui.emt_sss_target_period_spinBox,
+                "sss_build_type": self.ui.emt_sss_build_type_comboBox,
+            },
+            "topology": {
+                "use_rx_threshold": self.ui.rxThresholdCheckBox,
+                "rx_threshold": self.ui.rxThresholdSpinBox,
+                "branch_rating": self.ui.branch_rating_doubleSpinBox,
+                "rating_override": self.ui.rating_override_checkBox,
+            },
+            "results": {
+                "transpose": self.ui.results_traspose_checkBox,
+                "as_cdf": self.ui.results_as_cdf_checkBox,
+                "as_abs": self.ui.results_as_abs_checkBox,
+                "stacked_plot": self.ui.stacked_plot_checkBox,
+            },
+            "profiles": {
+                "scale_factor": self.ui.profile_factor_doubleSpinBox,
+            },
+            "compiled_arrays": {
+                "display_mode": self.ui.arrayModeComboBox,
+            },
         }
 
     def get_gui_config_data(self) -> Dict[str, Dict[str, Union[float, int, str, bool]]]:

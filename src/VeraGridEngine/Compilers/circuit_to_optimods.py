@@ -24,15 +24,21 @@ from VeraGridEngine.DataStructures.hvdc_data import HvdcData
 from VeraGridEngine.DataStructures.shunt_data import ShuntData
 import VeraGridEngine.Devices as dev
 
+from VeraGridEngine.Utils.optional_dependencies import optional_dependency_failure
+
+# An incompatible optional Gurobi installation must not prevent use of VeraGrid solvers.
 try:
     # to be installed with <pip install gurobi-optimods>
     # https://gurobi-optimization-gurobi-optimods.readthedocs-hosted.com/en/stable/mods/opf/opf.html
     from gurobi_optimods import datasets
     from gurobi_optimods import opf
+    from gurobi_optimods.opf import solve_opf
 
     GUROBI_OPTIMODS_AVAILABLE = True
-except ImportError as e:
+    GUROBI_OPTIMODS_UNAVAILABLE_REASON: str = ""
+except (ImportError, AttributeError, OSError, RuntimeError, ValueError, TypeError) as error:
     GUROBI_OPTIMODS_AVAILABLE = False
+    GUROBI_OPTIMODS_UNAVAILABLE_REASON = optional_dependency_failure("gurobi-optimods", error)
 
 
 def solve_acopf(case: Dict) -> Dict:
@@ -42,10 +48,10 @@ def solve_acopf(case: Dict) -> Dict:
     :return:
     """
     if GUROBI_OPTIMODS_AVAILABLE:
-        res = opf.solve_opf(case, opftype="AC")
+        res = solve_opf(case, opftype="AC")
         return res
     else:
-        raise ImportError("No gurobi optimization available")
+        raise ImportError(f"Gurobi Optimods unavailable: {GUROBI_OPTIMODS_UNAVAILABLE_REASON}")
 
 
 

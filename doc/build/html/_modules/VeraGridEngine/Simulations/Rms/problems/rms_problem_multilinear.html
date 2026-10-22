@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Simulations.Rms.problems.rms_problem_multilinear &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Simulations.Rms.problems.rms_problem_multilinear &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/license.html">📜 License</a></li>
@@ -151,7 +152,7 @@
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.Rms.problems.html#VeraGridEngine.Simulations.Rms.problems.rms_problem_multilinear.SparseCoefficientTensor">[docs]</a>
 <span class="nd">@dataclass</span><span class="p">(</span><span class="n">slots</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">SparseCoefficientTensor</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Sparse coordinate representation of the coefficient tensor H.</span>
 
 <span class="sd">    H has shape:</span>
@@ -160,7 +161,7 @@
 
 <span class="sd">    The first mode is the equation index. Each following mode corresponds to</span>
 <span class="sd">    the local basis [1, x_i] of one variable.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">coords</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
     <span class="n">values</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
@@ -172,9 +173,9 @@
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.Rms.problems.html#VeraGridEngine.Simulations.Rms.problems.rms_problem_multilinear.CpnFitDiagnostics">[docs]</a>
 <span class="nd">@dataclass</span><span class="p">(</span><span class="n">slots</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">CpnFitDiagnostics</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Diagnostics from the implicit CP/CPN ALS fitting process.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">relative_changes</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span>
     <span class="n">iterations</span><span class="p">:</span> <span class="nb">int</span>
@@ -186,9 +187,9 @@
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.Rms.problems.html#VeraGridEngine.Simulations.Rms.problems.rms_problem_multilinear.MultilinearCpTensor">[docs]</a>
 <span class="nd">@dataclass</span><span class="p">(</span><span class="n">slots</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">MultilinearCpTensor</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    CP factor representation of a multilinear coefficient tensor.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">weights</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
     <span class="n">factors</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span></div>
@@ -198,7 +199,7 @@
 <div class="viewcode-block" id="MultilinearCpnApproximator">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.Rms.problems.html#VeraGridEngine.Simulations.Rms.problems.rms_problem_multilinear.MultilinearCpnApproximator">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">MultilinearCpnApproximator</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Implicit CP/CPN approximator for a sparse multilinear representation.</span>
 
 <span class="sd">    The exact multilinear residual is assumed to be represented as:</span>
@@ -221,17 +222,17 @@
 
 <span class="sd">        factors[0]     -&gt; equation factor, shape (n_eq, rank)</span>
 <span class="sd">        factors[i + 1] -&gt; variable i factor, shape (2, rank)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;S&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Phi&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;n_vars&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;n_mon&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;n_eq&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;_Phi_csc&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;_S_csr&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;cp_tensor&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;diagnostics&quot;</span><span class="p">,</span>
+        <span class="s2">"S"</span><span class="p">,</span>
+        <span class="s2">"Phi"</span><span class="p">,</span>
+        <span class="s2">"n_vars"</span><span class="p">,</span>
+        <span class="s2">"n_mon"</span><span class="p">,</span>
+        <span class="s2">"n_eq"</span><span class="p">,</span>
+        <span class="s2">"_Phi_csc"</span><span class="p">,</span>
+        <span class="s2">"_S_csr"</span><span class="p">,</span>
+        <span class="s2">"cp_tensor"</span><span class="p">,</span>
+        <span class="s2">"diagnostics"</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
@@ -239,7 +240,7 @@
             <span class="n">S</span><span class="p">:</span> <span class="n">sparse</span><span class="o">.</span><span class="n">csc_matrix</span><span class="p">,</span>
             <span class="n">Phi</span><span class="p">:</span> <span class="n">sparse</span><span class="o">.</span><span class="n">csr_matrix</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Create the approximator from the exact sparse multilinear matrices.</span>
 
 <span class="sd">        Parameters</span>
@@ -248,7 +249,7 @@
 <span class="sd">            Monomial structure matrix with shape ``(n_vars, n_mon)``.</span>
 <span class="sd">        Phi</span>
 <span class="sd">            Equation-by-monomial coefficient matrix with shape ``(n_eq, n_mon)``.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="n">sparse</span><span class="o">.</span><span class="n">isspmatrix_csc</span><span class="p">(</span><span class="n">S</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">S</span> <span class="o">=</span> <span class="n">S</span>
         <span class="k">else</span><span class="p">:</span>
@@ -264,8 +265,8 @@
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_mon</span> <span class="o">!=</span> <span class="n">n_mon_phi</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;S and Phi have incompatible monomial dimensions: &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;S has </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">n_mon</span><span class="si">}</span><span class="s2">, Phi has </span><span class="si">{</span><span class="n">n_mon_phi</span><span class="si">}</span><span class="s2">.&quot;</span>
+                <span class="sa">f</span><span class="s2">"S and Phi have incompatible monomial dimensions: "</span>
+                <span class="sa">f</span><span class="s2">"S has </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">n_mon</span><span class="si">}</span><span class="s2">, Phi has </span><span class="si">{</span><span class="n">n_mon_phi</span><span class="si">}</span><span class="s2">."</span>
             <span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_Phi_csc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Phi</span><span class="o">.</span><span class="n">tocsc</span><span class="p">()</span>
@@ -280,17 +281,17 @@
             <span class="bp">self</span><span class="p">,</span>
             <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Evaluate the exact monomial basis vector varphi(x) from S.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        np.ndarray</span>
 <span class="sd">            Monomial vector with shape ``(n_mon,)``.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_vars</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;x has size </span><span class="si">{</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">, but S has </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">n_vars</span><span class="si">}</span><span class="s2"> variables.&quot;</span>
+                <span class="sa">f</span><span class="s2">"x has size </span><span class="si">{</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">, but S has </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">n_vars</span><span class="si">}</span><span class="s2"> variables."</span>
             <span class="p">)</span>
 
         <span class="n">varphi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_mon</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
@@ -317,11 +318,11 @@
             <span class="bp">self</span><span class="p">,</span>
             <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Evaluate the exact residual f(x) = Phi @ varphi(x).</span>
 
 <span class="sd">        This is useful for validating the CPN approximation.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">varphi</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exact_phi_from_s</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">x</span><span class="p">)</span>
         <span class="n">residual</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Phi</span> <span class="o">@</span> <span class="n">varphi</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">residual</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span></div>
@@ -333,9 +334,9 @@
             <span class="n">denominator</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
             <span class="n">zero_tol</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Divide two rank vectors with protection against near-zero denominators.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># Keep denominator sign while clipping magnitude away from zero.</span>
         <span class="c1"># This avoids boolean indexing and conditional branches in this hot path.</span>
         <span class="n">safe_denominator</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copysign</span><span class="p">(</span>
@@ -350,9 +351,9 @@
             <span class="n">normal_matrix</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
             <span class="n">ridge</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Solve one ALS normal-equation update.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">rank</span> <span class="o">=</span> <span class="n">normal_matrix</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">regularised_matrix</span> <span class="o">=</span> <span class="n">normal_matrix</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="n">regularised_matrix</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">rank</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">rank</span><span class="p">)]</span> <span class="o">+=</span> <span class="n">ridge</span>
@@ -366,9 +367,9 @@
             <span class="bp">self</span><span class="p">,</span>
             <span class="n">factors</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Compute Hadamard product of factor Gram matrices.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">rank</span> <span class="o">=</span> <span class="n">factors</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
         <span class="n">result</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">rank</span><span class="p">,</span> <span class="n">rank</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
 
@@ -381,7 +382,7 @@
             <span class="bp">self</span><span class="p">,</span>
             <span class="n">zero_tol</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Build metadata required by implicit CP-ALS.</span>
 
 <span class="sd">        Returns</span>
@@ -393,7 +394,7 @@
 <span class="sd">                Monomial indices where each variable appears.</span>
 <span class="sd">            active_variables_by_mon</span>
 <span class="sd">                Active variable indices for each monomial.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">signs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_mon</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
         <span class="n">active_variables_by_mon</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
 
@@ -460,7 +461,7 @@
             <span class="n">active_indices</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
             <span class="n">zero_tol</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Compute monomial rank products without constructing H.</span>
 
 <span class="sd">        For each monomial j and rank r:</span>
@@ -468,7 +469,7 @@
 <span class="sd">            P[j, r] = sign_j * prod_i A_i[b_i(j), r]</span>
 
 <span class="sd">        with b_i(j) = 1 when variable i appears in monomial j, otherwise 0.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">rank</span> <span class="o">=</span> <span class="n">variable_factors</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
         <span class="n">base_product</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">rank</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
         <span class="n">ratio_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">n_vars</span><span class="p">,</span> <span class="n">rank</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
@@ -509,9 +510,9 @@
             <span class="n">variable_factors</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span>
             <span class="n">zero_tol</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Normalise variable-factor columns and absorb scale into equation factor.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">scaled_equation_factor</span> <span class="o">=</span> <span class="n">equation_factor</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="n">scaled_variable_factors</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
 
@@ -537,9 +538,9 @@
             <span class="n">variable_factors</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span>
             <span class="n">zero_tol</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MultilinearCpTensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Convert raw factors into a normalized CP tensor representation.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">factors</span> <span class="o">=</span> <span class="p">[</span><span class="n">equation_factor</span><span class="o">.</span><span class="n">copy</span><span class="p">()]</span> <span class="o">+</span> <span class="p">[</span><span class="n">factor</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span> <span class="k">for</span> <span class="n">factor</span> <span class="ow">in</span> <span class="n">variable_factors</span><span class="p">]</span>
         <span class="n">rank</span> <span class="o">=</span> <span class="n">equation_factor</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
         <span class="n">weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">rank</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
@@ -569,14 +570,14 @@
             <span class="n">zero_tol</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-12</span><span class="p">,</span>
             <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Fit an implicit CP/CPN approximation of H.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        MultilinearCpTensor</span>
 <span class="sd">            Fitted CP tensor.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="n">random_state</span><span class="p">)</span>
 
         <span class="n">signs</span><span class="p">,</span> <span class="n">active_monomials_by_var</span><span class="p">,</span> <span class="n">active_variables_by_mon</span> <span class="o">=</span> <span class="p">(</span>
@@ -715,8 +716,8 @@
 
             <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
                 <span class="nb">print</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;[implicit CPN ALS] iter=</span><span class="si">{</span><span class="n">iteration</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">:</span><span class="s2">03d</span><span class="si">}</span><span class="s2">, &quot;</span>
-                    <span class="sa">f</span><span class="s2">&quot;relative_change=</span><span class="si">{</span><span class="n">relative_change</span><span class="si">:</span><span class="s2">.6e</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="sa">f</span><span class="s2">"[implicit CPN ALS] iter=</span><span class="si">{</span><span class="n">iteration</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">:</span><span class="s2">03d</span><span class="si">}</span><span class="s2">, "</span>
+                    <span class="sa">f</span><span class="s2">"relative_change=</span><span class="si">{</span><span class="n">relative_change</span><span class="si">:</span><span class="s2">.6e</span><span class="si">}</span><span class="s2">"</span>
                 <span class="p">)</span>
 
             <span class="k">if</span> <span class="n">relative_change</span> <span class="o">&lt;</span> <span class="n">tol</span><span class="p">:</span>
@@ -748,14 +749,14 @@
             <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
             <span class="n">cp_tensor</span><span class="p">:</span> <span class="n">MultilinearCpTensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Evaluate the approximate residual from a fitted CP tensor.</span>
 
 <span class="sd">        If ``cp_tensor`` is not provided, this method uses the last fitted tensor.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="n">cp_tensor</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cp_tensor</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No CP tensor provided and no fitted tensor is stored.&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"No CP tensor provided and no fitted tensor is stored."</span><span class="p">)</span>
             <span class="n">cp_tensor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cp_tensor</span>
 
         <span class="n">weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">cp_tensor</span><span class="o">.</span><span class="n">weights</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
@@ -766,8 +767,8 @@
 
         <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">variable_factors</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;x has </span><span class="si">{</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> variables, but CP tensor has &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">variable_factors</span><span class="p">)</span><span class="si">}</span><span class="s2"> variable modes.&quot;</span>
+                <span class="sa">f</span><span class="s2">"x has </span><span class="si">{</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> variables, but CP tensor has "</span>
+                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">variable_factors</span><span class="p">)</span><span class="si">}</span><span class="s2"> variable modes."</span>
             <span class="p">)</span>
 
         <span class="n">rank_product</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">weights</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
@@ -788,9 +789,9 @@
             <span class="n">cp_tensor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
             <span class="n">norm_floor</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-12</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Compare exact S/Phi residual against the CPN approximation.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">exact</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exact_residual</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">x</span><span class="p">)</span>
         <span class="n">approx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">evaluate_residual</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">x</span><span class="p">,</span> <span class="n">cp_tensor</span><span class="o">=</span><span class="n">cp_tensor</span><span class="p">)</span>
 
@@ -804,23 +805,23 @@
 <div class="viewcode-block" id="RmsProblemMultilinear">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.Rms.problems.html#VeraGridEngine.Simulations.Rms.problems.rms_problem_multilinear.RmsProblemMultilinear">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">RmsProblemMultilinear</span><span class="p">(</span><span class="n">RmsProblemPhasor</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Phasor RMS problem with multilinear-oriented utilities.</span>
 
 <span class="sd">    This class keeps the regular symbolic compilation from ``RmsProblemPhasor``</span>
 <span class="sd">    and adds lightweight operating-point extraction and small-signal helpers</span>
 <span class="sd">    inspired by ``PolynomialMatrixBuilder`` but without SciPy dependencies.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;Phi&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;S&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;_last_cp_tensor&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;_last_cpn_approximator&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;_ml_all_basis_vars&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;_ml_all_vars_sa&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;_ml_idx_vars&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;_ml_uid_to_basis_idx&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;_ml_uid_to_idx_full&quot;</span><span class="p">,</span>
+        <span class="s2">"Phi"</span><span class="p">,</span>
+        <span class="s2">"S"</span><span class="p">,</span>
+        <span class="s2">"_last_cp_tensor"</span><span class="p">,</span>
+        <span class="s2">"_last_cpn_approximator"</span><span class="p">,</span>
+        <span class="s2">"_ml_all_basis_vars"</span><span class="p">,</span>
+        <span class="s2">"_ml_all_vars_sa"</span><span class="p">,</span>
+        <span class="s2">"_ml_idx_vars"</span><span class="p">,</span>
+        <span class="s2">"_ml_uid_to_basis_idx"</span><span class="p">,</span>
+        <span class="s2">"_ml_uid_to_idx_full"</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -836,7 +837,7 @@
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_ensure_multilinear_index_cache</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Build and cache multilinear index maps reused across methods.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Build and cache multilinear index maps reused across methods."""</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ml_all_vars_sa</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span>
         <span class="k">else</span><span class="p">:</span>
@@ -854,12 +855,12 @@
 <div class="viewcode-block" id="RmsProblemMultilinear.build_multilinear_matrices">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.Rms.problems.html#VeraGridEngine.Simulations.Rms.problems.rms_problem_multilinear.RmsProblemMultilinear.build_multilinear_matrices">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">build_multilinear_matrices</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">sparse</span><span class="o">.</span><span class="n">csc_matrix</span><span class="p">,</span> <span class="n">sparse</span><span class="o">.</span><span class="n">csr_matrix</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Build (S, Phi) multilinear matrices from problem equations.</span>
 
 <span class="sd">        S encodes monomial structure (variables x monomials),</span>
 <span class="sd">        Phi encodes equation coefficients (equations x monomials).</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_ensure_multilinear_index_cache</span><span class="p">()</span>
         <span class="n">all_eqs</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_state_eqs</span><span class="p">)</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_algebraic_eqs</span><span class="p">)</span>
         <span class="n">all_vars</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ml_all_basis_vars</span>
@@ -942,13 +943,13 @@
             <span class="n">uid_to_idx</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
             <span class="n">param_by_uid</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="o">...</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Map a symbolic product term to sparse monomial tuple and gain.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Map a symbolic product term to sparse monomial tuple and gain."""</span>
         <span class="n">gain</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">base_gain</span><span class="p">)</span>
         <span class="n">sparse_weights</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
 
         <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">factors</span><span class="p">:</span>
             <span class="c1"># Normalize division by scalar constants: (expr / c) -&gt; expr, gain *= 1/c.</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">BinOp</span><span class="p">)</span> <span class="ow">and</span> <span class="n">f</span><span class="o">.</span><span class="n">op</span> <span class="o">==</span> <span class="s2">&quot;/&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">BinOp</span><span class="p">)</span> <span class="ow">and</span> <span class="n">f</span><span class="o">.</span><span class="n">op</span> <span class="o">==</span> <span class="s2">"/"</span><span class="p">:</span>
                 <span class="n">den</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">right</span><span class="o">.</span><span class="n">simplify</span><span class="p">()</span>
                 <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">den</span><span class="p">,</span> <span class="n">Const</span><span class="p">)</span> <span class="ow">and</span> <span class="n">den</span><span class="o">.</span><span class="n">value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                     <span class="n">den_val</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">den</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
@@ -1002,23 +1003,23 @@
         <span class="k">return</span> <span class="n">monom_tuple</span><span class="p">,</span> <span class="n">gain</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_collect_monomials</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">expr</span><span class="p">:</span> <span class="n">Expr</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Expr</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Recursively expand into monomial terms.</span>
 
 <span class="sd">        Returns a list of expressions where each element is a product-like term</span>
 <span class="sd">        with no top-level additive structure remaining.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">expr</span><span class="p">,</span> <span class="n">BinOp</span><span class="p">):</span>
-            <span class="k">if</span> <span class="n">expr</span><span class="o">.</span><span class="n">op</span> <span class="o">==</span> <span class="s2">&quot;+&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">expr</span><span class="o">.</span><span class="n">op</span> <span class="o">==</span> <span class="s2">"+"</span><span class="p">:</span>
                 <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_collect_monomials</span><span class="p">(</span><span class="n">expr</span><span class="o">.</span><span class="n">left</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_collect_monomials</span><span class="p">(</span><span class="n">expr</span><span class="o">.</span><span class="n">right</span><span class="p">)</span>
 
-            <span class="k">if</span> <span class="n">expr</span><span class="o">.</span><span class="n">op</span> <span class="o">==</span> <span class="s2">&quot;-&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">expr</span><span class="o">.</span><span class="n">op</span> <span class="o">==</span> <span class="s2">"-"</span><span class="p">:</span>
                 <span class="n">left_terms</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_collect_monomials</span><span class="p">(</span><span class="n">expr</span><span class="o">.</span><span class="n">left</span><span class="p">)</span>
                 <span class="n">right_terms</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_collect_monomials</span><span class="p">(</span><span class="n">expr</span><span class="o">.</span><span class="n">right</span><span class="p">)</span>
                 <span class="n">neg_right</span> <span class="o">=</span> <span class="p">[(</span><span class="n">Const</span><span class="p">(</span><span class="o">-</span><span class="mf">1.0</span><span class="p">)</span> <span class="o">*</span> <span class="n">t</span><span class="p">)</span><span class="o">.</span><span class="n">simplify</span><span class="p">()</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">right_terms</span><span class="p">]</span>
                 <span class="k">return</span> <span class="n">left_terms</span> <span class="o">+</span> <span class="n">neg_right</span>
 
-            <span class="k">if</span> <span class="n">expr</span><span class="o">.</span><span class="n">op</span> <span class="o">==</span> <span class="s2">&quot;*&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">expr</span><span class="o">.</span><span class="n">op</span> <span class="o">==</span> <span class="s2">"*"</span><span class="p">:</span>
                 <span class="n">left_terms</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_collect_monomials</span><span class="p">(</span><span class="n">expr</span><span class="o">.</span><span class="n">left</span><span class="p">)</span>
                 <span class="n">right_terms</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_collect_monomials</span><span class="p">(</span><span class="n">expr</span><span class="o">.</span><span class="n">right</span><span class="p">)</span>
                 <span class="n">out</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Expr</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
@@ -1027,7 +1028,7 @@
                         <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">lt</span> <span class="o">*</span> <span class="n">rt</span><span class="p">)</span><span class="o">.</span><span class="n">simplify</span><span class="p">())</span>
                 <span class="k">return</span> <span class="n">out</span>
 
-            <span class="k">if</span> <span class="n">expr</span><span class="o">.</span><span class="n">op</span> <span class="o">==</span> <span class="s2">&quot;/&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">expr</span><span class="o">.</span><span class="n">op</span> <span class="o">==</span> <span class="s2">"/"</span><span class="p">:</span>
                 <span class="n">den</span> <span class="o">=</span> <span class="n">expr</span><span class="o">.</span><span class="n">right</span><span class="o">.</span><span class="n">simplify</span><span class="p">()</span>
                 <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">den</span><span class="p">,</span> <span class="n">Const</span><span class="p">)</span> <span class="ow">and</span> <span class="n">den</span><span class="o">.</span><span class="n">value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                     <span class="n">den_val</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">den</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
@@ -1040,7 +1041,7 @@
 
             <span class="k">return</span> <span class="p">[</span><span class="n">expr</span><span class="p">]</span>
 
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">expr</span><span class="p">,</span> <span class="n">UnOp</span><span class="p">)</span> <span class="ow">and</span> <span class="n">expr</span><span class="o">.</span><span class="n">op</span> <span class="o">==</span> <span class="s2">&quot;-&quot;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">expr</span><span class="p">,</span> <span class="n">UnOp</span><span class="p">)</span> <span class="ow">and</span> <span class="n">expr</span><span class="o">.</span><span class="n">op</span> <span class="o">==</span> <span class="s2">"-"</span><span class="p">:</span>
             <span class="n">inner_terms</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_collect_monomials</span><span class="p">(</span><span class="n">expr</span><span class="o">.</span><span class="n">operand</span><span class="p">)</span>
             <span class="k">return</span> <span class="p">[(</span><span class="n">Const</span><span class="p">(</span><span class="o">-</span><span class="mf">1.0</span><span class="p">)</span> <span class="o">*</span> <span class="n">t</span><span class="p">)</span><span class="o">.</span><span class="n">simplify</span><span class="p">()</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">inner_terms</span><span class="p">]</span>
 
@@ -1048,17 +1049,17 @@
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_expr_to_float</span><span class="p">(</span><span class="n">expr</span><span class="p">:</span> <span class="n">Expr</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Evaluate expression expected to be scalar constant after substitutions.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Evaluate expression expected to be scalar constant after substitutions."""</span>
         <span class="n">simp</span> <span class="o">=</span> <span class="n">expr</span><span class="o">.</span><span class="n">simplify</span><span class="p">()</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">simp</span><span class="p">,</span> <span class="n">Const</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">simp</span><span class="o">.</span><span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Encountered undefined Const while building multilinear matrices&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Encountered undefined Const while building multilinear matrices"</span><span class="p">)</span>
             <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">simp</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">simp</span><span class="p">,</span> <span class="n">UnOp</span><span class="p">)</span> <span class="ow">and</span> <span class="n">simp</span><span class="o">.</span><span class="n">op</span> <span class="o">==</span> <span class="s2">&quot;-&quot;</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">simp</span><span class="o">.</span><span class="n">operand</span><span class="p">,</span> <span class="n">Const</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">simp</span><span class="p">,</span> <span class="n">UnOp</span><span class="p">)</span> <span class="ow">and</span> <span class="n">simp</span><span class="o">.</span><span class="n">op</span> <span class="o">==</span> <span class="s2">"-"</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">simp</span><span class="o">.</span><span class="n">operand</span><span class="p">,</span> <span class="n">Const</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">simp</span><span class="o">.</span><span class="n">operand</span><span class="o">.</span><span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Encountered undefined negated Const while building multilinear matrices&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Encountered undefined negated Const while building multilinear matrices"</span><span class="p">)</span>
             <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="o">-</span><span class="n">simp</span><span class="o">.</span><span class="n">operand</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Expected constant scalar expression, got: </span><span class="si">{</span><span class="n">simp</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Expected constant scalar expression, got: </span><span class="si">{</span><span class="n">simp</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
 <div class="viewcode-block" id="RmsProblemMultilinear.build_sparse_h_from_s_phi">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.Rms.problems.html#VeraGridEngine.Simulations.Rms.problems.rms_problem_multilinear.RmsProblemMultilinear.build_sparse_h_from_s_phi">[docs]</a>
@@ -1066,7 +1067,7 @@
             <span class="bp">self</span><span class="p">,</span>
             <span class="n">zero_tol</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-12</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SparseCoefficientTensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Build the exact sparse coordinate representation of the coefficient tensor H.</span>
 
 <span class="sd">        The exact multilinear representation is:</span>
@@ -1089,7 +1090,7 @@
 <span class="sd">        -------</span>
 <span class="sd">        SparseCoefficientTensor</span>
 <span class="sd">            Sparse coordinate representation of H.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">S</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">S</span>
         <span class="n">Phi</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Phi</span>
 
@@ -1104,8 +1105,8 @@
 
         <span class="k">if</span> <span class="n">n_mon_s</span> <span class="o">!=</span> <span class="n">n_mon_phi</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;S and Phi have incompatible monomial dimensions: &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;S has </span><span class="si">{</span><span class="n">n_mon_s</span><span class="si">}</span><span class="s2">, Phi has </span><span class="si">{</span><span class="n">n_mon_phi</span><span class="si">}</span><span class="s2">.&quot;</span>
+                <span class="sa">f</span><span class="s2">"S and Phi have incompatible monomial dimensions: "</span>
+                <span class="sa">f</span><span class="s2">"S has </span><span class="si">{</span><span class="n">n_mon_s</span><span class="si">}</span><span class="s2">, Phi has </span><span class="si">{</span><span class="n">n_mon_phi</span><span class="si">}</span><span class="s2">."</span>
             <span class="p">)</span>
 
         <span class="n">Phi_csc</span> <span class="o">=</span> <span class="n">Phi</span><span class="o">.</span><span class="n">tocsc</span><span class="p">()</span>
@@ -1155,7 +1156,7 @@
                 <span class="k">pass</span>
 
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The coefficient tensor H has no non-zero entries.&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"The coefficient tensor H has no non-zero entries."</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">SparseCoefficientTensor</span><span class="p">(</span>
             <span class="n">coords</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">),</span>
@@ -1176,7 +1177,7 @@
             <span class="n">zero_tol</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-12</span><span class="p">,</span>
             <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Fit a CP/CPN approximation of the multilinear coefficient tensor H.</span>
 
 <span class="sd">        This is a convenience wrapper around ``MultilinearCpnApproximator``. The</span>
@@ -1187,7 +1188,7 @@
 <span class="sd">        -------</span>
 <span class="sd">        MultilinearCpTensor</span>
 <span class="sd">            Fitted CP tensor approximating the coefficient tensor H.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="n">S</span><span class="p">,</span> <span class="n">Phi</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">build_multilinear_matrices</span><span class="p">()</span>
 
@@ -1219,7 +1220,7 @@
             <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
             <span class="n">cp_tensor</span><span class="p">:</span> <span class="n">MultilinearCpTensor</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Evaluate the approximate residual from a CP tensor.</span>
 
 <span class="sd">        This implements:</span>
@@ -1242,7 +1243,7 @@
 <span class="sd">        -------</span>
 <span class="sd">        np.ndarray</span>
 <span class="sd">            Approximate residual vector with shape ``(n_eq,)``.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">cp_tensor</span><span class="o">.</span><span class="n">weights</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
         <span class="n">factors</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">factor</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span> <span class="k">for</span> <span class="n">factor</span> <span class="ow">in</span> <span class="n">cp_tensor</span><span class="o">.</span><span class="n">factors</span><span class="p">]</span>
 
@@ -1253,7 +1254,7 @@
 
         <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="n">n_vars</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;x has </span><span class="si">{</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> variables, but CP tensor has </span><span class="si">{</span><span class="n">n_vars</span><span class="si">}</span><span class="s2"> variable modes.&quot;</span>
+                <span class="sa">f</span><span class="s2">"x has </span><span class="si">{</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> variables, but CP tensor has </span><span class="si">{</span><span class="n">n_vars</span><span class="si">}</span><span class="s2"> variable modes."</span>
             <span class="p">)</span>
 
         <span class="n">rank_product</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">weights</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
@@ -1272,7 +1273,7 @@
             <span class="bp">self</span><span class="p">,</span>
             <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Evaluate the exact monomial basis vector varphi(x) from S.</span>
 
 <span class="sd">        The matrix S has shape:</span>
@@ -1296,7 +1297,7 @@
 <span class="sd">        -------</span>
 <span class="sd">        np.ndarray</span>
 <span class="sd">            Monomial basis vector with shape ``(n_mon,)``.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="n">sparse</span><span class="o">.</span><span class="n">isspmatrix_csc</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">S</span><span class="p">):</span>
             <span class="n">S_csc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">S</span>
         <span class="k">else</span><span class="p">:</span>
@@ -1306,7 +1307,7 @@
 
         <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="n">n_vars</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;x has size </span><span class="si">{</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">, but S has </span><span class="si">{</span><span class="n">n_vars</span><span class="si">}</span><span class="s2"> variables.&quot;</span>
+                <span class="sa">f</span><span class="s2">"x has size </span><span class="si">{</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">, but S has </span><span class="si">{</span><span class="n">n_vars</span><span class="si">}</span><span class="s2"> variables."</span>
             <span class="p">)</span>
 
         <span class="n">varphi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">n_mon</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
@@ -1337,12 +1338,12 @@
             <span class="bp">self</span><span class="p">,</span>
             <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Evaluate the exact residual f(x) = Phi @ varphi(x).</span>
 
 <span class="sd">        This is the exact residual of the sparse multilinear representation,</span>
 <span class="sd">        not the CP/CPN approximation.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">varphi</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exact_phi_from_s</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">x</span><span class="p">)</span>
         <span class="n">residual</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Phi</span> <span class="o">@</span> <span class="n">varphi</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">residual</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span></div>
@@ -1355,9 +1356,9 @@
             <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
             <span class="n">sparse_output</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="n">sparse</span><span class="o">.</span><span class="n">csc_matrix</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="n">sparse</span><span class="o">.</span><span class="n">csc_matrix</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="n">sparse</span><span class="o">.</span><span class="n">csc_matrix</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Linearize using multilinear matrices S/Phi and return (E, A, EABC).</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_ensure_multilinear_index_cache</span><span class="p">()</span>
         <span class="n">S</span><span class="p">,</span> <span class="n">Phi</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">build_multilinear_matrices</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">x</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -1367,7 +1368,7 @@
         <span class="n">n_diff</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_diff_vars</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">x_vec</span><span class="p">)</span> <span class="o">!=</span> <span class="n">n_state_alg</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Expected x of size </span><span class="si">{</span><span class="n">n_state_alg</span><span class="si">}</span><span class="s2">, got </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">x_vec</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Expected x of size </span><span class="si">{</span><span class="n">n_state_alg</span><span class="si">}</span><span class="s2">, got </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">x_vec</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
         <span class="c1"># Diff variables are evaluated at the operating point. For now, use zeros</span>
         <span class="c1"># (steady-state convention) in the multilinear evaluation vector.</span>
@@ -1391,10 +1392,10 @@
         <span class="k">if</span> <span class="n">A_sparse</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="n">dim</span> <span class="ow">or</span> <span class="n">A_sparse</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="n">dim</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">A_sparse</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">dim</span><span class="p">:</span>
                 <span class="n">right_pad</span> <span class="o">=</span> <span class="n">sparse</span><span class="o">.</span><span class="n">csc_matrix</span><span class="p">((</span><span class="n">A_sparse</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">dim</span> <span class="o">-</span> <span class="n">A_sparse</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
-                <span class="n">A_sparse</span> <span class="o">=</span> <span class="n">sparse</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="n">A_sparse</span><span class="p">,</span> <span class="n">right_pad</span><span class="p">],</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;csc&quot;</span><span class="p">)</span>
+                <span class="n">A_sparse</span> <span class="o">=</span> <span class="n">sparse</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="n">A_sparse</span><span class="p">,</span> <span class="n">right_pad</span><span class="p">],</span> <span class="nb">format</span><span class="o">=</span><span class="s2">"csc"</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">A_sparse</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">dim</span><span class="p">:</span>
                 <span class="n">bottom_pad</span> <span class="o">=</span> <span class="n">sparse</span><span class="o">.</span><span class="n">csc_matrix</span><span class="p">((</span><span class="n">dim</span> <span class="o">-</span> <span class="n">A_sparse</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">dim</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
-                <span class="n">A_sparse</span> <span class="o">=</span> <span class="n">sparse</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">A_sparse</span><span class="p">,</span> <span class="n">bottom_pad</span><span class="p">],</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;csc&quot;</span><span class="p">)</span>
+                <span class="n">A_sparse</span> <span class="o">=</span> <span class="n">sparse</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">A_sparse</span><span class="p">,</span> <span class="n">bottom_pad</span><span class="p">],</span> <span class="nb">format</span><span class="o">=</span><span class="s2">"csc"</span><span class="p">)</span>
 
         <span class="c1"># Build descriptor E with explicit projection matrix using the same</span>
         <span class="c1"># diff-&gt;base convention as get_E_matrix.</span>
@@ -1430,10 +1431,10 @@
         <span class="k">if</span> <span class="n">E_sparse</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="n">dim</span> <span class="ow">or</span> <span class="n">E_sparse</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="n">dim</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">E_sparse</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">dim</span><span class="p">:</span>
                 <span class="n">right_pad</span> <span class="o">=</span> <span class="n">sparse</span><span class="o">.</span><span class="n">csc_matrix</span><span class="p">((</span><span class="n">E_sparse</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">dim</span> <span class="o">-</span> <span class="n">E_sparse</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
-                <span class="n">E_sparse</span> <span class="o">=</span> <span class="n">sparse</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="n">E_sparse</span><span class="p">,</span> <span class="n">right_pad</span><span class="p">],</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;csc&quot;</span><span class="p">)</span>
+                <span class="n">E_sparse</span> <span class="o">=</span> <span class="n">sparse</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="n">E_sparse</span><span class="p">,</span> <span class="n">right_pad</span><span class="p">],</span> <span class="nb">format</span><span class="o">=</span><span class="s2">"csc"</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">E_sparse</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">dim</span><span class="p">:</span>
                 <span class="n">bottom_pad</span> <span class="o">=</span> <span class="n">sparse</span><span class="o">.</span><span class="n">csc_matrix</span><span class="p">((</span><span class="n">dim</span> <span class="o">-</span> <span class="n">E_sparse</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">dim</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
-                <span class="n">E_sparse</span> <span class="o">=</span> <span class="n">sparse</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">E_sparse</span><span class="p">,</span> <span class="n">bottom_pad</span><span class="p">],</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;csc&quot;</span><span class="p">)</span>
+                <span class="n">E_sparse</span> <span class="o">=</span> <span class="n">sparse</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">E_sparse</span><span class="p">,</span> <span class="n">bottom_pad</span><span class="p">],</span> <span class="nb">format</span><span class="o">=</span><span class="s2">"csc"</span><span class="p">)</span>
 
         <span class="n">E_sparse</span> <span class="o">=</span> <span class="n">E_sparse</span> <span class="o">-</span> <span class="n">I_state</span>
 
@@ -1459,7 +1460,7 @@
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_compute_jacobian_sparse_from_S</span><span class="p">(</span><span class="n">S</span><span class="p">:</span> <span class="n">sparse</span><span class="o">.</span><span class="n">csc_matrix</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">sparse</span><span class="o">.</span><span class="n">csc_matrix</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Sparse multilinear Jacobian equivalent to PolynomialMatrixBuilder logic.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Sparse multilinear Jacobian equivalent to PolynomialMatrixBuilder logic."""</span>
         <span class="n">n_vars</span><span class="p">,</span> <span class="n">n_mon</span> <span class="o">=</span> <span class="n">S</span><span class="o">.</span><span class="n">shape</span>
         <span class="n">data</span> <span class="o">=</span> <span class="n">S</span><span class="o">.</span><span class="n">data</span>
         <span class="n">indices</span> <span class="o">=</span> <span class="n">S</span><span class="o">.</span><span class="n">indices</span>

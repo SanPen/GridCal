@@ -204,10 +204,9 @@ def get_gfm_emt_template(vf: VarFactory, name: str = "VSC_GridForming") -> EmtMo
         e_C - Epk * sym.sin(theta + two_pi_over_3),
         Pe - Pe_expr,
         Qe - Qe_expr,
-        # Lossless DC power balance (same convention as get_emt_ideal_converter):
-        # the DC bus supplies the active power the converter delivers to the AC
-        # side, so v_dc * i_dc + Pe = 0  ->  i_dc = -Pe / v_dc.
-        i_dc * v_dc + Pe,
+        # DC current enters the branch from its DC bus. Positive AC export
+        # therefore requires positive DC import: v_dc * i_dc = Pe.
+        i_dc * v_dc - Pe,
     ]
     algebraic_vars: List[Any] = [
         e_A, e_B, e_C,
@@ -252,6 +251,8 @@ def get_gfm_emt_template(vf: VarFactory, name: str = "VSC_GridForming") -> EmtMo
         VarPowerFlowReferenceType.phi: phi_ref,
         VarPowerFlowReferenceType.P: P_ref,
         VarPowerFlowReferenceType.Q: Q_ref,
+        VarPowerFlowReferenceType.Pe: Pe,
+        VarPowerFlowReferenceType.Qe: Qe,
     }
 
     # API-object mapping.

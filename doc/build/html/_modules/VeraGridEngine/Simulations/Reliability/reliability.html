@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Simulations.Reliability.reliability &mdash; VeraGrid 6.7.13 documentation</title>
+  <title>VeraGridEngine.Simulations.Reliability.reliability &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=16fbabd8"></script>
+      <script src="../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -116,7 +116,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.basic_structures</span><span class="w"> </span><span class="kn">import</span> <span class="n">IntMat</span><span class="p">,</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">Mat</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">VeraGridEngine</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">vge</span>
 
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 <span class="sd">Common reliability indicators:</span>
 
 
@@ -132,21 +132,21 @@
 <span class="sd">(Average System Availability Index)</span>
 <span class="sd">ASAI = (8760 - SAIDI) / 8760</span>
 
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 
 
 <div class="viewcode-block" id="compose_states">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.Reliability.html#VeraGridEngine.Simulations.Reliability.reliability.compose_states">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">compose_states</span><span class="p">(</span><span class="n">mttf</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">mttr</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">horizon</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">initially_working</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compose random states vector (on -&gt; off -&gt; on -&gt; ...)</span>
 <span class="sd">    :param mttf: Mean time to failure (h)</span>
 <span class="sd">    :param mttr: Mean time to recovery (h)</span>
 <span class="sd">    :param horizon: Time horizon (h)</span>
 <span class="sd">    :param initially_working: is the component initially working?</span>
 <span class="sd">    :return: Vector of states (size horizon) [1: on, 0: off]</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">n_failures</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="n">active</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">horizon</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">nb</span><span class="o">.</span><span class="n">bool</span><span class="p">)</span>
 
@@ -157,11 +157,11 @@
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">horizon</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">nb</span><span class="o">.</span><span class="n">bool</span><span class="p">),</span> <span class="n">n_failures</span>
 
     <span class="k">if</span> <span class="n">initially_working</span><span class="p">:</span>
-        <span class="c1"># If it&#39;s working, first we simulate the failure, then the recovery</span>
+        <span class="c1"># If it's working, first we simulate the failure, then the recovery</span>
         <span class="n">factor_1</span> <span class="o">=</span> <span class="n">mttf</span>
         <span class="n">factor_2</span> <span class="o">=</span> <span class="n">mttr</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="c1"># If it&#39;s not working, first we simulate the recovery, then the failure</span>
+        <span class="c1"># If it's not working, first we simulate the recovery, then the failure</span>
         <span class="n">factor_1</span> <span class="o">=</span> <span class="n">mttr</span>
         <span class="n">factor_2</span> <span class="o">=</span> <span class="n">mttf</span>
 
@@ -201,14 +201,14 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.Reliability.html#VeraGridEngine.Simulations.Reliability.reliability.generate_states_matrix">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">generate_states_matrix</span><span class="p">(</span><span class="n">mttf</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">mttr</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">horizon</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">initially_working</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Generate random states vector (on -&gt; off -&gt; on -&gt; ...)</span>
 <span class="sd">    :param mttf: Vector of Mean time to failure (h)</span>
 <span class="sd">    :param mttr: Vector of Mean time to recovery (h)</span>
 <span class="sd">    :param horizon: Time horizon (h)</span>
 <span class="sd">    :param initially_working: is the component initially working?</span>
 <span class="sd">    :return: matrix of states (size horizon, size mttf) [1: on, 0: off]</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">mttf</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">mttr</span><span class="p">)</span>
 
     <span class="n">n_elm</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">mttf</span><span class="p">)</span>
@@ -227,12 +227,12 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.Reliability.html#VeraGridEngine.Simulations.Reliability.reliability.find_different_states">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">find_different_states</span><span class="p">(</span><span class="n">mat1</span><span class="p">:</span> <span class="n">IntMat</span><span class="p">,</span> <span class="n">mat2</span><span class="p">:</span> <span class="n">IntMat</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Find different states</span>
 <span class="sd">    :param mat1: Matrix 1 of states</span>
 <span class="sd">    :param mat2: Matrix 1 of states</span>
 <span class="sd">    :return: Array of states</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">assert</span> <span class="n">mat1</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="n">mat2</span><span class="o">.</span><span class="n">shape</span>
     <span class="n">keep</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">mat1</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">nb</span><span class="o">.</span><span class="n">bool</span><span class="p">)</span>
     <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
@@ -264,12 +264,12 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.Reliability.html#VeraGridEngine.Simulations.Reliability.reliability.find_time_blocks">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">()</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">find_time_blocks</span><span class="p">(</span><span class="n">horizon</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">all_actives</span><span class="p">:</span> <span class="n">IntMat</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Get the contigous time blocks of failure</span>
 <span class="sd">    :param horizon: number of time steps (ntime)</span>
 <span class="sd">    :param all_actives: matrix of active states (ntime, n_device)</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">blocks</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
     <span class="n">idx_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
     <span class="k">for</span> <span class="n">tidx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">horizon</span><span class="p">):</span>
@@ -292,13 +292,13 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.Reliability.html#VeraGridEngine.Simulations.Reliability.reliability.compute_loss_of_load_because_of_lack_of_generation">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">compute_loss_of_load_because_of_lack_of_generation</span><span class="p">(</span><span class="n">gen_pmax</span><span class="p">:</span> <span class="n">Mat</span><span class="p">,</span> <span class="n">load</span><span class="p">:</span> <span class="n">Mat</span><span class="p">,</span> <span class="n">dt</span><span class="p">:</span> <span class="n">Vec</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute the loss of load because of lack of generation</span>
 <span class="sd">    :param gen_pmax: Matrix of available generation (MW)</span>
 <span class="sd">    :param load: Matrix of load (MW)</span>
 <span class="sd">    :param dt: Time step array (h)</span>
 <span class="sd">    :return: loss of load values in MWh</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">assert</span> <span class="n">gen_pmax</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">load</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
     <span class="n">nt</span> <span class="o">=</span> <span class="n">gen_pmax</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
@@ -342,7 +342,7 @@
                            <span class="n">dt</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
                            <span class="n">force_charge_if_low</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
                            <span class="n">tol</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 
 <span class="sd">    :param n_sim:</span>
 <span class="sd">    :param load_profile:</span>
@@ -367,7 +367,7 @@
 <span class="sd">    :param force_charge_if_low:</span>
 <span class="sd">    :param tol:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">lole_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_sim</span><span class="p">)</span>
     <span class="n">total_cost_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_sim</span><span class="p">)</span>
     <span class="n">curtailment_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_sim</span><span class="p">)</span>
@@ -430,7 +430,7 @@
                                 <span class="n">branch_mttr</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
                                 <span class="n">dt</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
                                 <span class="n">tol</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 
 <span class="sd">    :param n_sim:</span>
 <span class="sd">    :param gen_mttf:</span>
@@ -438,7 +438,7 @@
 <span class="sd">    :param dt:</span>
 <span class="sd">    :param tol:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">lole_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_sim</span><span class="p">)</span>
 
     <span class="n">power_not_supplied</span> <span class="o">=</span> <span class="mi">0</span>

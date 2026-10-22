@@ -7,6 +7,7 @@ from __future__ import annotations
 from types import SimpleNamespace
 
 import numpy as np
+import pytest
 
 from VeraGridEngine.Devices.Branches.dc_line import DcLine
 from VeraGridEngine.Devices.Branches.line import Line
@@ -18,6 +19,7 @@ from VeraGridEngine.Devices.Injections.external_grid import ExternalGrid
 from VeraGridEngine.Devices.Injections.generator import Generator
 from VeraGridEngine.Devices.Injections.current_injection import CurrentInjection
 from VeraGridEngine.Devices.Injections.load import Load
+from VeraGridEngine.Devices.Injections.static_generator import StaticGenerator
 from VeraGridEngine.Devices.Injections.shunt import Shunt
 from VeraGridEngine.Devices.Substation.bus import Bus
 from VeraGridEngine.Devices.multi_circuit import MultiCircuit
@@ -32,7 +34,14 @@ from VeraGridEngine.Devices.Dynamic.static_parameter_mapping_unified import (
     get_line_linv_keys,
     get_line_r_keys,
     get_line_g_keys,
+    get_load_power_phase_values_pu_abc,
 )
+from VeraGridEngine.Simulations.EMT.problems.emt_problem_dae import EmtProblemDae
+from VeraGridEngine.Simulations.EMT.injection_operating_point import (
+    EmtInjectionOperatingPoint,
+)
+from VeraGridEngine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
+from tests.EMT.test_injection_operating_point import _build_balanced_results, build_balanced_emt_injection_operating_point
 from VeraGridEngine.Devices.Dynamic.var_factory import VarFactory
 from VeraGridEngine.Templates.Emt.converter_emt_multilinear_template import (
     get_emt_ideal_converter_multilinear,
@@ -48,7 +57,7 @@ from VeraGridEngine.Templates.Emt.converter_switched_emt_template import (
     get_switched_emt_converter,
 )
 from VeraGridEngine.Utils.Symbolic.block import Block
-from VeraGridEngine.Utils.Symbolic.symbolic import Const, Var
+from VeraGridEngine.Utils.Symbolic.symbolic import Const, Expr, Var
 from VeraGridEngine.basic_structures import Logger
 from VeraGridEngine.enumerations import (
     ConverterControlType,
@@ -57,6 +66,71 @@ from VeraGridEngine.enumerations import (
     ParamPowerFlowReferenceType,
     WindingType,
 )
+
+
+@pytest.mark.parametrize("use_kw", (False, True))
+@pytest.mark.parametrize("explicit", (False, True))
+@pytest.mark.parametrize("active", (False, True))
+def test_phase_load_units_preserve_explicit_mw_and_total_fallback(use_kw: bool, explicit: bool, active: bool) -> None:
+    """Preserve Load phase MW while normalizing only balanced total input units.
+
+    :param use_kw: Interpret Load total P/Q in kW/kVAr.
+    :param explicit: Populate explicit phase powers in MW/MVAr.
+    :param active: Runtime balanced activity must not erase phase declarations.
+    :return: None; source mutation, incorrect scaling or family leakage fails.
+    """
+    grid: MultiCircuit = MultiCircuit(Sbase=100.0)
+    bus: Bus = grid.add_bus(Bus(Vnom=10.0))
+    scale: float = 1000.0 if use_kw else 1.0
+    # Different explicit powers make a mistaken total fallback observable.
+    load: Load = grid.add_load(bus, Load(P=30.0 * scale, Q=12.0 * scale,
+        P1=9.0 if explicit else 0.0, P2=10.0 if explicit else 0.0, P3=11.0 if explicit else 0.0,
+        Q1=3.0 if explicit else 0.0, Q2=4.0 if explicit else 0.0, Q3=5.0 if explicit else 0.0, active=active))
+    load.use_kw = use_kw
+    original: tuple[float, ...] = (load.P, load.Q, load.Pa, load.Pb, load.Pc, load.Qa, load.Qb, load.Qc)
+    p_abc: np.ndarray
+    q_abc: np.ndarray
+    p_abc, q_abc = get_load_power_phase_values_pu_abc(load, grid)
+    expected_p: np.ndarray = np.array((0.09, 0.1, 0.11) if explicit else (0.1, 0.1, 0.1))
+    expected_q: np.ndarray = np.array((0.03, 0.04, 0.05) if explicit else (0.04, 0.04, 0.04))
+    np.testing.assert_allclose(p_abc, expected_p, atol=1e-14)
+    np.testing.assert_allclose(q_abc, expected_q, atol=1e-14)
+    # Native direct references and the array mapper must agree before activity events.
+    references: tuple[ParamPowerFlowReferenceType, ...] = (
+        ParamPowerFlowReferenceType.Pl0_A, ParamPowerFlowReferenceType.Pl0_B, ParamPowerFlowReferenceType.Pl0_C,
+        ParamPowerFlowReferenceType.Ql0_A, ParamPowerFlowReferenceType.Ql0_B, ParamPowerFlowReferenceType.Ql0_C)
+    targets: tuple[Var, ...] = tuple(Var(name=str(reference)) for reference in references)
+    block: Block = _make_block(dict(zip(references, targets)))
+    mapping: dict[Var, Const] = dict()
+    assign_static_api_object_mapping_for_device(grid, load, block, mapping, None)
+    index: int
+    for index in range(3):
+        assert np.isclose(mapping[targets[index]].value, expected_p[index])
+        assert np.isclose(mapping[targets[index + 3]].value, expected_q[index])
+    # The common runtime provider consumes total-power units and gates only
+    # the seed of inactive devices; raw phase declarations above stay intact.
+    balanced_results: PowerFlowResults = _build_balanced_results(n_gen=0)
+    operating_point: EmtInjectionOperatingPoint = build_balanced_emt_injection_operating_point(
+        grid=grid,
+        power_flow_results=balanced_results,
+        bus_dict=dict(((bus, 0),)),
+        injection_devices=list(grid.get_injection_devices_iter()),
+    )
+    balanced: np.ndarray = operating_point.get_ac_seed(0)
+    expected_balanced: np.ndarray
+    if active:
+        expected_balanced = np.array((0j, -0.1 - 0.04j, -0.1 - 0.04j, -0.1 - 0.04j))
+    else:
+        expected_balanced = np.zeros(4, dtype=np.complex128)
+    np.testing.assert_allclose(balanced, expected_balanced)
+    assert original == (load.P, load.Q, load.Pa, load.Pb, load.Pc, load.Qa, load.Qb, load.Qc)
+    # StaticGenerator totals retain their previous MW/MVAr contract.
+    generator: StaticGenerator = StaticGenerator(P=30.0, Q=12.0)
+    generator_p: np.ndarray
+    generator_q: np.ndarray
+    generator_p, generator_q = get_load_power_phase_values_pu_abc(generator, grid)
+    np.testing.assert_allclose(generator_p, np.full(3, 0.1))
+    np.testing.assert_allclose(generator_q, np.full(3, 0.04))
 
 
 def _make_grid(sbase: float = 100.0, fbase: float = 50.0) -> SimpleNamespace:
@@ -455,6 +529,36 @@ def test_converter_templates_keep_api_mappings_on_local_parameter_owners() -> No
                 assert target_is_constant != target_is_runtime
 
 
+def test_soft_switched_converter_maps_all_vsc_loss_coefficients() -> None:
+    """Seed all three loss terms from the device rather than template defaults."""
+    grid = _make_grid()
+    dc_bus = Bus(name="dc", Vnom=2.0, is_dc=True)
+    ac_bus = Bus(name="ac", Vnom=20.0)
+    vsc = VSC(name="vsc", bus_from=dc_bus, bus_to=ac_bus)
+    vsc.alpha1 = 0.004
+    vsc.alpha2 = 0.02
+    vsc.alpha3 = 0.03
+    model = get_soft_switched_emt_converter(vf=VarFactory()).block
+    values: dict[Var, Const] = {}
+
+    assign_static_api_object_mapping_for_device(
+        grid=grid, device=vsc, mdl=model, problem_mapping=values, logger=None
+    )
+
+    owner = next(
+        block for block in model.get_all_blocks()
+        if ParamPowerFlowReferenceType.alpha1 in block.api_obj_mapping
+    )
+    for key, expected in (
+        (ParamPowerFlowReferenceType.alpha1, vsc.alpha1),
+        (ParamPowerFlowReferenceType.alpha2, vsc.alpha2),
+        (ParamPowerFlowReferenceType.alpha3, vsc.alpha3),
+    ):
+        target = owner.api_obj_mapping[key]
+        assert target is not None
+        assert np.isclose(float(values[target].value), expected)
+
+
 def test_load_subset_mapping_assigns_only_requested_keys() -> None:
     """A model exposing a subset of load keys must receive only that subset."""
     grid: SimpleNamespace = _make_grid()
@@ -604,6 +708,103 @@ def test_load_api_mapping_seeds_runtime_targets_without_mutating_block() -> None
     assert np.isclose(float(problem_mapping[p_target].value), 0.3)
     assert np.isclose(float(problem_mapping[q_target].value), 0.1)
     assert np.isclose(float(problem_mapping[omega_target].value), 2.0 * np.pi * 60.0)
+
+
+@pytest.mark.parametrize("active,use_kw", ((True, False), (True, True), (False, False), (False, True)))
+@pytest.mark.parametrize("physical_p,physical_q,system_base,expected_p,expected_q",
+                         ((10.0, 1.0, 100.0, -0.1, -0.01),
+                          (-0.3, 0.0, 2.0, 0.15, 0.0),
+                          (0.0, -0.3, 5.0, 0.0, 0.06)))
+@pytest.mark.parametrize("runtime", (False, True))
+@pytest.mark.parametrize("mapped", ((True, True), (True, False), (False, True)))
+def test_balanced_ac_load_mapping_units_activity(
+        active: bool, use_kw: bool, physical_p: float, physical_q: float,
+        system_base: float, expected_p: float, expected_q: float,
+        runtime: bool, mapped: tuple[bool, bool]) -> None:
+    """Check physical-equivalent balanced powers and preserve separate contracts.
+
+    :param active: Initial physical load activity.
+    :param use_kw: Store equivalent source values in kW/kVAr when true.
+    :param physical_p: Equivalent MW constant power.
+    :param physical_q: Equivalent MVAr constant power.
+    :param system_base: MVA normalization base.
+    :param expected_p: Independently specified active injection in p.u.
+    :param expected_q: Independently specified reactive injection in p.u.
+    :param runtime: Declare the requested targets as event parameters.
+    :param mapped: Request balanced P and Q independently.
+    :return: None.
+    """
+    grid: MultiCircuit = MultiCircuit(Sbase=system_base, fbase=60.0)
+    bus: Bus = grid.add_bus(Bus(Vnom=20.0))
+    source_scale: float = 1000.0 if use_kw else 1.0
+    load: Load = grid.add_load(bus=bus, api_obj=Load(
+        P=physical_p * source_scale, Q=physical_q * source_scale, active=active))
+    load.use_kw = use_kw
+    original: tuple[float, float, bool, bool] = (load.P, load.Q, load.active, load.use_kw)
+    p_target: Var = _make_var("balanced P")
+    q_target: Var = _make_var("balanced Q")
+    mapping: dict[ParamPowerFlowReferenceType, Var | None] = dict((
+        (ParamPowerFlowReferenceType.device_active, _make_var("activity")),
+        (ParamPowerFlowReferenceType.Pl0_A, _make_var("phase P")),
+        (ParamPowerFlowReferenceType.Ql0_A, _make_var("phase Q")),
+        (ParamPowerFlowReferenceType.omega_base, _make_var("frequency"))))
+    if mapped[0]:
+        mapping[ParamPowerFlowReferenceType.Pl0] = p_target
+    else:
+        pass
+    if mapped[1]:
+        mapping[ParamPowerFlowReferenceType.Ql0] = q_target
+    else:
+        pass
+    event_keys: set[ParamPowerFlowReferenceType] = set(mapping) if runtime else set()
+    block: Block = _make_block(mapping, event_keys)
+    # Unrequested slots keep their declared manual source. Requested targets
+    # receive an effective baseline in problem storage, never in this block.
+    if runtime:
+        block.event_dict[p_target] = Const(0.777)
+        block.event_dict[q_target] = Const(-0.333)
+    else:
+        block.parameters[p_target] = Const(0.777)
+        block.parameters[q_target] = Const(-0.333)
+    declarations: dict[Var, Expr | Const] = block.event_dict if runtime else block.parameters
+    declaration_values: dict[Var, float | None] = dict()
+    target: Var
+    expression: Expr | Const
+    for target, expression in declarations.items():
+        assert isinstance(expression, Const)
+        declaration_values[target] = expression.value
+    problem_mapping: dict[Var, Const] = dict()
+    assign_static_api_object_mapping_for_device(grid, load, block, problem_mapping, None)
+    if mapped[0]:
+        assert float(problem_mapping[p_target].value) == pytest.approx(expected_p if active else 0.0)
+    else:
+        assert p_target not in problem_mapping
+    if mapped[1]:
+        assert float(problem_mapping[q_target].value) == pytest.approx(expected_q if active else 0.0)
+    else:
+        assert q_target not in problem_mapping
+    # Total P/Q fallback uses the source unit; activity does not erase the
+    # declared phase power or change the independent activity reference.
+    assert _const_value(problem_mapping, block, ParamPowerFlowReferenceType.Pl0_A) == pytest.approx(load.P / (3.0 * system_base * source_scale))
+    assert _const_value(problem_mapping, block, ParamPowerFlowReferenceType.Ql0_A) == pytest.approx(load.Q / (3.0 * system_base * source_scale))
+    assert _const_value(problem_mapping, block, ParamPowerFlowReferenceType.device_active) == float(active)
+    assert _const_value(problem_mapping, block, ParamPowerFlowReferenceType.omega_base) == pytest.approx(120.0 * np.pi)
+    for target, expression in declarations.items():
+        assert isinstance(expression, Const)
+        assert expression.value == declaration_values[target]
+    # The separate DC branch intentionally retains its original positive
+    # declared P/G values, including the historical activity/unit behavior.
+    dc_bus: Bus = grid.add_bus(Bus(Vnom=20.0, is_dc=True))
+    dc_load: Load = grid.add_load(bus=dc_bus, api_obj=Load(P=load.P, G=12.0, active=active))
+    dc_load.use_kw = use_kw
+    dc_block: Block = _make_block(dict((
+        (ParamPowerFlowReferenceType.Pl0, _make_var("DC P")),
+        (ParamPowerFlowReferenceType.g, _make_var("DC G")))))
+    dc_mapping: dict[Var, Const] = dict()
+    assign_static_api_object_mapping_for_device(grid, dc_load, dc_block, dc_mapping, None)
+    assert _const_value(dc_mapping, dc_block, ParamPowerFlowReferenceType.Pl0) == pytest.approx(load.P / system_base)
+    assert _const_value(dc_mapping, dc_block, ParamPowerFlowReferenceType.g) == pytest.approx(12.0 / system_base)
+    assert (load.P, load.Q, load.active, load.use_kw) == original
 
 
 def test_existing_generator_mapping_values_remain_unchanged() -> None:

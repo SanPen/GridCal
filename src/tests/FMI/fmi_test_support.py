@@ -19,6 +19,8 @@ from VeraGridEngine.Devices.Injections.load import Load
 from VeraGridEngine.Devices.Substation.bus import Bus
 from VeraGridEngine.Devices.multi_circuit import MultiCircuit
 from VeraGridEngine.IO.fmu.interface import export_model_as_fmu
+from VeraGridEngine.IO.native_compiler.selected_interface import resolve_native_compiler
+from VeraGridEngine.Utils.Compiler.interface import Compiler
 from VeraGridEngine.Utils.Symbolic.block import Block
 from VeraGridEngine.Utils.Symbolic.symbolic import CmpOp, Comparison, Const, Var
 from VeraGridEngine.IO.fmu.config import ExportConfig as CsExportConfig, detect_target_platform as detect_cs_target_platform
@@ -58,6 +60,14 @@ from VeraGridEngine.enumerations import (
     SolverType,
     VarPowerFlowReferenceType,
 )
+
+
+def build_test_fmi_compiler() -> Compiler | None:
+    """Use the production native resolver and its saved explicit LLVM selection.
+
+    :return: Caller-owned native Compiler facade, or None if unavailable.
+    """
+    return resolve_native_compiler()
 
 
 def _build_test_rms_cs_source_block() -> Block:

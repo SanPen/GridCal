@@ -233,6 +233,7 @@ class GenrouSaturationMode(Enum):
 
     QUADRATIC = 1
     DISABLED = 2
+    POWER_LAW = 3
 
 
 def _add_parameter(
@@ -511,28 +512,40 @@ def _quadratic_saturation_coefficients(
 
 
 
-def _esst3a_fex(in_var: Expr) -> Expr:
+def _esst3a_fex(in_var: Expr, first_boundary: Expr | None = None,
+                middle_boundary: Expr | None = None, first_slope: Expr | None = None,
+                last_slope: Expr | None = None) -> Expr:
     """Return the standard ESST3A commutating-reactance function ``FEX``.
 
     The function uses five pieces with breakpoints 0, 0.433, 0.75 and 1.0. The
-    Heaviside representation keeps the active formula in each open interval.
+    Heaviside representation keeps the active formula in each open interval;
+    the final linear region includes its lower boundary at 0.75.
 
     :param in_var: ESST3A normalized field-current variable ``IN``.
+    :param first_boundary: Optional calibrated first transition, default 0.433.
+    :param middle_boundary: Optional middle intercept/transition, default 0.75.
+    :param first_slope: Optional linear commutation slope, default 0.577.
+    :param last_slope: Optional final-region slope, default 1.732.
     :return: Piecewise ``FEX`` expression.
     """
+    low: Expr = sym.Const(0.433) if first_boundary is None else first_boundary
+    high: Expr = sym.Const(0.75) if middle_boundary is None else middle_boundary
+    slope1: Expr = sym.Const(0.577) if first_slope is None else first_slope
+    slope3: Expr = sym.Const(1.732) if last_slope is None else last_slope
     h0: Expr = sym.heaviside(in_var)
-    h0433: Expr = sym.heaviside(in_var - sym.Const(0.433))
-    h075: Expr = sym.heaviside(in_var - sym.Const(0.75))
+    h0433: Expr = sym.heaviside(in_var - low)
+    h075: Expr = sym.Const(1.0)-sym.heaviside(high-in_var)
     h1: Expr = sym.heaviside(in_var - sym.Const(1.0))
 
     f0: Expr = sym.Const(1.0)
-    f1: Expr = sym.Const(1.0) - sym.Const(0.577) * in_var
-    sqrt_argument: Expr = sym.max(
-        sym.Const(0.0),
-        sym.Const(0.75) - in_var * in_var,
-    )
+    f1: Expr = sym.Const(1.0) - slope1 * in_var
+    # Inactive branches are still evaluated by symbolic kernels. A unit
+    # radicand outside this region keeps both values and Jacobians finite;
+    # max(0, ...) alone would leave a removable 0/sqrt(0) in the derivative.
+    middle_gate: Expr = h0433-h075
+    sqrt_argument: Expr = sym.Const(1.0)+middle_gate*(high-in_var*in_var-sym.Const(1.0))
     f2: Expr = sym.sqrt(sqrt_argument)
-    f3: Expr = sym.Const(1.732) * (sym.Const(1.0) - in_var)
+    f3: Expr = slope3 * (sym.Const(1.0) - in_var)
 
     return (
         (sym.Const(1.0) - h0) * f0
@@ -560,6 +573,9 @@ def _genrou_initial_expressions(
     gqd_expr: Expr,
     sat_a_expr: Expr,
     sat_b_expr: Expr,
+    s10_var: Var,
+    s12_var: Var,
+    saturation_mode: GenrouSaturationMode,
 ) -> Dict[str, Expr]:
     """Build consistent steady-state GENROU initialization expressions.
 
@@ -580,6 +596,9 @@ def _genrou_initial_expressions(
     :param gqd_expr: GENROU gamma qd coefficient.
     :param sat_a_expr: Quadratic saturation threshold.
     :param sat_b_expr: Quadratic saturation gain.
+    :param s10_var: Saturation factor at unit resultant flux.
+    :param s12_var: Saturation factor at resultant flux 1.2 pu.
+    :param saturation_mode: Explicit physical saturation characteristic.
     :return: Named initialization expressions.
     """
     voltage_complex: Expr = vm_var * sym.exp(1j * va_var)
@@ -590,24 +609,24 @@ def _genrou_initial_expressions(
     psi20_complex: Expr = voltage_complex + terminal_current * stator_impedance
     psi20_abs: Expr = sym.abs(psi20_complex)
     psi20_arg: Expr = sym.imag(sym.log(psi20_complex))
-    current_abs: Expr = sym.abs(terminal_current)
-    current_arg: Expr = sym.imag(sym.log(terminal_current))
-    psi_current_arg: Expr = psi20_arg - current_arg
+    # Resolve current components directly: its phase is undefined at zero P/Q,
+    # although the winding equilibrium itself remains perfectly well defined.
+    current_in_flux_frame: Expr = terminal_current * sym.exp(-1j * psi20_arg)
 
-    se0: Expr = (
-        sym.heaviside(psi20_abs - sat_a_expr)
-        * (psi20_abs - sat_a_expr) ** 2
-        * sat_b_expr
-        / psi20_abs
-    )
+    se0: Expr
+    if saturation_mode is GenrouSaturationMode.POWER_LAW:
+        se0 = s10_var*psi20_abs**(sym.log(s12_var/s10_var)/sym.log(sym.Const(1.2)))
+    else:
+        se0 = (sym.heaviside(psi20_abs-sat_a_expr)
+            *(psi20_abs-sat_a_expr)**2*sat_b_expr/psi20_abs)
     delta_a: Expr = psi20_abs * (sym.Const(1.0) + se0 * gqd_expr)
-    delta_b: Expr = current_abs * (xq2_var - xq_var)
+    reactance_difference: Expr = xq2_var - xq_var
     delta0: Expr = (
         sym.atan(
-            delta_b
-            * sym.cos(psi_current_arg)
+            reactance_difference
+            * sym.real(current_in_flux_frame)
             / (
-                delta_b * sym.sin(psi_current_arg)
+                -reactance_difference * sym.imag(current_in_flux_frame)
                 - delta_a
             )
         )
@@ -789,9 +808,18 @@ def get_genrou_rms_template(
     # S10=S12=0 into the quadratic fit would evaluate an undefined 0/0 ratio.
     if saturation_mode is GenrouSaturationMode.QUADRATIC:
         sat_a_expr, sat_b_expr = _quadratic_saturation_coefficients(s10_var, s12_var)
+        saturation_excess: Expr = sym.heaviside(psi2_var-sat_a_expr)*(psi2_var-sat_a_expr)**2*sat_b_expr
+    elif saturation_mode is GenrouSaturationMode.POWER_LAW:
+        sat_a_expr = sym.Const(0.0)
+        sat_b_expr = sym.Const(0.0)
+        # Magnitude is nonnegative physically. A signed real continuation keeps
+        # fractional powers finite if a Newton trial crosses its zero boundary.
+        saturation_excess = s10_var*(sym.Const(2.0)*sym.heaviside(psi2_var)-sym.Const(1.0))*sym.max(psi2_var,-psi2_var)**(
+            sym.Const(1.0)+sym.log(s12_var/s10_var)/sym.log(sym.Const(1.2)))
     else:
         sat_a_expr = sym.Const(1.0)
         sat_b_expr = sym.Const(0.0)
+        saturation_excess = sym.Const(0.0)
 
     block.state_vars = list((
         delta_var,
@@ -847,9 +875,7 @@ def get_genrou_rms_template(
         + psi2q_var ** 2
         - psi2_var ** 2
         + diag_eps_expr * (psi2_var - psi2_diag_ref_var),
-        sym.heaviside(psi2_var - sat_a_expr)
-        * (psi2_var - sat_a_expr) ** 2
-        * sat_b_expr
+        saturation_excess
         - psi2_var * se_var
         + diag_eps_expr * (se_var - se_diag_ref_var),
         e1q_var
@@ -890,6 +916,9 @@ def get_genrou_rms_template(
         gqd_expr=gqd_expr,
         sat_a_expr=sat_a_expr,
         sat_b_expr=sat_b_expr,
+        s10_var=s10_var,
+        s12_var=s12_var,
+        saturation_mode=saturation_mode,
     )
     block.init_eqs = dict()
     block.init_eqs[delta_var] = initial["delta"]

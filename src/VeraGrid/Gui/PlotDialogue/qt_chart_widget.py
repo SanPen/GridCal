@@ -5,7 +5,10 @@
 
 """Small QWidget chart renderer with explicit Python ownership of chart data."""
 
+from __future__ import annotations
+
 from collections.abc import Sequence
+from copy import deepcopy
 from enum import Enum, auto
 from pathlib import Path
 
@@ -404,7 +407,7 @@ def prepare_chart_points(x_values: Sequence[float] | np.ndarray,
     """
     x_data: np.ndarray = np.asarray(x_values, dtype=float)
     y_data: np.ndarray = np.asarray(y_values, dtype=float)
-    if len(x_data) == len(y_data):
+    if x_data.ndim == 1 and y_data.ndim == 1 and len(x_data) == len(y_data):
         finite_mask: np.ndarray = np.isfinite(x_data) & np.isfinite(y_data)
         return np.ascontiguousarray(x_data[finite_mask], dtype=float), np.ascontiguousarray(y_data[finite_mask], dtype=float)
     else:
@@ -423,7 +426,8 @@ def prepare_chart_point_tooltips(x_values: np.ndarray,
     """
     if point_tooltips is not None:
         y_data: np.ndarray = np.asarray(y_values, dtype=float)
-        if len(point_tooltips) == len(x_values) and len(x_values) == len(y_data):
+        if (x_values.ndim == 1 and y_data.ndim == 1
+                and len(point_tooltips) == len(x_values) and len(x_values) == len(y_data)):
             finite_mask: np.ndarray = np.isfinite(x_values) & np.isfinite(y_data)
             retained_tooltips: list[str] = list()
             tooltip_index: int
@@ -541,6 +545,7 @@ class GraphsWidget(QtWidgets.QWidget):
     """Paint native line, scatter, area, bar, polar, and histogram charts."""
 
     __slots__ = (
+        "_stacked_enabled", "_bar_enabled", "_row_labels", "_transform_source", "_cdf_enabled", "_abs_enabled", "_transpose_enabled", "_catalog_detached",
         "axis_x",
         "axis_y",
         "_series",
@@ -552,7 +557,7 @@ class GraphsWidget(QtWidgets.QWidget):
         "_x_max",
         "_y_min",
         "_y_max",
-        "_x_is_datetime",
+        "_x_is_datetime", "_y_is_datetime",
         "_pan_position",
         "_pan_button",
         "_zoom_origin",
@@ -589,11 +594,16 @@ class GraphsWidget(QtWidgets.QWidget):
         self.setFocusPolicy(QtCore.Qt.FocusPolicy.StrongFocus)
         self.setMouseTracking(True)
         self.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.DefaultContextMenu)
-        self.setToolTip(self.tr("Mouse wheel: zoom\nLeft drag: select zoom area\n"
-                                "Ctrl + left drag: pan\nRight-click: chart options\n"
-                                "Double-click: reset view"))
 
         # The axes and series are plain Python values, so QWidget owns every native object involved.
+        self._stacked_enabled: bool = False
+        self._bar_enabled: bool = False
+        self._row_labels: dict[float, str] = dict()
+        self._catalog_detached: bool = False
+        self._transform_source: GraphsWidget | None = None
+        self._cdf_enabled: bool = False
+        self._abs_enabled: bool = False
+        self._transpose_enabled: bool = False
         self.axis_x: ChartAxis = ChartAxis()
         self.axis_y: ChartAxis = ChartAxis()
         self._series: list[ChartSeries] = list()
@@ -606,6 +616,7 @@ class GraphsWidget(QtWidgets.QWidget):
         self._y_min: float = 0.0
         self._y_max: float = 1.0
         self._x_is_datetime: bool = False
+        self._y_is_datetime: bool = False
         self._pan_position: QtCore.QPointF | None = None
         self._pan_button: QtCore.Qt.MouseButton | None = None
         self._zoom_origin: QtCore.QPointF | None = None
@@ -744,7 +755,7 @@ class GraphsWidget(QtWidgets.QWidget):
         """
         axis: ChartAxis = self.axis_x if axis_index == 0 else self.axis_y
         border_value: float = axis.get_visual_range()[0 if minimum else 1]
-        is_datetime: bool = self._x_is_datetime and axis_index == 0
+        is_datetime: bool = self._x_is_datetime if axis_index == 0 else self._y_is_datetime
         if is_datetime:
             # Use UTC both here and while parsing so editing a displayed limit
             # returns exactly the same epoch coordinate on every workstation.
@@ -786,7 +797,7 @@ class GraphsWidget(QtWidgets.QWidget):
             current_minimum: float
             current_maximum: float
             current_minimum, current_maximum = axis.get_visual_range()
-            is_datetime: bool = self._x_is_datetime and self._editing_axis_index == 0
+            is_datetime: bool = self._x_is_datetime if self._editing_axis_index == 0 else self._y_is_datetime
             border_value: float | None = self._parse_axis_input(self._axis_limit_editor.text(), is_datetime)
             if border_value is not None:
                 requested_minimum: float = border_value if self._editing_minimum else current_minimum
@@ -956,7 +967,7 @@ class GraphsWidget(QtWidgets.QWidget):
             x_data: np.ndarray
             is_datetime: bool
             x_data, is_datetime = prepare_chart_x_values(x_values=x_values)
-            if len(x_data) > 0:
+            if x_data.ndim == 1 and len(x_data) > 0:
                 pass
             else:
                 return False
@@ -967,7 +978,7 @@ class GraphsWidget(QtWidgets.QWidget):
             series_index: int
             for series_index in range(series_count):
                 y_data: np.ndarray = np.asarray(series_values[series_index], dtype=float)
-                if len(y_data) == len(x_data):
+                if y_data.ndim == 1 and len(y_data) == len(x_data):
                     values_data.append(y_data)
                     all_values_finite = all_values_finite and bool(np.all(np.isfinite(y_data)))
                 else:
@@ -1074,7 +1085,7 @@ class GraphsWidget(QtWidgets.QWidget):
             return False
         else:
             pass
-        if len(x_data) == 0 or not bool(np.any(np.isfinite(x_data))):
+        if x_data.ndim != 1 or len(x_data) == 0 or not bool(np.any(np.isfinite(x_data))):
             return False
         else:
             pass
@@ -1093,7 +1104,7 @@ class GraphsWidget(QtWidgets.QWidget):
         series_index: int
         for series_index in range(series_count):
             y_data: np.ndarray = np.asarray(series_values[series_index], dtype=float)
-            if len(y_data) != len(x_data) or not bool(np.any(np.isfinite(y_data))):
+            if y_data.ndim != 1 or len(y_data) != len(x_data) or not bool(np.any(np.isfinite(y_data))):
                 return False
             else:
                 pass
@@ -1128,12 +1139,16 @@ class GraphsWidget(QtWidgets.QWidget):
             x_data: np.ndarray
             is_datetime: bool
             x_data, is_datetime = prepare_chart_x_values(x_values=x_values)
+            if x_data.ndim != 1:
+                return False
+            else:
+                pass
             valid_mask: np.ndarray = np.isfinite(x_data)
             values_data: list[np.ndarray] = list()
             series_index: int
             for series_index in range(len(series_values)):
                 value_data: np.ndarray = np.asarray(series_values[series_index], dtype=float)
-                if len(value_data) == len(x_data):
+                if value_data.ndim == 1 and len(value_data) == len(x_data):
                     values_data.append(value_data)
                     valid_mask &= np.isfinite(value_data)
                 else:
@@ -1184,6 +1199,7 @@ class GraphsWidget(QtWidgets.QWidget):
                 self.clear()
                 self._tight_axis_layout = True
                 self._content_type = ChartContentType.CUMULATIVE_AREA
+                self._stacked_enabled = True
                 self._series = new_series
                 self._has_points = True
                 self._x_min = float(np.min(retained_x_data))
@@ -1236,7 +1252,7 @@ class GraphsWidget(QtWidgets.QWidget):
             for series_index in range(series_count):
                 angles: np.ndarray = np.asarray(angle_values[series_index], dtype=float)
                 radii: np.ndarray = np.asarray(radius_values[series_index], dtype=float)
-                if len(angles) == len(radii):
+                if angles.ndim == 1 and radii.ndim == 1 and len(angles) == len(radii):
                     finite_mask: np.ndarray = np.isfinite(angles) & np.isfinite(radii) & (radii >= 0.0)
                     if np.any(finite_mask):
                         retained_angles: np.ndarray = np.ascontiguousarray(angles[finite_mask], dtype=float)
@@ -1295,6 +1311,18 @@ class GraphsWidget(QtWidgets.QWidget):
         """
         _ = force
         if self._is_owner_thread():
+            if self._transform_source is not None:
+                self._transform_source.dispose()
+                self._transform_source.deleteLater()
+                self._transform_source = None
+            else:
+                pass
+            self._stacked_enabled = False
+            self._bar_enabled = False
+            self._row_labels.clear()
+            self._cdf_enabled = False
+            self._abs_enabled = False
+            self._transpose_enabled = False
             series: ChartSeries
             for series in self._series:
                 series.release_data()
@@ -1307,6 +1335,7 @@ class GraphsWidget(QtWidgets.QWidget):
             self._y_min = 0.0
             self._y_max = 1.0
             self._x_is_datetime = False
+            self._y_is_datetime = False
             self._legend_visible = True
             self._equal_axis_scale = False
             self._tight_axis_layout = False
@@ -1325,6 +1354,209 @@ class GraphsWidget(QtWidgets.QWidget):
                 pass
             if not self._disposed:
                 self.update()
+            else:
+                pass
+        else:
+            pass
+
+    def copy_plot_to(self, target: GraphsWidget) -> None:
+        """Copy retained plot data and display settings without sharing buffers.
+
+        :param target: Empty chart receiving the independent copy.
+        :return: None.
+        """
+        target.clear()
+        target._stacked_enabled = self._stacked_enabled
+        target._bar_enabled = self._bar_enabled
+        target._row_labels = self._row_labels.copy()
+        target._catalog_detached = self._catalog_detached
+        target._series = deepcopy(self._series)
+        target._content_type = self._content_type
+        target._bar_labels = self._bar_labels.copy()
+        target._title = self._title
+        target._x_is_datetime = self._x_is_datetime
+        target._y_is_datetime = self._y_is_datetime
+        target._legend_visible = self._legend_visible
+        target._legend_overlay = self._legend_overlay
+        target._equal_axis_scale = self._equal_axis_scale
+        target._tight_axis_layout = self._tight_axis_layout
+        target.axis_x = deepcopy(self.axis_x)
+        target.axis_y = deepcopy(self.axis_y)
+        target._reset_data_bounds()
+        series: ChartSeries
+        for series in target._series:
+            if series.get_x_data().size > 0:
+                target._include_points(series.get_x_data(), series.get_y_data())
+            else:
+                pass
+        target._cdf_enabled = self._cdf_enabled
+        target._abs_enabled = self._abs_enabled
+        target._transpose_enabled = self._transpose_enabled
+        if self._transform_source is not None:
+            target._transform_source = GraphsWidget(parent=target)
+            target._transform_source.hide()
+            self._transform_source.copy_plot_to(target._transform_source)
+        else:
+            pass
+        target.update()
+
+    def set_value_transforms(self, cdf: bool, absolute: bool, transpose: bool = False,
+                             stacked: bool = False, bar: bool = False) -> bool:
+        """Redraw XY values from an independent source so switches are reversible.
+
+        :param cdf: Sort values against probability coordinates from zero to one.
+        :param absolute: Take absolute values before sorting.
+        :param transpose: Swap coordinates and captions after applying value transforms.
+        :param stacked: Use the existing cumulative area renderer.
+        :param bar: Use grouped vertical bars with source row labels.
+        :return: Whether the requested view can represent the stored data.
+        """
+        if self._content_type in (ChartContentType.XY, ChartContentType.CUMULATIVE_AREA):
+            if self._transform_source is None:
+                retained_source: GraphsWidget = GraphsWidget(parent=self)
+                retained_source.hide()
+                self.copy_plot_to(retained_source)
+                self._transform_source = retained_source
+            else:
+                pass
+            source: GraphsWidget = self._transform_source
+            if ((stacked or bar) and (transpose or len(source._series) == 0)
+                    or (stacked and bar) or (bar and cdf)):
+                return False
+            else:
+                pass
+            # Stacked bands must share coordinates; reject incompatible data before mutation.
+            if stacked:
+                reference: np.ndarray = source._series[0].get_x_data()
+                if reference.size == 0:
+                    return False
+                else:
+                    pass
+                candidate: ChartSeries
+                for candidate in source._series:
+                    if not np.array_equal(reference, candidate.get_x_data()):
+                        return False
+                    else:
+                        pass
+            else:
+                pass
+            self._content_type = ChartContentType.XY
+            self._bar_enabled = bar
+            self._bar_labels.clear()
+            bar_coordinates: np.ndarray = np.empty(0, dtype=float)
+            bar_order: np.ndarray = np.empty(0, dtype=np.int64)
+            if bar:
+                first_positions: np.ndarray
+                bar_coordinates, first_positions = np.unique(
+                    np.concatenate([entry.get_x_data() for entry in source._series]), return_index=True)
+                # Prefer the table's row order even when individual series have missing samples.
+                row_order: dict[float, int] = dict(zip(source._row_labels, range(len(source._row_labels))))
+                category_order: np.ndarray = np.array([
+                    row_order.get(float(coordinate), len(row_order) + int(position))
+                    for coordinate, position in zip(bar_coordinates, first_positions)], dtype=np.int64)
+                bar_order = np.argsort(np.argsort(category_order))
+                coordinate: float
+                for coordinate in bar_coordinates[np.argsort(category_order)]:
+                    label: str | None = source._row_labels.get(float(coordinate), None)
+                    self._bar_labels.append(label if label is not None else format_chart_value(
+                        float(coordinate), source._x_is_datetime))
+            else:
+                pass
+            self._reset_data_bounds()
+            series_index: int
+            original: ChartSeries
+            for series_index, original in enumerate(source._series):
+                values: np.ndarray = np.abs(original.get_y_data()) if absolute else original.get_y_data().copy()
+                coordinates: np.ndarray = original.get_x_data().copy()
+                if cdf:
+                    values = np.sort(values)
+                    coordinates = np.linspace(0.0, 1.0, values.size)
+                else:
+                    pass
+                # Transpose last so the switches have a consistent, reversible order.
+                if transpose:
+                    coordinates, values = values, coordinates
+                else:
+                    pass
+                if bar:
+                    coordinates = bar_order[np.searchsorted(bar_coordinates, coordinates)].astype(float)
+                else:
+                    pass
+                visible: bool = self._series[series_index].get_visible()
+                self._series[series_index] = deepcopy(original)
+                if original.get_series_type() == ChartSeriesType.CUMULATIVE_AREA:
+                    self._series[series_index] = ChartSeries(
+                        ChartSeriesType.LINE, original.get_name(), coordinates, values, original.get_color())
+                else:
+                    pass
+                self._series[series_index].set_visible(visible)
+                self._series[series_index].replace_data(coordinates, values, original.get_color())
+                if cdf:
+                    # Sorted samples no longer correspond to the original point annotations.
+                    self._series[series_index].set_point_tooltips(None)
+                else:
+                    pass
+                if coordinates.size > 0:
+                    self._include_points(coordinates, values)
+                else:
+                    pass
+            if stacked:
+                names: list[str] = [entry.get_name() for entry in self._series]
+                buffers: list[np.ndarray] = [entry.get_y_data() for entry in self._series]
+                colors: list[str] = [entry.get_color().name() for entry in self._series]
+                visibility: list[bool] = [entry.get_visible() for entry in self._series]
+                # The setter clears chart buffers; retain the reversible source separately.
+                self._transform_source = None
+                accepted: bool = self.set_cumulative_area_series(
+                    self._series[0].get_x_data(), names, buffers, colors)
+                self._transform_source = source
+                if not accepted:
+                    return False
+                else:
+                    pass
+                self._row_labels = source._row_labels.copy()
+                for series_index in range(len(visibility)):
+                    self._series[series_index].set_visible(visibility[series_index])
+            else:
+                pass
+            self._stacked_enabled = stacked
+            self._bar_enabled = bar
+            self._cdf_enabled = cdf
+            self._abs_enabled = absolute
+            self._transpose_enabled = transpose
+            self._x_is_datetime = source._x_is_datetime and not cdf and not transpose and not bar
+            self._y_is_datetime = source._x_is_datetime and not cdf and transpose
+            x_title: str = self.tr('Probability') if cdf else source.axis_x.get_title()
+            y_title: str = source.axis_y.get_title()
+            self.axis_x.set_title(y_title if transpose else x_title)
+            self.axis_y.set_title(x_title if transpose else y_title)
+            self._set_axis_ranges()
+            if cdf:
+                if transpose:
+                    self.axis_y.set_range(0.0, 1.0)
+                else:
+                    self.axis_x.set_range(0.0, 1.0)
+            else:
+                pass
+            self.reset_viewport()
+            return True
+        else:
+            return False
+
+    def set_row_labels(self, x_values: np.ndarray, labels: Sequence[str]) -> None:
+        """Retain source row captions for categorical plot views.
+
+        :param x_values: Coordinates corresponding to the source rows.
+        :param labels: Source row labels in coordinate order.
+        :return: None.
+        """
+        coordinates: np.ndarray
+        is_datetime: bool
+        coordinates, is_datetime = prepare_chart_x_values(x_values)
+        if coordinates.ndim == 1 and coordinates.size == len(labels):
+            self._row_labels = dict(zip(coordinates, labels))
+            if self._transform_source is not None:
+                self._transform_source._row_labels = self._row_labels.copy()
             else:
                 pass
         else:
@@ -1449,16 +1681,17 @@ class GraphsWidget(QtWidgets.QWidget):
             return False
 
     def get_point_tooltip_at(self, position: QtCore.QPointF) -> str | None:
-        """Return tooltip text for the circular point below a widget position.
+        """Calculate line coordinates or return a labelled scatter point's tooltip.
 
         :param position: Pointer position in this widget's coordinates.
-        :return: Tooltip text, or ``None`` when no labelled point is nearby.
+        :return: Tooltip text, or ``None`` when no eligible series is nearby.
         """
         if self._content_type == ChartContentType.XY:
             plot_rect: QtCore.QRectF = self._get_plot_rect()
             if plot_rect.contains(position):
                 nearest_tooltip: str | None = None
-                nearest_distance_squared: float = 49.0
+                hover_distance: float = 5.0
+                nearest_distance_squared: float = hover_distance * hover_distance
                 series: ChartSeries
                 for series in self._series:
                     if (series.get_visible() and series.get_series_type() == ChartSeriesType.SCATTER
@@ -1480,6 +1713,56 @@ class GraphsWidget(QtWidgets.QWidget):
                                 nearest_distance_squared = distance_squared
                             else:
                                 pass
+                    elif series.get_visible() and series.get_series_type() == ChartSeriesType.LINE:
+                        x_data = series.get_x_data()
+                        y_data = series.get_y_data()
+                        x_min: float
+                        x_max: float
+                        y_min: float
+                        y_max: float
+                        x_min, x_max = self.axis_x.get_visual_range()
+                        y_min, y_max = self.axis_y.get_visual_range()
+                        start: int = 0
+                        stop: int = len(x_data)
+                        # Clip ordered series to the same pixel tolerance used for hover detection.
+                        if series.get_x_is_monotonic():
+                            pointer_x: float = x_min + (position.x() - plot_rect.left()) * (x_max - x_min) / plot_rect.width()
+                            tolerance: float = hover_distance * (x_max - x_min) / plot_rect.width()
+                            start = max(0, int(np.searchsorted(x_data, pointer_x - tolerance)) - 1)
+                            stop = min(stop, int(np.searchsorted(x_data, pointer_x + tolerance, side="right")) + 1)
+                        else:
+                            pass
+                        if stop - start >= 2:
+                            pixel_x: np.ndarray = plot_rect.left() + (x_data[start:stop] - x_min) * plot_rect.width() / (x_max - x_min)
+                            pixel_y: np.ndarray = plot_rect.bottom() - (y_data[start:stop] - y_min) * plot_rect.height() / (y_max - y_min)
+                            delta_x_values: np.ndarray = np.diff(pixel_x)
+                            delta_y_values: np.ndarray = np.diff(pixel_y)
+                            lengths_squared: np.ndarray = delta_x_values ** 2 + delta_y_values ** 2
+                            # Project onto each segment, clamping to its endpoints (including duplicate points).
+                            fractions: np.ndarray = np.clip(np.divide(
+                                (position.x() - pixel_x[:-1]) * delta_x_values +
+                                (position.y() - pixel_y[:-1]) * delta_y_values,
+                                lengths_squared, out=np.zeros_like(lengths_squared), where=lengths_squared > 0.0,
+                            ), 0.0, 1.0)
+                            distances: np.ndarray = (
+                                (pixel_x[:-1] + fractions * delta_x_values - position.x()) ** 2 +
+                                (pixel_y[:-1] + fractions * delta_y_values - position.y()) ** 2
+                            )
+                            segment_index: int = int(np.argmin(distances))
+                            if distances[segment_index] <= nearest_distance_squared:
+                                fraction: float = float(fractions[segment_index])
+                                data_index: int = start + segment_index
+                                x_value: float = float(x_data[data_index] + fraction * (x_data[data_index + 1] - x_data[data_index]))
+                                y_value: float = float(y_data[data_index] + fraction * (y_data[data_index + 1] - y_data[data_index]))
+                                nearest_tooltip = "{}\nx: {}\ny: {}".format(
+                                    series.get_name(), format_chart_value(x_value, self._x_is_datetime),
+                                    format_chart_value(y_value, self._y_is_datetime),
+                                )
+                                nearest_distance_squared = float(distances[segment_index])
+                            else:
+                                pass
+                        else:
+                            pass
                     else:
                         pass
                 return nearest_tooltip
@@ -1502,7 +1785,8 @@ class GraphsWidget(QtWidgets.QWidget):
         :return: None.
         """
         value_data: np.ndarray = np.asarray(values, dtype=float)
-        if self._can_mutate() and len(labels) == len(value_data) and len(value_data) > 0:
+        if (self._can_mutate() and value_data.ndim == 1
+                and len(labels) == len(value_data) and len(value_data) > 0):
             finite_mask: np.ndarray = np.isfinite(value_data)
             valid_values: np.ndarray = np.ascontiguousarray(value_data[finite_mask], dtype=float)
             valid_labels: list[str] = list()
@@ -1563,7 +1847,7 @@ class GraphsWidget(QtWidgets.QWidget):
         :return: Whether the complete histogram was created.
         """
         value_data: np.ndarray = np.asarray(values, dtype=float)
-        if self._can_mutate() and bin_count > 0:
+        if self._can_mutate() and value_data.ndim == 1 and bin_count > 0:
             finite_values: np.ndarray = np.ascontiguousarray(value_data[np.isfinite(value_data)], dtype=float)
             if len(finite_values) > 0:
                 counts: np.ndarray
@@ -1764,7 +2048,8 @@ class GraphsWidget(QtWidgets.QWidget):
         elif self._can_mutate():
             point_tooltip: str | None = self.get_point_tooltip_at(position=event.position())
             if point_tooltip is not None:
-                QtWidgets.QToolTip.showText(event.globalPosition().toPoint(), point_tooltip, self)
+                QtWidgets.QToolTip.showText(event.globalPosition().toPoint(), point_tooltip,
+                                           self, QtCore.QRect(), 3000)
             else:
                 QtWidgets.QToolTip.hideText()
             event.accept()
@@ -1796,6 +2081,15 @@ class GraphsWidget(QtWidgets.QWidget):
             event.accept()
         else:
             event.ignore()
+
+    def hideEvent(self, event: QtGui.QHideEvent) -> None:
+        """Dismiss hover text when closing the chart or switching plot tabs.
+
+        :param event: Qt hide event delivered by Qt Widgets.
+        :return: None.
+        """
+        QtWidgets.QToolTip.hideText()
+        QtWidgets.QWidget.hideEvent(self, event)
 
     def leaveEvent(self, event: QtCore.QEvent) -> None:
         """Hide a point tooltip after the pointer leaves this chart widget.
@@ -1889,7 +2183,7 @@ class GraphsWidget(QtWidgets.QWidget):
         :return: None.
         """
         _ = checked
-        if self._active_save_dialog is None:
+        if self._active_save_dialog is None or not shiboken6.isValid(self._active_save_dialog):
             file_dialog: QtWidgets.QFileDialog = QtWidgets.QFileDialog(self, self.tr("Save chart"))
             file_dialog.setAcceptMode(QtWidgets.QFileDialog.AcceptMode.AcceptSave)
             file_dialog.setFileMode(QtWidgets.QFileDialog.FileMode.AnyFile)
@@ -1930,7 +2224,10 @@ class GraphsWidget(QtWidgets.QWidget):
         :return: None.
         """
         _ = result
-        self._active_save_dialog = None
+        if self.sender() is self._active_save_dialog:
+            self._active_save_dialog = None
+        else:
+            pass
 
     def _center_from_context_menu(self, checked: bool = False) -> None:
         """Restore auto-ranged data bounds after any manual border edits.
@@ -2035,6 +2332,7 @@ class GraphsWidget(QtWidgets.QWidget):
         rhi_selected: bool = (
             self._rhi_line_enabled
             and not self._rhi_line_failed
+            and not self._bar_enabled
             and self._content_type == ChartContentType.XY
             and line_count >= self._rhi_line_threshold
         )
@@ -2175,8 +2473,10 @@ class GraphsWidget(QtWidgets.QWidget):
         use_rhi_lines: bool = self._prepare_rhi_line_layer(plot_rect=plot_rect)
         self._update_rhi_selection_overlay(plot_rect=plot_rect)
         painter: QtGui.QPainter = QtGui.QPainter(self)
-        self.paint_to_painter(painter=painter, paint_lines=not use_rhi_lines)
-        painter.end()
+        try:
+            self.paint_to_painter(painter=painter, paint_lines=not use_rhi_lines)
+        finally:
+            painter.end()
 
     def paint_to_painter(self, painter: QtGui.QPainter, paint_lines: bool = True) -> None:
         """Paint the current chart into an already-active Qt paint device.
@@ -2186,51 +2486,66 @@ class GraphsWidget(QtWidgets.QWidget):
         :return: None.
         """
         painter.save()
-        painter.setRenderHint(QtGui.QPainter.RenderHint.Antialiasing, True)
-        painter.fillRect(self.rect(), self._background_color)
-        plot_rect: QtCore.QRectF = self._get_plot_rect()
-        if plot_rect.width() > 2.0 and plot_rect.height() > 2.0:
-            painter.fillRect(plot_rect, self._plot_color)
-            if self._content_type == ChartContentType.HORIZONTAL_BAR:
-                self._paint_bar_axes(painter=painter, plot_rect=plot_rect)
-                painter.save()
-                painter.setClipRect(plot_rect)
-                self._paint_horizontal_bars(painter=painter, plot_rect=plot_rect)
-                painter.restore()
-            elif self._content_type == ChartContentType.CUMULATIVE_AREA:
-                self._paint_xy_axes(painter=painter, plot_rect=plot_rect)
-                painter.save()
-                painter.setClipRect(plot_rect)
-                self._paint_cumulative_areas(painter=painter, plot_rect=plot_rect)
-                painter.restore()
-                self._paint_xy_grid(painter=painter, plot_rect=plot_rect)
-            elif self._content_type == ChartContentType.POLAR:
-                self._paint_polar_axes(painter=painter, plot_rect=plot_rect)
-                painter.save()
-                painter.setClipRect(plot_rect)
-                self._paint_polar_series(painter=painter, plot_rect=plot_rect)
-                painter.restore()
-            elif self._content_type == ChartContentType.HISTOGRAM:
-                self._paint_xy_axes(painter=painter, plot_rect=plot_rect)
-                painter.save()
-                painter.setClipRect(plot_rect)
-                self._paint_histogram(painter=painter, plot_rect=plot_rect)
-                painter.restore()
+        try:
+            painter.setRenderHint(QtGui.QPainter.RenderHint.Antialiasing, True)
+            painter.fillRect(self.rect(), self._background_color)
+            plot_rect: QtCore.QRectF = self._get_plot_rect()
+            if plot_rect.width() > 2.0 and plot_rect.height() > 2.0:
+                painter.fillRect(plot_rect, self._plot_color)
+                if self._content_type == ChartContentType.HORIZONTAL_BAR:
+                    self._paint_bar_axes(painter=painter, plot_rect=plot_rect)
+                    painter.save()
+                    try:
+                        painter.setClipRect(plot_rect)
+                        self._paint_horizontal_bars(painter=painter, plot_rect=plot_rect)
+                    finally:
+                        painter.restore()
+                elif self._content_type == ChartContentType.CUMULATIVE_AREA:
+                    self._paint_xy_axes(painter=painter, plot_rect=plot_rect)
+                    painter.save()
+                    try:
+                        painter.setClipRect(plot_rect)
+                        self._paint_cumulative_areas(painter=painter, plot_rect=plot_rect)
+                    finally:
+                        painter.restore()
+                    self._paint_xy_grid(painter=painter, plot_rect=plot_rect)
+                elif self._content_type == ChartContentType.POLAR:
+                    self._paint_polar_axes(painter=painter, plot_rect=plot_rect)
+                    painter.save()
+                    try:
+                        painter.setClipRect(plot_rect)
+                        self._paint_polar_series(painter=painter, plot_rect=plot_rect)
+                    finally:
+                        painter.restore()
+                elif self._content_type == ChartContentType.HISTOGRAM:
+                    self._paint_xy_axes(painter=painter, plot_rect=plot_rect)
+                    painter.save()
+                    try:
+                        painter.setClipRect(plot_rect)
+                        self._paint_histogram(painter=painter, plot_rect=plot_rect)
+                    finally:
+                        painter.restore()
+                else:
+                    self._paint_xy_axes(painter=painter, plot_rect=plot_rect)
+                    painter.save()
+                    try:
+                        painter.setClipRect(plot_rect)
+                        if self._bar_enabled:
+                            self._paint_vertical_bars(painter, plot_rect)
+                        else:
+                            self._paint_xy_series(painter=painter, plot_rect=plot_rect, paint_lines=paint_lines)
+                    finally:
+                        painter.restore()
+                painter.setPen(QtGui.QPen(self._label_color, 1.0))
+                # Restoring the clipped painter also restores the last series brush.
+                painter.setBrush(QtGui.QBrush(QtCore.Qt.BrushStyle.NoBrush))
+                painter.drawRect(plot_rect)
+                self._paint_zoom_selection(painter=painter, plot_rect=plot_rect)
             else:
-                self._paint_xy_axes(painter=painter, plot_rect=plot_rect)
-                painter.save()
-                painter.setClipRect(plot_rect)
-                self._paint_xy_series(painter=painter, plot_rect=plot_rect, paint_lines=paint_lines)
-                painter.restore()
-            painter.setPen(QtGui.QPen(self._label_color, 1.0))
-            # Restoring the clipped painter also restores the last series brush.
-            painter.setBrush(QtGui.QBrush(QtCore.Qt.BrushStyle.NoBrush))
-            painter.drawRect(plot_rect)
-            self._paint_zoom_selection(painter=painter, plot_rect=plot_rect)
-        else:
-            pass
-        self._paint_title_and_legend(painter=painter, plot_rect=plot_rect)
-        painter.restore()
+                pass
+            self._paint_title_and_legend(painter=painter, plot_rect=plot_rect)
+        finally:
+            painter.restore()
 
     def _apply_zoom_selection(self, selection: QtCore.QRectF) -> None:
         """Convert one screen rectangle into the corresponding visible value range.
@@ -2289,10 +2604,12 @@ class GraphsWidget(QtWidgets.QWidget):
                 fill_color: QtGui.QColor = QtGui.QColor(selection_color)
                 fill_color.setAlpha(48)
                 painter.save()
-                painter.setPen(QtGui.QPen(selection_color, 1.0, QtCore.Qt.PenStyle.DashLine))
-                painter.setBrush(QtGui.QBrush(fill_color))
-                painter.drawRect(visible_selection)
-                painter.restore()
+                try:
+                    painter.setPen(QtGui.QPen(selection_color, 1.0, QtCore.Qt.PenStyle.DashLine))
+                    painter.setBrush(QtGui.QBrush(fill_color))
+                    painter.drawRect(visible_selection)
+                finally:
+                    painter.restore()
             else:
                 pass
         else:
@@ -2435,7 +2752,10 @@ class GraphsWidget(QtWidgets.QWidget):
         else:
             x_padding = max((self._x_max - self._x_min) * 0.05, 0.5)
             y_padding = max((self._y_max - self._y_min) * 0.05, 0.5)
-        if self._content_type == ChartContentType.HORIZONTAL_BAR:
+        if self._bar_enabled and len(self._bar_labels) > 0:
+            self.axis_x.set_range(-0.5, float(len(self._bar_labels)) - 0.5)
+            self.axis_y.set_range(min(self._y_min, 0.0) - y_padding, max(self._y_max, 0.0) + y_padding)
+        elif self._content_type == ChartContentType.HORIZONTAL_BAR:
             self.axis_x.set_range(self._x_min - x_padding, self._x_max + x_padding)
             self.axis_y.set_range(self._y_min, self._y_max)
         else:
@@ -2644,14 +2964,31 @@ class GraphsWidget(QtWidgets.QWidget):
             painter.setPen(QtGui.QPen(self._label_color))
             x_value: float = x_minimum + (x_maximum - x_minimum) * fraction
             y_value: float = y_minimum + (y_maximum - y_minimum) * fraction
-            painter.drawText(QtCore.QRectF(x_position - 42.0, plot_rect.bottom() + 2.0, 84.0, 34.0),
-                             QtCore.Qt.AlignmentFlag.AlignHCenter | QtCore.Qt.AlignmentFlag.AlignTop,
-                             format_chart_value(value=x_value, is_datetime=self._x_is_datetime))
+            if not self._bar_enabled:
+                painter.drawText(QtCore.QRectF(x_position - 42.0, plot_rect.bottom() + 2.0, 84.0, 34.0),
+                                 QtCore.Qt.AlignmentFlag.AlignHCenter | QtCore.Qt.AlignmentFlag.AlignTop,
+                                 format_chart_value(value=x_value, is_datetime=self._x_is_datetime))
+            else:
+                pass
             painter.drawText(QtCore.QRectF(2.0, y_position - 9.0, plot_rect.left() - 9.0, 18.0),
                              QtCore.Qt.AlignmentFlag.AlignRight | QtCore.Qt.AlignmentFlag.AlignVCenter,
-                             format_chart_value(value=y_value, is_datetime=False))
+                             format_chart_value(value=y_value, is_datetime=self._y_is_datetime))
             painter.setPen(grid_pen)
 
+        if self._bar_enabled:
+            # Thin crowded category captions while retaining every bar in the data view.
+            label_step: int = max(1, int(np.ceil(len(self._bar_labels) * 84.0 / plot_rect.width())))
+            label_index: int
+            for label_index in range(0, len(self._bar_labels), label_step):
+                label_x: float = self._map_x_value(float(label_index), plot_rect)
+                if plot_rect.left() <= label_x <= plot_rect.right():
+                    painter.drawText(QtCore.QRectF(label_x - 42.0, plot_rect.bottom() + 2.0, 84.0, 34.0),
+                                     QtCore.Qt.AlignmentFlag.AlignHCenter | QtCore.Qt.AlignmentFlag.AlignTop,
+                                     self._bar_labels[label_index])
+                else:
+                    pass
+        else:
+            pass
         painter.setPen(QtGui.QPen(self._label_color))
         painter.drawText(QtCore.QRectF(plot_rect.left(), plot_rect.bottom() + 36.0, plot_rect.width(), 20.0),
                          QtCore.Qt.AlignmentFlag.AlignHCenter | QtCore.Qt.AlignmentFlag.AlignTop,
@@ -2661,12 +2998,14 @@ class GraphsWidget(QtWidgets.QWidget):
         y_title_distance_from_plot: float = 59.0
         y_title_x: float = max(15.0, plot_rect.left() - y_title_distance_from_plot)
         painter.save()
-        painter.translate(y_title_x, plot_rect.center().y())
-        painter.rotate(-90.0)
-        painter.drawText(QtCore.QRectF(-plot_rect.height() * 0.5, -10.0, plot_rect.height(), 20.0),
-                         QtCore.Qt.AlignmentFlag.AlignHCenter | QtCore.Qt.AlignmentFlag.AlignVCenter,
-                         self.axis_y.get_title())
-        painter.restore()
+        try:
+            painter.translate(y_title_x, plot_rect.center().y())
+            painter.rotate(-90.0)
+            painter.drawText(QtCore.QRectF(-plot_rect.height() * 0.5, -10.0, plot_rect.height(), 20.0),
+                             QtCore.Qt.AlignmentFlag.AlignHCenter | QtCore.Qt.AlignmentFlag.AlignVCenter,
+                             self.axis_y.get_title())
+        finally:
+            painter.restore()
 
     def _paint_xy_grid(self, painter: QtGui.QPainter, plot_rect: QtCore.QRectF) -> None:
         """Paint grid guides above opaque stacked areas, as Matplotlib did.
@@ -2676,22 +3015,24 @@ class GraphsWidget(QtWidgets.QWidget):
         :return: None.
         """
         painter.save()
-        painter.setClipRect(plot_rect)
-        painter.setPen(QtGui.QPen(self._grid_color, 1.0))
-        tick_index: int
-        for tick_index in range(6):
-            fraction: float = float(tick_index) / 5.0
-            x_position: float = plot_rect.left() + plot_rect.width() * fraction
-            y_position: float = plot_rect.bottom() - plot_rect.height() * fraction
-            painter.drawLine(
-                QtCore.QPointF(x_position, plot_rect.top()),
-                QtCore.QPointF(x_position, plot_rect.bottom()),
-            )
-            painter.drawLine(
-                QtCore.QPointF(plot_rect.left(), y_position),
-                QtCore.QPointF(plot_rect.right(), y_position),
-            )
-        painter.restore()
+        try:
+            painter.setClipRect(plot_rect)
+            painter.setPen(QtGui.QPen(self._grid_color, 1.0))
+            tick_index: int
+            for tick_index in range(6):
+                fraction: float = float(tick_index) / 5.0
+                x_position: float = plot_rect.left() + plot_rect.width() * fraction
+                y_position: float = plot_rect.bottom() - plot_rect.height() * fraction
+                painter.drawLine(
+                    QtCore.QPointF(x_position, plot_rect.top()),
+                    QtCore.QPointF(x_position, plot_rect.bottom()),
+                )
+                painter.drawLine(
+                    QtCore.QPointF(plot_rect.left(), y_position),
+                    QtCore.QPointF(plot_rect.right(), y_position),
+                )
+        finally:
+            painter.restore()
 
     def _paint_xy_series(self,
                          painter: QtGui.QPainter,
@@ -3134,6 +3475,29 @@ class GraphsWidget(QtWidgets.QWidget):
         painter.drawText(QtCore.QRectF(plot_rect.left(), plot_rect.bottom() + 28.0, plot_rect.width(), 20.0),
                          QtCore.Qt.AlignmentFlag.AlignHCenter | QtCore.Qt.AlignmentFlag.AlignTop,
                          self.axis_x.get_title())
+
+    def _paint_vertical_bars(self, painter: QtGui.QPainter, plot_rect: QtCore.QRectF) -> None:
+        """Paint grouped signed bars for each retained source row.
+
+        :param painter: Active chart painter, clipped to the plot rectangle.
+        :param plot_rect: Data drawing rectangle.
+        :return: None.
+        """
+        visible_series: list[ChartSeries] = [entry for entry in self._series if entry.get_visible()]
+        width: float = 0.8 / max(len(visible_series), 1)
+        series_index: int
+        series: ChartSeries
+        for series_index, series in enumerate(visible_series):
+            painter.setPen(QtCore.Qt.PenStyle.NoPen)
+            painter.setBrush(QtGui.QBrush(series.get_color()))
+            point_index: int
+            for point_index in range(series.get_x_data().size):
+                category: float = float(series.get_x_data()[point_index])
+                left: float = category - 0.4 + width * series_index
+                start: QtCore.QPointF = self._map_xy_point(left, 0.0, plot_rect)
+                end: QtCore.QPointF = self._map_xy_point(
+                    left + width, float(series.get_y_data()[point_index]), plot_rect)
+                painter.drawRect(QtCore.QRectF(start, end).normalized())
 
     def _paint_horizontal_bars(self, painter: QtGui.QPainter, plot_rect: QtCore.QRectF) -> None:
         """Paint horizontal bars from the two owned positive and negative buffers.

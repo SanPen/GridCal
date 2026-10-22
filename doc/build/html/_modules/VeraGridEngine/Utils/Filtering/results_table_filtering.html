@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Utils.Filtering.results_table_filtering &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Utils.Filtering.results_table_filtering &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/license.html">📜 License</a></li>
@@ -119,12 +120,12 @@
 <div class="viewcode-block" id="object_extract">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Filtering.html#VeraGridEngine.Utils.Filtering.results_table_filtering.object_extract">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">object_extract</span><span class="p">(</span><span class="n">elm</span><span class="p">:</span> <span class="n">ALL_DEV_TYPES</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Extract value from object&#39;s property chain</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Extract value from object's property chain</span>
 <span class="sd">    :param elm: Device</span>
-<span class="sd">    :param args: list of properties (i.e. bus.area.name as [&#39;bus&#39;, &#39;area&#39;, &#39;name&#39;])</span>
+<span class="sd">    :param args: list of properties (i.e. bus.area.name as ['bus', 'area', 'name'])</span>
 <span class="sd">    :return: value</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">p</span> <span class="o">=</span> <span class="n">elm</span>
     <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">args</span><span class="p">:</span>
         <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">arg</span><span class="p">):</span>
@@ -137,12 +138,12 @@
 <div class="viewcode-block" id="try_numeric">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Filtering.html#VeraGridEngine.Utils.Filtering.results_table_filtering.try_numeric">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">try_numeric</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="nb">object</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Check whether a value can be converted to a floating-point number.</span>
 
 <span class="sd">    :param value: Value to inspect.</span>
 <span class="sd">    :return: ``True`` when the value is numeric.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
         <span class="k">return</span> <span class="kc">True</span>
@@ -154,7 +155,7 @@
 <div class="viewcode-block" id="results_table_value_to_search_text">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Filtering.html#VeraGridEngine.Utils.Filtering.results_table_filtering.results_table_value_to_search_text">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">results_table_value_to_search_text</span><span class="p">(</span><span class="n">table</span><span class="p">:</span> <span class="n">ResultsTable</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">object</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Build the searchable text for one results-table value.</span>
 
 <span class="sd">    Both the raw value and the value formatted as shown by ``ResultsModel`` are</span>
@@ -163,26 +164,26 @@
 <span class="sd">    :param table: Results table that defines the display precision.</span>
 <span class="sd">    :param value: Cell value to convert.</span>
 <span class="sd">    :return: Case-normalized searchable text.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">raw_text</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
 
     <span class="k">try</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">value</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">formatted_text</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;0&quot;</span>
+            <span class="n">formatted_text</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"0"</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">formatted_text</span> <span class="o">=</span> <span class="nb">format</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">table</span><span class="o">.</span><span class="n">format_string</span><span class="p">)</span>
     <span class="k">except</span> <span class="p">(</span><span class="ne">TypeError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">):</span>
         <span class="c1"># Text and other non-numeric result types have no numeric formatter.</span>
         <span class="n">formatted_text</span> <span class="o">=</span> <span class="n">raw_text</span>
 
-    <span class="k">return</span> <span class="p">(</span><span class="n">raw_text</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">formatted_text</span><span class="p">)</span><span class="o">.</span><span class="n">casefold</span><span class="p">()</span></div>
+    <span class="k">return</span> <span class="p">(</span><span class="n">raw_text</span> <span class="o">+</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span> <span class="o">+</span> <span class="n">formatted_text</span><span class="p">)</span><span class="o">.</span><span class="n">casefold</span><span class="p">()</span></div>
 
 
 
 <div class="viewcode-block" id="search_results_table">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Filtering.html#VeraGridEngine.Utils.Filtering.results_table_filtering.search_results_table">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">search_results_table</span><span class="p">(</span><span class="n">table</span><span class="p">:</span> <span class="n">ResultsTable</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ResultsTable</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Search row labels, column labels, and displayed cell values.</span>
 
 <span class="sd">    Matching rows retain all columns to preserve the context of the result.</span>
@@ -191,7 +192,7 @@
 <span class="sd">    :param table: Source results table.</span>
 <span class="sd">    :param text: Free-text query.</span>
 <span class="sd">    :return: Sliced results table containing every matching row or column.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">query</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">casefold</span><span class="p">()</span>
     <span class="n">row_mask</span><span class="p">:</span> <span class="n">BoolVec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">table</span><span class="o">.</span><span class="n">r</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
     <span class="n">column_mask</span><span class="p">:</span> <span class="n">BoolVec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">table</span><span class="o">.</span><span class="n">c</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
@@ -205,7 +206,7 @@
             <span class="k">pass</span>
 
     <span class="c1"># A cell match selects its row, allowing users to search the text that is</span>
-    <span class="c1"># actually visible after the table&#39;s numeric formatting has been applied.</span>
+    <span class="c1"># actually visible after the table's numeric formatting has been applied.</span>
     <span class="n">column_index</span><span class="p">:</span> <span class="nb">int</span>
     <span class="k">for</span> <span class="n">row_index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">table</span><span class="o">.</span><span class="n">r</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">column_index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">table</span><span class="o">.</span><span class="n">c</span><span class="p">):</span>
@@ -249,12 +250,12 @@
 <div class="viewcode-block" id="compute_results_table_masks">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Filtering.html#VeraGridEngine.Utils.Filtering.results_table_filtering.compute_results_table_masks">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">compute_results_table_masks</span><span class="p">(</span><span class="n">table</span><span class="p">:</span> <span class="n">ResultsTable</span><span class="p">,</span> <span class="n">flt</span><span class="p">:</span> <span class="n">Filter</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">BoolVec</span><span class="p">,</span> <span class="n">BoolVec</span><span class="p">,</span> <span class="n">Mat</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 
 <span class="sd">    :param table:</span>
 <span class="sd">    :param flt:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">lst</span> <span class="o">=</span> <span class="n">flt</span><span class="o">.</span><span class="n">get_list_of_values</span><span class="p">()</span>
     <span class="n">is_neg</span> <span class="o">=</span> <span class="n">flt</span><span class="o">.</span><span class="n">is_negative</span><span class="p">()</span>
@@ -343,8 +344,8 @@
                             <span class="n">data_mask</span><span class="p">[:,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
                     <span class="k">else</span><span class="p">:</span>
                         <span class="c1"># the object_val is None</span>
-                        <span class="n">a</span> <span class="o">=</span> <span class="s2">&quot;.&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">flt</span><span class="o">.</span><span class="n">element_args</span><span class="p">)</span>
-                        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">a</span><span class="si">}</span><span class="s2"> cannot be found for the objects :(&quot;</span><span class="p">)</span>
+                        <span class="n">a</span> <span class="o">=</span> <span class="s2">"."</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">flt</span><span class="o">.</span><span class="n">element_args</span><span class="p">)</span>
+                        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">a</span><span class="si">}</span><span class="s2"> cannot be found for the objects :("</span><span class="p">)</span>
 
         <span class="k">elif</span> <span class="n">flt</span><span class="o">.</span><span class="n">element</span> <span class="o">==</span> <span class="n">FilterSubject</span><span class="o">.</span><span class="n">IDX_OBJECT</span><span class="p">:</span>
 
@@ -379,11 +380,11 @@
                             <span class="n">data_mask</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="kc">True</span>
                     <span class="k">else</span><span class="p">:</span>
                         <span class="c1"># the object_val is None</span>
-                        <span class="n">a</span> <span class="o">=</span> <span class="s2">&quot;.&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">flt</span><span class="o">.</span><span class="n">element_args</span><span class="p">)</span>
-                        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">a</span><span class="si">}</span><span class="s2"> cannot be found for the objects :(&quot;</span><span class="p">)</span>
+                        <span class="n">a</span> <span class="o">=</span> <span class="s2">"."</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">flt</span><span class="o">.</span><span class="n">element_args</span><span class="p">)</span>
+                        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">a</span><span class="si">}</span><span class="s2"> cannot be found for the objects :("</span><span class="p">)</span>
 
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Invalid FilterSubject&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">"Invalid FilterSubject"</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">is_neg</span><span class="p">:</span>
             <span class="n">final_idx_mask</span> <span class="o">*=</span> <span class="n">idx_mask</span>
@@ -401,22 +402,22 @@
 <div class="viewcode-block" id="FilterResultsTable">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Filtering.html#VeraGridEngine.Utils.Filtering.results_table_filtering.FilterResultsTable">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">FilterResultsTable</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    FilterResultsTable class</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;table&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;master_filter&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;search_text&quot;</span><span class="p">,</span>
+        <span class="s2">"table"</span><span class="p">,</span>
+        <span class="s2">"master_filter"</span><span class="p">,</span>
+        <span class="s2">"search_text"</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table</span><span class="p">:</span> <span class="n">ResultsTable</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Initialize a filter for one source results table.</span>
 
 <span class="sd">        :param table: Results table to filter.</span>
 <span class="sd">        :return: None.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">table</span> <span class="o">=</span> <span class="n">table</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">master_filter</span> <span class="o">=</span> <span class="n">MasterFilter</span><span class="p">()</span>
@@ -425,18 +426,18 @@
 <div class="viewcode-block" id="FilterResultsTable.parse">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Filtering.html#VeraGridEngine.Utils.Filtering.results_table_filtering.FilterResultsTable.parse">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">parse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">expression</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Parses the query expression</span>
 <span class="sd">        :param expression:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">clean_expression</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">expression</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">search_text</span> <span class="o">=</span> <span class="kc">None</span>
 
-        <span class="k">if</span> <span class="p">(</span><span class="n">clean_expression</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;=&quot;</span><span class="p">)</span>
-                <span class="ow">or</span> <span class="n">clean_expression</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;&gt;&quot;</span><span class="p">)</span>
-                <span class="ow">or</span> <span class="n">clean_expression</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;&lt;&quot;</span><span class="p">)):</span>
-            <span class="n">clean_expression</span> <span class="o">=</span> <span class="s2">&quot;val &quot;</span> <span class="o">+</span> <span class="n">clean_expression</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">clean_expression</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"="</span><span class="p">)</span>
+                <span class="ow">or</span> <span class="n">clean_expression</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"&gt;"</span><span class="p">)</span>
+                <span class="ow">or</span> <span class="n">clean_expression</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"&lt;"</span><span class="p">)):</span>
+            <span class="n">clean_expression</span> <span class="o">=</span> <span class="s2">"val "</span> <span class="o">+</span> <span class="n">clean_expression</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">pass</span>
 
@@ -453,10 +454,10 @@
 <div class="viewcode-block" id="FilterResultsTable.apply">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Filtering.html#VeraGridEngine.Utils.Filtering.results_table_filtering.FilterResultsTable.apply">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">apply</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ResultsTable</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">search_text</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">search_results_table</span><span class="p">(</span><span class="n">table</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">search_text</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
@@ -481,10 +482,10 @@
                         <span class="n">data_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">data_mask</span><span class="p">,</span> <span class="n">data_mask2</span><span class="p">)</span>
 
                     <span class="k">else</span><span class="p">:</span>
-                        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Unsupported master filter opration&quot;</span><span class="p">)</span>
+                        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">"Unsupported master filter opration"</span><span class="p">)</span>
 
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Unsupported number of filters. Use and or concatenation&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">"Unsupported number of filters. Use and or concatenation"</span><span class="p">)</span>
 
             <span class="c1"># Derive table dimensions from the final cell-level mask. Complex</span>
             <span class="c1"># points retain both coordinate columns because Real and Imaginary</span>

@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Simulations.PowerFlow.power_flow_ts_input &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Simulations.PowerFlow.power_flow_ts_input &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/license.html">📜 License</a></li>
@@ -116,23 +117,23 @@
 <span class="k">class</span><span class="w"> </span><span class="nc">PowerFlowTimeSeriesInput</span><span class="p">:</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s1">&#39;time_array&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;Sprof&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;Iprof&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;Yprof&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;Y&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;I&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;S&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;valid&#39;</span><span class="p">,</span>
+        <span class="s1">'time_array'</span><span class="p">,</span>
+        <span class="s1">'Sprof'</span><span class="p">,</span>
+        <span class="s1">'Iprof'</span><span class="p">,</span>
+        <span class="s1">'Yprof'</span><span class="p">,</span>
+        <span class="s1">'Y'</span><span class="p">,</span>
+        <span class="s1">'I'</span><span class="p">,</span>
+        <span class="s1">'S'</span><span class="p">,</span>
+        <span class="s1">'valid'</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">s_profile</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">i_profile</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">y_profile</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Time series input</span>
 <span class="sd">        @param s_profile: DataFrame with the profile of the injected power at the buses</span>
 <span class="sd">        @param i_profile: DataFrame with the profile of the injected current at the buses</span>
 <span class="sd">        @param y_profile: DataFrame with the profile of the shunt admittance at the buses</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="c1"># master time array. All the profiles must match its length</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">time_array</span> <span class="o">=</span> <span class="kc">None</span>
@@ -156,10 +157,10 @@
 <div class="viewcode-block" id="PowerFlowTimeSeriesInput.compile">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow.html#VeraGridEngine.Simulations.PowerFlow.power_flow_ts_input.PowerFlowTimeSeriesInput.compile">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">compile</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Generate time-consistent arrays</span>
 <span class="sd">        @return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">cols</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">valid</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="n">merged</span> <span class="o">=</span> <span class="kc">None</span>
@@ -175,9 +176,9 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">valid</span> <span class="o">=</span> <span class="kc">True</span>
 
         <span class="c1"># by merging there could have been time inconsistencies that would produce NaN</span>
-        <span class="c1"># to solve it we &quot;interpolate&quot; by replacing the NaN by the nearest value</span>
+        <span class="c1"># to solve it we "interpolate" by replacing the NaN by the nearest value</span>
         <span class="k">if</span> <span class="n">merged</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">merged</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s1">&#39;nearest&#39;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">merged</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s1">'nearest'</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
             <span class="n">t</span><span class="p">,</span> <span class="n">n</span> <span class="o">=</span> <span class="n">merged</span><span class="o">.</span><span class="n">shape</span>
 
@@ -206,22 +207,22 @@
 <div class="viewcode-block" id="PowerFlowTimeSeriesInput.get_at">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow.html#VeraGridEngine.Simulations.PowerFlow.power_flow_ts_input.PowerFlowTimeSeriesInput.get_at">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_at</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Returns the necessary values</span>
 <span class="sd">        @param t: time index</span>
 <span class="sd">        @return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">Y</span><span class="p">[</span><span class="n">t</span><span class="p">,</span> <span class="p">:],</span> <span class="bp">self</span><span class="o">.</span><span class="n">I</span><span class="p">[</span><span class="n">t</span><span class="p">,</span> <span class="p">:],</span> <span class="bp">self</span><span class="o">.</span><span class="n">S</span><span class="p">[</span><span class="n">t</span><span class="p">,</span> <span class="p">:]</span></div>
 
 
 <div class="viewcode-block" id="PowerFlowTimeSeriesInput.get_from_buses">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow.html#VeraGridEngine.Simulations.PowerFlow.power_flow_ts_input.PowerFlowTimeSeriesInput.get_from_buses">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_from_buses</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bus_idx</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        @param bus_idx:</span>
 <span class="sd">        @return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">ts</span> <span class="o">=</span> <span class="n">PowerFlowTimeSeriesInput</span><span class="p">()</span>
         <span class="n">ts</span><span class="o">.</span><span class="n">S</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">S</span><span class="p">[:,</span> <span class="n">bus_idx</span><span class="p">]</span>
         <span class="n">ts</span><span class="o">.</span><span class="n">I</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">I</span><span class="p">[:,</span> <span class="n">bus_idx</span><span class="p">]</span>
@@ -231,7 +232,7 @@
 
 
     <span class="c1"># def apply_from_island(self, res, bus_original_idx, branch_original_idx, nbus_full, nbranch_full):</span>
-    <span class="c1">#     &quot;&quot;&quot;</span>
+    <span class="c1">#     """</span>
     <span class="c1">#</span>
     <span class="c1">#     :param res: TimeSeriesInput</span>
     <span class="c1">#     :param bus_original_idx:</span>
@@ -239,7 +240,7 @@
     <span class="c1">#     :param nbus_full:</span>
     <span class="c1">#     :param nbranch_full:</span>
     <span class="c1">#     :return:</span>
-    <span class="c1">#     &quot;&quot;&quot;</span>
+    <span class="c1">#     """</span>
     <span class="c1">#</span>
     <span class="c1">#     if res is not None:</span>
     <span class="c1">#         if self.Sprof is None:</span>

@@ -5,13 +5,18 @@
 from __future__ import annotations
 
 import json
+import hashlib
+import os
 from pathlib import Path
 import shutil
+import struct
+from typing import BinaryIO
 
 import pytest
 
 from VeraGridEngine.enumerations import IeeeCigreDllPlatform, NativeCompilerFramework
 from VeraGridEngine.IO.manufacturer_native.worker_artifact import (
+    ManufacturerNativeWorkerArtifact,
     ManufacturerNativeWorkerPreparation,
     _host_platform,
     _worker_sources,
@@ -68,12 +73,118 @@ def test_worker_source_package_is_complete_and_source_only() -> None:
         assert not source.is_symlink()
         assert source.suffix in (".c", ".h")
         assert "SPDX-License-Identifier: MPL-2.0" in source.read_text(encoding="utf-8")
+    assert not tuple(sources[0].parent.parent.rglob("*.exe"))
+
+
+def _write_x86_worker_cache_candidate(
+    candidate: Path,
+    manifest_path: Path,
+    artifact: ManufacturerNativeWorkerArtifact,
+    content: bytes,
+) -> None:
+    """Write a private candidate with matching metadata to test PE32 admission.
+
+    :param candidate: Owned executable copy to mutate.
+    :param manifest_path: Owned cache manifest copy.
+    :param artifact: Verified worker supplying the original cache metadata.
+    :param content: Candidate bytes whose headers or dependencies may be invalid.
+    :return: None.
+    """
+    candidate.write_bytes(content)
+    manifest_raw: object = json.loads(
+        (artifact.executable_path.parent / "manifest.json").read_text(encoding="utf-8")
+    )
+    assert isinstance(manifest_raw, dict)
+    manifest: dict[str, object] = manifest_raw
+    # Keep the digest consistent so header/dependency rejection is exercised
+    # independently of the earlier cache-integrity check.
+    manifest["executable_sha256"] = hashlib.sha256(content).hexdigest()
+    manifest_path.write_text(json.dumps(manifest, sort_keys=True), encoding="utf-8")
+
+
+def test_cached_worker_rejects_invalid_identity(tmp_path: Path) -> None:
+    """Require cache metadata and reject malformed or redirected PE32 bytes.
+
+    :param tmp_path: Owned directory for damaged copies of the cached worker.
+    :return: None; invalid arguments/images fail before any worker launch.
+    """
+    candidate: Path = tmp_path / "worker.exe"
+    manifest_path: Path = tmp_path / "manifest.json"
+    with pytest.raises(RuntimeError, match="executable is missing"):
+        verify_manufacturer_native_worker(candidate, manifest_path, IeeeCigreDllPlatform.WINDOWS_X86, "0" * 64)
+    if os.name != "nt" or struct.calcsize("P") != 8:
+        pytest.skip("Cached PE32 image checks require a Windows x64 parent")
+    else:
+        pass
+    artifact: ManufacturerNativeWorkerArtifact = resolve_manufacturer_native_worker(
+        prepare_if_missing=True,
+        platform=IeeeCigreDllPlatform.WINDOWS_X86,
+    )
+    original: bytes = artifact.executable_path.read_bytes()
+    offset: int = struct.unpack_from("<I", original, 0x3c)[0]
+    # Both the machine field and optional-header format belong to the full PE
+    # admission policy. Neither a digest nor the protocol may admit bad headers.
+    field_offset: int
+    replacement: int
+    for field_offset, replacement in ((offset + 4, 0x8664), (offset + 24, 0x20b)):
+        damaged: bytearray = bytearray(original)
+        struct.pack_into("<H", damaged, field_offset, replacement)
+        _write_x86_worker_cache_candidate(candidate, manifest_path, artifact, bytes(damaged))
+        with pytest.raises(ValueError, match="does not match"):
+            verify_manufacturer_native_worker(candidate, manifest_path, IeeeCigreDllPlatform.WINDOWS_X86, artifact.cache_key)
+    _write_x86_worker_cache_candidate(candidate, manifest_path, artifact, original[:64])
+    with pytest.raises(ValueError):
+        verify_manufacturer_native_worker(candidate, manifest_path, IeeeCigreDllPlatform.WINDOWS_X86, artifact.cache_key)
+    original_lower: bytes = original.lower()
+    dependency_offset: int = original_lower.find(b"kernel32.dll")
+    assert dependency_offset >= 0
+    damaged = bytearray(original)
+    # The executable may also carry the OS basename in diagnostic strings.
+    # Alter every occurrence so the actual import name is included as well.
+    while dependency_offset >= 0:
+        damaged[dependency_offset:dependency_offset + 12] = b"evil0000.dll"
+        dependency_offset = original_lower.find(b"kernel32.dll", dependency_offset + 12)
+    _write_x86_worker_cache_candidate(candidate, manifest_path, artifact, bytes(damaged))
+    with pytest.raises(ValueError, match="outside"):
+        verify_manufacturer_native_worker(candidate, manifest_path, IeeeCigreDllPlatform.WINDOWS_X86, artifact.cache_key)
+    _write_x86_worker_cache_candidate(candidate, manifest_path, artifact, original)
+    with pytest.raises(RuntimeError, match="manifest is missing"):
+        verify_manufacturer_native_worker(candidate, tmp_path / "absent.json", IeeeCigreDllPlatform.WINDOWS_X86, artifact.cache_key)
+    with pytest.raises(RuntimeError, match="manifest identity differs"):
+        verify_manufacturer_native_worker(candidate, manifest_path, IeeeCigreDllPlatform.WINDOWS_X86, "0" * 64)
+    # A legacy x86 cache cannot bypass the common schema2 manifest checks.
+    manifest_raw: object = json.loads(manifest_path.read_text(encoding="utf-8"))
+    assert isinstance(manifest_raw, dict)
+    manifest: dict[str, object] = manifest_raw
+    manifest["schema"] = 1
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+    with pytest.raises(RuntimeError, match="manifest identity differs"):
+        verify_manufacturer_native_worker(candidate, manifest_path, IeeeCigreDllPlatform.WINDOWS_X86, artifact.cache_key)
+    _write_x86_worker_cache_candidate(candidate, manifest_path, artifact, original)
+    stream: BinaryIO
+    with candidate.open("ab") as stream:
+        stream.write(b"tampered")
+    with pytest.raises(RuntimeError, match="manifest identity differs"):
+        verify_manufacturer_native_worker(candidate, manifest_path, IeeeCigreDllPlatform.WINDOWS_X86, artifact.cache_key)
+    _write_x86_worker_cache_candidate(candidate, manifest_path, artifact, original)
+    redirected: Path = tmp_path / "redirected"
+    try:
+        redirected.symlink_to(tmp_path, target_is_directory=True)
+    except OSError:
+        pass
+    else:
+        with pytest.raises(RuntimeError, match="cache directory is a link"):
+            verify_manufacturer_native_worker(redirected / candidate.name, redirected / manifest_path.name, IeeeCigreDllPlatform.WINDOWS_X86, artifact.cache_key)
 
 
 @pytest.mark.usefixtures("_supported_worker_host")
-def test_prepare_then_resolve_reuses_verified_content_cache() -> None:
+@pytest.mark.parametrize("platform", (None, IeeeCigreDllPlatform.WINDOWS_X86))
+def test_prepare_then_resolve_reuses_verified_content_cache(
+    platform: IeeeCigreDllPlatform | None,
+) -> None:
     """Prepare explicitly once and resolve the identical artifact without compilation.
 
+    :param platform: Native default or explicit PE32 cache target.
     :return: None.
     """
     selection: NativeCompilerSelection | None = load_saved_local_llvm_selection()
@@ -81,15 +192,27 @@ def test_prepare_then_resolve_reuses_verified_content_cache() -> None:
         pytest.skip("External LLVM is not configured")
     else:
         pass
-    first = prepare_manufacturer_native_runtime(timeout_seconds=60.0, selection=selection)
-    second = prepare_manufacturer_native_runtime(timeout_seconds=60.0, selection=selection)
-    resolved = resolve_manufacturer_native_worker(selection=selection)
+    if platform == IeeeCigreDllPlatform.WINDOWS_X86 and _host_platform() != IeeeCigreDllPlatform.WINDOWS_X64:
+        pytest.skip("PE32 cache preparation requires a Windows x64 parent")
+    else:
+        pass
+    first: ManufacturerNativeWorkerPreparation = prepare_manufacturer_native_runtime(
+        timeout_seconds=60.0, selection=selection, platform=platform,
+    )
+    modification_time: int = first.artifact.executable_path.stat().st_mtime_ns
+    second: ManufacturerNativeWorkerPreparation = prepare_manufacturer_native_runtime(
+        timeout_seconds=60.0, selection=selection, platform=platform,
+    )
+    resolved: ManufacturerNativeWorkerArtifact = resolve_manufacturer_native_worker(
+        selection=selection, platform=platform,
+    )
 
     assert first.artifact.cache_key == second.artifact.cache_key
     assert second.compiled is False
     assert resolved.cache_key == first.artifact.cache_key
     assert resolved.content_sha256 == first.artifact.content_sha256
     assert resolved.executable_path == first.artifact.executable_path
+    assert resolved.executable_path.stat().st_mtime_ns == modification_time
 
 
 @pytest.mark.usefixtures("_supported_worker_host")

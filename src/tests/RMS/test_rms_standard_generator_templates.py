@@ -7,6 +7,7 @@ import numpy as np
 from VeraGridEngine.Devices.Dynamic.rms_template import RmsModelTemplate
 from VeraGridEngine.Devices.Dynamic.var_factory import VarFactory
 from VeraGridEngine.Templates.Rms.gencls_rms_template import get_gencls_rms_template
+from VeraGridEngine.Templates.Rms.gencls_rms_template import configure_gencls_block, GenclsRmsParameters
 from VeraGridEngine.Templates.Rms.genrou_exc_gov_rms_template import get_esst3a_rms_template
 from VeraGridEngine.Templates.Rms.genrou_exc_gov_rms_template import get_exst1_rms_template
 from VeraGridEngine.Templates.Rms.genrou_exc_gov_rms_template import get_genrou_rms_template
@@ -33,6 +34,31 @@ def test_gencls_current_equations_include_machine_fluxes() -> None:
     assert "(psid)" in direct_axis_equation
     assert "(Xd_prime) * (Iq)" in quadrature_axis_equation
     assert "(psiq)" in quadrature_axis_equation
+
+
+def test_classical_fixed_rotor_and_dynamic_reconfiguration() -> None:
+    """Zero inertia fixes both rotor derivatives without disabling stator response."""
+    from VeraGridEngine.Utils.Symbolic.symbolic import Const, Var
+    factory: VarFactory = VarFactory()
+    block: Block = get_gencls_rms_template(factory).block.children[0]
+    configure_gencls_block(block,GenclsRmsParameters(50,.3,0,.01,.2),factory)
+    assert all(isinstance(equation,Const) and equation.value == 0 for equation in block.state_eqs)
+    assert len(block.algebraic_eqs) > 0
+    configure_gencls_block(block,GenclsRmsParameters(50,.3,8,.01,.2),factory)
+    symbols: dict[str,Var] = dict()
+    values: dict[int,float] = dict()
+    for registry in (block.init_eqs,block.event_dict,block.parameters):
+        for variable,expression in registry.items():
+            symbols[variable.name] = variable
+            if isinstance(expression,Const) and expression.value is not None:
+                values[variable.uid] = expression.value
+            else:
+                pass
+    values[symbols['omega'].uid] = 1.2
+    values[symbols['Tm'].uid] = 1.0
+    values[symbols['Te'].uid] = .2
+    assert abs(block.state_eqs[0].eval_uid(values)-20*math.pi) < 1e-12
+    assert abs(block.state_eqs[1].eval_uid(values)-.0925) < 1e-12
 
 
 def test_busfreq_local_jacobian_matches_standard_realization() -> None:

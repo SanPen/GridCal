@@ -717,6 +717,8 @@ class ProfileInputGUI(QtWidgets.QDialog):
             if len(self.ui.sources_list.selectedIndexes()) > 0:
                 index: int = self.ui.sources_list.selectedIndexes()[0].row()
                 column_name: str = str(self.original_data_frame.columns[index])
+                plot_dialogue: PlotDialogue | None = None
+                retained: bool = False
                 try:
                     time_values: np.ndarray = np.asarray(self.original_data_frame.index)
                     profile_values: np.ndarray = np.asarray(
@@ -724,7 +726,7 @@ class ProfileInputGUI(QtWidgets.QDialog):
                         dtype=float,
                     )
                     delete_dialogs_safely(dialogs=self._open_plot_dialogs)
-                    plot_dialogue: PlotDialogue = PlotDialogue(title=self.tr("Profile plot"), parent=self)
+                    plot_dialogue = PlotDialogue(title=self.tr("Profile plot"), parent=self)
                     accepted: bool = plot_dialogue.set_time_series(
                         time_values=time_values,
                         series_names=(column_name,),
@@ -735,11 +737,16 @@ class ProfileInputGUI(QtWidgets.QDialog):
                     if accepted:
                         self._open_plot_dialogs.append(plot_dialogue)
                         plot_dialogue.show()
+                        retained = True
                     else:
-                        plot_dialogue.reject()
                         self.toast_manager.show_error_toast(self.tr("Profile data cannot be charted"))
                 except (TypeError, ValueError) as exc:
                     self.toast_manager.show_error_toast(str(exc))
+                finally:
+                    if plot_dialogue is not None and not retained:
+                        plot_dialogue.reject()
+                    else:
+                        pass
             else:
                 self.toast_manager.show_warning_toast("No profile selected :/")
         else:

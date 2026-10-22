@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Simulations.PowerFlow.power_flow_options &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Simulations.PowerFlow.power_flow_options &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/license.html">📜 License</a></li>
@@ -118,60 +119,60 @@
 <div class="viewcode-block" id="PowerFlowOptions">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow.html#VeraGridEngine.Simulations.PowerFlow.power_flow_options.PowerFlowOptions">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">PowerFlowOptions</span><span class="p">(</span><span class="n">OptionsTemplate</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Power flow options</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s1">&#39;solver_type&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;retry_with_other_methods&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;tolerance&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;controls_start_tolerance&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;max_iter&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;limit_i_vsc&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;control_Q&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;verbose&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;initialize_with_existing_solution&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;control_taps_modules&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;control_taps_phase&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;control_remote_voltage&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;orthogonalize_controls&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;apply_temperature_correction&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;branch_impedance_tolerance_mode&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;distributed_slack&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;ignore_single_node_islands&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;trust_radius&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;backtracking_parameter&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;use_stored_guess&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;initialize_angles&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;use_autodiff_jacobian&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;generate_report&#39;</span><span class="p">,</span>
+        <span class="s1">'solver_type'</span><span class="p">,</span>
+        <span class="s1">'retry_with_other_methods'</span><span class="p">,</span>
+        <span class="s1">'tolerance'</span><span class="p">,</span>
+        <span class="s1">'controls_start_tolerance'</span><span class="p">,</span>
+        <span class="s1">'max_iter'</span><span class="p">,</span>
+        <span class="s1">'limit_i_vsc'</span><span class="p">,</span>
+        <span class="s1">'control_Q'</span><span class="p">,</span>
+        <span class="s1">'verbose'</span><span class="p">,</span>
+        <span class="s1">'initialize_with_existing_solution'</span><span class="p">,</span>
+        <span class="s1">'control_taps_modules'</span><span class="p">,</span>
+        <span class="s1">'control_taps_phase'</span><span class="p">,</span>
+        <span class="s1">'control_remote_voltage'</span><span class="p">,</span>
+        <span class="s1">'orthogonalize_controls'</span><span class="p">,</span>
+        <span class="s1">'apply_temperature_correction'</span><span class="p">,</span>
+        <span class="s1">'branch_impedance_tolerance_mode'</span><span class="p">,</span>
+        <span class="s1">'distributed_slack'</span><span class="p">,</span>
+        <span class="s1">'ignore_single_node_islands'</span><span class="p">,</span>
+        <span class="s1">'trust_radius'</span><span class="p">,</span>
+        <span class="s1">'backtracking_parameter'</span><span class="p">,</span>
+        <span class="s1">'use_stored_guess'</span><span class="p">,</span>
+        <span class="s1">'initialize_angles'</span><span class="p">,</span>
+        <span class="s1">'use_autodiff_jacobian'</span><span class="p">,</span>
+        <span class="s1">'generate_report'</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="n">LOCAL_PROPERTY_DECLARATIONS</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">GCProp</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;solver_type&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">SolverType</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;retry_with_other_methods&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">bool</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;tolerance&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;controls_start_tolerance&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;max_iter&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;limit_i_vsc&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">bool</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;control_Q&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">bool</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;verbose&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;initialize_with_existing_solution&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">bool</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;control_taps_modules&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">bool</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;control_taps_phase&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">bool</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;control_remote_voltage&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">bool</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;orthogonalize_controls&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">bool</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;apply_temperature_correction&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">bool</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;branch_impedance_tolerance_mode&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">BranchImpedanceMode</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;distributed_slack&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">bool</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;ignore_single_node_islands&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">bool</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;trust_radius&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;backtracking_parameter&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;use_stored_guess&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">bool</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;initialize_angles&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">bool</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;use_autodiff_jacobian&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">bool</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;generate_report&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">bool</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"solver_type"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">SolverType</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"retry_with_other_methods"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">bool</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"tolerance"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"controls_start_tolerance"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"max_iter"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"limit_i_vsc"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">bool</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"control_Q"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">bool</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"verbose"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"initialize_with_existing_solution"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">bool</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"control_taps_modules"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">bool</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"control_taps_phase"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">bool</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"control_remote_voltage"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">bool</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"orthogonalize_controls"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">bool</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"apply_temperature_correction"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">bool</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"branch_impedance_tolerance_mode"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">BranchImpedanceMode</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"distributed_slack"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">bool</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"ignore_single_node_islands"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">bool</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"trust_radius"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"backtracking_parameter"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"use_stored_guess"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">bool</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"initialize_angles"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">bool</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"use_autodiff_jacobian"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">bool</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"generate_report"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">bool</span><span class="p">),</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
@@ -198,7 +199,7 @@
                  <span class="n">use_autodiff_jacobian</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
                  <span class="n">generate_report</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
                  <span class="n">controls_start_tolerance</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-2</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Power flow options class</span>
 <span class="sd">        :param solver_type: Solver type</span>
 <span class="sd">        :param retry_with_other_methods: Use a battery of methods to tackle the problem if the main solver_type fails</span>
@@ -212,14 +213,14 @@
 <span class="sd">        :param distributed_slack: Applies the redistribution of the slack power proportionally among the controlled generators</span>
 <span class="sd">        :param ignore_single_node_islands: If True the islands of 1 node are ignored</span>
 <span class="sd">        :param trust_radius: trust radius used in some numerical methods like NR. It should be &lt; 1.</span>
-<span class="sd">        :param backtracking_parameter: parameter used to correct the &quot;bad&quot; iterations, typically 0.5</span>
+<span class="sd">        :param backtracking_parameter: parameter used to correct the "bad" iterations, typically 0.5</span>
 <span class="sd">        :param use_stored_guess: Use the existing solution from the Bus class (Vm0, Va0)</span>
 <span class="sd">        :param initialize_angles: Use a linear power flow to initialize the voltage guess</span>
 <span class="sd">        :param use_autodiff_jacobian: Use finite-difference Jacobian in the full AC/DC formulation</span>
 <span class="sd">        :param generate_report: Generate the power flow report after the solution?</span>
 <span class="sd">        :param controls_start_tolerance: Residual threshold from which the iterative solvers start applying control updates</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">OptionsTemplate</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;PowerFlowOptions&#39;</span><span class="p">)</span>
+<span class="sd">        """</span>
+        <span class="n">OptionsTemplate</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">'PowerFlowOptions'</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">solver_type</span> <span class="o">=</span> <span class="n">solver_type</span>
 

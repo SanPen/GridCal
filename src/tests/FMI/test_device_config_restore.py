@@ -2,7 +2,10 @@ from __future__ import annotations
 from VeraGridEngine.enumerations import InterfaceType
 
 import json
+import ast
 from pathlib import Path
+import subprocess
+import sys
 from types import SimpleNamespace
 
 import pytest
@@ -58,6 +61,42 @@ from VeraGridEngine.enumerations import (
     FmuInterfaceMode,
     VarPowerFlowReferenceType,
 )
+
+
+def test_fmu_runtime_imports_are_acyclic() -> None:
+    """Check fresh import orders, legacy identity and resolved adapter annotations.
+
+    :return: None; any import cycle, deferred back edge or changed identity fails.
+    """
+    root: Path = Path(__file__).resolve().parents[3]
+    module: str
+    for module in ("co_simulation", "model_exchange", "fmu_device_integration"):
+        path: Path = root / "src" / "VeraGridEngine" / "IO" / "fmu" / (module + ".py")
+        tree: ast.Module = ast.parse(path.read_text(encoding="utf-8"))
+        node: ast.AST
+        for node in ast.walk(tree):
+            if isinstance(node, ast.ImportFrom):
+                assert node.col_offset == 0 or node.module is None or not node.module.startswith("VeraGridEngine.IO.fmu")
+                if module != "fmu_device_integration":
+                    assert node.module != "VeraGridEngine.IO.fmu.fmu_device_integration"
+                else:
+                    pass
+            else:
+                pass
+        script: str = (
+            "import sys; from typing import get_type_hints; "
+            "sys.path.insert(0, " + repr(str(root / "src")) + "); "
+            "import VeraGridEngine.IO.fmu." + module + "; "
+            "from VeraGridEngine.IO.fmu import fmu_device_integration as integration; "
+            "from VeraGridEngine.IO.fmu.Elements import device_configuration as config; "
+            "from VeraGridEngine.IO.fmu import co_simulation as cs, model_exchange as me; "
+            "assert integration.FmuCsDeviceConfigRecord is config.FmuCsDeviceConfigRecord; "
+            "assert integration.restore_fmu_cs_spec_from_record is cs.restore_fmu_cs_spec_from_record; "
+            "assert integration.restore_fmu_me_spec_from_record is me.restore_fmu_me_spec_from_record; "
+            "get_type_hints(integration.CompositeEmtBoundaryUpdater.__init__)"
+        )
+        result: subprocess.CompletedProcess[str] = subprocess.run([sys.executable, "-c", script], cwd=root, capture_output=True, text=True, check=False)
+        assert result.returncode == 0, result.stdout + result.stderr
 
 
 def build_simple_output_fmu_block() -> Block:

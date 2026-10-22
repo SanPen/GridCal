@@ -21,14 +21,29 @@ from VeraGridEngine.Utils.Symbolic.symbolic import Var
 from VeraGridEngine.Utils.Symbolic.symbolic import Expr
 from VeraGridEngine.Utils.Symbolic.symbolic import Const
 from VeraGridEngine.Utils.Symbolic.symbolic import BinOp
+from VeraGridEngine.Templates.Rms.genrou_exc_gov_rms_template import _esst3a_fex, _anti_windup_state_derivative
 
 def build_exac1_template(vf: VarFactory, name: str | None = None) -> RmsModelTemplate:
-    """
-    Materialize the international-standard EMT template.
+    """Build the shared five-state brushless alternator and diode-bridge equations.
 
-    :param vf: Variable factory used to allocate the symbolic surface.
-    :param name: Optional explicit runtime template name.
-    :returns: Materialized EMT template.
+    Voltage sensing and phase compensation feed a bounded amplifier. The
+    rotating exciter field integrates forcing minus resistive, saturation and
+    generator-current demagnetization terms. Its memory has a zero lower stop
+    with immediate inward recovery. Live generator field current also controls
+    the diode-bridge commutation drop. Filtered rate feedback measures the
+    internal exciter field-current equivalent, including all field-circuit losses.
+
+    Inputs are generator field current, additive overexcitation voltage,
+    stabilizing voltage, sensed voltage, reference voltage and additive minimum-
+    excitation voltage. The output is rectified generator field voltage. Signals
+    are per unit on their connected field bases and time constants are seconds.
+    Five states store sensing, phase, amplifier, field and feedback memories.
+    Native catalogue composition prepares operating-point port seeds and the
+    scaled phase state, retaining these physical winding and rectifier equations.
+
+    :param vf: Shared native symbolic factory.
+    :param name: Optional instance label.
+    :return: Shared winding and rectifier realization for controller composition.
     """
     template_name: str
     if name is None:
@@ -198,7 +213,11 @@ def build_exac1_template(vf: VarFactory, name: str | None = None) -> RmsModelTem
 
     # Build explicit typed collections so the symbolic surface is easy to inspect.
     state_equations: list[Expr] = list()
-    state_equations.append((avr_integrator_k * avr_feedback1_y))
+    # The rotating field's lower stop acts on its memory as well as its output,
+    # preventing negative stored flux and delayed recovery after de-excitation.
+    field_derivative: Expr = avr_integrator_k * avr_feedback1_y
+    state_equations.append((Const(1.0)-(Const(1.0)-sym.heaviside(avr_integrator_y))
+        *sym.heaviside(-field_derivative))*field_derivative)
     state_equations.append(((avr_derivative_zeroGain * sym.Const(0.0)) + ((sym.Const(1.0) - avr_derivative_zeroGain) * ((avr_add3_y - avr_derivative_x) / avr_derivative_T))))
     state_equations.append((avr_limitedFirstOrder_I_k * avr_limitedFirstOrder_I_u))
     state_equations.append((((avr_leadLag_a_end * avr_feedback_y) - (avr_leadLag_a_2 * avr_leadLag_x_scaled_1)) / avr_leadLag_a_1))
@@ -215,10 +234,13 @@ def build_exac1_template(vf: VarFactory, name: str | None = None) -> RmsModelTem
     algebraic_equations.append((avr_limiter_y - ((sym.heaviside(((avr_integrator_y - avr_limiter_uMax) - sym.Const(1e-06))) * avr_limiter_uMax) + ((sym.Const(1.0) - sym.heaviside(((avr_integrator_y - avr_limiter_uMax) - sym.Const(1e-06)))) * ((sym.heaviside(((avr_limiter_uMin - avr_integrator_y) - sym.Const(1e-06))) * avr_limiter_uMin) + ((sym.Const(1.0) - sym.heaviside(((avr_limiter_uMin - avr_integrator_y) - sym.Const(1e-06)))) * avr_integrator_y))))))
     algebraic_equations.append((avr_max1_y - ((avr_limiter_y * sym.heaviside((avr_limiter_y - avr_const_k))) + (avr_const_k * (sym.Const(1) - sym.heaviside((avr_limiter_y - avr_const_k)))))))
     algebraic_equations.append((avr_satChar_y - ((sym.heaviside(((avr_limiter_y - avr_satChar_Asq) - sym.Const(1e-06))) * (avr_satChar_Bsq * ((avr_limiter_y - avr_satChar_Asq) ** sym.Const(2.0)))) + ((sym.Const(1.0) - sym.heaviside(((avr_limiter_y - avr_satChar_Asq) - sym.Const(1e-06)))) * sym.Const(0.0)))))
-    algebraic_equations.append((avr_division_y - (avr_gain1_k / avr_max1_y)))
-    algebraic_equations.append((avr_rectifierRegulationCharacteristic_y - ((sym.heaviside(((sym.Const(0.0) - avr_division_y) + sym.Const(1e-06))) * sym.Const(1.0)) + ((sym.Const(1.0) - sym.heaviside(((sym.Const(0.0) - avr_division_y) + sym.Const(1e-06)))) * ((((sym.heaviside(((avr_division_y - sym.Const(0.0)) - sym.Const(1e-06))) * sym.heaviside(((avr_division_y - sym.Const(0.0)) - sym.Const(1e-06)))) * sym.heaviside(((avr_rectifierRegulationCharacteristic_ULow - avr_division_y) + sym.Const(1e-06)))) * (sym.Const(1.0) - (avr_rectifierRegulationCharacteristic_A1 * avr_division_y))) + ((sym.Const(1.0) - ((sym.heaviside(((avr_division_y - sym.Const(0.0)) - sym.Const(1e-06))) * sym.heaviside(((avr_division_y - sym.Const(0.0)) - sym.Const(1e-06)))) * sym.heaviside(((avr_rectifierRegulationCharacteristic_ULow - avr_division_y) + sym.Const(1e-06))))) * ((((sym.heaviside(((avr_division_y - avr_rectifierRegulationCharacteristic_ULow) - sym.Const(1e-06))) * sym.heaviside(((avr_division_y - avr_rectifierRegulationCharacteristic_ULow) - sym.Const(1e-06)))) * sym.heaviside(((avr_rectifierRegulationCharacteristic_UHigh - avr_division_y) - sym.Const(1e-06)))) * sym.sqrt((avr_rectifierRegulationCharacteristic_UHigh - (avr_division_y ** sym.Const(2.0))))) + ((sym.Const(1.0) - ((sym.heaviside(((avr_division_y - avr_rectifierRegulationCharacteristic_ULow) - sym.Const(1e-06))) * sym.heaviside(((avr_division_y - avr_rectifierRegulationCharacteristic_ULow) - sym.Const(1e-06)))) * sym.heaviside(((avr_rectifierRegulationCharacteristic_UHigh - avr_division_y) - sym.Const(1e-06))))) * ((((sym.heaviside(((avr_division_y - avr_rectifierRegulationCharacteristic_UHigh) + sym.Const(1e-06))) * sym.heaviside(((avr_division_y - avr_rectifierRegulationCharacteristic_UHigh) + sym.Const(1e-06)))) * sym.heaviside(((sym.Const(1.0) - avr_division_y) + sym.Const(1e-06)))) * (avr_rectifierRegulationCharacteristic_A2 * (sym.Const(1.0) - avr_division_y))) + ((sym.Const(1.0) - ((sym.heaviside(((avr_division_y - avr_rectifierRegulationCharacteristic_UHigh) + sym.Const(1e-06))) * sym.heaviside(((avr_division_y - avr_rectifierRegulationCharacteristic_UHigh) + sym.Const(1e-06)))) * sym.heaviside(((sym.Const(1.0) - avr_division_y) + sym.Const(1e-06))))) * sym.Const(0.0)))))))))))
+    algebraic_equations.append(avr_division_y-avr_Kc*avr_IrPu/avr_max1_y)
+    algebraic_equations.append(avr_rectifierRegulationCharacteristic_y-_esst3a_fex(
+        avr_division_y, avr_rectifierRegulationCharacteristic_ULow,
+        avr_rectifierRegulationCharacteristic_UHigh,
+        avr_rectifierRegulationCharacteristic_A1, avr_rectifierRegulationCharacteristic_A2))
     algebraic_equations.append((avr_EfdPu - (avr_limiter_y * avr_rectifierRegulationCharacteristic_y)))
-    algebraic_equations.append((avr_add3_y - ((avr_add3_k1 * avr_satChar_y) + ((avr_add3_k2 * avr_limiter_y) + avr_add3_k3))))
+    algebraic_equations.append(avr_add3_y-(avr_add3_k1*avr_satChar_y+avr_add3_k2*avr_limiter_y+avr_Kd*avr_IrPu))
     algebraic_equations.append((avr_feedback1_y - (avr_limitedFirstOrder_y - avr_add3_y)))
     algebraic_equations.append((avr_derivative_y - ((avr_derivative_zeroGain * sym.Const(0.0)) + ((sym.Const(1.0) - avr_derivative_zeroGain) * ((avr_derivative_k / avr_derivative_T) * (avr_add3_y - avr_derivative_x))))))
     algebraic_equations.append((avr_feedback_y - (avr_sum1_y - avr_derivative_y)))
@@ -227,7 +249,10 @@ def build_exac1_template(vf: VarFactory, name: str | None = None) -> RmsModelTem
     algebraic_equations.append((avr_limitedFirstOrder_Gk_y - (avr_limitedFirstOrder_Gk_k * avr_leadLag_y)))
     algebraic_equations.append((avr_limitedFirstOrder_feedback_y - (avr_limitedFirstOrder_Gk_y - avr_limitedFirstOrder_y)))
     algebraic_equations.append((avr_limitedFirstOrder_G_y - (avr_limitedFirstOrder_G_k * avr_limitedFirstOrder_feedback_y)))
-    algebraic_equations.append((avr_limitedFirstOrder_I_u - (((sym.Const(1.0) - ((sym.Const(1.0) - ((sym.heaviside(((avr_limitedFirstOrder_G_y - sym.Const(0.0)) + sym.Const(1e-06))) * sym.heaviside(((avr_limitedFirstOrder_G_y - sym.Const(0.0)) + sym.Const(1e-06)))) * sym.heaviside(((avr_limitedFirstOrder_I_y - avr_limitedFirstOrder_lim_uMax) - sym.Const(1e-06))))) * (sym.Const(1.0) - ((((((sym.heaviside(((avr_limitedFirstOrder_G_y - sym.Const(0.0)) + sym.Const(1e-06))) * sym.heaviside(((avr_limitedFirstOrder_I_y - avr_limitedFirstOrder_lim_uMax) - sym.Const(1e-06)))) * sym.heaviside(((sym.Const(0.0) - avr_limitedFirstOrder_G_y) + sym.Const(1e-06)))) * sym.heaviside(((avr_limitedFirstOrder_G_y - sym.Const(0.0)) + sym.Const(1e-06)))) * sym.heaviside(((avr_limitedFirstOrder_I_y - avr_limitedFirstOrder_lim_uMax) - sym.Const(1e-06)))) * sym.heaviside(((sym.Const(0.0) - avr_limitedFirstOrder_G_y) + sym.Const(1e-06)))) * sym.heaviside(((avr_limitedFirstOrder_lim_uMin - avr_limitedFirstOrder_I_y) - sym.Const(1e-06))))))) * sym.Const(0.0)) + ((sym.Const(1.0) - (sym.Const(1.0) - ((sym.Const(1.0) - ((sym.heaviside(((avr_limitedFirstOrder_G_y - sym.Const(0.0)) + sym.Const(1e-06))) * sym.heaviside(((avr_limitedFirstOrder_G_y - sym.Const(0.0)) + sym.Const(1e-06)))) * sym.heaviside(((avr_limitedFirstOrder_I_y - avr_limitedFirstOrder_lim_uMax) - sym.Const(1e-06))))) * (sym.Const(1.0) - ((((((sym.heaviside(((avr_limitedFirstOrder_G_y - sym.Const(0.0)) + sym.Const(1e-06))) * sym.heaviside(((avr_limitedFirstOrder_I_y - avr_limitedFirstOrder_lim_uMax) - sym.Const(1e-06)))) * sym.heaviside(((sym.Const(0.0) - avr_limitedFirstOrder_G_y) + sym.Const(1e-06)))) * sym.heaviside(((avr_limitedFirstOrder_G_y - sym.Const(0.0)) + sym.Const(1e-06)))) * sym.heaviside(((avr_limitedFirstOrder_I_y - avr_limitedFirstOrder_lim_uMax) - sym.Const(1e-06)))) * sym.heaviside(((sym.Const(0.0) - avr_limitedFirstOrder_G_y) + sym.Const(1e-06)))) * sym.heaviside(((avr_limitedFirstOrder_lim_uMin - avr_limitedFirstOrder_I_y) - sym.Const(1e-06)))))))) * avr_limitedFirstOrder_G_y))))
+    # A directional stop includes equality at the bound and releases inward.
+    algebraic_equations.append(avr_limitedFirstOrder_I_u-_anti_windup_state_derivative(
+        avr_limitedFirstOrder_I_y, avr_limitedFirstOrder_G_y,
+        avr_limitedFirstOrder_lim_uMin, avr_limitedFirstOrder_lim_uMax))
     algebraic_variables: list[Var] = list()
     algebraic_variables.append(avr_limitedFirstOrder_y)
     algebraic_variables.append(avr_sum1_y)

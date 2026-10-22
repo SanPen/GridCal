@@ -1069,6 +1069,8 @@ class BlockSaver:
                                    for intent in blk.connection_intents],
 
             "dynamic_model_contract": dynamic_model_contract_data,
+            "modal_template_kind": blk.modal_template_kind,
+            "modal_template_config": copy.deepcopy(blk.modal_template_config),
 
             "diagram": diagram
         }
@@ -2969,6 +2971,14 @@ class BlockParser:
             uid=block_uid_value,
             model_family_name=model_family_name,
         )
+        template_kind: object = data.get("modal_template_kind")
+        template_config: object = data.get("modal_template_config")
+        if template_kind is not None and not isinstance(template_kind, str):
+            raise TypeError("Modal template kind must be a string or null")
+        if template_config is not None and not isinstance(template_config, dict):
+            raise TypeError("Modal template config must be a mapping or null")
+        block.modal_template_kind = template_kind
+        block.modal_template_config = copy.deepcopy(template_config)
 
         dynamic_model_contract_raw: object | None = data.get(
             "dynamic_model_contract",
@@ -3029,6 +3039,9 @@ class BlockParser:
                         "Dynamic-model override expressions must be a mapping"
                     )
                 block.dynamic_model_contract = parsed_contract
+                # The typed contract takes precedence over legacy top-level metadata.
+                block.modal_template_kind = parsed_contract.modal_template_kind
+                block.modal_template_config = parsed_contract.modal_template_config
                 validate_dynamic_model_contract(block)
             else:
                 raise TypeError("Dynamic-model contract must be declarative data")
@@ -3927,6 +3940,9 @@ def _duplicate_block(block: Block,
         name=block.name,
         model_family_name=block.model_family_name,
     )
+    new_block.modal_template_kind = block.modal_template_kind
+    new_block.modal_template_config = copy.deepcopy(block.modal_template_config)
+    new_block.jmarti_fit_bundle = copy.deepcopy(block.jmarti_fit_bundle)
 
     # Intent targets use stable block and variable identities. Rebuild both
     # identities after the complete cloned child subtree has been allocated.
@@ -4042,6 +4058,12 @@ def _duplicate_block(block: Block,
     )
     target_contract.dgs_elmsvs_remote_voltage_var_uid = _remap_optional_duplicate_uid(
         source_contract.dgs_elmsvs_remote_voltage_var_uid,
+        source_vars_by_non_mutable_uid,
+        source_non_mutable_uid_to_new_var,
+    )
+    # An instance must refer to its own mode, rather than the provider's UID.
+    target_contract.emt_finite_reciprocal_source_mode_var_uid = _remap_optional_duplicate_uid(
+        source_contract.emt_finite_reciprocal_source_mode_var_uid,
         source_vars_by_non_mutable_uid,
         source_non_mutable_uid_to_new_var,
     )
@@ -4286,7 +4308,8 @@ def _duplicate_block_uid(
     return duplicated_block
 
 
-def duplicate_block(block: Block, var_factory: VarFactory | None) -> Block:
+def duplicate_block(block: Block, var_factory: VarFactory | None,
+                    preserve_external_network_connections: bool = False) -> Block:
     """
     Create a duplicate of this block with new variable UIDs.
 
@@ -4295,6 +4318,9 @@ def duplicate_block(block: Block, var_factory: VarFactory | None) -> Block:
 
     :param block: Source block.
     :param var_factory: Variable factory used to allocate cloned variables and constants.
+    :param preserve_external_network_connections: Retain explicitly registered external
+        network inputs when instantiating a runtime model in the same circuit factory.
+        Editor/isolated copies leave this disabled.
     :return: A new Block with duplicated variables and equations.
     """
     if var_factory is None:
@@ -4318,6 +4344,13 @@ def duplicate_block(block: Block, var_factory: VarFactory | None) -> Block:
         # Expression-only external references can occur in the shared duplication map,
         # but must never cause a clone to reconnect to an object from the source model.
         owned_source_vars: Dict[int, Var] = _collect_owned_block_vars_by_non_mutable_uid(block)
+        external_source_vars: Dict[int, Var] = dict()
+        if preserve_external_network_connections:
+            external_source_vars = dict((variable.non_mutable_uid,variable)
+                for variable in var_factory.get_vars_dict().values()
+                if variable.non_mutable_uid not in owned_source_vars)
+        else:
+            pass
 
         # Every child owns an independent typed contract. Validate each local
         # owner before cloning so an invalid descendant cannot be hidden by a
@@ -4365,6 +4398,16 @@ def duplicate_block(block: Block, var_factory: VarFactory | None) -> Block:
                             var_to_subs=cloned_var_to_substitute,
                             incoming_var=cloned_incoming_var,
                         )
+                else:
+                    pass
+            elif preserve_external_network_connections and substituted_non_mutable_uid in owned_source_vars:
+                external_source: Var | None = external_source_vars.get(incoming_non_mutable_uid,None)
+                cloned_external_target: Var | None = source_non_mutable_uid_to_new_var.get(substituted_non_mutable_uid,None)
+                # Only explicit network edges may cross a runtime instance's
+                # structural boundary. Ordinary expression references stay isolated.
+                if (external_source is not None and cloned_external_target is not None
+                        and owned_source_vars[substituted_non_mutable_uid].network_conn):
+                    var_factory.add_network_connection(cloned_external_target,external_source)
                 else:
                     pass
             else:

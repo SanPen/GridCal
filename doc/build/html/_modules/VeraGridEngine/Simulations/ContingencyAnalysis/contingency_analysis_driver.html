@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Simulations.ContingencyAnalysis.contingency_analysis_driver &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Simulations.ContingencyAnalysis.contingency_analysis_driver &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/license.html">📜 License</a></li>
@@ -135,18 +136,18 @@
 <div class="viewcode-block" id="ContingencyAnalysisDriver">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.ContingencyAnalysis.html#VeraGridEngine.Simulations.ContingencyAnalysis.contingency_analysis_driver.ContingencyAnalysisDriver">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">ContingencyAnalysisDriver</span><span class="p">(</span><span class="n">DriverTemplate</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Contingency analysis driver</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;options&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;opf_results&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;linear_multiple_contingencies&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;contingency_groups_used&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;con_names_used&quot;</span>
+        <span class="s2">"options"</span><span class="p">,</span>
+        <span class="s2">"opf_results"</span><span class="p">,</span>
+        <span class="s2">"linear_multiple_contingencies"</span><span class="p">,</span>
+        <span class="s2">"contingency_groups_used"</span><span class="p">,</span>
+        <span class="s2">"con_names_used"</span>
     <span class="p">)</span>
 
-    <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;Contingency Analysis&#39;</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s1">'Contingency Analysis'</span>
     <span class="n">tpe</span> <span class="o">=</span> <span class="n">SimulationTypes</span><span class="o">.</span><span class="n">ContingencyAnalysis_run</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
@@ -155,13 +156,13 @@
                  <span class="n">linear_multiple_contingencies</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">LinearMultiContingencies</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">opf_results</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">OptimalPowerFlowResults</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">engine</span><span class="p">:</span> <span class="n">EngineType</span> <span class="o">=</span> <span class="n">EngineType</span><span class="o">.</span><span class="n">VeraGrid</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        ContingencyAnalysisDriver constructor</span>
 <span class="sd">        :param grid: MultiCircuit Object</span>
 <span class="sd">        :param options: N-k options</span>
 <span class="sd">        :param linear_multiple_contingencies: LinearMultiContingencies instance (required for linear contingencies)</span>
 <span class="sd">        :param engine Calculation engine to use</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">DriverTemplate</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">grid</span><span class="o">=</span><span class="n">grid</span><span class="p">,</span> <span class="n">engine</span><span class="o">=</span><span class="n">engine</span><span class="p">)</span>
 
         <span class="c1"># Options to use</span>
@@ -184,7 +185,7 @@
                 <span class="n">grid</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="p">,</span>
                 <span class="n">contingency_groups_used</span><span class="o">=</span><span class="n">contingency_groups_used</span>
             <span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="s2">&quot;Created LinearMultiContingencies because they were not provided&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="s2">"Created LinearMultiContingencies because they were not provided"</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">linear_multiple_contingencies</span><span class="p">:</span> <span class="n">LinearMultiContingencies</span> <span class="o">=</span> <span class="n">linear_multiple_contingencies</span>
 
@@ -208,11 +209,11 @@
 <div class="viewcode-block" id="ContingencyAnalysisDriver.get_steps">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.ContingencyAnalysis.html#VeraGridEngine.Simulations.ContingencyAnalysis.contingency_analysis_driver.ContingencyAnalysisDriver.get_steps">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_steps</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get variations list of strings</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">return</span> <span class="p">[</span><span class="s1">&#39;#&#39;</span> <span class="o">+</span> <span class="n">v</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">branch_names</span><span class="p">]</span>
+            <span class="k">return</span> <span class="p">[</span><span class="s1">'#'</span> <span class="o">+</span> <span class="n">v</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">branch_names</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="nb">list</span><span class="p">()</span></div>
 
@@ -220,16 +221,16 @@
 <div class="viewcode-block" id="ContingencyAnalysisDriver.run_at">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.ContingencyAnalysis.html#VeraGridEngine.Simulations.ContingencyAnalysis.contingency_analysis_driver.ContingencyAnalysisDriver.run_at">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">run_at</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t_idx</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">t_prob</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">show_progress</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ContingencyAnalysisResults</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Run the contingency at a time point</span>
 <span class="sd">        :param t_idx: index for any time series index, None for the snapshot</span>
 <span class="sd">        :param t_prob: probability of te time</span>
 <span class="sd">        :param show_progress: Show the progress</span>
 <span class="sd">        :return: ContingencyAnalysisResults</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span> <span class="o">==</span> <span class="n">EngineType</span><span class="o">.</span><span class="n">PGM</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">PGM_AVAILABLE</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">engine</span> <span class="o">=</span> <span class="n">EngineType</span><span class="o">.</span><span class="n">VeraGrid</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s1">&#39;Tried to use PGM, but failed back to VeraGrid&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s1">'Tried to use PGM, but failed back to VeraGrid'</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">Sbus</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span>
@@ -282,7 +283,7 @@
                     <span class="n">logger</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">logger</span>
                 <span class="p">)</span>
 
-                <span class="c1"># &quot;smart&quot; Contingency factors</span>
+                <span class="c1"># "smart" Contingency factors</span>
                 <span class="n">linear_multiple_contingencies</span> <span class="o">=</span> <span class="n">LinearMultiContingencies</span><span class="p">(</span>
                     <span class="n">grid</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="p">,</span>
                     <span class="n">contingency_groups_used</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">contingency_groups</span>
@@ -335,11 +336,11 @@
             <span class="c1">#     logger=self.logger</span>
             <span class="c1"># )</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Unknown contingency engine </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">contingency_method</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s1">'Unknown contingency engine </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">contingency_method</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
 
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span> <span class="o">==</span> <span class="n">EngineType</span><span class="o">.</span><span class="n">GSLV</span><span class="p">:</span>
 
-            <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s2">&quot;Running contingencies in gslv...&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s2">"Running contingencies in gslv..."</span><span class="p">)</span>
             <span class="n">con_res</span> <span class="o">=</span> <span class="n">gslv_contingencies_snapshot</span><span class="p">(</span><span class="n">circuit</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="p">,</span>
                                                   <span class="n">con_opt</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">,</span>
                                                   <span class="n">opf_results</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">opf_results</span><span class="p">)</span>
@@ -391,12 +392,12 @@
 <div class="viewcode-block" id="ContingencyAnalysisDriver.run">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.ContingencyAnalysis.html#VeraGridEngine.Simulations.ContingencyAnalysis.contingency_analysis_driver.ContingencyAnalysisDriver.run">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">tic</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s2">&quot;Compiling and configuring...&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s2">"Compiling and configuring..."</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">run_at</span><span class="p">(</span><span class="n">t_idx</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">show_progress</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">toc</span><span class="p">()</span></div>

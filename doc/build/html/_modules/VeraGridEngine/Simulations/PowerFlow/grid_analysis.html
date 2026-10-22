@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Simulations.PowerFlow.grid_analysis &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Simulations.PowerFlow.grid_analysis &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/license.html">📜 License</a></li>
@@ -115,29 +116,29 @@
 <div class="viewcode-block" id="TimeSeriesResultsAnalysis">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow.html#VeraGridEngine.Simulations.PowerFlow.grid_analysis.TimeSeriesResultsAnalysis">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">TimeSeriesResultsAnalysis</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    TimeSeriesResultsAnalysis</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s1">&#39;grid&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;res&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;branch_overload_frequency&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;bus_under_voltage_frequency&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;bus_over_voltage_frequency&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;branch_overload_accumulated&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;bus_under_voltage_accumulated&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;bus_over_voltage_accumulated&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;buses_selected_for_storage_frequency&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;branches_selected_for_reactance_compensation&#39;</span><span class="p">,</span>
+        <span class="s1">'grid'</span><span class="p">,</span>
+        <span class="s1">'res'</span><span class="p">,</span>
+        <span class="s1">'branch_overload_frequency'</span><span class="p">,</span>
+        <span class="s1">'bus_under_voltage_frequency'</span><span class="p">,</span>
+        <span class="s1">'bus_over_voltage_frequency'</span><span class="p">,</span>
+        <span class="s1">'branch_overload_accumulated'</span><span class="p">,</span>
+        <span class="s1">'bus_under_voltage_accumulated'</span><span class="p">,</span>
+        <span class="s1">'bus_over_voltage_accumulated'</span><span class="p">,</span>
+        <span class="s1">'buses_selected_for_storage_frequency'</span><span class="p">,</span>
+        <span class="s1">'branches_selected_for_reactance_compensation'</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">grid</span><span class="p">:</span> <span class="n">MultiCircuit</span><span class="p">,</span> <span class="n">results</span><span class="p">:</span> <span class="n">PowerFlowTimeSeriesResults</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Constructor</span>
 <span class="sd">        :param grid: MultiCircuit instance</span>
 <span class="sd">        :param results: TimeSeriesResults instance</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">grid</span> <span class="o">=</span> <span class="n">grid</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">res</span> <span class="o">=</span> <span class="n">results</span>
@@ -160,20 +161,20 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">__run__</span><span class="p">()</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">__run__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Run the analysis</span>
 <span class="sd">        Returns:</span>
 
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Optimal storage locations are those nodes where there</span>
 <span class="sd">        are voltage problems and those nodes receiving the flow</span>
 <span class="sd">        of current in case of overloads for the time series</span>
 <span class="sd">        simulation.</span>
 
 <span class="sd">            Returns:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="n">nt</span><span class="p">,</span> <span class="n">n</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">res</span><span class="o">.</span><span class="n">S</span><span class="o">.</span><span class="n">shape</span>
 

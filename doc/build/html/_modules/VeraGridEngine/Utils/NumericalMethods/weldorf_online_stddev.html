@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Utils.NumericalMethods.weldorf_online_stddev &mdash; VeraGrid 6.7.13 documentation</title>
+  <title>VeraGridEngine.Utils.NumericalMethods.weldorf_online_stddev &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=16fbabd8"></script>
+      <script src="../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -116,14 +116,14 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.NumericalMethods.html#VeraGridEngine.Utils.NumericalMethods.weldorf_online_stddev.update">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">update</span><span class="p">(</span><span class="n">i</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">new_value</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">count</span><span class="p">:</span> <span class="n">Mat</span><span class="p">,</span> <span class="n">mean</span><span class="p">:</span> <span class="n">Mat</span><span class="p">,</span> <span class="n">M2</span><span class="p">:</span> <span class="n">Mat</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 
 <span class="sd">    :param i:</span>
 <span class="sd">    :param new_value:</span>
 <span class="sd">    :param count:</span>
 <span class="sd">    :param mean:</span>
 <span class="sd">    :param M2:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">count</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
 
         <span class="k">if</span> <span class="n">new_value</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
@@ -143,7 +143,7 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.NumericalMethods.html#VeraGridEngine.Utils.NumericalMethods.weldorf_online_stddev.finalize">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">finalize</span><span class="p">(</span><span class="n">count</span><span class="p">:</span> <span class="n">Mat</span><span class="p">,</span> <span class="n">variance</span><span class="p">:</span> <span class="n">Mat</span><span class="p">,</span> <span class="n">M2</span><span class="p">:</span> <span class="n">Mat</span><span class="p">,</span> <span class="n">std_dev</span><span class="p">:</span> <span class="n">Mat</span><span class="p">,</span> <span class="n">sample_variance</span><span class="p">:</span> <span class="n">Mat</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 
 <span class="sd">    :param count:</span>
 <span class="sd">    :param variance:</span>
@@ -151,7 +151,7 @@
 <span class="sd">    :param std_dev:</span>
 <span class="sd">    :param sample_variance:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">count</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
         <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">count</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
             <span class="k">if</span> <span class="n">count</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
@@ -166,25 +166,25 @@
 <div class="viewcode-block" id="WeldorfOnlineStdDevMat">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.NumericalMethods.html#VeraGridEngine.Utils.NumericalMethods.weldorf_online_stddev.WeldorfOnlineStdDevMat">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">WeldorfOnlineStdDevMat</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Weldorf&#39;s algorithm for online computation of the variance</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Weldorf's algorithm for online computation of the variance</span>
+<span class="sd">    """</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;count&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;mean&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;M2&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;steps&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;variance&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;sample_variance&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;std_dev&quot;</span><span class="p">,</span>
+        <span class="s2">"count"</span><span class="p">,</span>
+        <span class="s2">"mean"</span><span class="p">,</span>
+        <span class="s2">"M2"</span><span class="p">,</span>
+        <span class="s2">"steps"</span><span class="p">,</span>
+        <span class="s2">"variance"</span><span class="p">,</span>
+        <span class="s2">"sample_variance"</span><span class="p">,</span>
+        <span class="s2">"std_dev"</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nrow</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">ncol</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Constructor</span>
 <span class="sd">        :param nrow:</span>
 <span class="sd">        :param ncol:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># changed every iteration</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">count</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nrow</span><span class="p">,</span> <span class="n">ncol</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nrow</span><span class="p">,</span> <span class="n">ncol</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
@@ -200,14 +200,14 @@
 <div class="viewcode-block" id="WeldorfOnlineStdDevMat.update">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.NumericalMethods.html#VeraGridEngine.Utils.NumericalMethods.weldorf_online_stddev.WeldorfOnlineStdDevMat.update">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">new_value</span><span class="p">:</span> <span class="n">Vec</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        For a new value new_value, compute the new count, new mean, the new M2.</span>
 <span class="sd">        mean accumulates the mean of the entire dataset</span>
 <span class="sd">        M2 aggregates the squared distance from the mean</span>
 <span class="sd">        count aggregates the number of samples seen so far</span>
 <span class="sd">        :param t: Row index</span>
 <span class="sd">        :param new_value: array of column values</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">steps</span> <span class="o">+=</span> <span class="mi">1</span>
 
         <span class="n">update</span><span class="p">(</span><span class="n">i</span><span class="o">=</span><span class="n">t</span><span class="p">,</span>
@@ -220,9 +220,9 @@
 <div class="viewcode-block" id="WeldorfOnlineStdDevMat.finalize">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.NumericalMethods.html#VeraGridEngine.Utils.NumericalMethods.weldorf_online_stddev.WeldorfOnlineStdDevMat.finalize">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">finalize</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Finalize: compute the variance and std dev</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">steps</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
             <span class="k">return</span>
         <span class="k">else</span><span class="p">:</span>

@@ -251,14 +251,15 @@ class PowerFlowTimeSeriesResults(ResultsTemplate):
         self.loading = np.zeros((nt, m), dtype=np.complex64)
         self.losses = np.zeros((nt, m), dtype=np.complex64)
 
+        # link flows in float32, like the branch flows: float16 resolves only ~1 MW at 2000 MW
         self.hvdc_losses = np.zeros((nt, n_hvdc), dtype=np.float16)
-        self.hvdc_Pf = np.zeros((nt, n_hvdc), dtype=np.float16)
-        self.hvdc_Pt = np.zeros((nt, n_hvdc), dtype=np.float16)
+        self.hvdc_Pf = np.zeros((nt, n_hvdc), dtype=np.float32)
+        self.hvdc_Pt = np.zeros((nt, n_hvdc), dtype=np.float32)
         self.hvdc_loading = np.zeros((nt, n_hvdc), dtype=np.float16)
 
         self.losses_vsc = np.zeros((nt, n_vsc), dtype=np.float16)
-        self.Pf_vsc = np.zeros((nt, n_vsc), dtype=np.float16)
-        self.Pfn_vsc = np.zeros((nt, n_vsc), dtype=np.float16)
+        self.Pf_vsc = np.zeros((nt, n_vsc), dtype=np.float32)
+        self.Pfn_vsc = np.zeros((nt, n_vsc), dtype=np.float32)
         self.St_vsc = np.zeros((nt, n_vsc), dtype=np.complex64)
         self.If_vsc = np.zeros((nt, n_vsc), dtype=np.float16)
         self.It_vsc = np.zeros((nt, n_vsc), dtype=np.complex64)

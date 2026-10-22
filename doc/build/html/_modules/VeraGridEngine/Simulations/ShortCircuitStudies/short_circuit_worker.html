@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Simulations.ShortCircuitStudies.short_circuit_worker &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Simulations.ShortCircuitStudies.short_circuit_worker &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/license.html">📜 License</a></li>
@@ -145,7 +146,7 @@
         <span class="n">Yf</span><span class="p">:</span> <span class="n">sp</span><span class="o">.</span><span class="n">csc_matrix</span><span class="p">,</span>
         <span class="n">Yt</span><span class="p">:</span> <span class="n">sp</span><span class="o">.</span><span class="n">csc_matrix</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">CxVec</span><span class="p">,</span> <span class="n">CxVec</span><span class="p">,</span> <span class="n">CxVec</span><span class="p">,</span> <span class="n">CxVec</span><span class="p">,</span> <span class="n">CxVec</span><span class="p">,</span> <span class="n">CxVec</span><span class="p">,</span> <span class="n">CxVec</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute the important results for short-circuits</span>
 <span class="sd">    :param calculation_inputs: instance of Circuit</span>
 <span class="sd">    :param V: Voltage solution array for the circuit buses</span>
@@ -153,7 +154,7 @@
 <span class="sd">    :param Yf: From admittance matrix</span>
 <span class="sd">    :param Yt: To admittance matrix</span>
 <span class="sd">    :return: Sf (MVA), If (p.u.), loading (p.u.), losses (MVA), Sbus(MVA)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">Vf</span> <span class="o">=</span> <span class="n">V</span><span class="p">[</span><span class="n">calculation_inputs</span><span class="o">.</span><span class="n">passive_branch_data</span><span class="o">.</span><span class="n">F</span><span class="p">]</span>
     <span class="n">Vt</span> <span class="o">=</span> <span class="n">V</span><span class="p">[</span><span class="n">calculation_inputs</span><span class="o">.</span><span class="n">passive_branch_data</span><span class="o">.</span><span class="n">T</span><span class="p">]</span>
@@ -194,7 +195,7 @@
         <span class="n">mask</span><span class="p">,</span>
         <span class="n">branch_lookup</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">CxVec</span><span class="p">,</span> <span class="n">CxVec</span><span class="p">,</span> <span class="n">CxVec</span><span class="p">,</span> <span class="n">CxVec</span><span class="p">,</span> <span class="n">CxVec</span><span class="p">,</span> <span class="n">CxVec</span><span class="p">,</span> <span class="n">CxVec</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute the important results for short-circuits</span>
 <span class="sd">    :param calculation_inputs: instance of Circuit</span>
 <span class="sd">    :param V_expanded: Voltage solution array for the circuit buses</span>
@@ -206,7 +207,7 @@
 <span class="sd">    :param mask:</span>
 <span class="sd">    :param branch_lookup:</span>
 <span class="sd">    :return: Sf (MVA), If (p.u.), loading (p.u.), losses (MVA), Sbus(MVA)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">Vf_expanded</span> <span class="o">=</span> <span class="n">V_expanded</span><span class="p">[</span><span class="n">F_expanded</span><span class="p">]</span>
     <span class="n">Vt_expanded</span> <span class="o">=</span> <span class="n">V_expanded</span><span class="p">[</span><span class="n">T_expanded</span><span class="p">]</span>
@@ -247,7 +248,7 @@
 <span class="c1">#         Yf: sp.csc_matrix,</span>
 <span class="c1">#         Yt: sp.csc_matrix</span>
 <span class="c1"># ) -&gt; Tuple[CxVec, CxVec, CxVec, CxVec, CxVec, CxVec, CxVec]:</span>
-<span class="c1">#     &quot;&quot;&quot;</span>
+<span class="c1">#     """</span>
 <span class="c1">#     Compute the important results for short-circuits</span>
 <span class="c1">#     :param calculation_inputs: instance of Circuit</span>
 <span class="c1">#     :param V: Voltage solution array for the circuit buses</span>
@@ -255,7 +256,7 @@
 <span class="c1">#     :param Yf: From admittance matrix</span>
 <span class="c1">#     :param Yt: To admittance matrix</span>
 <span class="c1">#     :return: Sf (MVA), If (p.u.), loading (p.u.), losses (MVA), Sbus(MVA)</span>
-<span class="c1">#     &quot;&quot;&quot;</span>
+<span class="c1">#     """</span>
 <span class="c1">#</span>
 <span class="c1">#     Vf = V[calculation_inputs.passive_branch_data.F]</span>
 <span class="c1">#     Vt = V[calculation_inputs.passive_branch_data.T]</span>
@@ -289,14 +290,14 @@
                       <span class="n">Zf</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span>
                       <span class="n">bus_index</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
                       <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ShortCircuitResults</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Run a 3-phase short circuit simulation for a single island</span>
 <span class="sd">    :param nc: NumericalCircuit</span>
 <span class="sd">    :param Vpf: Power flow voltage vector applicable to the island</span>
 <span class="sd">    :param Zf: Short circuit impedance vector applicable to the island</span>
 <span class="sd">    :param bus_index: Bus index</span>
 <span class="sd">    :return: short circuit results</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">adm</span> <span class="o">=</span> <span class="n">nc</span><span class="o">.</span><span class="n">get_admittance_matrices</span><span class="p">()</span>
     <span class="n">Y_gen</span> <span class="o">=</span> <span class="n">nc</span><span class="o">.</span><span class="n">generator_data</span><span class="o">.</span><span class="n">get_Yshunt</span><span class="p">(</span><span class="n">seq</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
     <span class="n">Y_batt</span> <span class="o">=</span> <span class="n">nc</span><span class="o">.</span><span class="n">battery_data</span><span class="o">.</span><span class="n">get_Yshunt</span><span class="p">(</span><span class="n">seq</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
@@ -329,7 +330,7 @@
         <span class="n">branch_names</span><span class="o">=</span><span class="n">nc</span><span class="o">.</span><span class="n">passive_branch_data</span><span class="o">.</span><span class="n">names</span><span class="p">,</span>
         <span class="n">hvdc_names</span><span class="o">=</span><span class="n">nc</span><span class="o">.</span><span class="n">hvdc_data</span><span class="o">.</span><span class="n">names</span><span class="p">,</span>
         <span class="n">vsc_names</span><span class="o">=</span><span class="n">nc</span><span class="o">.</span><span class="n">vsc_data</span><span class="o">.</span><span class="n">names</span><span class="p">,</span>
-        <span class="n">sc_names</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="s2">&quot;SC&quot;</span><span class="p">]),</span>
+        <span class="n">sc_names</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="s2">"SC"</span><span class="p">]),</span>
         <span class="n">bus_types</span><span class="o">=</span><span class="n">nc</span><span class="o">.</span><span class="n">bus_data</span><span class="o">.</span><span class="n">bus_types</span><span class="p">,</span>
         <span class="n">area_names</span><span class="o">=</span><span class="kc">None</span>
     <span class="p">)</span>
@@ -358,7 +359,7 @@
                              <span class="n">bus_index</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
                              <span class="n">fault_type</span><span class="p">:</span> <span class="n">FaultType</span><span class="p">,</span>
                              <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ShortCircuitResults</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Run an unbalanced short circuit simulation for a single island</span>
 <span class="sd">    :param nc:</span>
 <span class="sd">    :param Vpf: Power flow voltage vector applicable to the island</span>
@@ -366,7 +367,7 @@
 <span class="sd">    :param bus_index: Index of the failed bus</span>
 <span class="sd">    :param fault_type: FaultType</span>
 <span class="sd">    :return: short circuit results</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="c1"># build Y0, Y1, Y2</span>
     <span class="n">nbr</span> <span class="o">=</span> <span class="n">nc</span><span class="o">.</span><span class="n">nbr</span>
@@ -432,7 +433,7 @@
                                <span class="n">seq</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
                                <span class="n">add_windings_phase</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Initialize Vpf introducing phase shifts</span>
 <span class="sd">    No search algo is needed. Instead, we need to solve YV=0,</span>
 <span class="sd">    get the angle of the voltages from here and add them to the</span>
@@ -452,7 +453,7 @@
 <span class="sd">    V = - inv(Yx) Yu Vvd</span>
 <span class="sd">    ph_add = np.angle(V)</span>
 <span class="sd">    Vpf[pqpv] *= np.exp(1j * ph_add)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">adm_series</span> <span class="o">=</span> <span class="n">compute_admittances</span><span class="p">(</span><span class="n">R</span><span class="o">=</span><span class="n">nc</span><span class="o">.</span><span class="n">passive_branch_data</span><span class="o">.</span><span class="n">R</span><span class="p">,</span>
                                      <span class="n">X</span><span class="o">=</span><span class="n">nc</span><span class="o">.</span><span class="n">passive_branch_data</span><span class="o">.</span><span class="n">X</span><span class="p">,</span>
@@ -532,7 +533,7 @@
         <span class="n">branch_names</span><span class="o">=</span><span class="n">nc</span><span class="o">.</span><span class="n">passive_branch_data</span><span class="o">.</span><span class="n">names</span><span class="p">,</span>
         <span class="n">hvdc_names</span><span class="o">=</span><span class="n">nc</span><span class="o">.</span><span class="n">hvdc_data</span><span class="o">.</span><span class="n">names</span><span class="p">,</span>
         <span class="n">vsc_names</span><span class="o">=</span><span class="n">nc</span><span class="o">.</span><span class="n">vsc_data</span><span class="o">.</span><span class="n">names</span><span class="p">,</span>
-        <span class="n">sc_names</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="s2">&quot;SC&quot;</span><span class="p">]),</span>
+        <span class="n">sc_names</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="s2">"SC"</span><span class="p">]),</span>
         <span class="n">bus_types</span><span class="o">=</span><span class="n">nc</span><span class="o">.</span><span class="n">bus_data</span><span class="o">.</span><span class="n">bus_types</span><span class="p">,</span>
         <span class="n">area_names</span><span class="o">=</span><span class="kc">None</span>
     <span class="p">)</span>
@@ -576,13 +577,13 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">maximum_initial_shortcircuit_current</span><span class="p">(</span><span class="n">nc</span><span class="p">:</span> <span class="n">NumericalCircuit</span><span class="p">,</span>
                                          <span class="n">Zf</span><span class="p">:</span> <span class="nb">complex</span><span class="p">,</span>
                                          <span class="n">faulted_bus</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 
 <span class="sd">    :param nc:</span>
 <span class="sd">    :param Zf:</span>
 <span class="sd">    :param faulted_bus:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">c_max</span> <span class="o">=</span> <span class="mf">1.1</span>  <span class="c1"># Voltage factor</span>
     <span class="n">Un</span> <span class="o">=</span> <span class="n">nc</span><span class="o">.</span><span class="n">bus_data</span><span class="o">.</span><span class="n">Vnom</span><span class="p">[</span><span class="n">faulted_bus</span><span class="p">]</span> <span class="o">*</span> <span class="mf">1e3</span>  <span class="c1"># Nominal voltage [V]</span>
     <span class="n">Zk</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">Zf</span><span class="p">)</span> <span class="o">*</span> <span class="n">Un</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">/</span> <span class="p">(</span><span class="n">nc</span><span class="o">.</span><span class="n">Sbase</span> <span class="o">*</span> <span class="mf">1e6</span><span class="p">)</span>  <span class="c1"># Fault impedance [Ohm]</span>
@@ -618,7 +619,7 @@
                       <span class="n">Sbus_B</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span>
                       <span class="n">Sbus_C</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span>
                       <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ShortCircuitResults</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Run a short circuit simulation in the phase domain</span>
 <span class="sd">    :param nc:</span>
 <span class="sd">    :param Vpf: Power flow voltage vector applicable to the island</span>
@@ -629,7 +630,7 @@
 <span class="sd">    :param method: Method to solve the short-circuit, sequence or phase domain</span>
 <span class="sd">    :param phases: Phases where the short-circuit occurs</span>
 <span class="sd">    :return: short circuit results</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># -----------------------------------------------------------------------------------------------------------------</span>
     <span class="c1"># Compute Ybus</span>
     <span class="c1"># -----------------------------------------------------------------------------------------------------------------</span>
@@ -758,7 +759,7 @@
         <span class="n">Yfault</span><span class="p">[</span><span class="n">c</span><span class="p">,</span> <span class="n">c</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="n">Zf</span><span class="p">[</span><span class="n">bus_index</span><span class="p">]</span> <span class="o">+</span> <span class="mf">1e-20</span><span class="p">)</span>
 
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Incorrect fault type definition.&#39;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">'Incorrect fault type definition.'</span><span class="p">)</span>
 
     <span class="n">Yfault_masked</span> <span class="o">=</span> <span class="n">Yfault</span><span class="p">[</span><span class="n">mask</span><span class="p">,</span> <span class="p">:][:,</span> <span class="n">mask</span><span class="p">]</span>
     <span class="n">Yfault_masked</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">csc_matrix</span><span class="p">(</span><span class="n">Yfault_masked</span><span class="p">)</span>
@@ -775,7 +776,7 @@
     <span class="n">Ylinear_masked</span> <span class="o">=</span> <span class="n">Ybus_masked</span> <span class="o">-</span> <span class="n">Yloads_diags</span> <span class="o">+</span> <span class="n">Yfault_masked</span> <span class="o">+</span> <span class="n">Ygen_masked</span>
 
     <span class="c1"># -----------------------------------------------------------------------------------------------------------------</span>
-    <span class="c1"># Generators Norton&#39;s current</span>
+    <span class="c1"># Generators Norton's current</span>
     <span class="c1"># -----------------------------------------------------------------------------------------------------------------</span>
     <span class="n">S</span> <span class="o">=</span> <span class="p">(</span><span class="n">Spf</span> <span class="o">/</span> <span class="p">(</span><span class="n">nc</span><span class="o">.</span><span class="n">Sbase</span> <span class="o">/</span> <span class="mi">3</span><span class="p">))</span> <span class="o">-</span> <span class="n">Vpf</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">conj</span><span class="p">(</span><span class="n">Yloads_expanded</span> <span class="o">*</span> <span class="n">Vpf</span><span class="p">)</span>
 
@@ -825,7 +826,7 @@
         <span class="n">branch_names</span><span class="o">=</span><span class="n">nc</span><span class="o">.</span><span class="n">passive_branch_data</span><span class="o">.</span><span class="n">names</span><span class="p">,</span>
         <span class="n">hvdc_names</span><span class="o">=</span><span class="n">nc</span><span class="o">.</span><span class="n">hvdc_data</span><span class="o">.</span><span class="n">names</span><span class="p">,</span>
         <span class="n">vsc_names</span><span class="o">=</span><span class="n">nc</span><span class="o">.</span><span class="n">vsc_data</span><span class="o">.</span><span class="n">names</span><span class="p">,</span>
-        <span class="n">sc_names</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="s2">&quot;SC&quot;</span><span class="p">]),</span>
+        <span class="n">sc_names</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="s2">"SC"</span><span class="p">]),</span>
         <span class="n">bus_types</span><span class="o">=</span><span class="n">nc</span><span class="o">.</span><span class="n">bus_data</span><span class="o">.</span><span class="n">bus_types</span><span class="p">,</span>
         <span class="n">area_names</span><span class="o">=</span><span class="kc">None</span>
     <span class="p">)</span>
@@ -1009,11 +1010,11 @@
                         <span class="n">nc</span><span class="o">.</span><span class="n">generator_data</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="n">gen_i</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="n">nc</span><span class="o">.</span><span class="n">generator_data</span><span class="o">.</span><span class="n">q</span><span class="p">[</span><span class="n">gen_i</span><span class="p">]</span>
                     <span class="p">)</span> <span class="o">/</span> <span class="n">nc</span><span class="o">.</span><span class="n">Sbase</span>
                 <span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span>
-                    <span class="n">msg</span><span class="o">=</span><span class="s2">&quot;Generator positive-sequence impedance is missing or too small for short-circuit Norton model&quot;</span><span class="p">,</span>
+                    <span class="n">msg</span><span class="o">=</span><span class="s2">"Generator positive-sequence impedance is missing or too small for short-circuit Norton model"</span><span class="p">,</span>
                     <span class="n">device</span><span class="o">=</span><span class="n">nc</span><span class="o">.</span><span class="n">generator_data</span><span class="o">.</span><span class="n">names</span><span class="p">[</span><span class="n">gen_i</span><span class="p">],</span>
                     <span class="n">value</span><span class="o">=</span><span class="n">zgen</span><span class="p">,</span>
-                    <span class="n">expected_value</span><span class="o">=</span><span class="s2">&quot;|R1 + jX1| &gt; 1e-12&quot;</span><span class="p">,</span>
-                    <span class="n">device_class</span><span class="o">=</span><span class="s2">&quot;Generator&quot;</span>
+                    <span class="n">expected_value</span><span class="o">=</span><span class="s2">"|R1 + jX1| &gt; 1e-12"</span><span class="p">,</span>
+                    <span class="n">device_class</span><span class="o">=</span><span class="s2">"Generator"</span>
                 <span class="p">)</span>
 
         <span class="n">S0_non_gen</span> <span class="o">=</span> <span class="n">S0</span> <span class="o">-</span> <span class="n">nc</span><span class="o">.</span><span class="n">generator_data</span><span class="o">.</span><span class="n">get_injections_per_bus</span><span class="p">()</span> <span class="o">/</span> <span class="n">nc</span><span class="o">.</span><span class="n">Sbase</span>
@@ -1041,13 +1042,13 @@
         <span class="k">if</span> <span class="n">constz</span><span class="p">:</span>
             <span class="n">static_gen_linear</span> <span class="o">=</span> <span class="n">S0_static_gen</span> <span class="o">+</span> <span class="n">static_gen_from_generator_pf</span>
             <span class="n">S0_linear</span> <span class="o">=</span> <span class="n">invalid_gen_linear</span>
-            <span class="n">I0_linear</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="n">nbus</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">)</span>  <span class="c1"># Add generator&#39;s norton</span>
+            <span class="n">I0_linear</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="n">nbus</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">)</span>  <span class="c1"># Add generator's norton</span>
             <span class="n">Y0_linear</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">conj</span><span class="p">((</span><span class="n">S0_non_static_gen</span> <span class="o">+</span> <span class="n">static_gen_linear</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">conj</span><span class="p">(</span><span class="n">V_pf</span><span class="p">)</span> <span class="o">*</span> <span class="n">V_pf</span><span class="p">))</span>
                          <span class="o">-</span> <span class="n">I0</span> <span class="o">/</span> <span class="n">V_pf</span> <span class="o">-</span> <span class="n">Y0</span> <span class="o">+</span> <span class="n">Ygen</span> <span class="o">+</span> <span class="n">Yfault</span><span class="p">)</span>
 
         <span class="k">else</span><span class="p">:</span>
             <span class="n">S0_linear</span> <span class="o">=</span> <span class="n">S0_non_gen</span> <span class="o">+</span> <span class="n">static_gen_from_generator_pf</span> <span class="o">+</span> <span class="n">invalid_gen_linear</span>
-            <span class="n">I0_linear</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="n">nbus</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">)</span>  <span class="c1"># Add generator&#39;s norton</span>
+            <span class="n">I0_linear</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="n">nbus</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">)</span>  <span class="c1"># Add generator's norton</span>
             <span class="n">Y0_linear</span> <span class="o">=</span> <span class="o">-</span> <span class="n">I0</span> <span class="o">/</span> <span class="n">V_pf</span> <span class="o">-</span> <span class="n">Y0</span> <span class="o">+</span> <span class="n">Ygen</span> <span class="o">+</span> <span class="n">Yfault</span>
 
         <span class="k">for</span> <span class="n">gen_bus</span> <span class="ow">in</span> <span class="n">valid_gen_buses</span><span class="p">:</span>
@@ -1086,19 +1087,19 @@
                                          <span class="n">logger</span><span class="o">=</span><span class="n">logger</span><span class="p">)</span>
 
             <span class="n">convergence_value</span> <span class="o">=</span> <span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;error=</span><span class="si">{</span><span class="n">solution</span><span class="o">.</span><span class="n">norm_f</span><span class="si">:</span><span class="s2">.6g</span><span class="si">}</span><span class="s2">, &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;iterations=</span><span class="si">{</span><span class="n">solution</span><span class="o">.</span><span class="n">iterations</span><span class="si">}</span><span class="s2">, &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;elapsed=</span><span class="si">{</span><span class="n">solution</span><span class="o">.</span><span class="n">elapsed</span><span class="si">:</span><span class="s2">.6g</span><span class="si">}</span><span class="s2"> s&quot;</span>
+                <span class="sa">f</span><span class="s2">"error=</span><span class="si">{</span><span class="n">solution</span><span class="o">.</span><span class="n">norm_f</span><span class="si">:</span><span class="s2">.6g</span><span class="si">}</span><span class="s2">, "</span>
+                <span class="sa">f</span><span class="s2">"iterations=</span><span class="si">{</span><span class="n">solution</span><span class="o">.</span><span class="n">iterations</span><span class="si">}</span><span class="s2">, "</span>
+                <span class="sa">f</span><span class="s2">"elapsed=</span><span class="si">{</span><span class="n">solution</span><span class="o">.</span><span class="n">elapsed</span><span class="si">:</span><span class="s2">.6g</span><span class="si">}</span><span class="s2"> s"</span>
             <span class="p">)</span>
             <span class="k">if</span> <span class="n">solution</span><span class="o">.</span><span class="n">converged</span><span class="p">:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">&quot;Short-circuit VSC Newton-Raphson converged&quot;</span><span class="p">,</span>
-                                <span class="n">device</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Island </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">"Short-circuit VSC Newton-Raphson converged"</span><span class="p">,</span>
+                                <span class="n">device</span><span class="o">=</span><span class="sa">f</span><span class="s2">"Island </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
                                 <span class="n">value</span><span class="o">=</span><span class="n">convergence_value</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">&quot;Short-circuit VSC Newton-Raphson did not converge&quot;</span><span class="p">,</span>
-                                   <span class="n">device</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Island </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">"Short-circuit VSC Newton-Raphson did not converge"</span><span class="p">,</span>
+                                   <span class="n">device</span><span class="o">=</span><span class="sa">f</span><span class="s2">"Island </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
                                    <span class="n">value</span><span class="o">=</span><span class="n">convergence_value</span><span class="p">,</span>
-                                   <span class="n">expected_value</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;error &lt;= </span><span class="si">{</span><span class="n">options</span><span class="o">.</span><span class="n">tolerance</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                                   <span class="n">expected_value</span><span class="o">=</span><span class="sa">f</span><span class="s2">"error &lt;= </span><span class="si">{</span><span class="n">options</span><span class="o">.</span><span class="n">tolerance</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
             <span class="c1"># merge the results from this island</span>
             <span class="n">pf_results</span><span class="o">.</span><span class="n">apply_from_island</span><span class="p">(</span>
@@ -1110,7 +1111,7 @@
             <span class="p">)</span>
 
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="s1">&#39;No slack nodes in the island&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="s1">'No slack nodes in the island'</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
 
     <span class="c1"># voltage, Sf, loading, losses, error, converged, Qpv</span>
     <span class="n">sc_results</span> <span class="o">=</span> <span class="n">ShortCircuitResults</span><span class="p">(</span>
@@ -1123,7 +1124,7 @@
         <span class="n">branch_names</span><span class="o">=</span><span class="n">nc</span><span class="o">.</span><span class="n">passive_branch_data</span><span class="o">.</span><span class="n">names</span><span class="p">,</span>
         <span class="n">hvdc_names</span><span class="o">=</span><span class="n">nc</span><span class="o">.</span><span class="n">hvdc_data</span><span class="o">.</span><span class="n">names</span><span class="p">,</span>
         <span class="n">vsc_names</span><span class="o">=</span><span class="n">nc</span><span class="o">.</span><span class="n">vsc_data</span><span class="o">.</span><span class="n">names</span><span class="p">,</span>
-        <span class="n">sc_names</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="s2">&quot;SC&quot;</span><span class="p">]),</span>
+        <span class="n">sc_names</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="s2">"SC"</span><span class="p">]),</span>
         <span class="n">bus_types</span><span class="o">=</span><span class="n">nc</span><span class="o">.</span><span class="n">bus_data</span><span class="o">.</span><span class="n">bus_types</span><span class="p">,</span>
         <span class="n">area_names</span><span class="o">=</span><span class="kc">None</span>
     <span class="p">)</span>

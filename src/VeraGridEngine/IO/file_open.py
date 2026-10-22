@@ -9,9 +9,13 @@ import json
 import pathlib
 
 from collections.abc import Callable
-from typing import Union, List, Tuple
+from typing import Dict, Union, List, Tuple
 
 from VeraGridEngine.Devices.multiverse import MultiVerse
+from VeraGridEngine.Devices.Diagrams.block_diagram import BlockDiagramNode
+from VeraGridEngine.Devices.Dynamic.emt_template import EmtModelTemplate
+from VeraGridEngine.Devices.Dynamic.rms_template import RmsModelTemplate
+from VeraGridEngine.Devices.Parents.dynamic_parent import DynamicDevice
 from VeraGridEngine.IO.cim.cgmes.cgmes_data_parser import CgmesDataParser
 from VeraGridEngine.IO.cim.cgmes.cgmes_enums import CgmesRecoveryMode
 from VeraGridEngine.basic_structures import Logger
@@ -37,7 +41,7 @@ from VeraGridEngine.IO.veragrid.zip_interface import (
     get_frames_from_zip,
 )
 from VeraGridEngine.Devices.Dynamic.manufacturer_native_model import ManufacturerNativeBinarySource
-from VeraGridEngine.enumerations import IeeeCigreDllPlatform
+from VeraGridEngine.enumerations import BlockType, IeeeCigreDllPlatform
 from VeraGridEngine.IO.veragrid.sqlite_interface import open_data_frames_from_sqlite
 from VeraGridEngine.IO.veragrid.h5_interface import open_h5
 from VeraGridEngine.IO.raw.rawx_parser_writer import parse_rawx
@@ -49,6 +53,7 @@ from VeraGridEngine.IO.others.rte_parser import rte2veragrid
 from VeraGridEngine.IO.others.anarede import PWFParser
 from VeraGridEngine.IO.iidm.iidm_parser_pypowsybl import IidmParser
 from VeraGridEngine.Devices.multi_circuit import MultiCircuit
+from VeraGridEngine.Utils.Symbolic.block import Block
 from VeraGridEngine.enumerations import (
     CGMESVersions,
     CgmesTopologyMode,
@@ -355,6 +360,120 @@ def determine_file_type(file_name: List[str] | str) -> FileType | None:
             return FileType.Iidm
         else:
             return None
+
+
+def _has_legacy_general_structure_block(root_block: Block) -> bool:
+    """Detect configurable integrators or derivatives without persisted editor metadata.
+
+    The diagram owns the semantic ``BlockType`` of each child. The symbolic
+    variables and their mutable names are deliberately ignored because the
+    warning must not infer structural choices from equations or identifiers.
+
+    :param root_block: Root symbolic block of one loaded dynamic model.
+    :return: ``True`` when at least one configurable block lacks its saved
+        ``General structure`` configuration.
+    """
+    blocks_by_uid: Dict[int, Block] = dict()
+    owned_block: Block
+    for owned_block in root_block.get_all_blocks():
+        blocks_by_uid[owned_block.uid] = owned_block
+
+    diagram_owner: Block
+    for diagram_owner in root_block.get_all_blocks():
+        diagram_node: BlockDiagramNode
+        for diagram_node in diagram_owner.diagram.node_data.values():
+            if diagram_node.tpe in BlockType.__members__:
+                block_type: BlockType = BlockType[diagram_node.tpe]
+                is_configurable_legacy_type: bool = block_type in (
+                    BlockType.INTEGRATOR,
+                    BlockType.STARTUP_FREEZE_INTEGRATOR,
+                    BlockType.DERIVATIVE,
+                )
+            else:
+                is_configurable_legacy_type = False
+
+            target_block: Block | None = blocks_by_uid.get(diagram_node.device_uid, None)
+            if (
+                    is_configurable_legacy_type
+                    and target_block is not None
+                    and target_block.modal_template_config is None
+            ):
+                return True
+            else:
+                pass
+    return False
+
+
+def add_legacy_general_structure_warning(circuit: MultiCircuit, logger: Logger) -> None:
+    """Report legacy integrator or derivative metadata missing after file loading.
+
+    Existing symbolic equations, ports and connections remain authoritative and
+    are never modified here. The warning only explains that Block Properties
+    must display deterministic defaults because older files did not persist the
+    corresponding ``General structure`` selections.
+
+    :param circuit: Loaded circuit whose reusable and attached dynamic models
+        are inspected.
+    :param logger: File-open logger that receives at most one aggregate warning.
+    :return: None.
+    """
+    has_legacy_configuration: bool = False
+
+    rms_template: RmsModelTemplate
+    for rms_template in circuit.rms_models:
+        if _has_legacy_general_structure_block(root_block=rms_template.block):
+            has_legacy_configuration = True
+            break
+        else:
+            pass
+
+    emt_template: EmtModelTemplate
+    if not has_legacy_configuration:
+        for emt_template in circuit.emt_models:
+            if _has_legacy_general_structure_block(root_block=emt_template.block):
+                has_legacy_configuration = True
+                break
+            else:
+                pass
+    else:
+        pass
+
+    element: object
+    if not has_legacy_configuration:
+        for element in circuit.get_all_elements_iter():
+            if isinstance(element, DynamicDevice):
+                has_legacy_rms_block: bool = _has_legacy_general_structure_block(
+                    root_block=element.rms_model,
+                )
+                if has_legacy_rms_block:
+                    has_legacy_emt_block: bool = False
+                else:
+                    has_legacy_emt_block = _has_legacy_general_structure_block(
+                        root_block=element.emt_model,
+                    )
+                if has_legacy_rms_block or has_legacy_emt_block:
+                    has_legacy_configuration = True
+                    break
+                else:
+                    pass
+            else:
+                pass
+    else:
+        pass
+
+    if has_legacy_configuration:
+        logger.add_warning(
+            msg=(
+                "Legacy integrator or derivative blocks were loaded with their original "
+                "equations, inputs and outputs. Their General structure metadata was not "
+                "stored in this file, so Block Properties shows default values that may "
+                "not describe the loaded equations. Changing General structure rebuilds "
+                "the block."
+            ),
+            device_class="Dynamic model",
+        )
+    else:
+        pass
 
 
 class FileOpen:
@@ -767,6 +886,20 @@ class FileOpen:
                                 ))
                         else:
                             pass
+        else:
+            pass
+
+        if (
+                self.circuit is not None
+                and self.file_type in (FileType.VeraGrid, FileType.VeraGrid_delta)
+        ):
+            # File-open diagnostics must state when the editor can only show
+            # default structural controls for a legacy symbolic block. This
+            # inspection is read-only and leaves its equations and ports intact.
+            add_legacy_general_structure_warning(
+                circuit=self.circuit,
+                logger=self.logger,
+            )
         else:
             pass
 

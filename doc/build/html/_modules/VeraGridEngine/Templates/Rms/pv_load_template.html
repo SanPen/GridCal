@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Templates.Rms.pv_load_template &mdash; VeraGrid 6.7.13 documentation</title>
+  <title>VeraGridEngine.Templates.Rms.pv_load_template &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=16fbabd8"></script>
+      <script src="../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -123,24 +123,24 @@
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vf</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">vf</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="p">[</span>
-            <span class="n">TemplateProp</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Pg0_val&quot;</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;pu&quot;</span><span class="p">,</span> <span class="n">descr</span><span class="o">=</span><span class="s2">&quot;Optional initial active power override; otherwise use power flow.&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
-            <span class="n">TemplateProp</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Vg0_val&quot;</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;pu&quot;</span><span class="p">,</span> <span class="n">descr</span><span class="o">=</span><span class="s2">&quot;Initial voltage reference.&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
-            <span class="n">TemplateProp</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">descr</span><span class="o">=</span><span class="s2">&quot;Name of the rms model.&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">str</span><span class="p">),</span>
+            <span class="n">TemplateProp</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">"Pg0_val"</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">"pu"</span><span class="p">,</span> <span class="n">descr</span><span class="o">=</span><span class="s2">"Optional initial active power override; otherwise use power flow."</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
+            <span class="n">TemplateProp</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">"Vg0_val"</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">"pu"</span><span class="p">,</span> <span class="n">descr</span><span class="o">=</span><span class="s2">"Initial voltage reference."</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
+            <span class="n">TemplateProp</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">"name"</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">""</span><span class="p">,</span> <span class="n">descr</span><span class="o">=</span><span class="s2">"Name of the rms model."</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">str</span><span class="p">),</span>
         <span class="p">])</span>
 
 <div class="viewcode-block" id="PvLoadRmsTemplate.eval">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Templates.Rms.html#VeraGridEngine.Templates.Rms.pv_load_template.PvLoadRmsTemplate.eval">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">eval</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RmsModelTemplate</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">PVLoadBuild</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vf</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span><span class="s2">&quot;Pg0_val&quot;</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span><span class="s2">&quot;Vg0_val&quot;</span><span class="p">))</span></div>
+        <span class="k">return</span> <span class="n">PVLoadBuild</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vf</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span><span class="s2">"name"</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span><span class="s2">"Pg0_val"</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span><span class="s2">"Vg0_val"</span><span class="p">))</span></div>
 </div>
 
 
 
 <div class="viewcode-block" id="PVLoadBuild">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Templates.Rms.html#VeraGridEngine.Templates.Rms.pv_load_template.PVLoadBuild">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">PVLoadBuild</span><span class="p">(</span><span class="n">vfactory</span><span class="p">:</span> <span class="n">VarFactory</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;PV load RMS template&quot;</span><span class="p">,</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">PVLoadBuild</span><span class="p">(</span><span class="n">vfactory</span><span class="p">:</span> <span class="n">VarFactory</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"PV load RMS template"</span><span class="p">,</span>
                 <span class="n">Pg0_val</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">Vg0_val</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RmsModelTemplate</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Builds an RMS model template for a PV load with reactive power limits.</span>
 <span class="sd">    </span>
 <span class="sd">    The PV load model represents a load/generator with constant active power (P)</span>
@@ -155,29 +155,29 @@
 <span class="sd">        Vh = Vg0      if Qmax_G &lt; Qh &lt; Qmin_G</span>
 <span class="sd">        Qg = Qmin_G   if Qh &lt;= Qmin_G</span>
 <span class="sd">    </span>
-<span class="sd">    :param vfactory: Factory that owns the model&#39;s symbolic variables.</span>
+<span class="sd">    :param vfactory: Factory that owns the model's symbolic variables.</span>
 <span class="sd">    :param name: Name assigned to the generated RMS model template.</span>
 <span class="sd">    :param Pg0_val: Optional initial active power in per unit; otherwise use the solved power-flow value.</span>
 <span class="sd">    :param Vg0_val: Initial voltage reference in per unit.</span>
 <span class="sd">    :return: Configured PV-load RMS model template.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">templ</span> <span class="o">=</span> <span class="n">RmsModelTemplate</span><span class="p">()</span>
     <span class="n">templ</span><span class="o">.</span><span class="n">tpe</span> <span class="o">=</span> <span class="n">DeviceType</span><span class="o">.</span><span class="n">LoadDevice</span>
     <span class="n">templ</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
     
     <span class="c1"># Input: Vm (voltage magnitude)</span>
-    <span class="n">Vm</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;Vm&quot;</span><span class="p">)</span>
+    <span class="n">Vm</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"Vm"</span><span class="p">)</span>
     <span class="n">inputs</span> <span class="o">=</span> <span class="p">[</span><span class="n">Vm</span><span class="p">]</span>
     
     <span class="c1"># Variables</span>
-    <span class="n">P</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;P&#39;</span><span class="p">)</span>
-    <span class="n">Q</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;Q&#39;</span><span class="p">)</span>
+    <span class="n">P</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'P'</span><span class="p">)</span>
+    <span class="n">Q</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'Q'</span><span class="p">)</span>
     
     <span class="c1"># Parameters</span>
-    <span class="n">Pg0</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;Pg0&#39;</span><span class="p">)</span>
-    <span class="n">Vg0</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;Vg0&#39;</span><span class="p">)</span>
-    <span class="n">Qmax_G</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;Qmax_G&#39;</span><span class="p">)</span>
-    <span class="n">Qmin_G</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;Qmin_G&#39;</span><span class="p">)</span>
+    <span class="n">Pg0</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'Pg0'</span><span class="p">)</span>
+    <span class="n">Vg0</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'Vg0'</span><span class="p">)</span>
+    <span class="n">Qmax_G</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'Qmax_G'</span><span class="p">)</span>
+    <span class="n">Qmin_G</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'Qmin_G'</span><span class="p">)</span>
     
     <span class="c1"># Event dictionary with default values</span>
     <span class="n">event_dict</span> <span class="o">=</span> <span class="p">{</span>
@@ -208,16 +208,16 @@
         <span class="n">event_dict</span><span class="o">=</span><span class="n">event_dict</span><span class="p">,</span>
     <span class="p">)</span>
     
-    <span class="n">templ</span><span class="o">.</span><span class="n">block</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;PV Load&#39;</span>
+    <span class="n">templ</span><span class="o">.</span><span class="n">block</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s1">'PV Load'</span>
     <span class="n">templ</span><span class="o">.</span><span class="n">block</span><span class="o">.</span><span class="n">external_mapping</span> <span class="o">=</span> <span class="p">{</span>
         <span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">P</span><span class="p">:</span> <span class="n">P</span><span class="p">,</span>
         <span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">Q</span><span class="p">:</span> <span class="n">Q</span><span class="p">,</span>
         <span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">Vm</span><span class="p">:</span> <span class="n">inputs</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
     <span class="p">}</span>
-    
+
     <span class="n">templ</span><span class="o">.</span><span class="n">block</span><span class="o">.</span><span class="n">in_vars</span> <span class="o">=</span> <span class="n">inputs</span>
     
-    <span class="n">templ</span><span class="o">.</span><span class="n">comment</span> <span class="o">=</span> <span class="s1">&#39;Load RMS PV voltage-dependent model&#39;</span>
+    <span class="n">templ</span><span class="o">.</span><span class="n">comment</span> <span class="o">=</span> <span class="s1">'Load RMS PV voltage-dependent model'</span>
     <span class="k">return</span> <span class="n">templ</span></div>
 
 </pre></div>

@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Simulations.NodalCapacity.nodal_capacity_ts_driver &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Simulations.NodalCapacity.nodal_capacity_ts_driver &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/license.html">📜 License</a></li>
@@ -134,11 +135,11 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.NodalCapacity.html#VeraGridEngine.Simulations.NodalCapacity.nodal_capacity_ts_driver.NodalCapacityTimeSeriesDriver">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">NodalCapacityTimeSeriesDriver</span><span class="p">(</span><span class="n">TimeSeriesDriverTemplate</span><span class="p">):</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;options&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;all_solved&quot;</span><span class="p">,</span>
+        <span class="s2">"options"</span><span class="p">,</span>
+        <span class="s2">"all_solved"</span><span class="p">,</span>
     <span class="p">)</span>
 
-    <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;Nodal capacity time series&#39;</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s1">'Nodal capacity time series'</span>
     <span class="n">tpe</span> <span class="o">=</span> <span class="n">SimulationTypes</span><span class="o">.</span><span class="n">NodalCapacityTimeSeries_run</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
@@ -147,7 +148,7 @@
                  <span class="n">time_indices</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">IntVec</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">clustering_results</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">ClusteringResults</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">engine</span><span class="p">:</span> <span class="n">EngineType</span> <span class="o">=</span> <span class="n">EngineType</span><span class="o">.</span><span class="n">VeraGrid</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Initialize the nodal capacity time-series driver.</span>
 
 <span class="sd">        :param grid: Multi-circuit model to simulate.</span>
@@ -155,7 +156,7 @@
 <span class="sd">        :param time_indices: Time indices to simulate.</span>
 <span class="sd">        :param clustering_results: Optional clustering results.</span>
 <span class="sd">        :param engine: Calculation engine to use.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">TimeSeriesDriverTemplate</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                                           <span class="n">grid</span><span class="o">=</span><span class="n">grid</span><span class="p">,</span>
                                           <span class="n">time_indices</span><span class="o">=</span><span class="n">time_indices</span><span class="p">,</span>
@@ -199,41 +200,41 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">opf_options</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OptimalPowerFlowOptions</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return the embedded OPF options.</span>
 
 <span class="sd">        :return: Optimal power flow options.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">opf_options</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">pf_options</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PowerFlowOptions</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return the embedded power-flow options.</span>
 
 <span class="sd">        :return: Power flow options.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">opf_options</span><span class="o">.</span><span class="n">power_flow_options</span>
 
 <div class="viewcode-block" id="NodalCapacityTimeSeriesDriver.get_steps">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.NodalCapacity.html#VeraGridEngine.Simulations.NodalCapacity.nodal_capacity_ts_driver.NodalCapacityTimeSeriesDriver.get_steps">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_steps</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return the formatted time-step labels.</span>
 
 <span class="sd">        :return: List of time labels.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="p">[</span><span class="n">l</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%d</span><span class="s1">-%m-%Y %H:%M&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">time_profile</span><span class="p">)]</span></div>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">l</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">'</span><span class="si">%d</span><span class="s1">-%m-%Y %H:%M'</span><span class="p">)</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">time_profile</span><span class="p">)]</span></div>
 
 
 <div class="viewcode-block" id="NodalCapacityTimeSeriesDriver.get_time_indices">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.NodalCapacity.html#VeraGridEngine.Simulations.NodalCapacity.nodal_capacity_ts_driver.NodalCapacityTimeSeriesDriver.get_time_indices">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_time_indices</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return the effective time-index list and whether time series mode is active.</span>
 
 <span class="sd">        :return: Tuple of ``(has_time_series, indices)``.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_indices</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">has_ts</span> <span class="o">=</span> <span class="kc">True</span>
@@ -248,13 +249,13 @@
 <div class="viewcode-block" id="NodalCapacityTimeSeriesDriver.assign_linear_results">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.NodalCapacity.html#VeraGridEngine.Simulations.NodalCapacity.nodal_capacity_ts_driver.NodalCapacityTimeSeriesDriver.assign_linear_results">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">assign_linear_results</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">result_indices</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">opf_vars</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Copy linear OPF results into the driver results buffers.</span>
 
 <span class="sd">        :param result_indices:</span>
 <span class="sd">        :param opf_vars: Linear OPF variables to unpack.</span>
 <span class="sd">        :return: ``None``.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">Sbus</span><span class="p">[</span><span class="n">result_indices</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">opf_vars</span><span class="o">.</span><span class="n">bus_vars</span><span class="o">.</span><span class="n">Pinj</span> <span class="o">+</span> <span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="mf">0.0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">voltage</span><span class="p">[</span><span class="n">result_indices</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">opf_vars</span><span class="o">.</span><span class="n">bus_vars</span><span class="o">.</span><span class="n">Vm</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="n">opf_vars</span><span class="o">.</span><span class="n">bus_vars</span><span class="o">.</span><span class="n">Va</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">bus_shadow_prices</span><span class="p">[</span><span class="n">result_indices</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">opf_vars</span><span class="o">.</span><span class="n">bus_vars</span><span class="o">.</span><span class="n">shadow_prices</span>
@@ -302,18 +303,18 @@
 <div class="viewcode-block" id="NodalCapacityTimeSeriesDriver.linear_opf">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.NodalCapacity.html#VeraGridEngine.Simulations.NodalCapacity.nodal_capacity_ts_driver.NodalCapacityTimeSeriesDriver.linear_opf">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">linear_opf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">remote</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">batteries_energy_0</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">fluid_level_0</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Run the linear nodal capacity OPF for the configured time range.</span>
 
 <span class="sd">        :param remote: Whether the call comes from another driver.</span>
 <span class="sd">        :param batteries_energy_0: Optional initial battery energies.</span>
 <span class="sd">        :param fluid_level_0: Optional initial fluid levels.</span>
 <span class="sd">        :return: Time-series nodal capacity results.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="n">remote</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">report_progress</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s1">&#39;Formulating problem...&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s1">'Formulating problem...'</span><span class="p">)</span>
 
         <span class="n">opf_vars</span><span class="p">,</span> <span class="n">model</span> <span class="o">=</span> <span class="n">run_linear_opf_ts</span><span class="p">(</span><span class="n">grid</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="p">,</span>
                                             <span class="n">time_indices</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">time_indices</span><span class="p">,</span>
@@ -341,7 +342,7 @@
 
         <span class="k">if</span> <span class="ow">not</span> <span class="n">remote</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">report_progress</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s1">&#39;Running all in an external solver, this may take a while...&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s1">'Running all in an external solver, this may take a while...'</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span></div>
 
@@ -350,7 +351,7 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.NodalCapacity.html#VeraGridEngine.Simulations.NodalCapacity.nodal_capacity_ts_driver.NodalCapacityTimeSeriesDriver.run_linear_opf_indices">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">run_linear_opf_indices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">result_indices</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">time_indices</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span>
                                <span class="n">energy_0</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">fluid_level_0</span><span class="p">:</span> <span class="n">Vec</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Run the linear nodal capacity OPF for a chunk of indices.</span>
 
 <span class="sd">        :param result_indices: Result-array slots to populate.</span>
@@ -358,7 +359,7 @@
 <span class="sd">        :param energy_0: Initial battery energies for the chunk.</span>
 <span class="sd">        :param fluid_level_0: Initial fluid levels for the chunk.</span>
 <span class="sd">        :return: Linear model instance.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">opf_vars</span><span class="p">,</span> <span class="n">model</span> <span class="o">=</span> <span class="n">run_linear_opf_ts</span><span class="p">(</span><span class="n">grid</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="p">,</span>
                                             <span class="n">time_indices</span><span class="o">=</span><span class="n">time_indices</span><span class="p">,</span>
                                             <span class="n">dispatch_mode</span><span class="o">=</span><span class="n">OpfDispatchMode</span><span class="o">.</span><span class="n">NodalCapacity</span><span class="p">,</span>
@@ -389,17 +390,17 @@
 <div class="viewcode-block" id="NodalCapacityTimeSeriesDriver.non_linear_opf">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.NodalCapacity.html#VeraGridEngine.Simulations.NodalCapacity.nodal_capacity_ts_driver.NodalCapacityTimeSeriesDriver.non_linear_opf">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">non_linear_opf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">remote</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">batteries_energy_0</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Run the nonlinear nodal capacity OPF.</span>
 
 <span class="sd">        :param remote: Whether the call comes from another driver.</span>
 <span class="sd">        :param batteries_energy_0: Unused nonlinear battery seed.</span>
 <span class="sd">        :return: Time-series nodal capacity results.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="n">remote</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">report_progress</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s1">&#39;Formulating problem...&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s1">'Formulating problem...'</span><span class="p">)</span>
 
         <span class="n">has_ts</span><span class="p">,</span> <span class="n">t_indices</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_time_indices</span><span class="p">()</span>
 
@@ -408,10 +409,10 @@
         <span class="k">for</span> <span class="n">it</span><span class="p">,</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">t_indices</span><span class="p">):</span>
 
             <span class="k">if</span> <span class="n">has_ts</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s1">&#39;Nonlinear OPF at &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">time_profile</span><span class="p">[</span><span class="n">t</span><span class="p">])</span> <span class="o">+</span> <span class="s1">&#39;...&#39;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s1">'Nonlinear OPF at '</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">time_profile</span><span class="p">[</span><span class="n">t</span><span class="p">])</span> <span class="o">+</span> <span class="s1">'...'</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">report_progress2</span><span class="p">(</span><span class="n">it</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">time_indices</span><span class="p">))</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s1">&#39;Nonlinear OPF at the snapshot...&#39;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s1">'Nonlinear OPF at the snapshot...'</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">report_progress2</span><span class="p">(</span><span class="n">it</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 
             <span class="n">res</span> <span class="o">=</span> <span class="n">run_nonlinear_opf</span><span class="p">(</span><span class="n">grid</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="p">,</span>
@@ -453,7 +454,7 @@
 
         <span class="k">if</span> <span class="ow">not</span> <span class="n">remote</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">report_progress</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s1">&#39;Running all in an external solver, this may take a while...&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s1">'Running all in an external solver, this may take a while...'</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span></div>
 
@@ -461,17 +462,17 @@
 <div class="viewcode-block" id="NodalCapacityTimeSeriesDriver.cpf">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.NodalCapacity.html#VeraGridEngine.Simulations.NodalCapacity.nodal_capacity_ts_driver.NodalCapacityTimeSeriesDriver.cpf">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">cpf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">remote</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">batteries_energy_0</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Run continuation power flow for nodal capacity.</span>
 
 <span class="sd">        :param remote: Whether the call comes from another driver.</span>
 <span class="sd">        :param batteries_energy_0: Unused CPF battery seed.</span>
 <span class="sd">        :return: Time-series nodal capacity results.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="n">remote</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">report_progress</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s1">&#39;Formulating problem...&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s1">'Formulating problem...'</span><span class="p">)</span>
 
         <span class="n">has_ts</span><span class="p">,</span> <span class="n">t_indices</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_time_indices</span><span class="p">()</span>
 
@@ -513,10 +514,10 @@
 
             <span class="c1"># report progress</span>
             <span class="k">if</span> <span class="n">has_ts</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s1">&#39;Nonlinear OPF at &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">time_profile</span><span class="p">[</span><span class="n">t</span><span class="p">])</span> <span class="o">+</span> <span class="s1">&#39;...&#39;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s1">'Nonlinear OPF at '</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">time_profile</span><span class="p">[</span><span class="n">t</span><span class="p">])</span> <span class="o">+</span> <span class="s1">'...'</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">report_progress2</span><span class="p">(</span><span class="n">it</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">time_indices</span><span class="p">))</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s1">&#39;Nonlinear OPF at the snapshot...&#39;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s1">'Nonlinear OPF at the snapshot...'</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">report_progress2</span><span class="p">(</span><span class="n">it</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 
             <span class="c1"># run opf</span>
@@ -532,7 +533,7 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">loading</span><span class="p">[</span><span class="n">it</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">res</span><span class="o">.</span><span class="n">loading</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">converged</span><span class="p">[</span><span class="n">it</span><span class="p">]</span> <span class="o">=</span> <span class="n">res</span><span class="o">.</span><span class="n">converged</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">&quot;Continuation power flow results are empty&quot;</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">t</span><span class="p">))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">"Continuation power flow results are empty"</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">t</span><span class="p">))</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">converged</span><span class="p">[</span><span class="n">it</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
 
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_cancel</span><span class="p">():</span>
@@ -540,7 +541,7 @@
 
         <span class="k">if</span> <span class="ow">not</span> <span class="n">remote</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">report_progress</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s1">&#39;Running all in an external solver, this may take a while...&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s1">'Running all in an external solver, this may take a while...'</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span></div>
 
@@ -548,14 +549,14 @@
 <div class="viewcode-block" id="NodalCapacityTimeSeriesDriver.add_report">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.NodalCapacity.html#VeraGridEngine.Simulations.NodalCapacity.nodal_capacity_ts_driver.NodalCapacityTimeSeriesDriver.add_report">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">add_report</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eps</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-6</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Append warnings to the logger from the computed results.</span>
 
 <span class="sd">        :param eps: Numerical tolerance for reporting.</span>
 <span class="sd">        :return: ``None``.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">progress_text</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s2">&quot;Creating report&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s2">"Creating report"</span><span class="p">)</span>
 
         <span class="n">nt</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">time_indices</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">t</span><span class="p">,</span> <span class="n">t_idx</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">time_indices</span><span class="p">):</span>
@@ -566,14 +567,14 @@
 
             <span class="k">for</span> <span class="n">gen_name</span><span class="p">,</span> <span class="n">gen_shedding</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">generator_names</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">generator_shedding</span><span class="p">[</span><span class="n">t</span><span class="p">,</span> <span class="p">:]):</span>
                 <span class="k">if</span> <span class="n">gen_shedding</span> <span class="o">&gt;</span> <span class="n">eps</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s2">&quot;Generation shedding </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">t_name</span><span class="p">),</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s2">"Generation shedding </span><span class="si">{}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">t_name</span><span class="p">),</span>
                                             <span class="n">device</span><span class="o">=</span><span class="n">gen_name</span><span class="p">,</span>
                                             <span class="n">value</span><span class="o">=</span><span class="n">gen_shedding</span><span class="p">,</span>
                                             <span class="n">expected_value</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
 
             <span class="k">for</span> <span class="n">load_name</span><span class="p">,</span> <span class="n">load_shedding</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">load_names</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">load_shedding</span><span class="p">[</span><span class="n">t</span><span class="p">,</span> <span class="p">:]):</span>
                 <span class="k">if</span> <span class="n">load_shedding</span> <span class="o">&gt;</span> <span class="n">eps</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s2">&quot;Load shedding </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">t_name</span><span class="p">),</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s2">"Load shedding </span><span class="si">{}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">t_name</span><span class="p">),</span>
                                             <span class="n">device</span><span class="o">=</span><span class="n">load_name</span><span class="p">,</span>
                                             <span class="n">value</span><span class="o">=</span><span class="n">load_shedding</span><span class="p">,</span>
                                             <span class="n">expected_value</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
@@ -581,14 +582,14 @@
             <span class="k">for</span> <span class="n">fluid_node_name</span><span class="p">,</span> <span class="n">fluid_node_spillage</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">fluid_node_names</span><span class="p">,</span>
                                                             <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">fluid_node_spillage</span><span class="p">[</span><span class="n">t</span><span class="p">,</span> <span class="p">:]):</span>
                 <span class="k">if</span> <span class="n">fluid_node_spillage</span> <span class="o">&gt;</span> <span class="n">eps</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s2">&quot;Fluid node spillage </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">t_name</span><span class="p">),</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s2">"Fluid node spillage </span><span class="si">{}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">t_name</span><span class="p">),</span>
                                             <span class="n">device</span><span class="o">=</span><span class="n">fluid_node_name</span><span class="p">,</span>
                                             <span class="n">value</span><span class="o">=</span><span class="n">fluid_node_spillage</span><span class="p">,</span>
                                             <span class="n">expected_value</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
 
             <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">branch_names</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">loading</span><span class="p">[</span><span class="n">t</span><span class="p">,</span> <span class="p">:]):</span>
                 <span class="k">if</span> <span class="n">val</span> <span class="o">&gt;</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="n">eps</span><span class="p">):</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s2">&quot;Overload </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">t_name</span><span class="p">),</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s2">"Overload </span><span class="si">{}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">t_name</span><span class="p">),</span>
                                             <span class="n">device</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
                                             <span class="n">value</span><span class="o">=</span><span class="n">val</span> <span class="o">*</span> <span class="mi">100</span><span class="p">,</span>
                                             <span class="n">expected_value</span><span class="o">=</span><span class="mf">100.0</span><span class="p">)</span>
@@ -596,12 +597,12 @@
             <span class="n">va</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">angle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">voltage</span><span class="p">[</span><span class="n">t</span><span class="p">,</span> <span class="p">:])</span>
             <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">bus</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">buses</span><span class="p">):</span>
                 <span class="k">if</span> <span class="n">va</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">bus</span><span class="o">.</span><span class="n">angle_max</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s2">&quot;Overvoltage </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">t_name</span><span class="p">),</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s2">"Overvoltage </span><span class="si">{}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">t_name</span><span class="p">),</span>
                                             <span class="n">device</span><span class="o">=</span><span class="n">bus</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
                                             <span class="n">value</span><span class="o">=</span><span class="n">va</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
                                             <span class="n">expected_value</span><span class="o">=</span><span class="n">bus</span><span class="o">.</span><span class="n">angle_max</span><span class="p">)</span>
                 <span class="k">elif</span> <span class="n">va</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">bus</span><span class="o">.</span><span class="n">angle_min</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s2">&quot;Undervoltage </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">t_name</span><span class="p">),</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s2">"Undervoltage </span><span class="si">{}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">t_name</span><span class="p">),</span>
                                             <span class="n">device</span><span class="o">=</span><span class="n">bus</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
                                             <span class="n">value</span><span class="o">=</span><span class="n">va</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
                                             <span class="n">expected_value</span><span class="o">=</span><span class="n">bus</span><span class="o">.</span><span class="n">angle_min</span><span class="p">)</span></div>
@@ -610,13 +611,13 @@
 <div class="viewcode-block" id="NodalCapacityTimeSeriesDriver.linear_opf_by_groups">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.NodalCapacity.html#VeraGridEngine.Simulations.NodalCapacity.nodal_capacity_ts_driver.NodalCapacityTimeSeriesDriver.linear_opf_by_groups">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">linear_opf_by_groups</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Run the linear nodal capacity OPF by grouped chunks.</span>
 
 <span class="sd">        :return: ``None``.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">report_progress</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s1">&#39;Making groups...&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s1">'Making groups...'</span><span class="p">)</span>
 
         <span class="n">groups</span> <span class="o">=</span> <span class="n">get_time_groups</span><span class="p">(</span><span class="n">t_array</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">time_profile</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">time_indices</span><span class="p">],</span>
                                  <span class="n">grouping</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">opf_options</span><span class="o">.</span><span class="n">time_grouping</span><span class="p">)</span>
@@ -637,12 +638,12 @@
 
             <span class="n">time_indices</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_indices</span><span class="p">[</span><span class="n">result_indices</span><span class="p">]</span>
 
-            <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Group </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">start_</span><span class="si">}</span><span class="s2"> : </span><span class="si">{</span><span class="n">end_</span><span class="si">}</span><span class="s2"> [</span><span class="si">{</span><span class="n">end_</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">start_</span><span class="si">}</span><span class="s2">]&quot;</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"Group </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">start_</span><span class="si">}</span><span class="s2"> : </span><span class="si">{</span><span class="n">end_</span><span class="si">}</span><span class="s2"> [</span><span class="si">{</span><span class="n">end_</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">start_</span><span class="si">}</span><span class="s2">]"</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">opf_options</span><span class="o">.</span><span class="n">verbose</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="nb">print</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
 
-            <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s1">&#39;Running OPF for the time group </span><span class="si">{0}</span><span class="s1"> &#39;</span>
-                             <span class="s1">&#39;start </span><span class="si">{1}</span><span class="s1"> - end </span><span class="si">{2}</span><span class="s1"> in external solver...&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">start_</span><span class="p">,</span> <span class="n">end_</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s1">'Running OPF for the time group </span><span class="si">{0}</span><span class="s1"> '</span>
+                             <span class="s1">'start </span><span class="si">{1}</span><span class="s1"> - end </span><span class="si">{2}</span><span class="s1"> in external solver...'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">start_</span><span class="p">,</span> <span class="n">end_</span><span class="p">))</span>
 
             <span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_linear_opf_indices</span><span class="p">(</span><span class="n">result_indices</span><span class="o">=</span><span class="n">result_indices</span><span class="p">,</span>
                                                 <span class="n">time_indices</span><span class="o">=</span><span class="n">time_indices</span><span class="p">,</span>
@@ -655,9 +656,9 @@
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">opf_options</span><span class="o">.</span><span class="n">report_formulation</span><span class="p">:</span>
                 <span class="n">formulation</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">model_as_string</span><span class="p">()</span>
                 <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">report_text</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">report_text</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">## </span><span class="si">{</span><span class="n">msg</span><span class="si">}</span><span class="se">\n\n</span><span class="si">{</span><span class="n">formulation</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">report_text</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">"</span><span class="se">\n\n</span><span class="s2">## </span><span class="si">{</span><span class="n">msg</span><span class="si">}</span><span class="se">\n\n</span><span class="si">{</span><span class="n">formulation</span><span class="si">}</span><span class="s2">"</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">report_text</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;## </span><span class="si">{</span><span class="n">msg</span><span class="si">}</span><span class="se">\n\n</span><span class="si">{</span><span class="n">formulation</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">report_text</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"## </span><span class="si">{</span><span class="n">msg</span><span class="si">}</span><span class="se">\n\n</span><span class="si">{</span><span class="n">formulation</span><span class="si">}</span><span class="s2">"</span>
 
             <span class="bp">self</span><span class="o">.</span><span class="n">report_progress2</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">groups</span><span class="p">))</span>
 
@@ -672,14 +673,14 @@
 <div class="viewcode-block" id="NodalCapacityTimeSeriesDriver.run">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.NodalCapacity.html#VeraGridEngine.Simulations.NodalCapacity.nodal_capacity_ts_driver.NodalCapacityTimeSeriesDriver.run">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Execute the configured nodal capacity study.</span>
 
 <span class="sd">        :return: ``None``.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">tic</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s2">&quot;Compiling and configuring...&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s2">"Compiling and configuring..."</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span> <span class="o">==</span> <span class="n">EngineType</span><span class="o">.</span><span class="n">VeraGrid</span><span class="p">:</span>
 

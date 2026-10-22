@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Simulations.OPF.opf_driver &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Simulations.OPF.opf_driver &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/license.html">📜 License</a></li>
@@ -125,23 +126,23 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.OPF.html#VeraGridEngine.Simulations.OPF.opf_driver.OptimalPowerFlowDriver">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">OptimalPowerFlowDriver</span><span class="p">(</span><span class="n">TimeSeriesDriverTemplate</span><span class="p">):</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;options&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;all_solved&quot;</span><span class="p">,</span>
+        <span class="s2">"options"</span><span class="p">,</span>
+        <span class="s2">"all_solved"</span><span class="p">,</span>
     <span class="p">)</span>
 
-    <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;Optimal power flow&#39;</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s1">'Optimal power flow'</span>
     <span class="n">tpe</span> <span class="o">=</span> <span class="n">SimulationTypes</span><span class="o">.</span><span class="n">OPF_run</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                  <span class="n">grid</span><span class="p">:</span> <span class="n">MultiCircuit</span><span class="p">,</span>
                  <span class="n">options</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">OptimalPowerFlowOptions</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">engine</span><span class="p">:</span> <span class="n">EngineType</span> <span class="o">=</span> <span class="n">EngineType</span><span class="o">.</span><span class="n">VeraGrid</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        PowerFlowDriver class constructor</span>
 <span class="sd">        :param grid: MultiCircuit Object</span>
 <span class="sd">        :param options: OPF options</span>
 <span class="sd">        :param engine: Calculation engine to use (if available)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">TimeSeriesDriverTemplate</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                                           <span class="n">grid</span><span class="o">=</span><span class="n">grid</span><span class="p">,</span>
                                           <span class="n">time_indices</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -181,36 +182,36 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">pf_options</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PowerFlowOptions</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the PowerFlow options provides with the OpfOptions</span>
 <span class="sd">        :return: PowerFlowOptions</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">power_flow_options</span>
 
 <div class="viewcode-block" id="OptimalPowerFlowDriver.add_report">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.OPF.html#VeraGridEngine.Simulations.OPF.opf_driver.OptimalPowerFlowDriver.add_report">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">add_report</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Add a report of the results (in-place)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="k">for</span> <span class="n">gen_name</span><span class="p">,</span> <span class="n">gen_shedding</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">generator_names</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">generator_shedding</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">gen_shedding</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s2">&quot;Generation shedding&quot;</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s2">"Generation shedding"</span><span class="p">,</span>
                                         <span class="n">device</span><span class="o">=</span><span class="n">gen_name</span><span class="p">,</span>
                                         <span class="n">value</span><span class="o">=</span><span class="n">gen_shedding</span><span class="p">,</span>
                                         <span class="n">expected_value</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
 
         <span class="k">for</span> <span class="n">load_name</span><span class="p">,</span> <span class="n">load_shedding</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">load_names</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">load_shedding</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">load_shedding</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s2">&quot;Load shedding&quot;</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s2">"Load shedding"</span><span class="p">,</span>
                                         <span class="n">device</span><span class="o">=</span><span class="n">load_name</span><span class="p">,</span>
                                         <span class="n">value</span><span class="o">=</span><span class="n">load_shedding</span><span class="p">,</span>
                                         <span class="n">expected_value</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
 
         <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">branch_names</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">loading</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">val</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s2">&quot;Overload&quot;</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s2">"Overload"</span><span class="p">,</span>
                                         <span class="n">device</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
                                         <span class="n">value</span><span class="o">=</span><span class="n">val</span> <span class="o">*</span> <span class="mi">100</span><span class="p">,</span>
                                         <span class="n">expected_value</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
@@ -218,12 +219,12 @@
         <span class="n">va</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">angle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">voltage</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">bus</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">buses</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">va</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">bus</span><span class="o">.</span><span class="n">angle_max</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s2">&quot;Overvoltage&quot;</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s2">"Overvoltage"</span><span class="p">,</span>
                                         <span class="n">device</span><span class="o">=</span><span class="n">bus</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
                                         <span class="n">value</span><span class="o">=</span><span class="n">va</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
                                         <span class="n">expected_value</span><span class="o">=</span><span class="n">bus</span><span class="o">.</span><span class="n">angle_max</span><span class="p">)</span>
             <span class="k">elif</span> <span class="n">va</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">bus</span><span class="o">.</span><span class="n">angle_min</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s2">&quot;Undervoltage&quot;</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s2">"Undervoltage"</span><span class="p">,</span>
                                         <span class="n">device</span><span class="o">=</span><span class="n">bus</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
                                         <span class="n">value</span><span class="o">=</span><span class="n">va</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
                                         <span class="n">expected_value</span><span class="o">=</span><span class="n">bus</span><span class="o">.</span><span class="n">angle_min</span><span class="p">)</span></div>
@@ -232,18 +233,18 @@
 <div class="viewcode-block" id="OptimalPowerFlowDriver.opf">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.OPF.html#VeraGridEngine.Simulations.OPF.opf_driver.OptimalPowerFlowDriver.opf">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">opf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">remote</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">batteries_energy_0</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OptimalPowerFlowResults</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Run a power flow for every circuit</span>
 <span class="sd">        :param remote: is this function being called from the time series?</span>
 <span class="sd">        :param batteries_energy_0: initial state of the batteries, if None the default values are taken</span>
 <span class="sd">        :return: OptimalPowerFlowResults object</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">solver</span> <span class="o">==</span> <span class="n">SolverType</span><span class="o">.</span><span class="n">LINEAR_OPF</span><span class="p">:</span>
 
             <span class="k">if</span> <span class="ow">not</span> <span class="n">remote</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">report_progress</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s1">&#39;Formulating problem...&#39;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s1">'Formulating problem...'</span><span class="p">)</span>
 
             <span class="c1"># DC optimal power flow</span>
             <span class="n">opf_vars</span><span class="p">,</span> <span class="n">model</span> <span class="o">=</span> <span class="n">run_linear_opf_ts</span><span class="p">(</span>
@@ -316,7 +317,7 @@
 
             <span class="k">if</span> <span class="ow">not</span> <span class="n">remote</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">report_progress</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s1">&#39;Greedy dispatch...&#39;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s1">'Greedy dispatch...'</span><span class="p">)</span>
 
             <span class="n">greedy_dispatch_inputs</span> <span class="o">=</span> <span class="n">GreedyDispatchInputsSnapshot</span><span class="p">(</span><span class="n">grid</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="p">,</span>
                                                                   <span class="n">logger</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="p">)</span>
@@ -361,7 +362,7 @@
 
             <span class="k">if</span> <span class="ow">not</span> <span class="n">remote</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">report_progress</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s1">&#39;Running non linear optimization...&#39;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s1">'Running non linear optimization...'</span><span class="p">)</span>
 
             <span class="n">res</span> <span class="o">=</span> <span class="n">run_nonlinear_opf</span><span class="p">(</span><span class="n">grid</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="p">,</span>
                                     <span class="n">opf_options</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">,</span>
@@ -394,29 +395,29 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">error</span> <span class="o">=</span> <span class="n">res</span><span class="o">.</span><span class="n">error</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">non_linear</span> <span class="o">=</span> <span class="kc">True</span>
 
-            <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Interior point solver&quot;</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="n">msg</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">&quot;Error&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">res</span><span class="o">.</span><span class="n">error</span><span class="p">,</span> <span class="n">expected_value</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">ips_tolerance</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="n">msg</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">&quot;Converged&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">res</span><span class="o">.</span><span class="n">converged</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="n">msg</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">&quot;Iterations&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">res</span><span class="o">.</span><span class="n">iterations</span><span class="p">)</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s2">"Interior point solver"</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="n">msg</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">"Error"</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">res</span><span class="o">.</span><span class="n">error</span><span class="p">,</span> <span class="n">expected_value</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">ips_tolerance</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="n">msg</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">"Converged"</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">res</span><span class="o">.</span><span class="n">converged</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="n">msg</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">"Iterations"</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">res</span><span class="o">.</span><span class="n">iterations</span><span class="p">)</span>
 
         <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="s1">&#39;Solver not supported in this mode&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">solver</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="s1">'Solver not supported in this mode'</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">solver</span><span class="p">))</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="n">remote</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">report_progress</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s1">&#39;Running all in an external solver, this may take a while...&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s1">'Running all in an external solver, this may take a while...'</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span></div>
 
 
 <div class="viewcode-block" id="OptimalPowerFlowDriver.run_gslv_opf">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.OPF.html#VeraGridEngine.Simulations.OPF.opf_driver.OptimalPowerFlowDriver.run_gslv_opf">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">run_gslv_opf</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;pg.OptimalPowerFlowResults&quot;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Run one snapshot OPF with the configured GSLV backend.</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">run_gslv_opf</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"pg.OptimalPowerFlowResults"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Run one snapshot OPF with the configured GSLV backend.</span>
 
 <span class="sd">        :return: Native GSLV optimal-power-flow results for the current grid.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">gslv_opf</span><span class="p">(</span><span class="n">circuit</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="p">,</span>
                         <span class="n">opf_options</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">,</span>
                         <span class="n">time_series</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
@@ -427,23 +428,23 @@
 <div class="viewcode-block" id="OptimalPowerFlowDriver.run">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.OPF.html#VeraGridEngine.Simulations.OPF.opf_driver.OptimalPowerFlowDriver.run">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">tic</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s2">&quot;Compiling and configuring...&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s2">"Compiling and configuring..."</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span> <span class="o">==</span> <span class="n">EngineType</span><span class="o">.</span><span class="n">GSLV</span><span class="p">:</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">GSLV_AVAILABLE</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">engine</span> <span class="o">=</span> <span class="n">EngineType</span><span class="o">.</span><span class="n">VeraGrid</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s1">&#39;GSLV not available, falling back to VeraGrid&#39;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s1">'GSLV not available, falling back to VeraGrid'</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">solver</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="n">SolverType</span><span class="o">.</span><span class="n">LINEAR_OPF</span><span class="p">,</span> <span class="n">SolverType</span><span class="o">.</span><span class="n">NONLINEAR_OPF</span><span class="p">):</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">engine</span> <span class="o">=</span> <span class="n">EngineType</span><span class="o">.</span><span class="n">VeraGrid</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span>
-                        <span class="s1">&#39;GSLV OPF snapshot only supports LINEAR_OPF and NONLINEAR_OPF, falling back to VeraGrid&#39;</span>
+                        <span class="s1">'GSLV OPF snapshot only supports LINEAR_OPF and NONLINEAR_OPF, falling back to VeraGrid'</span>
                     <span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="k">pass</span>
@@ -454,9 +455,9 @@
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span> <span class="o">==</span> <span class="n">EngineType</span><span class="o">.</span><span class="n">GSLV</span><span class="p">:</span>
 
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">solver</span> <span class="o">==</span> <span class="n">SolverType</span><span class="o">.</span><span class="n">LINEAR_OPF</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s1">&#39;Running Linear OPF with GSLV...&#39;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s1">'Running Linear OPF with GSLV...'</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s1">&#39;Running Non-Linear OPF with GSLV...&#39;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s1">'Running Non-Linear OPF with GSLV...'</span><span class="p">)</span>
 
             <span class="n">gslv_res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_gslv_opf</span><span class="p">()</span>
 

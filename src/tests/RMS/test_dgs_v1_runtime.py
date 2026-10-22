@@ -30,7 +30,6 @@ from VeraGridEngine.enumerations import (
     VarPowerFlowReferenceType,
 )
 
-@pytest.mark.skip(reason="Incorrect")
 def test_dgs_v1_first_rms_step_is_finite_and_converged() -> None:
     """Run the tracked Nuactis V1 DGS model through one scalar RMS step.
 

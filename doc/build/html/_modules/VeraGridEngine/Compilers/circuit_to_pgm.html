@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Compilers.circuit_to_pgm &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Compilers.circuit_to_pgm &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/license.html">📜 License</a></li>
@@ -119,8 +120,8 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Simulations.PowerFlow.power_flow_ts_results</span><span class="w"> </span><span class="kn">import</span> <span class="n">PowerFlowTimeSeriesResults</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Compilers.circuit_to_data</span><span class="w"> </span><span class="kn">import</span> <span class="n">compile_numerical_circuit_at</span>
 
-<span class="n">PGM_RECOMMENDED_VERSION</span> <span class="o">=</span> <span class="s2">&quot;0.0.1&quot;</span>
-<span class="n">PGM_VERSION</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+<span class="n">PGM_RECOMMENDED_VERSION</span> <span class="o">=</span> <span class="s2">"0.0.1"</span>
+<span class="n">PGM_VERSION</span> <span class="o">=</span> <span class="s1">''</span>
 <span class="n">PGM_AVAILABLE</span> <span class="o">=</span> <span class="kc">False</span>
 <span class="k">try</span><span class="p">:</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">power_grid_model</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pgm</span>
@@ -138,7 +139,7 @@
     <span class="n">pgm</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">PGM_AVAILABLE</span> <span class="o">=</span> <span class="kc">False</span>
 
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 <span class="sd">hierarchy</span>
 
 <span class="sd">base ──┬─────────────────────────────────────────────── node</span>
@@ -162,26 +163,26 @@
 <span class="sd">                       └── generic_power_sensor ────┬── sym_power_sensor</span>
 <span class="sd">                                                    └── asym_power_sensor</span>
 
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 
 
 <div class="viewcode-block" id="get_pgm_buses">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Compilers.html#VeraGridEngine.Compilers.circuit_to_pgm.get_pgm_buses">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_pgm_buses</span><span class="p">(</span><span class="n">circuit</span><span class="p">:</span> <span class="n">MultiCircuit</span><span class="p">,</span> <span class="n">idx0</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Convert the buses to LFE&#39;sPGM buses</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Convert the buses to LFE'sPGM buses</span>
 <span class="sd">    :param circuit: VeraGrid circuit</span>
 <span class="sd">    :param idx0: First object index</span>
 <span class="sd">    :return: bus dictionary buses[uuid] -&gt; int</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">bus_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
 
-    <span class="n">node</span> <span class="o">=</span> <span class="n">pgm</span><span class="o">.</span><span class="n">initialize_array</span><span class="p">(</span><span class="s1">&#39;input&#39;</span><span class="p">,</span> <span class="s1">&#39;node&#39;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">circuit</span><span class="o">.</span><span class="n">buses</span><span class="p">))</span>
+    <span class="n">node</span> <span class="o">=</span> <span class="n">pgm</span><span class="o">.</span><span class="n">initialize_array</span><span class="p">(</span><span class="s1">'input'</span><span class="p">,</span> <span class="s1">'node'</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">circuit</span><span class="o">.</span><span class="n">buses</span><span class="p">))</span>
     <span class="n">idx</span> <span class="o">=</span> <span class="n">idx0</span>
     <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">bus</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">circuit</span><span class="o">.</span><span class="n">buses</span><span class="p">):</span>
         <span class="c1"># fill in data</span>
-        <span class="n">node</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">idx</span>
-        <span class="n">node</span><span class="p">[</span><span class="s1">&#39;u_rated&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">bus</span><span class="o">.</span><span class="n">Vnom</span> <span class="o">*</span> <span class="mf">1000.0</span>  <span class="c1"># in V</span>
+        <span class="n">node</span><span class="p">[</span><span class="s1">'id'</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">idx</span>
+        <span class="n">node</span><span class="p">[</span><span class="s1">'u_rated'</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">bus</span><span class="o">.</span><span class="n">Vnom</span> <span class="o">*</span> <span class="mf">1000.0</span>  <span class="c1"># in V</span>
 
         <span class="c1"># create dictionary entry</span>
         <span class="n">bus_dict</span><span class="p">[</span><span class="n">bus</span><span class="o">.</span><span class="n">idtag</span><span class="p">]</span> <span class="o">=</span> <span class="n">idx</span>
@@ -194,18 +195,18 @@
 <div class="viewcode-block" id="get_pgm_loads">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Compilers.html#VeraGridEngine.Compilers.circuit_to_pgm.get_pgm_loads">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_pgm_loads</span><span class="p">(</span><span class="n">circuit</span><span class="p">:</span> <span class="n">MultiCircuit</span><span class="p">,</span> <span class="n">bus_dict</span><span class="p">,</span> <span class="n">idx0</span><span class="p">,</span> <span class="n">n_time</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Generate load data</span>
 <span class="sd">    :param circuit: VeraGrid circuit</span>
-<span class="sd">    :param bus_dict: dictionary of bus id to LFE&#39;sPGM index</span>
+<span class="sd">    :param bus_dict: dictionary of bus id to LFE'sPGM index</span>
 <span class="sd">    :param idx0: First object index</span>
 <span class="sd">    :param n_time: Number of time steps</span>
 <span class="sd">    :return struct of load values, load_profile</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">devices</span> <span class="o">=</span> <span class="n">circuit</span><span class="o">.</span><span class="n">get_loads</span><span class="p">()</span>
     <span class="n">ndev</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">devices</span><span class="p">)</span> <span class="o">*</span> <span class="mi">3</span>
-    <span class="n">sym_load</span> <span class="o">=</span> <span class="n">pgm</span><span class="o">.</span><span class="n">initialize_array</span><span class="p">(</span><span class="s1">&#39;input&#39;</span><span class="p">,</span> <span class="s1">&#39;sym_load&#39;</span><span class="p">,</span> <span class="n">ndev</span><span class="p">)</span>
+    <span class="n">sym_load</span> <span class="o">=</span> <span class="n">pgm</span><span class="o">.</span><span class="n">initialize_array</span><span class="p">(</span><span class="s1">'input'</span><span class="p">,</span> <span class="s1">'sym_load'</span><span class="p">,</span> <span class="n">ndev</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">n_time</span><span class="p">:</span>
         <span class="n">P</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_time</span><span class="p">,</span> <span class="n">ndev</span><span class="p">))</span>
@@ -220,12 +221,12 @@
         <span class="n">k2</span> <span class="o">=</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">k</span> <span class="o">+</span> <span class="mi">1</span>
         <span class="n">k3</span> <span class="o">=</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">k</span> <span class="o">+</span> <span class="mi">2</span>
 
-        <span class="n">sym_load</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">][</span><span class="n">k1</span><span class="p">]</span> <span class="o">=</span> <span class="n">idx</span>
-        <span class="n">sym_load</span><span class="p">[</span><span class="s1">&#39;node&#39;</span><span class="p">][</span><span class="n">k1</span><span class="p">]</span> <span class="o">=</span> <span class="n">bus_dict</span><span class="p">[</span><span class="n">elm</span><span class="o">.</span><span class="n">bus</span><span class="o">.</span><span class="n">idtag</span><span class="p">]</span>
-        <span class="n">sym_load</span><span class="p">[</span><span class="s1">&#39;status&#39;</span><span class="p">][</span><span class="n">k1</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">elm</span><span class="o">.</span><span class="n">active</span><span class="p">)</span>
-        <span class="n">sym_load</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">][</span><span class="n">k1</span><span class="p">]</span> <span class="o">=</span> <span class="n">pgm</span><span class="o">.</span><span class="n">LoadGenType</span><span class="o">.</span><span class="n">const_power</span>
-        <span class="n">sym_load</span><span class="p">[</span><span class="s1">&#39;p_specified&#39;</span><span class="p">][</span><span class="n">k1</span><span class="p">]</span> <span class="o">=</span> <span class="n">elm</span><span class="o">.</span><span class="n">P</span> <span class="o">*</span> <span class="mf">1e6</span>
-        <span class="n">sym_load</span><span class="p">[</span><span class="s1">&#39;q_specified&#39;</span><span class="p">][</span><span class="n">k1</span><span class="p">]</span> <span class="o">=</span> <span class="n">elm</span><span class="o">.</span><span class="n">Q</span> <span class="o">*</span> <span class="mf">1e6</span>
+        <span class="n">sym_load</span><span class="p">[</span><span class="s1">'id'</span><span class="p">][</span><span class="n">k1</span><span class="p">]</span> <span class="o">=</span> <span class="n">idx</span>
+        <span class="n">sym_load</span><span class="p">[</span><span class="s1">'node'</span><span class="p">][</span><span class="n">k1</span><span class="p">]</span> <span class="o">=</span> <span class="n">bus_dict</span><span class="p">[</span><span class="n">elm</span><span class="o">.</span><span class="n">bus</span><span class="o">.</span><span class="n">idtag</span><span class="p">]</span>
+        <span class="n">sym_load</span><span class="p">[</span><span class="s1">'status'</span><span class="p">][</span><span class="n">k1</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">elm</span><span class="o">.</span><span class="n">active</span><span class="p">)</span>
+        <span class="n">sym_load</span><span class="p">[</span><span class="s1">'type'</span><span class="p">][</span><span class="n">k1</span><span class="p">]</span> <span class="o">=</span> <span class="n">pgm</span><span class="o">.</span><span class="n">LoadGenType</span><span class="o">.</span><span class="n">const_power</span>
+        <span class="n">sym_load</span><span class="p">[</span><span class="s1">'p_specified'</span><span class="p">][</span><span class="n">k1</span><span class="p">]</span> <span class="o">=</span> <span class="n">elm</span><span class="o">.</span><span class="n">P</span> <span class="o">*</span> <span class="mf">1e6</span>
+        <span class="n">sym_load</span><span class="p">[</span><span class="s1">'q_specified'</span><span class="p">][</span><span class="n">k1</span><span class="p">]</span> <span class="o">=</span> <span class="n">elm</span><span class="o">.</span><span class="n">Q</span> <span class="o">*</span> <span class="mf">1e6</span>
 
         <span class="k">if</span> <span class="n">n_time</span><span class="p">:</span>
             <span class="n">P</span><span class="p">[:,</span> <span class="n">k1</span><span class="p">]</span> <span class="o">=</span> <span class="n">elm</span><span class="o">.</span><span class="n">P_prof</span> <span class="o">*</span> <span class="mf">1e6</span>
@@ -233,12 +234,12 @@
 
         <span class="n">idx</span> <span class="o">+=</span> <span class="mi">1</span>
 
-        <span class="n">sym_load</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">][</span><span class="n">k2</span><span class="p">]</span> <span class="o">=</span> <span class="n">idx</span>
-        <span class="n">sym_load</span><span class="p">[</span><span class="s1">&#39;node&#39;</span><span class="p">][</span><span class="n">k2</span><span class="p">]</span> <span class="o">=</span> <span class="n">bus_dict</span><span class="p">[</span><span class="n">elm</span><span class="o">.</span><span class="n">bus</span><span class="o">.</span><span class="n">idtag</span><span class="p">]</span>
-        <span class="n">sym_load</span><span class="p">[</span><span class="s1">&#39;status&#39;</span><span class="p">][</span><span class="n">k2</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">elm</span><span class="o">.</span><span class="n">active</span><span class="p">)</span>
-        <span class="n">sym_load</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">][</span><span class="n">k2</span><span class="p">]</span> <span class="o">=</span> <span class="n">pgm</span><span class="o">.</span><span class="n">LoadGenType</span><span class="o">.</span><span class="n">const_current</span>
-        <span class="n">sym_load</span><span class="p">[</span><span class="s1">&#39;p_specified&#39;</span><span class="p">][</span><span class="n">k2</span><span class="p">]</span> <span class="o">=</span> <span class="n">elm</span><span class="o">.</span><span class="n">Ir</span> <span class="o">*</span> <span class="mf">1e6</span>
-        <span class="n">sym_load</span><span class="p">[</span><span class="s1">&#39;q_specified&#39;</span><span class="p">][</span><span class="n">k2</span><span class="p">]</span> <span class="o">=</span> <span class="n">elm</span><span class="o">.</span><span class="n">Ii</span> <span class="o">*</span> <span class="mf">1e6</span>
+        <span class="n">sym_load</span><span class="p">[</span><span class="s1">'id'</span><span class="p">][</span><span class="n">k2</span><span class="p">]</span> <span class="o">=</span> <span class="n">idx</span>
+        <span class="n">sym_load</span><span class="p">[</span><span class="s1">'node'</span><span class="p">][</span><span class="n">k2</span><span class="p">]</span> <span class="o">=</span> <span class="n">bus_dict</span><span class="p">[</span><span class="n">elm</span><span class="o">.</span><span class="n">bus</span><span class="o">.</span><span class="n">idtag</span><span class="p">]</span>
+        <span class="n">sym_load</span><span class="p">[</span><span class="s1">'status'</span><span class="p">][</span><span class="n">k2</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">elm</span><span class="o">.</span><span class="n">active</span><span class="p">)</span>
+        <span class="n">sym_load</span><span class="p">[</span><span class="s1">'type'</span><span class="p">][</span><span class="n">k2</span><span class="p">]</span> <span class="o">=</span> <span class="n">pgm</span><span class="o">.</span><span class="n">LoadGenType</span><span class="o">.</span><span class="n">const_current</span>
+        <span class="n">sym_load</span><span class="p">[</span><span class="s1">'p_specified'</span><span class="p">][</span><span class="n">k2</span><span class="p">]</span> <span class="o">=</span> <span class="n">elm</span><span class="o">.</span><span class="n">Ir</span> <span class="o">*</span> <span class="mf">1e6</span>
+        <span class="n">sym_load</span><span class="p">[</span><span class="s1">'q_specified'</span><span class="p">][</span><span class="n">k2</span><span class="p">]</span> <span class="o">=</span> <span class="n">elm</span><span class="o">.</span><span class="n">Ii</span> <span class="o">*</span> <span class="mf">1e6</span>
 
         <span class="k">if</span> <span class="n">n_time</span><span class="p">:</span>
             <span class="n">P</span><span class="p">[:,</span> <span class="n">k2</span><span class="p">]</span> <span class="o">=</span> <span class="n">elm</span><span class="o">.</span><span class="n">Ir_prof</span> <span class="o">*</span> <span class="mf">1e6</span>
@@ -246,12 +247,12 @@
 
         <span class="n">idx</span> <span class="o">+=</span> <span class="mi">1</span>
 
-        <span class="n">sym_load</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">][</span><span class="n">k3</span><span class="p">]</span> <span class="o">=</span> <span class="n">idx</span>
-        <span class="n">sym_load</span><span class="p">[</span><span class="s1">&#39;node&#39;</span><span class="p">][</span><span class="n">k3</span><span class="p">]</span> <span class="o">=</span> <span class="n">bus_dict</span><span class="p">[</span><span class="n">elm</span><span class="o">.</span><span class="n">bus</span><span class="o">.</span><span class="n">idtag</span><span class="p">]</span>
-        <span class="n">sym_load</span><span class="p">[</span><span class="s1">&#39;status&#39;</span><span class="p">][</span><span class="n">k3</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">elm</span><span class="o">.</span><span class="n">active</span><span class="p">)</span>
-        <span class="n">sym_load</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">][</span><span class="n">k3</span><span class="p">]</span> <span class="o">=</span> <span class="n">pgm</span><span class="o">.</span><span class="n">LoadGenType</span><span class="o">.</span><span class="n">const_impedance</span>
-        <span class="n">sym_load</span><span class="p">[</span><span class="s1">&#39;p_specified&#39;</span><span class="p">][</span><span class="n">k3</span><span class="p">]</span> <span class="o">=</span> <span class="n">elm</span><span class="o">.</span><span class="n">G</span> <span class="o">*</span> <span class="mf">1e6</span>
-        <span class="n">sym_load</span><span class="p">[</span><span class="s1">&#39;q_specified&#39;</span><span class="p">][</span><span class="n">k3</span><span class="p">]</span> <span class="o">=</span> <span class="n">elm</span><span class="o">.</span><span class="n">B</span> <span class="o">*</span> <span class="mf">1e6</span>
+        <span class="n">sym_load</span><span class="p">[</span><span class="s1">'id'</span><span class="p">][</span><span class="n">k3</span><span class="p">]</span> <span class="o">=</span> <span class="n">idx</span>
+        <span class="n">sym_load</span><span class="p">[</span><span class="s1">'node'</span><span class="p">][</span><span class="n">k3</span><span class="p">]</span> <span class="o">=</span> <span class="n">bus_dict</span><span class="p">[</span><span class="n">elm</span><span class="o">.</span><span class="n">bus</span><span class="o">.</span><span class="n">idtag</span><span class="p">]</span>
+        <span class="n">sym_load</span><span class="p">[</span><span class="s1">'status'</span><span class="p">][</span><span class="n">k3</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">elm</span><span class="o">.</span><span class="n">active</span><span class="p">)</span>
+        <span class="n">sym_load</span><span class="p">[</span><span class="s1">'type'</span><span class="p">][</span><span class="n">k3</span><span class="p">]</span> <span class="o">=</span> <span class="n">pgm</span><span class="o">.</span><span class="n">LoadGenType</span><span class="o">.</span><span class="n">const_impedance</span>
+        <span class="n">sym_load</span><span class="p">[</span><span class="s1">'p_specified'</span><span class="p">][</span><span class="n">k3</span><span class="p">]</span> <span class="o">=</span> <span class="n">elm</span><span class="o">.</span><span class="n">G</span> <span class="o">*</span> <span class="mf">1e6</span>
+        <span class="n">sym_load</span><span class="p">[</span><span class="s1">'q_specified'</span><span class="p">][</span><span class="n">k3</span><span class="p">]</span> <span class="o">=</span> <span class="n">elm</span><span class="o">.</span><span class="n">B</span> <span class="o">*</span> <span class="mf">1e6</span>
 
         <span class="k">if</span> <span class="n">n_time</span><span class="p">:</span>
             <span class="n">P</span><span class="p">[:,</span> <span class="n">k3</span><span class="p">]</span> <span class="o">=</span> <span class="n">elm</span><span class="o">.</span><span class="n">G_prof</span> <span class="o">*</span> <span class="mf">1e6</span>
@@ -260,10 +261,10 @@
         <span class="n">idx</span> <span class="o">+=</span> <span class="mi">1</span>
 
     <span class="k">if</span> <span class="n">n_time</span><span class="p">:</span>
-        <span class="n">load_profile</span> <span class="o">=</span> <span class="n">pgm</span><span class="o">.</span><span class="n">initialize_array</span><span class="p">(</span><span class="s2">&quot;update&quot;</span><span class="p">,</span> <span class="s2">&quot;sym_load&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">n_time</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">devices</span><span class="p">)</span> <span class="o">*</span> <span class="mi">3</span><span class="p">))</span>
-        <span class="n">load_profile</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sym_load</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span>
-        <span class="n">load_profile</span><span class="p">[</span><span class="s2">&quot;p_specified&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">P</span>
-        <span class="n">load_profile</span><span class="p">[</span><span class="s2">&quot;q_specified&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Q</span>
+        <span class="n">load_profile</span> <span class="o">=</span> <span class="n">pgm</span><span class="o">.</span><span class="n">initialize_array</span><span class="p">(</span><span class="s2">"update"</span><span class="p">,</span> <span class="s2">"sym_load"</span><span class="p">,</span> <span class="p">(</span><span class="n">n_time</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">devices</span><span class="p">)</span> <span class="o">*</span> <span class="mi">3</span><span class="p">))</span>
+        <span class="n">load_profile</span><span class="p">[</span><span class="s2">"id"</span><span class="p">]</span> <span class="o">=</span> <span class="n">sym_load</span><span class="p">[</span><span class="s1">'id'</span><span class="p">]</span>
+        <span class="n">load_profile</span><span class="p">[</span><span class="s2">"p_specified"</span><span class="p">]</span> <span class="o">=</span> <span class="n">P</span>
+        <span class="n">load_profile</span><span class="p">[</span><span class="s2">"q_specified"</span><span class="p">]</span> <span class="o">=</span> <span class="n">Q</span>
 
         <span class="k">return</span> <span class="n">sym_load</span><span class="p">,</span> <span class="n">idx</span><span class="p">,</span> <span class="n">load_profile</span>
     <span class="k">else</span><span class="p">:</span>
@@ -272,23 +273,23 @@
 
 
 <span class="c1"># def get_pgm_static_generators(circuit: MultiCircuit, bus_dict, idx0):</span>
-<span class="c1">#     &quot;&quot;&quot;</span>
+<span class="c1">#     """</span>
 <span class="c1">#</span>
 <span class="c1">#     :param circuit: VeraGrid circuit</span>
-<span class="c1">#     :param bus_dict: dictionary of bus id to LFE&#39;sPGM index</span>
-<span class="c1">#     &quot;&quot;&quot;</span>
+<span class="c1">#     :param bus_dict: dictionary of bus id to LFE'sPGM index</span>
+<span class="c1">#     """</span>
 <span class="c1">#     devices = circuit.get_static_generators()</span>
 <span class="c1">#</span>
-<span class="c1">#     stagen = pgm.initialize_array(&#39;input&#39;, &#39;sym_gen&#39;, len(devices))</span>
+<span class="c1">#     stagen = pgm.initialize_array('input', 'sym_gen', len(devices))</span>
 <span class="c1">#</span>
 <span class="c1">#     idx = idx0</span>
 <span class="c1">#     for k, elm in enumerate(devices):</span>
-<span class="c1">#         stagen[&#39;id&#39;][k] = idx</span>
-<span class="c1">#         stagen[&#39;node&#39;][k] = bus_dict[elm.bus.idtag]</span>
-<span class="c1">#         stagen[&#39;status&#39;][k] = int(elm.active)</span>
-<span class="c1">#         stagen[&#39;type&#39;][k] = pgm.LoadGenType.const_power</span>
-<span class="c1">#         stagen[&#39;p_specified&#39;][k] = elm.P * 1e6</span>
-<span class="c1">#         stagen[&#39;q_specified&#39;][k] = elm.Q * 1e6</span>
+<span class="c1">#         stagen['id'][k] = idx</span>
+<span class="c1">#         stagen['node'][k] = bus_dict[elm.bus.idtag]</span>
+<span class="c1">#         stagen['status'][k] = int(elm.active)</span>
+<span class="c1">#         stagen['type'][k] = pgm.LoadGenType.const_power</span>
+<span class="c1">#         stagen['p_specified'][k] = elm.P * 1e6</span>
+<span class="c1">#         stagen['q_specified'][k] = elm.Q * 1e6</span>
 <span class="c1">#         idx += 1</span>
 <span class="c1">#</span>
 <span class="c1">#     return stagen, idx</span>
@@ -297,29 +298,29 @@
 <div class="viewcode-block" id="get_pgm_shunts">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Compilers.html#VeraGridEngine.Compilers.circuit_to_pgm.get_pgm_shunts">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_pgm_shunts</span><span class="p">(</span><span class="n">circuit</span><span class="p">:</span> <span class="n">MultiCircuit</span><span class="p">,</span> <span class="n">bus_dict</span><span class="p">,</span> <span class="n">idx0</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 
 <span class="sd">    :param circuit: VeraGrid circuit</span>
-<span class="sd">    :param bus_dict: dictionary of bus id to LFE&#39;sPGM index</span>
+<span class="sd">    :param bus_dict: dictionary of bus id to LFE'sPGM index</span>
 <span class="sd">    :param idx0: First object index</span>
 <span class="sd">    :returns shunts, last object index</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">devices</span> <span class="o">=</span> <span class="n">circuit</span><span class="o">.</span><span class="n">get_shunts</span><span class="p">()</span>
 
-    <span class="n">shunt</span> <span class="o">=</span> <span class="n">pgm</span><span class="o">.</span><span class="n">initialize_array</span><span class="p">(</span><span class="s1">&#39;input&#39;</span><span class="p">,</span> <span class="s1">&#39;shunt&#39;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">devices</span><span class="p">))</span>
+    <span class="n">shunt</span> <span class="o">=</span> <span class="n">pgm</span><span class="o">.</span><span class="n">initialize_array</span><span class="p">(</span><span class="s1">'input'</span><span class="p">,</span> <span class="s1">'shunt'</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">devices</span><span class="p">))</span>
 
     <span class="n">idx</span> <span class="o">=</span> <span class="n">idx0</span>
     <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">elm</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">devices</span><span class="p">):</span>
         <span class="n">Ybase</span> <span class="o">=</span> <span class="n">circuit</span><span class="o">.</span><span class="n">Sbase</span> <span class="o">/</span> <span class="p">(</span><span class="n">elm</span><span class="o">.</span><span class="n">bus</span><span class="o">.</span><span class="n">Vnom</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
 
-        <span class="n">shunt</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">][</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">idx</span>
-        <span class="n">shunt</span><span class="p">[</span><span class="s1">&#39;node&#39;</span><span class="p">][</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">bus_dict</span><span class="p">[</span><span class="n">elm</span><span class="o">.</span><span class="n">bus</span><span class="o">.</span><span class="n">idtag</span><span class="p">]</span>
-        <span class="n">shunt</span><span class="p">[</span><span class="s1">&#39;status&#39;</span><span class="p">][</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">elm</span><span class="o">.</span><span class="n">active</span><span class="p">)</span>
+        <span class="n">shunt</span><span class="p">[</span><span class="s1">'id'</span><span class="p">][</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">idx</span>
+        <span class="n">shunt</span><span class="p">[</span><span class="s1">'node'</span><span class="p">][</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">bus_dict</span><span class="p">[</span><span class="n">elm</span><span class="o">.</span><span class="n">bus</span><span class="o">.</span><span class="n">idtag</span><span class="p">]</span>
+        <span class="n">shunt</span><span class="p">[</span><span class="s1">'status'</span><span class="p">][</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">elm</span><span class="o">.</span><span class="n">active</span><span class="p">)</span>
 
-        <span class="n">shunt</span><span class="p">[</span><span class="s1">&#39;g1&#39;</span><span class="p">][</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">elm</span><span class="o">.</span><span class="n">G</span> <span class="o">*</span> <span class="n">Ybase</span>
-        <span class="n">shunt</span><span class="p">[</span><span class="s1">&#39;b1&#39;</span><span class="p">][</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">elm</span><span class="o">.</span><span class="n">B</span> <span class="o">*</span> <span class="n">Ybase</span>
-        <span class="n">shunt</span><span class="p">[</span><span class="s1">&#39;g0&#39;</span><span class="p">][</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">elm</span><span class="o">.</span><span class="n">G0</span> <span class="o">*</span> <span class="n">Ybase</span>
-        <span class="n">shunt</span><span class="p">[</span><span class="s1">&#39;b0&#39;</span><span class="p">][</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">elm</span><span class="o">.</span><span class="n">B0</span> <span class="o">*</span> <span class="n">Ybase</span>
+        <span class="n">shunt</span><span class="p">[</span><span class="s1">'g1'</span><span class="p">][</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">elm</span><span class="o">.</span><span class="n">G</span> <span class="o">*</span> <span class="n">Ybase</span>
+        <span class="n">shunt</span><span class="p">[</span><span class="s1">'b1'</span><span class="p">][</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">elm</span><span class="o">.</span><span class="n">B</span> <span class="o">*</span> <span class="n">Ybase</span>
+        <span class="n">shunt</span><span class="p">[</span><span class="s1">'g0'</span><span class="p">][</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">elm</span><span class="o">.</span><span class="n">G0</span> <span class="o">*</span> <span class="n">Ybase</span>
+        <span class="n">shunt</span><span class="p">[</span><span class="s1">'b0'</span><span class="p">][</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">elm</span><span class="o">.</span><span class="n">B0</span> <span class="o">*</span> <span class="n">Ybase</span>
 
         <span class="n">idx</span> <span class="o">+=</span> <span class="mi">1</span>
 
@@ -330,19 +331,19 @@
 <div class="viewcode-block" id="get_pgm_generators">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Compilers.html#VeraGridEngine.Compilers.circuit_to_pgm.get_pgm_generators">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_pgm_generators</span><span class="p">(</span><span class="n">circuit</span><span class="p">:</span> <span class="n">MultiCircuit</span><span class="p">,</span> <span class="n">bus_dict</span><span class="p">,</span> <span class="n">idx0</span><span class="p">,</span> <span class="n">n_time</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 
 <span class="sd">    :param circuit: VeraGrid circuit</span>
-<span class="sd">    :param bus_dict: dictionary of bus id to LFE&#39;sPGM index</span>
+<span class="sd">    :param bus_dict: dictionary of bus id to LFE'sPGM index</span>
 <span class="sd">    :param idx0: First object index</span>
 <span class="sd">    :param n_time: Number of time steps, last_index, generation profile</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">gen_devices</span> <span class="o">=</span> <span class="n">circuit</span><span class="o">.</span><span class="n">get_generators</span><span class="p">()</span>
     <span class="n">stagen_devices</span> <span class="o">=</span> <span class="n">circuit</span><span class="o">.</span><span class="n">get_static_generators</span><span class="p">()</span>
     <span class="n">batt_devices</span> <span class="o">=</span> <span class="n">circuit</span><span class="o">.</span><span class="n">get_batteries</span><span class="p">()</span>
     <span class="n">ndev</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">gen_devices</span><span class="p">)</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">stagen_devices</span><span class="p">)</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">batt_devices</span><span class="p">)</span>
 
-    <span class="n">sym_gen</span> <span class="o">=</span> <span class="n">pgm</span><span class="o">.</span><span class="n">initialize_array</span><span class="p">(</span><span class="s1">&#39;input&#39;</span><span class="p">,</span> <span class="s1">&#39;sym_gen&#39;</span><span class="p">,</span> <span class="n">ndev</span><span class="p">)</span>
+    <span class="n">sym_gen</span> <span class="o">=</span> <span class="n">pgm</span><span class="o">.</span><span class="n">initialize_array</span><span class="p">(</span><span class="s1">'input'</span><span class="p">,</span> <span class="s1">'sym_gen'</span><span class="p">,</span> <span class="n">ndev</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">n_time</span><span class="p">:</span>
         <span class="n">P</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_time</span><span class="p">,</span> <span class="n">ndev</span><span class="p">))</span>
@@ -351,12 +352,12 @@
     <span class="n">idx</span> <span class="o">=</span> <span class="n">idx0</span>
 
     <span class="k">for</span> <span class="n">k1</span><span class="p">,</span> <span class="n">elm</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">gen_devices</span> <span class="o">+</span> <span class="n">batt_devices</span><span class="p">):</span>
-        <span class="n">sym_gen</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">][</span><span class="n">k1</span><span class="p">]</span> <span class="o">=</span> <span class="n">idx</span>
-        <span class="n">sym_gen</span><span class="p">[</span><span class="s1">&#39;node&#39;</span><span class="p">][</span><span class="n">k1</span><span class="p">]</span> <span class="o">=</span> <span class="n">bus_dict</span><span class="p">[</span><span class="n">elm</span><span class="o">.</span><span class="n">bus</span><span class="o">.</span><span class="n">idtag</span><span class="p">]</span>
-        <span class="n">sym_gen</span><span class="p">[</span><span class="s1">&#39;status&#39;</span><span class="p">][</span><span class="n">k1</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">elm</span><span class="o">.</span><span class="n">active</span><span class="p">)</span>
-        <span class="n">sym_gen</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">][</span><span class="n">k1</span><span class="p">]</span> <span class="o">=</span> <span class="n">pgm</span><span class="o">.</span><span class="n">LoadGenType</span><span class="o">.</span><span class="n">const_power</span>
-        <span class="n">sym_gen</span><span class="p">[</span><span class="s1">&#39;p_specified&#39;</span><span class="p">][</span><span class="n">k1</span><span class="p">]</span> <span class="o">=</span> <span class="n">elm</span><span class="o">.</span><span class="n">P</span> <span class="o">*</span> <span class="mf">1e6</span>
-        <span class="n">sym_gen</span><span class="p">[</span><span class="s1">&#39;q_specified&#39;</span><span class="p">][</span><span class="n">k1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">sym_gen</span><span class="p">[</span><span class="s1">'id'</span><span class="p">][</span><span class="n">k1</span><span class="p">]</span> <span class="o">=</span> <span class="n">idx</span>
+        <span class="n">sym_gen</span><span class="p">[</span><span class="s1">'node'</span><span class="p">][</span><span class="n">k1</span><span class="p">]</span> <span class="o">=</span> <span class="n">bus_dict</span><span class="p">[</span><span class="n">elm</span><span class="o">.</span><span class="n">bus</span><span class="o">.</span><span class="n">idtag</span><span class="p">]</span>
+        <span class="n">sym_gen</span><span class="p">[</span><span class="s1">'status'</span><span class="p">][</span><span class="n">k1</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">elm</span><span class="o">.</span><span class="n">active</span><span class="p">)</span>
+        <span class="n">sym_gen</span><span class="p">[</span><span class="s1">'type'</span><span class="p">][</span><span class="n">k1</span><span class="p">]</span> <span class="o">=</span> <span class="n">pgm</span><span class="o">.</span><span class="n">LoadGenType</span><span class="o">.</span><span class="n">const_power</span>
+        <span class="n">sym_gen</span><span class="p">[</span><span class="s1">'p_specified'</span><span class="p">][</span><span class="n">k1</span><span class="p">]</span> <span class="o">=</span> <span class="n">elm</span><span class="o">.</span><span class="n">P</span> <span class="o">*</span> <span class="mf">1e6</span>
+        <span class="n">sym_gen</span><span class="p">[</span><span class="s1">'q_specified'</span><span class="p">][</span><span class="n">k1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
 
         <span class="k">if</span> <span class="n">n_time</span><span class="p">:</span>
             <span class="n">P</span><span class="p">[:,</span> <span class="n">k1</span><span class="p">]</span> <span class="o">=</span> <span class="n">elm</span><span class="o">.</span><span class="n">P_prof</span> <span class="o">*</span> <span class="mf">1e6</span>
@@ -365,12 +366,12 @@
 
     <span class="n">k2</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">gen_devices</span><span class="p">)</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">batt_devices</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">elm</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">stagen_devices</span><span class="p">):</span>
-        <span class="n">sym_gen</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">][</span><span class="n">k2</span><span class="p">]</span> <span class="o">=</span> <span class="n">idx</span>
-        <span class="n">sym_gen</span><span class="p">[</span><span class="s1">&#39;node&#39;</span><span class="p">][</span><span class="n">k2</span><span class="p">]</span> <span class="o">=</span> <span class="n">bus_dict</span><span class="p">[</span><span class="n">elm</span><span class="o">.</span><span class="n">bus</span><span class="o">.</span><span class="n">idtag</span><span class="p">]</span>
-        <span class="n">sym_gen</span><span class="p">[</span><span class="s1">&#39;status&#39;</span><span class="p">][</span><span class="n">k2</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">elm</span><span class="o">.</span><span class="n">active</span><span class="p">)</span>
-        <span class="n">sym_gen</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">][</span><span class="n">k2</span><span class="p">]</span> <span class="o">=</span> <span class="n">pgm</span><span class="o">.</span><span class="n">LoadGenType</span><span class="o">.</span><span class="n">const_power</span>
-        <span class="n">sym_gen</span><span class="p">[</span><span class="s1">&#39;p_specified&#39;</span><span class="p">][</span><span class="n">k2</span><span class="p">]</span> <span class="o">=</span> <span class="n">elm</span><span class="o">.</span><span class="n">P</span> <span class="o">*</span> <span class="mf">1e6</span>
-        <span class="n">sym_gen</span><span class="p">[</span><span class="s1">&#39;q_specified&#39;</span><span class="p">][</span><span class="n">k2</span><span class="p">]</span> <span class="o">=</span> <span class="n">elm</span><span class="o">.</span><span class="n">Q</span> <span class="o">*</span> <span class="mf">1e6</span>
+        <span class="n">sym_gen</span><span class="p">[</span><span class="s1">'id'</span><span class="p">][</span><span class="n">k2</span><span class="p">]</span> <span class="o">=</span> <span class="n">idx</span>
+        <span class="n">sym_gen</span><span class="p">[</span><span class="s1">'node'</span><span class="p">][</span><span class="n">k2</span><span class="p">]</span> <span class="o">=</span> <span class="n">bus_dict</span><span class="p">[</span><span class="n">elm</span><span class="o">.</span><span class="n">bus</span><span class="o">.</span><span class="n">idtag</span><span class="p">]</span>
+        <span class="n">sym_gen</span><span class="p">[</span><span class="s1">'status'</span><span class="p">][</span><span class="n">k2</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">elm</span><span class="o">.</span><span class="n">active</span><span class="p">)</span>
+        <span class="n">sym_gen</span><span class="p">[</span><span class="s1">'type'</span><span class="p">][</span><span class="n">k2</span><span class="p">]</span> <span class="o">=</span> <span class="n">pgm</span><span class="o">.</span><span class="n">LoadGenType</span><span class="o">.</span><span class="n">const_power</span>
+        <span class="n">sym_gen</span><span class="p">[</span><span class="s1">'p_specified'</span><span class="p">][</span><span class="n">k2</span><span class="p">]</span> <span class="o">=</span> <span class="n">elm</span><span class="o">.</span><span class="n">P</span> <span class="o">*</span> <span class="mf">1e6</span>
+        <span class="n">sym_gen</span><span class="p">[</span><span class="s1">'q_specified'</span><span class="p">][</span><span class="n">k2</span><span class="p">]</span> <span class="o">=</span> <span class="n">elm</span><span class="o">.</span><span class="n">Q</span> <span class="o">*</span> <span class="mf">1e6</span>
 
         <span class="k">if</span> <span class="n">n_time</span><span class="p">:</span>
             <span class="n">P</span><span class="p">[:,</span> <span class="n">k2</span><span class="p">]</span> <span class="o">=</span> <span class="n">elm</span><span class="o">.</span><span class="n">P_prof</span> <span class="o">*</span> <span class="mf">1e6</span>
@@ -380,10 +381,10 @@
         <span class="n">k2</span> <span class="o">+=</span> <span class="mi">1</span>
 
     <span class="k">if</span> <span class="n">n_time</span><span class="p">:</span>
-        <span class="n">load_profile</span> <span class="o">=</span> <span class="n">pgm</span><span class="o">.</span><span class="n">initialize_array</span><span class="p">(</span><span class="s2">&quot;update&quot;</span><span class="p">,</span> <span class="s2">&quot;sym_gen&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">n_time</span><span class="p">,</span> <span class="n">ndev</span><span class="p">))</span>
-        <span class="n">load_profile</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sym_gen</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span>
-        <span class="n">load_profile</span><span class="p">[</span><span class="s2">&quot;p_specified&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">P</span>
-        <span class="n">load_profile</span><span class="p">[</span><span class="s2">&quot;q_specified&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Q</span>
+        <span class="n">load_profile</span> <span class="o">=</span> <span class="n">pgm</span><span class="o">.</span><span class="n">initialize_array</span><span class="p">(</span><span class="s2">"update"</span><span class="p">,</span> <span class="s2">"sym_gen"</span><span class="p">,</span> <span class="p">(</span><span class="n">n_time</span><span class="p">,</span> <span class="n">ndev</span><span class="p">))</span>
+        <span class="n">load_profile</span><span class="p">[</span><span class="s2">"id"</span><span class="p">]</span> <span class="o">=</span> <span class="n">sym_gen</span><span class="p">[</span><span class="s1">'id'</span><span class="p">]</span>
+        <span class="n">load_profile</span><span class="p">[</span><span class="s2">"p_specified"</span><span class="p">]</span> <span class="o">=</span> <span class="n">P</span>
+        <span class="n">load_profile</span><span class="p">[</span><span class="s2">"q_specified"</span><span class="p">]</span> <span class="o">=</span> <span class="n">Q</span>
 
         <span class="k">return</span> <span class="n">sym_gen</span><span class="p">,</span> <span class="n">idx</span><span class="p">,</span> <span class="n">load_profile</span>
     <span class="k">else</span><span class="p">:</span>
@@ -394,14 +395,14 @@
 <div class="viewcode-block" id="get_pgm_source">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Compilers.html#VeraGridEngine.Compilers.circuit_to_pgm.get_pgm_source">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_pgm_source</span><span class="p">(</span><span class="n">circuit</span><span class="p">:</span> <span class="n">MultiCircuit</span><span class="p">,</span> <span class="n">bus_dict</span><span class="p">,</span> <span class="n">idx0</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 
 <span class="sd">    :param circuit: VeraGrid circuit</span>
-<span class="sd">    :param bus_dict: dictionary of bus id to LFE&#39;sPGM index</span>
+<span class="sd">    :param bus_dict: dictionary of bus id to LFE'sPGM index</span>
 <span class="sd">    :param idx0: First object index</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">gen_devices</span> <span class="o">=</span> <span class="n">circuit</span><span class="o">.</span><span class="n">get_generators</span><span class="p">()</span>
-    <span class="n">sym_gen</span> <span class="o">=</span> <span class="n">pgm</span><span class="o">.</span><span class="n">initialize_array</span><span class="p">(</span><span class="s1">&#39;input&#39;</span><span class="p">,</span> <span class="s1">&#39;source&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">sym_gen</span> <span class="o">=</span> <span class="n">pgm</span><span class="o">.</span><span class="n">initialize_array</span><span class="p">(</span><span class="s1">'input'</span><span class="p">,</span> <span class="s1">'source'</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
     <span class="n">idx</span> <span class="o">=</span> <span class="n">idx0</span>
     <span class="n">k</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">gen_devices</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
@@ -414,24 +415,24 @@
                 <span class="n">i_max</span> <span class="o">=</span> <span class="n">i</span>
 
         <span class="n">elm</span> <span class="o">=</span> <span class="n">gen_devices</span><span class="p">[</span><span class="n">i_max</span><span class="p">]</span>
-        <span class="n">sym_gen</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">][</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">idx</span>
-        <span class="n">sym_gen</span><span class="p">[</span><span class="s1">&#39;node&#39;</span><span class="p">][</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">bus_dict</span><span class="p">[</span><span class="n">elm</span><span class="o">.</span><span class="n">bus</span><span class="o">.</span><span class="n">idtag</span><span class="p">]</span>
-        <span class="n">sym_gen</span><span class="p">[</span><span class="s1">&#39;status&#39;</span><span class="p">][</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">elm</span><span class="o">.</span><span class="n">active</span><span class="p">)</span>
-        <span class="n">sym_gen</span><span class="p">[</span><span class="s1">&#39;u_ref&#39;</span><span class="p">][</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">elm</span><span class="o">.</span><span class="n">Vset</span>  <span class="c1"># p.u.</span>
-        <span class="c1"># sym_gen[&#39;u_ref_angle&#39;][k] = 0.0</span>
+        <span class="n">sym_gen</span><span class="p">[</span><span class="s1">'id'</span><span class="p">][</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">idx</span>
+        <span class="n">sym_gen</span><span class="p">[</span><span class="s1">'node'</span><span class="p">][</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">bus_dict</span><span class="p">[</span><span class="n">elm</span><span class="o">.</span><span class="n">bus</span><span class="o">.</span><span class="n">idtag</span><span class="p">]</span>
+        <span class="n">sym_gen</span><span class="p">[</span><span class="s1">'status'</span><span class="p">][</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">elm</span><span class="o">.</span><span class="n">active</span><span class="p">)</span>
+        <span class="n">sym_gen</span><span class="p">[</span><span class="s1">'u_ref'</span><span class="p">][</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">elm</span><span class="o">.</span><span class="n">Vset</span>  <span class="c1"># p.u.</span>
+        <span class="c1"># sym_gen['u_ref_angle'][k] = 0.0</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="c1"># there are no generators, look for the slack bus</span>
         <span class="n">found</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">bus</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">circuit</span><span class="o">.</span><span class="n">buses</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">bus</span><span class="o">.</span><span class="n">is_slack</span><span class="p">:</span>
-                <span class="n">sym_gen</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">][</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">idx</span>
-                <span class="n">sym_gen</span><span class="p">[</span><span class="s1">&#39;node&#39;</span><span class="p">][</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">i</span>
-                <span class="n">sym_gen</span><span class="p">[</span><span class="s1">&#39;status&#39;</span><span class="p">][</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
-                <span class="n">sym_gen</span><span class="p">[</span><span class="s1">&#39;u_ref&#39;</span><span class="p">][</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">bus</span><span class="o">.</span><span class="n">Vm0</span>  <span class="c1"># p.u.</span>
+                <span class="n">sym_gen</span><span class="p">[</span><span class="s1">'id'</span><span class="p">][</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">idx</span>
+                <span class="n">sym_gen</span><span class="p">[</span><span class="s1">'node'</span><span class="p">][</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">i</span>
+                <span class="n">sym_gen</span><span class="p">[</span><span class="s1">'status'</span><span class="p">][</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+                <span class="n">sym_gen</span><span class="p">[</span><span class="s1">'u_ref'</span><span class="p">][</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">bus</span><span class="o">.</span><span class="n">Vm0</span>  <span class="c1"># p.u.</span>
                 <span class="n">found</span> <span class="o">=</span> <span class="kc">True</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="n">found</span><span class="p">:</span>
-            <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;The grid must have either a generator or a slack marked bus!&#39;</span><span class="p">)</span>
+            <span class="n">warn</span><span class="p">(</span><span class="s1">'The grid must have either a generator or a slack marked bus!'</span><span class="p">)</span>
 
     <span class="n">idx</span> <span class="o">+=</span> <span class="mi">1</span>
 
@@ -440,13 +441,13 @@
 
 
 <span class="c1"># def get_pgm_battery_data(circuit: MultiCircuit, bus_dict):</span>
-<span class="c1">#     &quot;&quot;&quot;</span>
+<span class="c1">#     """</span>
 <span class="c1">#</span>
 <span class="c1">#     :param circuit: VeraGrid circuit</span>
-<span class="c1">#     :param bus_dict: dictionary of bus id to LFE&#39;sPGM index</span>
-<span class="c1">#     &quot;&quot;&quot;</span>
+<span class="c1">#     :param bus_dict: dictionary of bus id to LFE'sPGM index</span>
+<span class="c1">#     """</span>
 <span class="c1">#     devices = circuit.get_batteries()</span>
-<span class="c1">#     batt = pgm.initialize_array(&#39;input&#39;, &#39;sym_load&#39;, len(devices))</span>
+<span class="c1">#     batt = pgm.initialize_array('input', 'sym_load', len(devices))</span>
 <span class="c1">#     for k, elm in enumerate(devices):</span>
 <span class="c1">#         pass</span>
 <span class="c1">#     return batt</span>
@@ -455,15 +456,15 @@
 <div class="viewcode-block" id="get_pgm_line">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Compilers.html#VeraGridEngine.Compilers.circuit_to_pgm.get_pgm_line">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_pgm_line</span><span class="p">(</span><span class="n">circuit</span><span class="p">:</span> <span class="n">MultiCircuit</span><span class="p">,</span> <span class="n">bus_dict</span><span class="p">,</span> <span class="n">idx0</span><span class="p">,</span> <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 
 <span class="sd">    :param circuit: VeraGrid circuit</span>
-<span class="sd">    :param bus_dict: dictionary of bus id to LFE&#39;sPGM index</span>
+<span class="sd">    :param bus_dict: dictionary of bus id to LFE'sPGM index</span>
 <span class="sd">    :param idx0: First object index</span>
 <span class="sd">    :param logger: Logger object</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
-    <span class="n">line</span> <span class="o">=</span> <span class="n">pgm</span><span class="o">.</span><span class="n">initialize_array</span><span class="p">(</span><span class="s1">&#39;input&#39;</span><span class="p">,</span> <span class="s1">&#39;line&#39;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">circuit</span><span class="o">.</span><span class="n">lines</span><span class="p">))</span>
+    <span class="n">line</span> <span class="o">=</span> <span class="n">pgm</span><span class="o">.</span><span class="n">initialize_array</span><span class="p">(</span><span class="s1">'input'</span><span class="p">,</span> <span class="s1">'line'</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">circuit</span><span class="o">.</span><span class="n">lines</span><span class="p">))</span>
     <span class="n">omega</span> <span class="o">=</span> <span class="mf">6.283185307</span> <span class="o">*</span> <span class="n">circuit</span><span class="o">.</span><span class="n">fBase</span>  <span class="c1"># angular frequency</span>
     <span class="n">r3</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">3.0</span><span class="p">)</span>  <span class="c1"># square root of 3</span>
 
@@ -474,27 +475,27 @@
         <span class="n">Vt</span> <span class="o">=</span> <span class="n">elm</span><span class="o">.</span><span class="n">bus_to</span><span class="o">.</span><span class="n">Vnom</span>
 
         <span class="k">if</span> <span class="n">Vf</span> <span class="o">!=</span> <span class="n">Vt</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="s1">&#39;Different line terminal voltages&#39;</span><span class="p">,</span> <span class="n">elm</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">Vt</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">Vf</span><span class="p">))</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="s1">'Different line terminal voltages'</span><span class="p">,</span> <span class="n">elm</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">Vt</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">Vf</span><span class="p">))</span>
             <span class="n">elm</span><span class="o">.</span><span class="n">bus_to</span><span class="o">.</span><span class="n">Vnom</span> <span class="o">=</span> <span class="n">Vf</span>
 
         <span class="n">Zbase</span> <span class="o">=</span> <span class="n">Vf</span> <span class="o">*</span> <span class="n">Vf</span> <span class="o">/</span> <span class="n">circuit</span><span class="o">.</span><span class="n">Sbase</span>
 
-        <span class="n">line</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">idx</span>
-        <span class="n">line</span><span class="p">[</span><span class="s1">&#39;from_node&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">bus_dict</span><span class="p">[</span><span class="n">elm</span><span class="o">.</span><span class="n">bus_from</span><span class="o">.</span><span class="n">idtag</span><span class="p">]</span>
-        <span class="n">line</span><span class="p">[</span><span class="s1">&#39;to_node&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">bus_dict</span><span class="p">[</span><span class="n">elm</span><span class="o">.</span><span class="n">bus_to</span><span class="o">.</span><span class="n">idtag</span><span class="p">]</span>
-        <span class="n">line</span><span class="p">[</span><span class="s1">&#39;from_status&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">elm</span><span class="o">.</span><span class="n">bus_from</span><span class="o">.</span><span class="n">active</span><span class="p">)</span>
-        <span class="n">line</span><span class="p">[</span><span class="s1">&#39;to_status&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">elm</span><span class="o">.</span><span class="n">bus_to</span><span class="o">.</span><span class="n">active</span><span class="p">)</span>
-        <span class="n">line</span><span class="p">[</span><span class="s1">&#39;r1&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">elm</span><span class="o">.</span><span class="n">R</span> <span class="o">*</span> <span class="n">Zbase</span>  <span class="c1"># Ohm</span>
-        <span class="n">line</span><span class="p">[</span><span class="s1">&#39;x1&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">elm</span><span class="o">.</span><span class="n">X</span> <span class="o">*</span> <span class="n">Zbase</span>  <span class="c1"># Ohm</span>
-        <span class="n">line</span><span class="p">[</span><span class="s1">&#39;c1&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">elm</span><span class="o">.</span><span class="n">B</span> <span class="o">/</span> <span class="p">(</span><span class="n">omega</span> <span class="o">*</span> <span class="n">Zbase</span><span class="p">)</span>  <span class="c1"># Farad</span>
-        <span class="n">line</span><span class="p">[</span><span class="s1">&#39;tan1&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>  <span class="c1"># this is the ratio G/B, which does not apply here because we do not have G</span>
+        <span class="n">line</span><span class="p">[</span><span class="s1">'id'</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">idx</span>
+        <span class="n">line</span><span class="p">[</span><span class="s1">'from_node'</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">bus_dict</span><span class="p">[</span><span class="n">elm</span><span class="o">.</span><span class="n">bus_from</span><span class="o">.</span><span class="n">idtag</span><span class="p">]</span>
+        <span class="n">line</span><span class="p">[</span><span class="s1">'to_node'</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">bus_dict</span><span class="p">[</span><span class="n">elm</span><span class="o">.</span><span class="n">bus_to</span><span class="o">.</span><span class="n">idtag</span><span class="p">]</span>
+        <span class="n">line</span><span class="p">[</span><span class="s1">'from_status'</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">elm</span><span class="o">.</span><span class="n">bus_from</span><span class="o">.</span><span class="n">active</span><span class="p">)</span>
+        <span class="n">line</span><span class="p">[</span><span class="s1">'to_status'</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">elm</span><span class="o">.</span><span class="n">bus_to</span><span class="o">.</span><span class="n">active</span><span class="p">)</span>
+        <span class="n">line</span><span class="p">[</span><span class="s1">'r1'</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">elm</span><span class="o">.</span><span class="n">R</span> <span class="o">*</span> <span class="n">Zbase</span>  <span class="c1"># Ohm</span>
+        <span class="n">line</span><span class="p">[</span><span class="s1">'x1'</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">elm</span><span class="o">.</span><span class="n">X</span> <span class="o">*</span> <span class="n">Zbase</span>  <span class="c1"># Ohm</span>
+        <span class="n">line</span><span class="p">[</span><span class="s1">'c1'</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">elm</span><span class="o">.</span><span class="n">B</span> <span class="o">/</span> <span class="p">(</span><span class="n">omega</span> <span class="o">*</span> <span class="n">Zbase</span><span class="p">)</span>  <span class="c1"># Farad</span>
+        <span class="n">line</span><span class="p">[</span><span class="s1">'tan1'</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>  <span class="c1"># this is the ratio G/B, which does not apply here because we do not have G</span>
 
-        <span class="n">line</span><span class="p">[</span><span class="s1">&#39;r0&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">elm</span><span class="o">.</span><span class="n">R0</span> <span class="o">*</span> <span class="n">Zbase</span>  <span class="c1"># Ohm</span>
-        <span class="n">line</span><span class="p">[</span><span class="s1">&#39;x0&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">elm</span><span class="o">.</span><span class="n">X0</span> <span class="o">*</span> <span class="n">Zbase</span>  <span class="c1"># Ohm</span>
-        <span class="n">line</span><span class="p">[</span><span class="s1">&#39;c0&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">elm</span><span class="o">.</span><span class="n">B0</span> <span class="o">/</span> <span class="p">(</span><span class="n">omega</span> <span class="o">*</span> <span class="n">Zbase</span><span class="p">)</span>  <span class="c1"># Farad</span>
-        <span class="n">line</span><span class="p">[</span><span class="s1">&#39;tan0&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>  <span class="c1"># this is the ratio G/B, which does not apply here because we do not have G</span>
+        <span class="n">line</span><span class="p">[</span><span class="s1">'r0'</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">elm</span><span class="o">.</span><span class="n">R0</span> <span class="o">*</span> <span class="n">Zbase</span>  <span class="c1"># Ohm</span>
+        <span class="n">line</span><span class="p">[</span><span class="s1">'x0'</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">elm</span><span class="o">.</span><span class="n">X0</span> <span class="o">*</span> <span class="n">Zbase</span>  <span class="c1"># Ohm</span>
+        <span class="n">line</span><span class="p">[</span><span class="s1">'c0'</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">elm</span><span class="o">.</span><span class="n">B0</span> <span class="o">/</span> <span class="p">(</span><span class="n">omega</span> <span class="o">*</span> <span class="n">Zbase</span><span class="p">)</span>  <span class="c1"># Farad</span>
+        <span class="n">line</span><span class="p">[</span><span class="s1">'tan0'</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>  <span class="c1"># this is the ratio G/B, which does not apply here because we do not have G</span>
 
-        <span class="n">line</span><span class="p">[</span><span class="s1">&#39;i_n&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1e6</span> <span class="o">*</span> <span class="n">elm</span><span class="o">.</span><span class="n">rate</span> <span class="o">/</span> <span class="n">r3</span> <span class="o">/</span> <span class="p">(</span><span class="n">Vf</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">)</span>  <span class="c1"># rating in A</span>
+        <span class="n">line</span><span class="p">[</span><span class="s1">'i_n'</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1e6</span> <span class="o">*</span> <span class="n">elm</span><span class="o">.</span><span class="n">rate</span> <span class="o">/</span> <span class="n">r3</span> <span class="o">/</span> <span class="p">(</span><span class="n">Vf</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">)</span>  <span class="c1"># rating in A</span>
         <span class="n">idx</span> <span class="o">+=</span> <span class="mi">1</span>
 
     <span class="k">return</span> <span class="n">line</span><span class="p">,</span> <span class="n">idx</span></div>
@@ -504,13 +505,13 @@
 <div class="viewcode-block" id="get_pgm_transformer_data">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Compilers.html#VeraGridEngine.Compilers.circuit_to_pgm.get_pgm_transformer_data">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_pgm_transformer_data</span><span class="p">(</span><span class="n">circuit</span><span class="p">:</span> <span class="n">MultiCircuit</span><span class="p">,</span> <span class="n">bus_dict</span><span class="p">,</span> <span class="n">idx0</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 
 <span class="sd">    :param circuit: VeraGrid circuit</span>
-<span class="sd">    :param bus_dict: dictionary of bus id to LFE&#39;sPGM index</span>
+<span class="sd">    :param bus_dict: dictionary of bus id to LFE'sPGM index</span>
 <span class="sd">    :param idx0: First object index</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">xfo</span> <span class="o">=</span> <span class="n">pgm</span><span class="o">.</span><span class="n">initialize_array</span><span class="p">(</span><span class="s1">&#39;input&#39;</span><span class="p">,</span> <span class="s1">&#39;transformer&#39;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">circuit</span><span class="o">.</span><span class="n">transformers2w</span><span class="p">))</span>
+<span class="sd">    """</span>
+    <span class="n">xfo</span> <span class="o">=</span> <span class="n">pgm</span><span class="o">.</span><span class="n">initialize_array</span><span class="p">(</span><span class="s1">'input'</span><span class="p">,</span> <span class="s1">'transformer'</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">circuit</span><span class="o">.</span><span class="n">transformers2w</span><span class="p">))</span>
 
     <span class="n">omega</span> <span class="o">=</span> <span class="mf">6.283185307</span> <span class="o">*</span> <span class="n">circuit</span><span class="o">.</span><span class="n">fBase</span>
     <span class="n">r3</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">3.0</span><span class="p">)</span>
@@ -520,19 +521,19 @@
     <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">elm</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">circuit</span><span class="o">.</span><span class="n">transformers2w</span><span class="p">):</span>
         <span class="n">Zbase</span> <span class="o">=</span> <span class="n">elm</span><span class="o">.</span><span class="n">bus_from</span><span class="o">.</span><span class="n">Vnom</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">/</span> <span class="n">circuit</span><span class="o">.</span><span class="n">Sbase</span>
 
-        <span class="n">xfo</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">idx</span>
-        <span class="n">xfo</span><span class="p">[</span><span class="s1">&#39;from_node&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">bus_dict</span><span class="p">[</span><span class="n">elm</span><span class="o">.</span><span class="n">bus_from</span><span class="o">.</span><span class="n">idtag</span><span class="p">]</span>
-        <span class="n">xfo</span><span class="p">[</span><span class="s1">&#39;to_node&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">bus_dict</span><span class="p">[</span><span class="n">elm</span><span class="o">.</span><span class="n">bus_to</span><span class="o">.</span><span class="n">idtag</span><span class="p">]</span>
-        <span class="n">xfo</span><span class="p">[</span><span class="s1">&#39;from_status&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">elm</span><span class="o">.</span><span class="n">bus_from</span><span class="o">.</span><span class="n">active</span><span class="p">)</span>
-        <span class="n">xfo</span><span class="p">[</span><span class="s1">&#39;to_status&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">elm</span><span class="o">.</span><span class="n">bus_to</span><span class="o">.</span><span class="n">active</span><span class="p">)</span>
+        <span class="n">xfo</span><span class="p">[</span><span class="s1">'id'</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">idx</span>
+        <span class="n">xfo</span><span class="p">[</span><span class="s1">'from_node'</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">bus_dict</span><span class="p">[</span><span class="n">elm</span><span class="o">.</span><span class="n">bus_from</span><span class="o">.</span><span class="n">idtag</span><span class="p">]</span>
+        <span class="n">xfo</span><span class="p">[</span><span class="s1">'to_node'</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">bus_dict</span><span class="p">[</span><span class="n">elm</span><span class="o">.</span><span class="n">bus_to</span><span class="o">.</span><span class="n">idtag</span><span class="p">]</span>
+        <span class="n">xfo</span><span class="p">[</span><span class="s1">'from_status'</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">elm</span><span class="o">.</span><span class="n">bus_from</span><span class="o">.</span><span class="n">active</span><span class="p">)</span>
+        <span class="n">xfo</span><span class="p">[</span><span class="s1">'to_status'</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">elm</span><span class="o">.</span><span class="n">bus_to</span><span class="o">.</span><span class="n">active</span><span class="p">)</span>
 
-        <span class="n">xfo</span><span class="p">[</span><span class="s1">&#39;u1&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1e3</span> <span class="o">*</span> <span class="n">elm</span><span class="o">.</span><span class="n">bus_from</span><span class="o">.</span><span class="n">Vnom</span>  <span class="c1"># rated voltage at from-side (V)</span>
-        <span class="n">xfo</span><span class="p">[</span><span class="s1">&#39;u2&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1e3</span> <span class="o">*</span> <span class="n">elm</span><span class="o">.</span><span class="n">bus_to</span><span class="o">.</span><span class="n">Vnom</span>  <span class="c1"># rated voltage at to-side (V)</span>
-        <span class="n">xfo</span><span class="p">[</span><span class="s1">&#39;sn&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1e6</span> <span class="o">*</span> <span class="n">elm</span><span class="o">.</span><span class="n">rate</span>  <span class="c1"># volt-ampere (VA)</span>
-        <span class="n">xfo</span><span class="p">[</span><span class="s1">&#39;uk&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">elm</span><span class="o">.</span><span class="n">X</span> <span class="o">*</span> <span class="p">(</span><span class="n">elm</span><span class="o">.</span><span class="n">rate</span> <span class="o">/</span> <span class="n">circuit</span><span class="o">.</span><span class="n">Sbase</span><span class="p">)</span>  <span class="c1"># relative short circuit voltage (p.u.)</span>
-        <span class="n">xfo</span><span class="p">[</span><span class="s1">&#39;pk&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># short circuit (copper) loss (W)</span>
-        <span class="n">xfo</span><span class="p">[</span><span class="s1">&#39;i0&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># relative no-load current (p.u.)</span>
-        <span class="n">xfo</span><span class="p">[</span><span class="s1">&#39;p0&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># no-load (iron) loss (W)</span>
+        <span class="n">xfo</span><span class="p">[</span><span class="s1">'u1'</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1e3</span> <span class="o">*</span> <span class="n">elm</span><span class="o">.</span><span class="n">bus_from</span><span class="o">.</span><span class="n">Vnom</span>  <span class="c1"># rated voltage at from-side (V)</span>
+        <span class="n">xfo</span><span class="p">[</span><span class="s1">'u2'</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1e3</span> <span class="o">*</span> <span class="n">elm</span><span class="o">.</span><span class="n">bus_to</span><span class="o">.</span><span class="n">Vnom</span>  <span class="c1"># rated voltage at to-side (V)</span>
+        <span class="n">xfo</span><span class="p">[</span><span class="s1">'sn'</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1e6</span> <span class="o">*</span> <span class="n">elm</span><span class="o">.</span><span class="n">rate</span>  <span class="c1"># volt-ampere (VA)</span>
+        <span class="n">xfo</span><span class="p">[</span><span class="s1">'uk'</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">elm</span><span class="o">.</span><span class="n">X</span> <span class="o">*</span> <span class="p">(</span><span class="n">elm</span><span class="o">.</span><span class="n">rate</span> <span class="o">/</span> <span class="n">circuit</span><span class="o">.</span><span class="n">Sbase</span><span class="p">)</span>  <span class="c1"># relative short circuit voltage (p.u.)</span>
+        <span class="n">xfo</span><span class="p">[</span><span class="s1">'pk'</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># short circuit (copper) loss (W)</span>
+        <span class="n">xfo</span><span class="p">[</span><span class="s1">'i0'</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># relative no-load current (p.u.)</span>
+        <span class="n">xfo</span><span class="p">[</span><span class="s1">'p0'</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># no-load (iron) loss (W)</span>
 
         <span class="c1"># clock number of phase shift.</span>
         <span class="c1"># Even number is not possible if one side is Y(N)</span>
@@ -540,31 +541,31 @@
         <span class="c1"># Odd number is not possible, if both sides are Y(N)</span>
         <span class="c1"># winding or both sides are not Y(N) winding.</span>
         <span class="n">phase_int</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">rad2deg</span><span class="p">(</span><span class="n">elm</span><span class="o">.</span><span class="n">tap_phase</span><span class="p">)</span> <span class="o">/</span> <span class="mi">30</span><span class="p">))</span> <span class="o">%</span> <span class="mi">12</span>
-        <span class="n">xfo</span><span class="p">[</span><span class="s1">&#39;clock&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">phase_int</span>
+        <span class="n">xfo</span><span class="p">[</span><span class="s1">'clock'</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">phase_int</span>
 
-        <span class="n">xfo</span><span class="p">[</span><span class="s1">&#39;winding_from&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">pgm</span><span class="o">.</span><span class="n">WindingType</span><span class="o">.</span><span class="n">wye</span>  <span class="c1"># WindingType object</span>
+        <span class="n">xfo</span><span class="p">[</span><span class="s1">'winding_from'</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">pgm</span><span class="o">.</span><span class="n">WindingType</span><span class="o">.</span><span class="n">wye</span>  <span class="c1"># WindingType object</span>
 
         <span class="k">if</span> <span class="n">phase_int</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">xfo</span><span class="p">[</span><span class="s1">&#39;winding_to&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">pgm</span><span class="o">.</span><span class="n">WindingType</span><span class="o">.</span><span class="n">wye_n</span>  <span class="c1"># WindingType object</span>
+            <span class="n">xfo</span><span class="p">[</span><span class="s1">'winding_to'</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">pgm</span><span class="o">.</span><span class="n">WindingType</span><span class="o">.</span><span class="n">wye_n</span>  <span class="c1"># WindingType object</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">xfo</span><span class="p">[</span><span class="s1">&#39;winding_to&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">pgm</span><span class="o">.</span><span class="n">WindingType</span><span class="o">.</span><span class="n">delta</span>  <span class="c1"># WindingType object</span>
+            <span class="n">xfo</span><span class="p">[</span><span class="s1">'winding_to'</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">pgm</span><span class="o">.</span><span class="n">WindingType</span><span class="o">.</span><span class="n">delta</span>  <span class="c1"># WindingType object</span>
 
-        <span class="n">xfo</span><span class="p">[</span><span class="s1">&#39;tap_side&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">pgm</span><span class="o">.</span><span class="n">BranchSide</span><span class="o">.</span><span class="n">to_side</span>  <span class="c1"># BranchSide object</span>
-        <span class="n">xfo</span><span class="p">[</span><span class="s1">&#39;tap_pos&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># current position of tap changer</span>
-        <span class="n">xfo</span><span class="p">[</span><span class="s1">&#39;tap_min&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># position of tap changer at minimum voltage</span>
-        <span class="n">xfo</span><span class="p">[</span><span class="s1">&#39;tap_max&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># position of tap changer at maximum voltage</span>
-        <span class="n">xfo</span><span class="p">[</span><span class="s1">&#39;tap_nom&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># nominal position of tap changer</span>
-        <span class="n">xfo</span><span class="p">[</span><span class="s1">&#39;tap_size&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1e-20</span>  <span class="c1"># size of each tap of the tap changer (V), TODO: this should be 0 in future versions</span>
+        <span class="n">xfo</span><span class="p">[</span><span class="s1">'tap_side'</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">pgm</span><span class="o">.</span><span class="n">BranchSide</span><span class="o">.</span><span class="n">to_side</span>  <span class="c1"># BranchSide object</span>
+        <span class="n">xfo</span><span class="p">[</span><span class="s1">'tap_pos'</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># current position of tap changer</span>
+        <span class="n">xfo</span><span class="p">[</span><span class="s1">'tap_min'</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># position of tap changer at minimum voltage</span>
+        <span class="n">xfo</span><span class="p">[</span><span class="s1">'tap_max'</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># position of tap changer at maximum voltage</span>
+        <span class="n">xfo</span><span class="p">[</span><span class="s1">'tap_nom'</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># nominal position of tap changer</span>
+        <span class="n">xfo</span><span class="p">[</span><span class="s1">'tap_size'</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1e-20</span>  <span class="c1"># size of each tap of the tap changer (V), TODO: this should be 0 in future versions</span>
 
-        <span class="c1"># xfo[&#39;uk_min&#39;][i] = 0  # relative short circuit voltage at minimum tap</span>
-        <span class="c1"># xfo[&#39;uk_max&#39;][i] = 0  # relative short circuit voltage at maximum tap</span>
-        <span class="c1"># xfo[&#39;pk_min&#39;][i] = 0  # short circuit (copper) loss at minimum tap (W)</span>
-        <span class="c1"># xfo[&#39;pk_max&#39;][i] = 0  # short circuit (copper) loss at maximum tap (W)</span>
+        <span class="c1"># xfo['uk_min'][i] = 0  # relative short circuit voltage at minimum tap</span>
+        <span class="c1"># xfo['uk_max'][i] = 0  # relative short circuit voltage at maximum tap</span>
+        <span class="c1"># xfo['pk_min'][i] = 0  # short circuit (copper) loss at minimum tap (W)</span>
+        <span class="c1"># xfo['pk_max'][i] = 0  # short circuit (copper) loss at maximum tap (W)</span>
         <span class="c1">#</span>
-        <span class="c1"># xfo[&#39;r_grounding_from&#39;][i] = 0  # grounding resistance at from-side, if relevant (Ohm)</span>
-        <span class="c1"># xfo[&#39;x_grounding_from&#39;][i] = 0  # grounding reactance at from-side, if relevant (Ohm)</span>
-        <span class="c1"># xfo[&#39;r_grounding_to&#39;][i] = 0  # grounding resistance at to-side, if relevant (Ohm)</span>
-        <span class="c1"># xfo[&#39;x_grounding_to&#39;][i] = 0  # grounding reactance at to-side, if relevant (Ohm)</span>
+        <span class="c1"># xfo['r_grounding_from'][i] = 0  # grounding resistance at from-side, if relevant (Ohm)</span>
+        <span class="c1"># xfo['x_grounding_from'][i] = 0  # grounding reactance at from-side, if relevant (Ohm)</span>
+        <span class="c1"># xfo['r_grounding_to'][i] = 0  # grounding resistance at to-side, if relevant (Ohm)</span>
+        <span class="c1"># xfo['x_grounding_to'][i] = 0  # grounding reactance at to-side, if relevant (Ohm)</span>
         <span class="n">idx</span> <span class="o">+=</span> <span class="mi">1</span>
 
     <span class="k">return</span> <span class="n">xfo</span><span class="p">,</span> <span class="n">idx</span></div>
@@ -574,13 +575,13 @@
 <div class="viewcode-block" id="get_pgm_vsc_data">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Compilers.html#VeraGridEngine.Compilers.circuit_to_pgm.get_pgm_vsc_data">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_pgm_vsc_data</span><span class="p">(</span><span class="n">circuit</span><span class="p">:</span> <span class="n">MultiCircuit</span><span class="p">,</span> <span class="n">bus_dict</span><span class="p">,</span> <span class="n">idx0</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 
 <span class="sd">    :param circuit: VeraGrid circuit</span>
-<span class="sd">    :param bus_dict: dictionary of bus id to LFE&#39;sPGM index</span>
+<span class="sd">    :param bus_dict: dictionary of bus id to LFE'sPGM index</span>
 <span class="sd">    :param idx0: First object index</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">vsc</span> <span class="o">=</span> <span class="n">pgm</span><span class="o">.</span><span class="n">initialize_array</span><span class="p">(</span><span class="s1">&#39;input&#39;</span><span class="p">,</span> <span class="s1">&#39;sym_load&#39;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">circuit</span><span class="o">.</span><span class="n">vsc_devices</span><span class="p">))</span>
+<span class="sd">    """</span>
+    <span class="n">vsc</span> <span class="o">=</span> <span class="n">pgm</span><span class="o">.</span><span class="n">initialize_array</span><span class="p">(</span><span class="s1">'input'</span><span class="p">,</span> <span class="s1">'sym_load'</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">circuit</span><span class="o">.</span><span class="n">vsc_devices</span><span class="p">))</span>
     <span class="n">idx</span> <span class="o">=</span> <span class="n">idx0</span>
     <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">elm</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">circuit</span><span class="o">.</span><span class="n">vsc_devices</span><span class="p">):</span>
         <span class="k">pass</span>
@@ -591,13 +592,13 @@
 <div class="viewcode-block" id="get_pgm_dc_line_data">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Compilers.html#VeraGridEngine.Compilers.circuit_to_pgm.get_pgm_dc_line_data">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_pgm_dc_line_data</span><span class="p">(</span><span class="n">circuit</span><span class="p">:</span> <span class="n">MultiCircuit</span><span class="p">,</span> <span class="n">bus_dict</span><span class="p">,</span> <span class="n">idx0</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 
 <span class="sd">    :param circuit: VeraGrid circuit</span>
-<span class="sd">    :param bus_dict: dictionary of bus id to LFE&#39;sPGM index</span>
+<span class="sd">    :param bus_dict: dictionary of bus id to LFE'sPGM index</span>
 <span class="sd">    :param idx0: First object index</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">dc_line</span> <span class="o">=</span> <span class="n">pgm</span><span class="o">.</span><span class="n">initialize_array</span><span class="p">(</span><span class="s1">&#39;input&#39;</span><span class="p">,</span> <span class="s1">&#39;sym_load&#39;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">circuit</span><span class="o">.</span><span class="n">dc_lines</span><span class="p">))</span>
+<span class="sd">    """</span>
+    <span class="n">dc_line</span> <span class="o">=</span> <span class="n">pgm</span><span class="o">.</span><span class="n">initialize_array</span><span class="p">(</span><span class="s1">'input'</span><span class="p">,</span> <span class="s1">'sym_load'</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">circuit</span><span class="o">.</span><span class="n">dc_lines</span><span class="p">))</span>
     <span class="c1"># Compile the lines</span>
     <span class="n">idx</span> <span class="o">=</span> <span class="n">idx0</span>
     <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">elm</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">circuit</span><span class="o">.</span><span class="n">dc_lines</span><span class="p">):</span>
@@ -609,13 +610,13 @@
 <div class="viewcode-block" id="get_pgm_hvdc_data">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Compilers.html#VeraGridEngine.Compilers.circuit_to_pgm.get_pgm_hvdc_data">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_pgm_hvdc_data</span><span class="p">(</span><span class="n">circuit</span><span class="p">:</span> <span class="n">MultiCircuit</span><span class="p">,</span> <span class="n">bus_dict</span><span class="p">,</span> <span class="n">idx0</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 
 <span class="sd">    :param circuit: VeraGrid circuit</span>
-<span class="sd">    :param bus_dict: dictionary of bus id to LFE&#39;sPGM index</span>
+<span class="sd">    :param bus_dict: dictionary of bus id to LFE'sPGM index</span>
 <span class="sd">    :param idx0: First object index</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">hvdc</span> <span class="o">=</span> <span class="n">pgm</span><span class="o">.</span><span class="n">initialize_array</span><span class="p">(</span><span class="s1">&#39;input&#39;</span><span class="p">,</span> <span class="s1">&#39;sym_load&#39;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">circuit</span><span class="o">.</span><span class="n">hvdc_lines</span><span class="p">))</span>
+<span class="sd">    """</span>
+    <span class="n">hvdc</span> <span class="o">=</span> <span class="n">pgm</span><span class="o">.</span><span class="n">initialize_array</span><span class="p">(</span><span class="s1">'input'</span><span class="p">,</span> <span class="s1">'sym_load'</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">circuit</span><span class="o">.</span><span class="n">hvdc_lines</span><span class="p">))</span>
     <span class="n">idx</span> <span class="o">=</span> <span class="n">idx0</span>
     <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">elm</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">circuit</span><span class="o">.</span><span class="n">hvdc_lines</span><span class="p">):</span>
         <span class="k">pass</span>
@@ -648,18 +649,18 @@
 
     <span class="c1"># all</span>
     <span class="n">input_data</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s1">&#39;node&#39;</span><span class="p">:</span> <span class="n">node</span><span class="p">,</span>
-        <span class="s1">&#39;line&#39;</span><span class="p">:</span> <span class="n">line</span><span class="p">,</span>
-        <span class="s1">&#39;transformer&#39;</span><span class="p">:</span> <span class="n">transformer</span><span class="p">,</span>
-        <span class="s1">&#39;sym_load&#39;</span><span class="p">:</span> <span class="n">sym_load</span><span class="p">,</span>
-        <span class="s1">&#39;sym_gen&#39;</span><span class="p">:</span> <span class="n">sym_gen</span><span class="p">,</span>
-        <span class="s1">&#39;source&#39;</span><span class="p">:</span> <span class="n">source</span><span class="p">,</span>
-        <span class="s1">&#39;shunt&#39;</span><span class="p">:</span> <span class="n">shunt</span>
+        <span class="s1">'node'</span><span class="p">:</span> <span class="n">node</span><span class="p">,</span>
+        <span class="s1">'line'</span><span class="p">:</span> <span class="n">line</span><span class="p">,</span>
+        <span class="s1">'transformer'</span><span class="p">:</span> <span class="n">transformer</span><span class="p">,</span>
+        <span class="s1">'sym_load'</span><span class="p">:</span> <span class="n">sym_load</span><span class="p">,</span>
+        <span class="s1">'sym_gen'</span><span class="p">:</span> <span class="n">sym_gen</span><span class="p">,</span>
+        <span class="s1">'source'</span><span class="p">:</span> <span class="n">source</span><span class="p">,</span>
+        <span class="s1">'shunt'</span><span class="p">:</span> <span class="n">shunt</span>
     <span class="p">}</span>
 
     <span class="k">if</span> <span class="n">time_series</span><span class="p">:</span>
-        <span class="n">time_series_mutation</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;sym_load&quot;</span><span class="p">:</span> <span class="n">load_profile</span><span class="p">,</span>
-                                <span class="s2">&quot;sym_gen&quot;</span><span class="p">:</span> <span class="n">gen_profile</span><span class="p">}</span>
+        <span class="n">time_series_mutation</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"sym_load"</span><span class="p">:</span> <span class="n">load_profile</span><span class="p">,</span>
+                                <span class="s2">"sym_gen"</span><span class="p">:</span> <span class="n">gen_profile</span><span class="p">}</span>
 
     <span class="k">else</span><span class="p">:</span>
         <span class="n">time_series_mutation</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
@@ -670,15 +671,15 @@
 
 <div class="viewcode-block" id="to_pgm">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Compilers.html#VeraGridEngine.Compilers.circuit_to_pgm.to_pgm">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">to_pgm</span><span class="p">(</span><span class="n">circuit</span><span class="p">:</span> <span class="n">MultiCircuit</span><span class="p">,</span> <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span> <span class="o">=</span> <span class="n">Logger</span><span class="p">(),</span> <span class="n">time_series</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="s2">&quot;pgm.PowerGridModel&quot;</span><span class="p">,</span> <span class="n">Dict</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Convert VeraGrid circuit to LFE&#39;sPGM model</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">to_pgm</span><span class="p">(</span><span class="n">circuit</span><span class="p">:</span> <span class="n">MultiCircuit</span><span class="p">,</span> <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span> <span class="o">=</span> <span class="n">Logger</span><span class="p">(),</span> <span class="n">time_series</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="s2">"pgm.PowerGridModel"</span><span class="p">,</span> <span class="n">Dict</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Convert VeraGrid circuit to LFE'sPGM model</span>
 <span class="sd">    See https://github.com/alliander-opensource/power-grid-model/blob/main/docs/graph-data-model.md</span>
 <span class="sd">    :param circuit: MultiCircuit</span>
 <span class="sd">    :param logger: Logger instance</span>
 <span class="sd">    :param time_series: use time series?</span>
 <span class="sd">    :return: pgm.PowerGridModel instance</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">input_data</span><span class="p">,</span> <span class="n">time_series_mutation</span> <span class="o">=</span> <span class="n">get_pgm_input_data</span><span class="p">(</span><span class="n">circuit</span><span class="o">=</span><span class="n">circuit</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="n">logger</span><span class="p">,</span> <span class="n">time_series</span><span class="o">=</span><span class="n">time_series</span><span class="p">)</span>
 
@@ -691,7 +692,7 @@
 
         <span class="n">model_ok</span> <span class="o">=</span> <span class="kc">True</span>
     <span class="k">except</span> <span class="n">ValidationException</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;assert_valid_input_data&quot;</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"assert_valid_input_data"</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
         <span class="n">model_ok</span> <span class="o">=</span> <span class="kc">False</span>
 
     <span class="k">if</span> <span class="n">model_ok</span><span class="p">:</span>
@@ -706,15 +707,15 @@
 <div class="viewcode-block" id="pgm_pf">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Compilers.html#VeraGridEngine.Compilers.circuit_to_pgm.pgm_pf">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">pgm_pf</span><span class="p">(</span><span class="n">circuit</span><span class="p">:</span> <span class="n">MultiCircuit</span><span class="p">,</span> <span class="n">opt</span><span class="p">:</span> <span class="n">PowerFlowOptions</span><span class="p">,</span> <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span><span class="p">,</span> <span class="n">symmetric</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">time_series</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    LFE&#39;sPGM power flow</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    LFE'sPGM power flow</span>
 <span class="sd">    :param circuit: MultiCircuit instance</span>
 <span class="sd">    :param opt: Power Flow Options</span>
 <span class="sd">    :param logger: Logger object</span>
 <span class="sd">    :param symmetric: Symmetric (3-phase balanced calculation? / asymmetric)</span>
 <span class="sd">    :param time_series: Time_series?</span>
-<span class="sd">    :return: LFE&#39;s PGM Power flow results object</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    :return: LFE's PGM Power flow results object</span>
+<span class="sd">    """</span>
     <span class="n">model</span><span class="p">,</span> <span class="n">time_series_mutation</span> <span class="o">=</span> <span class="n">to_pgm</span><span class="p">(</span><span class="n">circuit</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="n">logger</span><span class="p">,</span> <span class="n">time_series</span><span class="o">=</span><span class="n">time_series</span><span class="p">)</span>
 
     <span class="n">calculation_method_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">SolverType</span><span class="o">.</span><span class="n">NR</span><span class="p">:</span> <span class="n">CalculationMethod</span><span class="o">.</span><span class="n">newton_raphson</span><span class="p">,</span>
@@ -736,7 +737,7 @@
                                                 <span class="n">calculation_method</span><span class="o">=</span><span class="n">calculation_method</span><span class="p">)</span>
 
         <span class="k">except</span> <span class="n">PowerGridError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="s1">&#39;Power flow failed</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="s1">'Power flow failed</span><span class="se">\n</span><span class="s1">'</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
             <span class="n">pf_res</span> <span class="o">=</span> <span class="kc">None</span>
 
         <span class="n">gc_res</span> <span class="o">=</span> <span class="n">translate_pgm_pf_results2d</span><span class="p">(</span><span class="n">circuit</span><span class="p">,</span> <span class="n">pf_res</span><span class="p">)</span>
@@ -748,7 +749,7 @@
                                                 <span class="n">calculation_method</span><span class="o">=</span><span class="n">calculation_method</span><span class="p">)</span>
 
         <span class="k">except</span> <span class="n">PowerGridError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="s1">&#39;Power flow failed</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="s1">'Power flow failed</span><span class="se">\n</span><span class="s1">'</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
             <span class="n">pf_res</span> <span class="o">=</span> <span class="kc">None</span>
 
         <span class="n">gc_res</span> <span class="o">=</span> <span class="n">translate_pgm_results</span><span class="p">(</span><span class="n">circuit</span><span class="p">,</span> <span class="n">pf_res</span><span class="p">)</span>
@@ -760,20 +761,20 @@
 <div class="viewcode-block" id="NumpyEncoder">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Compilers.html#VeraGridEngine.Compilers.circuit_to_pgm.NumpyEncoder">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">NumpyEncoder</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">JSONEncoder</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    JSON encoder that serializes NumPy arrays to lists.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">()</span>
 
 <div class="viewcode-block" id="NumpyEncoder.default">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Compilers.html#VeraGridEngine.Compilers.circuit_to_pgm.NumpyEncoder.default">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">default</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Convert numpy arrays to python lists for JSON serialization.</span>
 
 <span class="sd">        :param obj: Object to serialize.</span>
 <span class="sd">        :return: JSON serializable representation of obj.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
             <span class="k">return</span> <span class="n">obj</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
         <span class="k">else</span><span class="p">:</span>
@@ -785,23 +786,23 @@
 <div class="viewcode-block" id="save_pgm">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Compilers.html#VeraGridEngine.Compilers.circuit_to_pgm.save_pgm">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">save_pgm</span><span class="p">(</span><span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">circuit</span><span class="p">:</span> <span class="n">MultiCircuit</span><span class="p">,</span> <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span> <span class="o">=</span> <span class="n">Logger</span><span class="p">(),</span> <span class="n">time_series</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Save to Power Grid Model format</span>
 <span class="sd">    :param filename:</span>
 <span class="sd">    :param circuit:</span>
 <span class="sd">    :param logger:</span>
 <span class="sd">    :param time_series:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">input_data</span><span class="p">,</span> <span class="n">time_series_mutation</span> <span class="o">=</span> <span class="n">get_pgm_input_data</span><span class="p">(</span><span class="n">circuit</span><span class="o">=</span><span class="n">circuit</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="n">logger</span><span class="p">,</span> <span class="n">time_series</span><span class="o">=</span><span class="n">time_series</span><span class="p">)</span>
 
-    <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;input_data&#39;</span><span class="p">:</span> <span class="n">input_data</span><span class="p">,</span>
-            <span class="s1">&#39;mutation&#39;</span><span class="p">:</span> <span class="n">time_series_mutation</span><span class="p">}</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'input_data'</span><span class="p">:</span> <span class="n">input_data</span><span class="p">,</span>
+            <span class="s1">'mutation'</span><span class="p">:</span> <span class="n">time_series_mutation</span><span class="p">}</span>
 
     <span class="n">data_str</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="bp">cls</span><span class="o">=</span><span class="n">NumpyEncoder</span><span class="p">)</span>
 
     <span class="c1"># Save json to a text file</span>
-    <span class="n">text_file</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span>
+    <span class="n">text_file</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">"w"</span><span class="p">)</span>
     <span class="n">text_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">data_str</span><span class="p">)</span>
     <span class="n">text_file</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
 
@@ -811,12 +812,12 @@
 <div class="viewcode-block" id="translate_pgm_results">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Compilers.html#VeraGridEngine.Compilers.circuit_to_pgm.translate_pgm_results">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">translate_pgm_results</span><span class="p">(</span><span class="n">grid</span><span class="p">:</span> <span class="n">MultiCircuit</span><span class="p">,</span> <span class="n">pf_res</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PowerFlowResults</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Translate the PGM results to SnapShot power flow results</span>
 <span class="sd">    :param grid:</span>
 <span class="sd">    :param pf_res:</span>
 <span class="sd">    :return: PowerFlowResults</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">nc</span> <span class="o">=</span> <span class="n">compile_numerical_circuit_at</span><span class="p">(</span><span class="n">grid</span><span class="p">)</span>
 
@@ -839,18 +840,18 @@
     <span class="k">if</span> <span class="n">pf_res</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">results</span>
 
-    <span class="n">Vm</span> <span class="o">=</span> <span class="n">pf_res</span><span class="p">[</span><span class="s1">&#39;node&#39;</span><span class="p">][</span><span class="s1">&#39;u_pu&#39;</span><span class="p">]</span>
-    <span class="n">Va</span> <span class="o">=</span> <span class="n">pf_res</span><span class="p">[</span><span class="s1">&#39;node&#39;</span><span class="p">][</span><span class="s1">&#39;u_angle&#39;</span><span class="p">]</span>  <span class="c1"># np.zeros_like(Vm)  # TODO: what about this?</span>
-    <span class="n">Pf</span> <span class="o">=</span> <span class="n">pf_res</span><span class="p">[</span><span class="s1">&#39;line&#39;</span><span class="p">][</span><span class="s1">&#39;p_from&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="mf">1e-6</span>
-    <span class="n">Pt</span> <span class="o">=</span> <span class="n">pf_res</span><span class="p">[</span><span class="s1">&#39;line&#39;</span><span class="p">][</span><span class="s1">&#39;p_to&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="mf">1e-6</span>
-    <span class="n">Qf</span> <span class="o">=</span> <span class="n">pf_res</span><span class="p">[</span><span class="s1">&#39;line&#39;</span><span class="p">][</span><span class="s1">&#39;q_from&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="mf">1e-6</span>
-    <span class="n">Qt</span> <span class="o">=</span> <span class="n">pf_res</span><span class="p">[</span><span class="s1">&#39;line&#39;</span><span class="p">][</span><span class="s1">&#39;q_to&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="mf">1e-6</span>
+    <span class="n">Vm</span> <span class="o">=</span> <span class="n">pf_res</span><span class="p">[</span><span class="s1">'node'</span><span class="p">][</span><span class="s1">'u_pu'</span><span class="p">]</span>
+    <span class="n">Va</span> <span class="o">=</span> <span class="n">pf_res</span><span class="p">[</span><span class="s1">'node'</span><span class="p">][</span><span class="s1">'u_angle'</span><span class="p">]</span>  <span class="c1"># np.zeros_like(Vm)  # TODO: what about this?</span>
+    <span class="n">Pf</span> <span class="o">=</span> <span class="n">pf_res</span><span class="p">[</span><span class="s1">'line'</span><span class="p">][</span><span class="s1">'p_from'</span><span class="p">]</span> <span class="o">*</span> <span class="mf">1e-6</span>
+    <span class="n">Pt</span> <span class="o">=</span> <span class="n">pf_res</span><span class="p">[</span><span class="s1">'line'</span><span class="p">][</span><span class="s1">'p_to'</span><span class="p">]</span> <span class="o">*</span> <span class="mf">1e-6</span>
+    <span class="n">Qf</span> <span class="o">=</span> <span class="n">pf_res</span><span class="p">[</span><span class="s1">'line'</span><span class="p">][</span><span class="s1">'q_from'</span><span class="p">]</span> <span class="o">*</span> <span class="mf">1e-6</span>
+    <span class="n">Qt</span> <span class="o">=</span> <span class="n">pf_res</span><span class="p">[</span><span class="s1">'line'</span><span class="p">][</span><span class="s1">'q_to'</span><span class="p">]</span> <span class="o">*</span> <span class="mf">1e-6</span>
 
-    <span class="k">if</span> <span class="s1">&#39;transformer&#39;</span> <span class="ow">in</span> <span class="n">pf_res</span><span class="p">:</span>
-        <span class="n">Pf</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span><span class="n">Pf</span><span class="p">,</span> <span class="n">pf_res</span><span class="p">[</span><span class="s1">&#39;transformer&#39;</span><span class="p">][</span><span class="s1">&#39;p_from&#39;</span><span class="p">]]</span> <span class="o">*</span> <span class="mf">1e-6</span>
-        <span class="n">Pt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span><span class="n">Pt</span><span class="p">,</span> <span class="n">pf_res</span><span class="p">[</span><span class="s1">&#39;transformer&#39;</span><span class="p">][</span><span class="s1">&#39;p_to&#39;</span><span class="p">]]</span> <span class="o">*</span> <span class="mf">1e-6</span>
-        <span class="n">Qf</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span><span class="n">Qf</span><span class="p">,</span> <span class="n">pf_res</span><span class="p">[</span><span class="s1">&#39;transformer&#39;</span><span class="p">][</span><span class="s1">&#39;q_from&#39;</span><span class="p">]]</span> <span class="o">*</span> <span class="mf">1e-6</span>
-        <span class="n">Qt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span><span class="n">Qt</span><span class="p">,</span> <span class="n">pf_res</span><span class="p">[</span><span class="s1">&#39;transformer&#39;</span><span class="p">][</span><span class="s1">&#39;q_to&#39;</span><span class="p">]]</span> <span class="o">*</span> <span class="mf">1e-6</span>
+    <span class="k">if</span> <span class="s1">'transformer'</span> <span class="ow">in</span> <span class="n">pf_res</span><span class="p">:</span>
+        <span class="n">Pf</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span><span class="n">Pf</span><span class="p">,</span> <span class="n">pf_res</span><span class="p">[</span><span class="s1">'transformer'</span><span class="p">][</span><span class="s1">'p_from'</span><span class="p">]]</span> <span class="o">*</span> <span class="mf">1e-6</span>
+        <span class="n">Pt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span><span class="n">Pt</span><span class="p">,</span> <span class="n">pf_res</span><span class="p">[</span><span class="s1">'transformer'</span><span class="p">][</span><span class="s1">'p_to'</span><span class="p">]]</span> <span class="o">*</span> <span class="mf">1e-6</span>
+        <span class="n">Qf</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span><span class="n">Qf</span><span class="p">,</span> <span class="n">pf_res</span><span class="p">[</span><span class="s1">'transformer'</span><span class="p">][</span><span class="s1">'q_from'</span><span class="p">]]</span> <span class="o">*</span> <span class="mf">1e-6</span>
+        <span class="n">Qt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span><span class="n">Qt</span><span class="p">,</span> <span class="n">pf_res</span><span class="p">[</span><span class="s1">'transformer'</span><span class="p">][</span><span class="s1">'q_to'</span><span class="p">]]</span> <span class="o">*</span> <span class="mf">1e-6</span>
 
     <span class="n">losses</span> <span class="o">=</span> <span class="p">(</span><span class="n">Pf</span> <span class="o">+</span> <span class="n">Pt</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="p">(</span><span class="n">Qf</span> <span class="o">+</span> <span class="n">Qt</span><span class="p">)</span>
 
@@ -885,12 +886,12 @@
 <div class="viewcode-block" id="translate_pgm_pf_results2d">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Compilers.html#VeraGridEngine.Compilers.circuit_to_pgm.translate_pgm_pf_results2d">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">translate_pgm_pf_results2d</span><span class="p">(</span><span class="n">grid</span><span class="p">:</span> <span class="n">MultiCircuit</span><span class="p">,</span> <span class="n">pf_res</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PowerFlowTimeSeriesResults</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Translate the time series power flow results</span>
 <span class="sd">    :param grid:</span>
 <span class="sd">    :param pf_res:</span>
 <span class="sd">    :return: TimeSeriesResults</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">nc</span> <span class="o">=</span> <span class="n">compile_numerical_circuit_at</span><span class="p">(</span><span class="n">grid</span><span class="p">)</span>
 
@@ -915,20 +916,20 @@
     <span class="k">if</span> <span class="n">pf_res</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">results</span>
 
-    <span class="n">P</span> <span class="o">=</span> <span class="n">pf_res</span><span class="p">[</span><span class="s1">&#39;node&#39;</span><span class="p">][</span><span class="s1">&#39;p&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="mf">1e-6</span>
-    <span class="n">Q</span> <span class="o">=</span> <span class="n">pf_res</span><span class="p">[</span><span class="s1">&#39;node&#39;</span><span class="p">][</span><span class="s1">&#39;q&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="mf">1e-6</span>
-    <span class="n">Vm</span> <span class="o">=</span> <span class="n">pf_res</span><span class="p">[</span><span class="s1">&#39;node&#39;</span><span class="p">][</span><span class="s1">&#39;u_pu&#39;</span><span class="p">]</span>
-    <span class="n">Va</span> <span class="o">=</span> <span class="n">pf_res</span><span class="p">[</span><span class="s1">&#39;node&#39;</span><span class="p">][</span><span class="s1">&#39;u_angle&#39;</span><span class="p">]</span>
-    <span class="n">Pf</span> <span class="o">=</span> <span class="n">pf_res</span><span class="p">[</span><span class="s1">&#39;line&#39;</span><span class="p">][</span><span class="s1">&#39;p_from&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="mf">1e-6</span>
-    <span class="n">Pt</span> <span class="o">=</span> <span class="n">pf_res</span><span class="p">[</span><span class="s1">&#39;line&#39;</span><span class="p">][</span><span class="s1">&#39;p_to&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="mf">1e-6</span>
-    <span class="n">Qf</span> <span class="o">=</span> <span class="n">pf_res</span><span class="p">[</span><span class="s1">&#39;line&#39;</span><span class="p">][</span><span class="s1">&#39;q_from&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="mf">1e-6</span>
-    <span class="n">Qt</span> <span class="o">=</span> <span class="n">pf_res</span><span class="p">[</span><span class="s1">&#39;line&#39;</span><span class="p">][</span><span class="s1">&#39;q_to&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="mf">1e-6</span>
+    <span class="n">P</span> <span class="o">=</span> <span class="n">pf_res</span><span class="p">[</span><span class="s1">'node'</span><span class="p">][</span><span class="s1">'p'</span><span class="p">]</span> <span class="o">*</span> <span class="mf">1e-6</span>
+    <span class="n">Q</span> <span class="o">=</span> <span class="n">pf_res</span><span class="p">[</span><span class="s1">'node'</span><span class="p">][</span><span class="s1">'q'</span><span class="p">]</span> <span class="o">*</span> <span class="mf">1e-6</span>
+    <span class="n">Vm</span> <span class="o">=</span> <span class="n">pf_res</span><span class="p">[</span><span class="s1">'node'</span><span class="p">][</span><span class="s1">'u_pu'</span><span class="p">]</span>
+    <span class="n">Va</span> <span class="o">=</span> <span class="n">pf_res</span><span class="p">[</span><span class="s1">'node'</span><span class="p">][</span><span class="s1">'u_angle'</span><span class="p">]</span>
+    <span class="n">Pf</span> <span class="o">=</span> <span class="n">pf_res</span><span class="p">[</span><span class="s1">'line'</span><span class="p">][</span><span class="s1">'p_from'</span><span class="p">]</span> <span class="o">*</span> <span class="mf">1e-6</span>
+    <span class="n">Pt</span> <span class="o">=</span> <span class="n">pf_res</span><span class="p">[</span><span class="s1">'line'</span><span class="p">][</span><span class="s1">'p_to'</span><span class="p">]</span> <span class="o">*</span> <span class="mf">1e-6</span>
+    <span class="n">Qf</span> <span class="o">=</span> <span class="n">pf_res</span><span class="p">[</span><span class="s1">'line'</span><span class="p">][</span><span class="s1">'q_from'</span><span class="p">]</span> <span class="o">*</span> <span class="mf">1e-6</span>
+    <span class="n">Qt</span> <span class="o">=</span> <span class="n">pf_res</span><span class="p">[</span><span class="s1">'line'</span><span class="p">][</span><span class="s1">'q_to'</span><span class="p">]</span> <span class="o">*</span> <span class="mf">1e-6</span>
 
-    <span class="k">if</span> <span class="s1">&#39;transformer&#39;</span> <span class="ow">in</span> <span class="n">pf_res</span><span class="p">:</span>
-        <span class="n">Pf</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">c_</span><span class="p">[</span><span class="n">Pf</span><span class="p">,</span> <span class="n">pf_res</span><span class="p">[</span><span class="s1">&#39;transformer&#39;</span><span class="p">][</span><span class="s1">&#39;p_from&#39;</span><span class="p">]]</span> <span class="o">*</span> <span class="mf">1e-6</span>
-        <span class="n">Pt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">c_</span><span class="p">[</span><span class="n">Pt</span><span class="p">,</span> <span class="n">pf_res</span><span class="p">[</span><span class="s1">&#39;transformer&#39;</span><span class="p">][</span><span class="s1">&#39;p_to&#39;</span><span class="p">]]</span> <span class="o">*</span> <span class="mf">1e-6</span>
-        <span class="n">Qf</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">c_</span><span class="p">[</span><span class="n">Qf</span><span class="p">,</span> <span class="n">pf_res</span><span class="p">[</span><span class="s1">&#39;transformer&#39;</span><span class="p">][</span><span class="s1">&#39;q_from&#39;</span><span class="p">]]</span> <span class="o">*</span> <span class="mf">1e-6</span>
-        <span class="n">Qt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">c_</span><span class="p">[</span><span class="n">Qt</span><span class="p">,</span> <span class="n">pf_res</span><span class="p">[</span><span class="s1">&#39;transformer&#39;</span><span class="p">][</span><span class="s1">&#39;q_to&#39;</span><span class="p">]]</span> <span class="o">*</span> <span class="mf">1e-6</span>
+    <span class="k">if</span> <span class="s1">'transformer'</span> <span class="ow">in</span> <span class="n">pf_res</span><span class="p">:</span>
+        <span class="n">Pf</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">c_</span><span class="p">[</span><span class="n">Pf</span><span class="p">,</span> <span class="n">pf_res</span><span class="p">[</span><span class="s1">'transformer'</span><span class="p">][</span><span class="s1">'p_from'</span><span class="p">]]</span> <span class="o">*</span> <span class="mf">1e-6</span>
+        <span class="n">Pt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">c_</span><span class="p">[</span><span class="n">Pt</span><span class="p">,</span> <span class="n">pf_res</span><span class="p">[</span><span class="s1">'transformer'</span><span class="p">][</span><span class="s1">'p_to'</span><span class="p">]]</span> <span class="o">*</span> <span class="mf">1e-6</span>
+        <span class="n">Qf</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">c_</span><span class="p">[</span><span class="n">Qf</span><span class="p">,</span> <span class="n">pf_res</span><span class="p">[</span><span class="s1">'transformer'</span><span class="p">][</span><span class="s1">'q_from'</span><span class="p">]]</span> <span class="o">*</span> <span class="mf">1e-6</span>
+        <span class="n">Qt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">c_</span><span class="p">[</span><span class="n">Qt</span><span class="p">,</span> <span class="n">pf_res</span><span class="p">[</span><span class="s1">'transformer'</span><span class="p">][</span><span class="s1">'q_to'</span><span class="p">]]</span> <span class="o">*</span> <span class="mf">1e-6</span>
 
     <span class="n">losses</span> <span class="o">=</span> <span class="p">(</span><span class="n">Pf</span> <span class="o">+</span> <span class="n">Pt</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="p">(</span><span class="n">Qf</span> <span class="o">+</span> <span class="n">Qt</span><span class="p">)</span>
 

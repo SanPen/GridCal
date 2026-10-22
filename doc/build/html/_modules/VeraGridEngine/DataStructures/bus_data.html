@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.DataStructures.bus_data &mdash; VeraGrid 6.7.13 documentation</title>
+  <title>VeraGridEngine.DataStructures.bus_data &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=16fbabd8"></script>
+      <script src="../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/js/theme.js"></script>
@@ -115,14 +115,14 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Utils.compare</span><span class="w"> </span><span class="kn">import</span> <span class="n">compare_arr</span>
 
 
-<span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">inline</span><span class="o">=</span><span class="s2">&quot;always&quot;</span><span class="p">)</span>
+<span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">inline</span><span class="o">=</span><span class="s2">"always"</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">_control_priority</span><span class="p">(</span><span class="n">is_p</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
                       <span class="n">is_q</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
                       <span class="n">is_vm</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
                       <span class="n">is_va</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Rank the control strength of a bus.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># Prefer buses that already define the electrical reference first, then</span>
     <span class="c1"># voltage-controlled buses, and leave plain injection-controlled buses last.</span>
     <span class="k">if</span> <span class="n">is_va</span> <span class="ow">and</span> <span class="n">is_vm</span><span class="p">:</span>
@@ -150,7 +150,7 @@
                        <span class="n">is_q_controlled</span><span class="p">:</span> <span class="n">BoolVec</span><span class="p">,</span>
                        <span class="n">is_vm_controlled</span><span class="p">:</span> <span class="n">BoolVec</span><span class="p">,</span>
                        <span class="n">is_va_controlled</span><span class="p">:</span> <span class="n">BoolVec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Propagate the strongest control status of a reduced bus cluster to the surviving bus.</span>
 
 <span class="sd">    The donor bus is chosen from ``chosen_idx`` and ``other_idx`` using the actual control flags,</span>
@@ -164,7 +164,7 @@
 <span class="sd">    :param is_vm_controlled:</span>
 <span class="sd">    :param is_va_controlled:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># Start by assuming the surviving bus already is the best donor.</span>
     <span class="n">donor_idx</span> <span class="o">=</span> <span class="n">chosen_idx</span>
     <span class="n">donor_priority</span> <span class="o">=</span> <span class="n">_control_priority</span><span class="p">(</span>
@@ -209,45 +209,45 @@
 <div class="viewcode-block" id="BusData">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.bus_data.BusData">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">BusData</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    BusData</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;nbus&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;idtag&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;names&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;active&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Vbus&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Vmin&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Vmax&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Vnom&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;cost_v&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;angle_min&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;angle_max&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;bus_types&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;is_p_controlled&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;is_q_controlled&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;is_vm_controlled&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;is_va_controlled&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;installed_power&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;srap_available_power&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;is_dc&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;is_grounded&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;areas&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;substations&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;q_shared_total&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;q_fixed&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;ii_fixed&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;b_fixed&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;original_idx&quot;</span><span class="p">,</span>
+        <span class="s2">"nbus"</span><span class="p">,</span>
+        <span class="s2">"idtag"</span><span class="p">,</span>
+        <span class="s2">"names"</span><span class="p">,</span>
+        <span class="s2">"active"</span><span class="p">,</span>
+        <span class="s2">"Vbus"</span><span class="p">,</span>
+        <span class="s2">"Vmin"</span><span class="p">,</span>
+        <span class="s2">"Vmax"</span><span class="p">,</span>
+        <span class="s2">"Vnom"</span><span class="p">,</span>
+        <span class="s2">"cost_v"</span><span class="p">,</span>
+        <span class="s2">"angle_min"</span><span class="p">,</span>
+        <span class="s2">"angle_max"</span><span class="p">,</span>
+        <span class="s2">"bus_types"</span><span class="p">,</span>
+        <span class="s2">"is_p_controlled"</span><span class="p">,</span>
+        <span class="s2">"is_q_controlled"</span><span class="p">,</span>
+        <span class="s2">"is_vm_controlled"</span><span class="p">,</span>
+        <span class="s2">"is_va_controlled"</span><span class="p">,</span>
+        <span class="s2">"installed_power"</span><span class="p">,</span>
+        <span class="s2">"srap_available_power"</span><span class="p">,</span>
+        <span class="s2">"is_dc"</span><span class="p">,</span>
+        <span class="s2">"is_grounded"</span><span class="p">,</span>
+        <span class="s2">"areas"</span><span class="p">,</span>
+        <span class="s2">"substations"</span><span class="p">,</span>
+        <span class="s2">"q_shared_total"</span><span class="p">,</span>
+        <span class="s2">"q_fixed"</span><span class="p">,</span>
+        <span class="s2">"ii_fixed"</span><span class="p">,</span>
+        <span class="s2">"b_fixed"</span><span class="p">,</span>
+        <span class="s2">"original_idx"</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nbus</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Bus data arrays</span>
 <span class="sd">        :param nbus: number of buses</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nbus</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">nbus</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">idtag</span><span class="p">:</span> <span class="n">StrVec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">nbus</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">names</span><span class="p">:</span> <span class="n">StrVec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">nbus</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">)</span>
@@ -284,12 +284,12 @@
 
 <div class="viewcode-block" id="BusData.slice">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.bus_data.BusData.slice">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">slice</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">elm_idx</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;BusData&quot;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">slice</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">elm_idx</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"BusData"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Slice this data structure</span>
 <span class="sd">        :param elm_idx: array of bus indices</span>
 <span class="sd">        :return: instance of BusData</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="n">data</span> <span class="o">=</span> <span class="n">BusData</span><span class="p">(</span><span class="n">nbus</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">elm_idx</span><span class="p">))</span>
 
@@ -330,21 +330,21 @@
 <div class="viewcode-block" id="BusData.size">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.bus_data.BusData.size">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">size</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get size of the structure</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">nbus</span></div>
 
 
 <div class="viewcode-block" id="BusData.copy">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.bus_data.BusData.copy">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;BusData&quot;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"BusData"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Deep copy of this structure</span>
 <span class="sd">        :return: instance of BusData</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="n">data</span> <span class="o">=</span> <span class="n">BusData</span><span class="p">(</span><span class="n">nbus</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nbus</span><span class="p">)</span>
 
@@ -385,10 +385,10 @@
 <div class="viewcode-block" id="BusData.get_original_to_island_bus_dict">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.bus_data.BusData.get_original_to_island_bus_dict">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_original_to_island_bus_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Dictionary that relates the original bus index to the island bus index</span>
 <span class="sd">        :return: dict[original idx] -&gt; island index</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="p">{</span>
             <span class="nb">int</span><span class="p">(</span><span class="n">val</span><span class="p">):</span> <span class="n">idx</span> <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">original_idx</span><span class="p">)</span>
         <span class="p">}</span></div>
@@ -397,31 +397,31 @@
 <div class="viewcode-block" id="BusData.get_idtag_dict">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.bus_data.BusData.get_idtag_dict">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_idtag_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get dictionary of bus idtagd related to the island bus index</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="p">{</span><span class="n">idtag_val</span><span class="p">:</span> <span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">idtag_val</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">idtag</span><span class="p">)}</span></div>
 
 
 <div class="viewcode-block" id="BusData.compare">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.bus_data.BusData.compare">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">compare</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="s2">&quot;BusData&quot;</span><span class="p">,</span> <span class="n">tol</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">compare</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="s2">"BusData"</span><span class="p">,</span> <span class="n">tol</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Compare bus data arrays used by NumericalCircuit.compare().</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">compare_arr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">active</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">active</span><span class="p">,</span> <span class="n">tol</span><span class="p">,</span> <span class="s1">&#39;BusData&#39;</span><span class="p">,</span> <span class="s1">&#39;active&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
-        <span class="n">compare_arr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Vbus</span><span class="o">.</span><span class="n">real</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">Vbus</span><span class="o">.</span><span class="n">real</span><span class="p">,</span> <span class="n">tol</span><span class="p">,</span> <span class="s1">&#39;BusData&#39;</span><span class="p">,</span> <span class="s1">&#39;V0&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
-        <span class="n">compare_arr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">installed_power</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">installed_power</span><span class="p">,</span> <span class="n">tol</span><span class="p">,</span> <span class="s1">&#39;BusData&#39;</span><span class="p">,</span> <span class="s1">&#39;installed power&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
-        <span class="n">compare_arr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bus_types</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">bus_types</span><span class="p">,</span> <span class="n">tol</span><span class="p">,</span> <span class="s1">&#39;BusData&#39;</span><span class="p">,</span> <span class="s1">&#39;bus_types&#39;</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span></div>
+<span class="sd">        """</span>
+        <span class="n">compare_arr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">active</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">active</span><span class="p">,</span> <span class="n">tol</span><span class="p">,</span> <span class="s1">'BusData'</span><span class="p">,</span> <span class="s1">'active'</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
+        <span class="n">compare_arr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Vbus</span><span class="o">.</span><span class="n">real</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">Vbus</span><span class="o">.</span><span class="n">real</span><span class="p">,</span> <span class="n">tol</span><span class="p">,</span> <span class="s1">'BusData'</span><span class="p">,</span> <span class="s1">'V0'</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
+        <span class="n">compare_arr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">installed_power</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">installed_power</span><span class="p">,</span> <span class="n">tol</span><span class="p">,</span> <span class="s1">'BusData'</span><span class="p">,</span> <span class="s1">'installed power'</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
+        <span class="n">compare_arr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bus_types</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">bus_types</span><span class="p">,</span> <span class="n">tol</span><span class="p">,</span> <span class="s1">'BusData'</span><span class="p">,</span> <span class="s1">'bus_types'</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="BusData.propagate_controls">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.bus_data.BusData.propagate_controls">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">propagate_controls</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">chosen_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">other_idx</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Propagate the strongest control status of the reduced buses into ``chosen_idx``.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">propagate_controls</span><span class="p">(</span>
             <span class="n">chosen_idx</span><span class="o">=</span><span class="n">chosen_idx</span><span class="p">,</span>
             <span class="n">other_idx</span><span class="o">=</span><span class="n">other_idx</span><span class="p">,</span>
@@ -437,11 +437,11 @@
 <div class="viewcode-block" id="BusData.set_bus_mode">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.bus_data.BusData.set_bus_mode">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">set_bus_mode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="n">BusMode</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Set bus mode</span>
 <span class="sd">        :param idx: int</span>
 <span class="sd">        :param val: BusMode</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">bus_types</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span><span class="o">.</span><span class="n">value</span>
         <span class="n">is_dc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_dc</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
         <span class="n">is_grounded</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_grounded</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
@@ -551,7 +551,7 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">is_va_controlled</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
 
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Unexpected bus mode&quot;</span><span class="p">)</span></div>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Unexpected bus mode"</span><span class="p">)</span></div>
 
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
@@ -560,15 +560,15 @@
 <div class="viewcode-block" id="BusData.get_3ph_names">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.bus_data.BusData.get_3ph_names">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_3ph_names</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the 3-phase names</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># names3: StrVec = np.empty(self.nbus * 3, dtype=object)</span>
         <span class="c1"># for i in range(self.nbus):</span>
-        <span class="c1">#     names3[3 * i + 0] = self.names[i] + &quot;_A&quot;</span>
-        <span class="c1">#     names3[3 * i + 1] = self.names[i] + &quot;_B&quot;</span>
-        <span class="c1">#     names3[3 * i + 2] = self.names[i] + &quot;_C&quot;</span>
+        <span class="c1">#     names3[3 * i + 0] = self.names[i] + "_A"</span>
+        <span class="c1">#     names3[3 * i + 1] = self.names[i] + "_B"</span>
+        <span class="c1">#     names3[3 * i + 2] = self.names[i] + "_C"</span>
 
         <span class="n">names3</span><span class="p">:</span> <span class="n">StrVec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nbus</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nbus</span><span class="p">):</span>

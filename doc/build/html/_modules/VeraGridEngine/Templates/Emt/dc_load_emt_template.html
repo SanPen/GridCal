@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Templates.Emt.dc_load_emt_template &mdash; VeraGrid 6.7.13 documentation</title>
+  <title>VeraGridEngine.Templates.Emt.dc_load_emt_template &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=16fbabd8"></script>
+      <script src="../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -115,21 +115,21 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Devices.Dynamic.emt_template</span><span class="w"> </span><span class="kn">import</span> <span class="n">EmtModelTemplate</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Utils.Symbolic.block</span><span class="w"> </span><span class="kn">import</span> <span class="n">Block</span>
 
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 <span class="sd">EMT DC load template.</span>
 
 <span class="sd">The load follows the EMT injection convention used by the rest of the</span>
 <span class="sd">framework: current and power are positive when entering the bus. A consuming DC</span>
 <span class="sd">load therefore has negative ``i_dc`` and negative ``p_dc``.</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 
 <div class="viewcode-block" id="get_dc_load_emt_template">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Templates.Emt.html#VeraGridEngine.Templates.Emt.dc_load_emt_template.get_dc_load_emt_template">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_dc_load_emt_template</span><span class="p">(</span>
     <span class="n">vf</span><span class="p">:</span> <span class="n">VarFactory</span><span class="p">,</span>
-    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;dc_load_emt_template&quot;</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"dc_load_emt_template"</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EmtModelTemplate</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Build an EMT DC load model.</span>
 
 <span class="sd">    Device-backed initial values are provided through ``api_obj_mapping``.</span>
@@ -141,23 +141,23 @@
 
 <span class="sd">    Returns:</span>
 <span class="sd">        EmtModelTemplate with the DC load block</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">templ</span> <span class="o">=</span> <span class="n">EmtModelTemplate</span><span class="p">()</span>
     <span class="n">templ</span><span class="o">.</span><span class="n">tpe</span> <span class="o">=</span> <span class="n">DeviceType</span><span class="o">.</span><span class="n">LoadDevice</span>
     <span class="n">templ</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
 
-    <span class="n">p_dc_static</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Pl0&quot;</span><span class="p">)</span>
-    <span class="n">g_dc_static</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;g&quot;</span><span class="p">)</span>
+    <span class="n">p_dc_static</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">"Pl0"</span><span class="p">)</span>
+    <span class="n">g_dc_static</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">"g"</span><span class="p">)</span>
     <span class="n">block</span> <span class="o">=</span> <span class="n">Block</span><span class="p">()</span>
     <span class="c1"># DC power can receive scheduled events after its device-backed baseline is</span>
     <span class="c1"># resolved. Conductance remains a fixed physical parameter.</span>
     <span class="n">block</span><span class="o">.</span><span class="n">event_dict</span><span class="p">[</span><span class="n">p_dc_static</span><span class="p">]</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_const</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
     <span class="n">block</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="n">g_dc_static</span><span class="p">]</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_const</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
 
-    <span class="n">v_dc</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;v_dc&quot;</span><span class="p">,</span> <span class="n">reference</span><span class="o">=</span><span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">Vdc</span><span class="p">)</span>
+    <span class="n">v_dc</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">"v_dc"</span><span class="p">,</span> <span class="n">reference</span><span class="o">=</span><span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">Vdc</span><span class="p">)</span>
 
-    <span class="n">i_dc</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;i_dc&quot;</span><span class="p">,</span> <span class="n">reference</span><span class="o">=</span><span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">Idc</span><span class="p">)</span>
-    <span class="n">p_dc</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;p_dc&quot;</span><span class="p">,</span> <span class="n">reference</span><span class="o">=</span><span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">P</span><span class="p">)</span>
+    <span class="n">i_dc</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">"i_dc"</span><span class="p">,</span> <span class="n">reference</span><span class="o">=</span><span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">Idc</span><span class="p">)</span>
+    <span class="n">p_dc</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">"p_dc"</span><span class="p">,</span> <span class="n">reference</span><span class="o">=</span><span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">P</span><span class="p">)</span>
 
     <span class="n">block</span><span class="o">.</span><span class="n">in_vars</span> <span class="o">=</span> <span class="p">[</span><span class="n">v_dc</span><span class="p">]</span>
     <span class="n">block</span><span class="o">.</span><span class="n">algebraic_vars</span> <span class="o">=</span> <span class="p">[</span><span class="n">i_dc</span><span class="p">,</span> <span class="n">p_dc</span><span class="p">]</span>

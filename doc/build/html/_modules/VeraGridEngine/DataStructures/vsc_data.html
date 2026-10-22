@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.DataStructures.vsc_data &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.DataStructures.vsc_data &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/license.html">📜 License</a></li>
@@ -116,47 +117,47 @@
 <div class="viewcode-block" id="VscData">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.vsc_data.VscData">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">VscData</span><span class="p">(</span><span class="n">BranchParentData</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    VscData class provides a structured model for managing data related to</span>
 <span class="sd">    Voltage Source Converters (VSC) in power grid simulations.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;F_dcn&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;alpha1&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;alpha2&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;alpha3&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;control1_int&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;control2_int&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;fault_control_int&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;control1_val&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;control2_val&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;control1_val_min&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;control1_val_max&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;control1_val_droop&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;control1_droop_val&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;control1_droop_val_min&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;control1_droop_val_max&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;control2_val_min&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;control2_val_max&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;control2_val_droop&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;control2_droop_val&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;control2_droop_val_min&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;control2_droop_val_max&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;control1_bus_idx&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;control2_bus_idx&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;control1_branch_idx&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;control2_branch_idx&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;min_ac_voltage&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;ysvs&quot;</span><span class="p">,</span>
+        <span class="s2">"F_dcn"</span><span class="p">,</span>
+        <span class="s2">"alpha1"</span><span class="p">,</span>
+        <span class="s2">"alpha2"</span><span class="p">,</span>
+        <span class="s2">"alpha3"</span><span class="p">,</span>
+        <span class="s2">"control1_int"</span><span class="p">,</span>
+        <span class="s2">"control2_int"</span><span class="p">,</span>
+        <span class="s2">"fault_control_int"</span><span class="p">,</span>
+        <span class="s2">"control1_val"</span><span class="p">,</span>
+        <span class="s2">"control2_val"</span><span class="p">,</span>
+        <span class="s2">"control1_val_min"</span><span class="p">,</span>
+        <span class="s2">"control1_val_max"</span><span class="p">,</span>
+        <span class="s2">"control1_val_droop"</span><span class="p">,</span>
+        <span class="s2">"control1_droop_val"</span><span class="p">,</span>
+        <span class="s2">"control1_droop_val_min"</span><span class="p">,</span>
+        <span class="s2">"control1_droop_val_max"</span><span class="p">,</span>
+        <span class="s2">"control2_val_min"</span><span class="p">,</span>
+        <span class="s2">"control2_val_max"</span><span class="p">,</span>
+        <span class="s2">"control2_val_droop"</span><span class="p">,</span>
+        <span class="s2">"control2_droop_val"</span><span class="p">,</span>
+        <span class="s2">"control2_droop_val_min"</span><span class="p">,</span>
+        <span class="s2">"control2_droop_val_max"</span><span class="p">,</span>
+        <span class="s2">"control1_bus_idx"</span><span class="p">,</span>
+        <span class="s2">"control2_bus_idx"</span><span class="p">,</span>
+        <span class="s2">"control1_branch_idx"</span><span class="p">,</span>
+        <span class="s2">"control2_branch_idx"</span><span class="p">,</span>
+        <span class="s2">"min_ac_voltage"</span><span class="p">,</span>
+        <span class="s2">"ysvs"</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nelm</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">nbus</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Branch data arrays</span>
 <span class="sd">        :param nelm: number of elements</span>
 <span class="sd">        :param nbus: number of buses</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">BranchParentData</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nelm</span><span class="o">=</span><span class="n">nelm</span><span class="p">,</span> <span class="n">nbus</span><span class="o">=</span><span class="n">nbus</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">F_dcn</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nelm</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
@@ -196,15 +197,15 @@
 
 <div class="viewcode-block" id="VscData.slice">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.vsc_data.VscData.slice">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">slice</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">elm_idx</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">bus_idx</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">bus_map</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;VscData&quot;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">slice</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">elm_idx</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">bus_idx</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">bus_map</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"VscData"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Slice branch data by given indices</span>
 <span class="sd">        :param elm_idx: array of branch indices</span>
 <span class="sd">        :param bus_idx: array of bus indices</span>
 <span class="sd">        :param bus_map: map from bus index to branch index</span>
 <span class="sd">        :param logger: Logger</span>
 <span class="sd">        :return: new BranchData instance</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="n">data</span><span class="p">,</span> <span class="n">bus_map</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">slice</span><span class="p">(</span><span class="n">elm_idx</span><span class="p">,</span> <span class="n">bus_idx</span><span class="p">,</span> <span class="n">bus_map</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
         <span class="n">data</span><span class="p">:</span> <span class="n">VscData</span> <span class="o">=</span> <span class="n">data</span>
@@ -254,7 +255,7 @@
 
                 <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">control1_bus_idx</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
                     <span class="k">if</span> <span class="n">logger</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                        <span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Branch </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">names</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="si">}</span><span class="s2"> control1 bus is unreachable&quot;</span><span class="p">,</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Branch </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">names</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="si">}</span><span class="s2"> control1 bus is unreachable"</span><span class="p">,</span>
                                          <span class="n">value</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">control1_bus_idx</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
 
             <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">control2_bus_idx</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">&gt;</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
@@ -262,7 +263,7 @@
 
                 <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">control2_bus_idx</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
                     <span class="k">if</span> <span class="n">logger</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                        <span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Branch </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">names</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="si">}</span><span class="s2"> control2 bus is unreachable&quot;</span><span class="p">,</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Branch </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">names</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="si">}</span><span class="s2"> control2 bus is unreachable"</span><span class="p">,</span>
                                          <span class="n">value</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">control2_bus_idx</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
 
         <span class="k">return</span> <span class="n">data</span></div>
@@ -270,11 +271,11 @@
 
 <div class="viewcode-block" id="VscData.copy">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.vsc_data.VscData.copy">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;VscData&quot;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"VscData"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get a deep copy of this object</span>
 <span class="sd">        :return: new BranchData instance</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">data</span><span class="p">:</span> <span class="n">VscData</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 
         <span class="n">data</span><span class="o">.</span><span class="n">F_dcn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">F_dcn</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
@@ -316,10 +317,10 @@
 
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get vsc count</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">nelm</span></div>
 
 </pre></div>

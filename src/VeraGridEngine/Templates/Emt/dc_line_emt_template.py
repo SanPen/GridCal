@@ -23,8 +23,8 @@ def get_dc_line_emt_template(vf: VarFactory, name: str = "dc_line_emt_template")
     - one tiny fixed electrical time constant that regularizes the series branch
       and makes it behave like a near-resistive PI section.
 
-    With zero shunt capacitance the EMT steady state remains consistent with the
-    static PF model, while the code layout stays close to ``pi_line_emt_template``.
+    With zero shunt capacitance and no artificial shunt conductance, the EMT
+    steady state remains consistent with the static PF model, while the code layout stays close to ``pi_line_emt_template``.
 
     :param vf: Shared EMT variable factory.
     :param name: Symbolic model name.
@@ -38,7 +38,6 @@ def get_dc_line_emt_template(vf: VarFactory, name: str = "dc_line_emt_template")
 
     c0: Const = Const(0.0)
     tau_series: Const = Const(5.0e-5)
-    g_damp: Const = Const(1.0e-8)
     c_shunt: Const = Const(0.0)
 
     # ------------------------------------------------------------------
@@ -92,8 +91,8 @@ def get_dc_line_emt_template(vf: VarFactory, name: str = "dc_line_emt_template")
     block.algebraic_eqs = list([
         q_f - c_shunt * v_f_dc,
         q_t - c_shunt * v_t_dc,
-        i_f_dc - (i_ser + i_cap_f + g_damp * v_f_dc),
-        i_t_dc - (-i_ser + i_cap_t + g_damp * v_t_dc),
+        i_f_dc - (i_ser + i_cap_f),
+        i_t_dc - (-i_ser + i_cap_t),
         p_f - v_f_dc * i_f_dc,
         p_t - v_t_dc * i_t_dc,
     ])
@@ -121,7 +120,7 @@ def get_dc_line_emt_template(vf: VarFactory, name: str = "dc_line_emt_template")
         (q_t, c_shunt * v_t_dc),
         (i_cap_f, c0),
         (i_cap_t, c0),
-        (i_ser, i_f_dc - i_cap_f - g_damp * v_f_dc),
+        (i_ser, i_f_dc - i_cap_f),
         (p_f, v_f_dc * i_f_dc),
         (p_t, v_t_dc * i_t_dc),
     ])
@@ -147,6 +146,7 @@ def get_dc_line_with_power_input_emt_template(vf: VarFactory, name: str = "dc_li
     ``from_node -> shunt_from -> R3L3 -> v1 -> shunt_1 -> R2L2 -> v2 -> shunt_2 -> R1L1 -> shunt_to -> to_node``.
 
     The model therefore contains:
+
     - four shunt capacitors: one at ``from``, one at ``v1``, one at ``v2``, and one at ``to``,
     - three RL branches connected in series: ``R3L3``, ``R2L2``, then ``R1L1``,
     - one injected current at ``v1`` and one injected current at ``v2`` derived from ``Pext``
@@ -157,6 +157,7 @@ def get_dc_line_with_power_input_emt_template(vf: VarFactory, name: str = "dc_li
     ``i_n1 = Pext / v1`` and ``i_n2 = Pext / v2``.
 
     Important implementation detail:
+
     - ``state_vars``, ``state_eqs`` and ``diff_vars`` are kept in exactly the same order.
     - ``algebraic_vars`` and ``algebraic_eqs`` are also kept in exactly the same order.
 

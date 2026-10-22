@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Simulations.SmallSignalStabilityEmt.era_matrix_pencil_core &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Simulations.SmallSignalStabilityEmt.era_matrix_pencil_core &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/license.html">📜 License</a></li>
@@ -132,48 +133,48 @@
 <div class="viewcode-block" id="EraChannelScaling">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SmallSignalStabilityEmt.html#VeraGridEngine.Simulations.SmallSignalStabilityEmt.era_matrix_pencil_core.EraChannelScaling">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">EraChannelScaling</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Container for channel centering and scaling information.</span>
 
 <span class="sd">    The object is immutable after construction because residue rescaling must</span>
 <span class="sd">    use the exact same channel statistics that were used to normalize the data.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s1">&#39;_means&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_scales&#39;</span><span class="p">,</span>
+        <span class="s1">'_means'</span><span class="p">,</span>
+        <span class="s1">'_scales'</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">means</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">scales</span><span class="p">:</span> <span class="n">Vec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Store channel centering and scaling arrays.</span>
 
 <span class="sd">        :param means: Per-channel means.</span>
 <span class="sd">        :param scales: Per-channel standard deviations or robust scale factors.</span>
 <span class="sd">        :return: None.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_means</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">means</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_scales</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">scales</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
 
 <div class="viewcode-block" id="EraChannelScaling.get_means">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SmallSignalStabilityEmt.html#VeraGridEngine.Simulations.SmallSignalStabilityEmt.era_matrix_pencil_core.EraChannelScaling.get_means">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_means</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return the per-channel means.</span>
 
 <span class="sd">        :return: Mean vector.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_means</span></div>
 
 
 <div class="viewcode-block" id="EraChannelScaling.get_scales">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SmallSignalStabilityEmt.html#VeraGridEngine.Simulations.SmallSignalStabilityEmt.era_matrix_pencil_core.EraChannelScaling.get_scales">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_scales</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return the per-channel scaling vector.</span>
 
 <span class="sd">        :return: Scaling vector.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scales</span></div>
 </div>
 
@@ -182,22 +183,22 @@
 <div class="viewcode-block" id="EraBandSignal">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SmallSignalStabilityEmt.html#VeraGridEngine.Simulations.SmallSignalStabilityEmt.era_matrix_pencil_core.EraBandSignal">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">EraBandSignal</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Prepared sub-band signal and its numerical metadata.</span>
 
 <span class="sd">    The class holds all information required to solve one band independently so</span>
 <span class="sd">    the outer driver can later parallelize bands without shared mutable state.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s1">&#39;_time_data&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_signal_data&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_physical_scales&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_time_step&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_sampling_frequency_hz&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_low_hz&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_high_hz&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_decimation_factor&#39;</span><span class="p">,</span>
+        <span class="s1">'_time_data'</span><span class="p">,</span>
+        <span class="s1">'_signal_data'</span><span class="p">,</span>
+        <span class="s1">'_physical_scales'</span><span class="p">,</span>
+        <span class="s1">'_time_step'</span><span class="p">,</span>
+        <span class="s1">'_sampling_frequency_hz'</span><span class="p">,</span>
+        <span class="s1">'_low_hz'</span><span class="p">,</span>
+        <span class="s1">'_high_hz'</span><span class="p">,</span>
+        <span class="s1">'_decimation_factor'</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
@@ -209,7 +210,7 @@
                  <span class="n">low_hz</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
                  <span class="n">high_hz</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
                  <span class="n">decimation_factor</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Store one prepared sub-band record.</span>
 
 <span class="sd">        :param time_data: Time vector of the decimated band.</span>
@@ -221,7 +222,7 @@
 <span class="sd">        :param high_hz: Upper band edge.</span>
 <span class="sd">        :param decimation_factor: Effective integer decimation factor.</span>
 <span class="sd">        :return: None.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_time_data</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">time_data</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_signal_data</span><span class="p">:</span> <span class="n">Mat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">signal_data</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_physical_scales</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">physical_scales</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
@@ -234,88 +235,88 @@
 <div class="viewcode-block" id="EraBandSignal.get_time_data">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SmallSignalStabilityEmt.html#VeraGridEngine.Simulations.SmallSignalStabilityEmt.era_matrix_pencil_core.EraBandSignal.get_time_data">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_time_data</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return the decimated time vector.</span>
 
 <span class="sd">        :return: Time vector.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_time_data</span></div>
 
 
 <div class="viewcode-block" id="EraBandSignal.get_signal_data">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SmallSignalStabilityEmt.html#VeraGridEngine.Simulations.SmallSignalStabilityEmt.era_matrix_pencil_core.EraBandSignal.get_signal_data">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_signal_data</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Mat</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return the standardized band-limited observation matrix.</span>
 
 <span class="sd">        :return: Observation matrix.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_signal_data</span></div>
 
 
 <div class="viewcode-block" id="EraBandSignal.get_physical_scales">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SmallSignalStabilityEmt.html#VeraGridEngine.Simulations.SmallSignalStabilityEmt.era_matrix_pencil_core.EraBandSignal.get_physical_scales">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_physical_scales</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return the original per-channel scaling factors.</span>
 
 <span class="sd">        :return: Scaling vector.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_physical_scales</span></div>
 
 
 <div class="viewcode-block" id="EraBandSignal.get_time_step">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SmallSignalStabilityEmt.html#VeraGridEngine.Simulations.SmallSignalStabilityEmt.era_matrix_pencil_core.EraBandSignal.get_time_step">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_time_step</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return the effective decimated time step.</span>
 
 <span class="sd">        :return: Time step in seconds.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_time_step</span></div>
 
 
 <div class="viewcode-block" id="EraBandSignal.get_sampling_frequency_hz">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SmallSignalStabilityEmt.html#VeraGridEngine.Simulations.SmallSignalStabilityEmt.era_matrix_pencil_core.EraBandSignal.get_sampling_frequency_hz">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_sampling_frequency_hz</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return the effective decimated sampling frequency.</span>
 
 <span class="sd">        :return: Sampling frequency in Hz.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sampling_frequency_hz</span></div>
 
 
 <div class="viewcode-block" id="EraBandSignal.get_low_hz">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SmallSignalStabilityEmt.html#VeraGridEngine.Simulations.SmallSignalStabilityEmt.era_matrix_pencil_core.EraBandSignal.get_low_hz">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_low_hz</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return the lower band edge.</span>
 
 <span class="sd">        :return: Frequency in Hz.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_low_hz</span></div>
 
 
 <div class="viewcode-block" id="EraBandSignal.get_high_hz">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SmallSignalStabilityEmt.html#VeraGridEngine.Simulations.SmallSignalStabilityEmt.era_matrix_pencil_core.EraBandSignal.get_high_hz">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_high_hz</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return the upper band edge.</span>
 
 <span class="sd">        :return: Frequency in Hz.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_high_hz</span></div>
 
 
 <div class="viewcode-block" id="EraBandSignal.get_decimation_factor">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SmallSignalStabilityEmt.html#VeraGridEngine.Simulations.SmallSignalStabilityEmt.era_matrix_pencil_core.EraBandSignal.get_decimation_factor">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_decimation_factor</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return the effective integer decimation factor.</span>
 
 <span class="sd">        :return: Positive decimation factor.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_decimation_factor</span></div>
 </div>
 
@@ -324,18 +325,18 @@
 <div class="viewcode-block" id="EraSvdDecomposition">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SmallSignalStabilityEmt.html#VeraGridEngine.Simulations.SmallSignalStabilityEmt.era_matrix_pencil_core.EraSvdDecomposition">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">EraSvdDecomposition</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    SVD decomposition used by the TLS matrix pencil stage.</span>
 
 <span class="sd">    The object keeps the right singular vectors because the shift-invariant TLS</span>
 <span class="sd">    generalized eigenproblem is constructed from the right subspace.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s1">&#39;_singular_values&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_right_vectors&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_condition_number&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_truncated_backend&#39;</span><span class="p">,</span>
+        <span class="s1">'_singular_values'</span><span class="p">,</span>
+        <span class="s1">'_right_vectors'</span><span class="p">,</span>
+        <span class="s1">'_condition_number'</span><span class="p">,</span>
+        <span class="s1">'_truncated_backend'</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
@@ -343,7 +344,7 @@
                  <span class="n">right_vectors</span><span class="p">:</span> <span class="n">CxMat</span><span class="p">,</span>
                  <span class="n">condition_number</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
                  <span class="n">truncated_backend</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Store one SVD decomposition.</span>
 
 <span class="sd">        :param singular_values: Singular-value vector.</span>
@@ -351,7 +352,7 @@
 <span class="sd">        :param condition_number: Estimated condition number.</span>
 <span class="sd">        :param truncated_backend: Flag indicating a truncated backend.</span>
 <span class="sd">        :return: None.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_singular_values</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">singular_values</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_right_vectors</span><span class="p">:</span> <span class="n">CxMat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">right_vectors</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">complex128</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_condition_number</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">condition_number</span><span class="p">)</span>
@@ -360,44 +361,44 @@
 <div class="viewcode-block" id="EraSvdDecomposition.get_singular_values">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SmallSignalStabilityEmt.html#VeraGridEngine.Simulations.SmallSignalStabilityEmt.era_matrix_pencil_core.EraSvdDecomposition.get_singular_values">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_singular_values</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return the singular values.</span>
 
 <span class="sd">        :return: Singular-value vector.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_singular_values</span></div>
 
 
 <div class="viewcode-block" id="EraSvdDecomposition.get_right_vectors">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SmallSignalStabilityEmt.html#VeraGridEngine.Simulations.SmallSignalStabilityEmt.era_matrix_pencil_core.EraSvdDecomposition.get_right_vectors">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_right_vectors</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CxMat</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return the right singular vectors.</span>
 
 <span class="sd">        :return: Matrix whose columns are right singular vectors.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_right_vectors</span></div>
 
 
 <div class="viewcode-block" id="EraSvdDecomposition.get_condition_number">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SmallSignalStabilityEmt.html#VeraGridEngine.Simulations.SmallSignalStabilityEmt.era_matrix_pencil_core.EraSvdDecomposition.get_condition_number">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_condition_number</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return the condition-number estimate.</span>
 
 <span class="sd">        :return: Condition-number estimate.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_condition_number</span></div>
 
 
 <div class="viewcode-block" id="EraSvdDecomposition.get_truncated_backend">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SmallSignalStabilityEmt.html#VeraGridEngine.Simulations.SmallSignalStabilityEmt.era_matrix_pencil_core.EraSvdDecomposition.get_truncated_backend">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_truncated_backend</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return whether the decomposition came from a truncated backend.</span>
 
 <span class="sd">        :return: ``True`` when the decomposition is truncated.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_truncated_backend</span></div>
 </div>
 
@@ -406,25 +407,25 @@
 <div class="viewcode-block" id="EraBandResult">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SmallSignalStabilityEmt.html#VeraGridEngine.Simulations.SmallSignalStabilityEmt.era_matrix_pencil_core.EraBandResult">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">EraBandResult</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Result of one independent band extraction.</span>
 
 <span class="sd">    The object only stores one band outcome, which is the required shape for a</span>
 <span class="sd">    later multiprocessing or joblib-style parallel map.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s1">&#39;_poles_s&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_poles_z&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_residues&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_modal_energy&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_reconstruction_error&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_band_low_hz&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_band_high_hz&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_selected_order&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_observable_count&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_condition_number&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_successful&#39;</span><span class="p">,</span>
+        <span class="s1">'_poles_s'</span><span class="p">,</span>
+        <span class="s1">'_poles_z'</span><span class="p">,</span>
+        <span class="s1">'_residues'</span><span class="p">,</span>
+        <span class="s1">'_modal_energy'</span><span class="p">,</span>
+        <span class="s1">'_reconstruction_error'</span><span class="p">,</span>
+        <span class="s1">'_band_low_hz'</span><span class="p">,</span>
+        <span class="s1">'_band_high_hz'</span><span class="p">,</span>
+        <span class="s1">'_selected_order'</span><span class="p">,</span>
+        <span class="s1">'_observable_count'</span><span class="p">,</span>
+        <span class="s1">'_condition_number'</span><span class="p">,</span>
+        <span class="s1">'_successful'</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
@@ -439,7 +440,7 @@
                  <span class="n">observable_count</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
                  <span class="n">condition_number</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
                  <span class="n">successful</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Store one band-extraction result.</span>
 
 <span class="sd">        :param poles_s: Continuous-time poles.</span>
@@ -454,7 +455,7 @@
 <span class="sd">        :param condition_number: Condition-number estimate.</span>
 <span class="sd">        :param successful: ``True`` when the band produced valid modes.</span>
 <span class="sd">        :return: None.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_poles_s</span><span class="p">:</span> <span class="n">CxVec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">poles_s</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">complex128</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_poles_z</span><span class="p">:</span> <span class="n">CxVec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">poles_z</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">complex128</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_residues</span><span class="p">:</span> <span class="n">CxMat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">residues</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">complex128</span><span class="p">)</span>
@@ -470,121 +471,121 @@
 <div class="viewcode-block" id="EraBandResult.get_poles_s">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SmallSignalStabilityEmt.html#VeraGridEngine.Simulations.SmallSignalStabilityEmt.era_matrix_pencil_core.EraBandResult.get_poles_s">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_poles_s</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CxVec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return the continuous-time poles.</span>
 
 <span class="sd">        :return: Complex pole vector.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_poles_s</span></div>
 
 
 <div class="viewcode-block" id="EraBandResult.get_poles_z">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SmallSignalStabilityEmt.html#VeraGridEngine.Simulations.SmallSignalStabilityEmt.era_matrix_pencil_core.EraBandResult.get_poles_z">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_poles_z</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CxVec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return the discrete-time poles.</span>
 
 <span class="sd">        :return: Complex pole vector.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_poles_z</span></div>
 
 
 <div class="viewcode-block" id="EraBandResult.get_residues">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SmallSignalStabilityEmt.html#VeraGridEngine.Simulations.SmallSignalStabilityEmt.era_matrix_pencil_core.EraBandResult.get_residues">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_residues</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CxMat</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return the physical residue matrix.</span>
 
 <span class="sd">        :return: Complex residue matrix.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_residues</span></div>
 
 
 <div class="viewcode-block" id="EraBandResult.get_modal_energy">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SmallSignalStabilityEmt.html#VeraGridEngine.Simulations.SmallSignalStabilityEmt.era_matrix_pencil_core.EraBandResult.get_modal_energy">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_modal_energy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return the relative modal-energy vector.</span>
 
 <span class="sd">        :return: Modal-energy vector.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_modal_energy</span></div>
 
 
 <div class="viewcode-block" id="EraBandResult.get_reconstruction_error">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SmallSignalStabilityEmt.html#VeraGridEngine.Simulations.SmallSignalStabilityEmt.era_matrix_pencil_core.EraBandResult.get_reconstruction_error">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_reconstruction_error</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return the global reconstruction error.</span>
 
 <span class="sd">        :return: Relative reconstruction error.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reconstruction_error</span></div>
 
 
 <div class="viewcode-block" id="EraBandResult.get_band_low_hz">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SmallSignalStabilityEmt.html#VeraGridEngine.Simulations.SmallSignalStabilityEmt.era_matrix_pencil_core.EraBandResult.get_band_low_hz">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_band_low_hz</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return the lower source-band edge.</span>
 
 <span class="sd">        :return: Frequency in Hz.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_band_low_hz</span></div>
 
 
 <div class="viewcode-block" id="EraBandResult.get_band_high_hz">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SmallSignalStabilityEmt.html#VeraGridEngine.Simulations.SmallSignalStabilityEmt.era_matrix_pencil_core.EraBandResult.get_band_high_hz">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_band_high_hz</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return the upper source-band edge.</span>
 
 <span class="sd">        :return: Frequency in Hz.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_band_high_hz</span></div>
 
 
 <div class="viewcode-block" id="EraBandResult.get_selected_order">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SmallSignalStabilityEmt.html#VeraGridEngine.Simulations.SmallSignalStabilityEmt.era_matrix_pencil_core.EraBandResult.get_selected_order">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_selected_order</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return the selected subspace order.</span>
 
 <span class="sd">        :return: Integer order.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_selected_order</span></div>
 
 
 <div class="viewcode-block" id="EraBandResult.get_observable_count">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SmallSignalStabilityEmt.html#VeraGridEngine.Simulations.SmallSignalStabilityEmt.era_matrix_pencil_core.EraBandResult.get_observable_count">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_observable_count</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return how many channels participated in this band extraction.</span>
 
 <span class="sd">        :return: Number of observables.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_observable_count</span></div>
 
 
 <div class="viewcode-block" id="EraBandResult.get_condition_number">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SmallSignalStabilityEmt.html#VeraGridEngine.Simulations.SmallSignalStabilityEmt.era_matrix_pencil_core.EraBandResult.get_condition_number">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_condition_number</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return the band condition-number estimate.</span>
 
 <span class="sd">        :return: Condition-number estimate.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_condition_number</span></div>
 
 
 <div class="viewcode-block" id="EraBandResult.get_successful">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SmallSignalStabilityEmt.html#VeraGridEngine.Simulations.SmallSignalStabilityEmt.era_matrix_pencil_core.EraBandResult.get_successful">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_successful</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return whether the band produced valid modes.</span>
 
 <span class="sd">        :return: Success flag.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_successful</span></div>
 </div>
 
@@ -593,22 +594,22 @@
 <div class="viewcode-block" id="EraMergedModalData">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SmallSignalStabilityEmt.html#VeraGridEngine.Simulations.SmallSignalStabilityEmt.era_matrix_pencil_core.EraMergedModalData">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">EraMergedModalData</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Fused modal data produced after multi-band clustering.</span>
 
 <span class="sd">    The class feeds the final public result container while keeping all</span>
 <span class="sd">    intermediate fusion logic detached from the GUI-facing object.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s1">&#39;_poles_s&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_residues&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_modal_energy&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_reconstruction_errors&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_band_low_hz&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_band_high_hz&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_selected_orders&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_observable_count_per_mode&#39;</span><span class="p">,</span>
+        <span class="s1">'_poles_s'</span><span class="p">,</span>
+        <span class="s1">'_residues'</span><span class="p">,</span>
+        <span class="s1">'_modal_energy'</span><span class="p">,</span>
+        <span class="s1">'_reconstruction_errors'</span><span class="p">,</span>
+        <span class="s1">'_band_low_hz'</span><span class="p">,</span>
+        <span class="s1">'_band_high_hz'</span><span class="p">,</span>
+        <span class="s1">'_selected_orders'</span><span class="p">,</span>
+        <span class="s1">'_observable_count_per_mode'</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
@@ -620,7 +621,7 @@
                  <span class="n">band_high_hz</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
                  <span class="n">selected_orders</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span>
                  <span class="n">observable_count_per_mode</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Store fused modal data.</span>
 
 <span class="sd">        :param poles_s: Fused continuous-time poles.</span>
@@ -632,7 +633,7 @@
 <span class="sd">        :param selected_orders: Selected-order vector.</span>
 <span class="sd">        :param observable_count_per_mode: Observable-count vector.</span>
 <span class="sd">        :return: None.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_poles_s</span><span class="p">:</span> <span class="n">CxVec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">poles_s</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">complex128</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_residues</span><span class="p">:</span> <span class="n">CxMat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">residues</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">complex128</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_modal_energy</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">modal_energy</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
@@ -645,88 +646,88 @@
 <div class="viewcode-block" id="EraMergedModalData.get_poles_s">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SmallSignalStabilityEmt.html#VeraGridEngine.Simulations.SmallSignalStabilityEmt.era_matrix_pencil_core.EraMergedModalData.get_poles_s">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_poles_s</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CxVec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return the fused continuous-time poles.</span>
 
 <span class="sd">        :return: Complex pole vector.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_poles_s</span></div>
 
 
 <div class="viewcode-block" id="EraMergedModalData.get_residues">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SmallSignalStabilityEmt.html#VeraGridEngine.Simulations.SmallSignalStabilityEmt.era_matrix_pencil_core.EraMergedModalData.get_residues">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_residues</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CxMat</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return the fused physical residues.</span>
 
 <span class="sd">        :return: Complex residue matrix.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_residues</span></div>
 
 
 <div class="viewcode-block" id="EraMergedModalData.get_modal_energy">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SmallSignalStabilityEmt.html#VeraGridEngine.Simulations.SmallSignalStabilityEmt.era_matrix_pencil_core.EraMergedModalData.get_modal_energy">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_modal_energy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return the fused modal-energy vector.</span>
 
 <span class="sd">        :return: Modal-energy vector.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_modal_energy</span></div>
 
 
 <div class="viewcode-block" id="EraMergedModalData.get_reconstruction_errors">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SmallSignalStabilityEmt.html#VeraGridEngine.Simulations.SmallSignalStabilityEmt.era_matrix_pencil_core.EraMergedModalData.get_reconstruction_errors">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_reconstruction_errors</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return the reconstruction-error vector.</span>
 
 <span class="sd">        :return: Reconstruction-error vector.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reconstruction_errors</span></div>
 
 
 <div class="viewcode-block" id="EraMergedModalData.get_band_low_hz">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SmallSignalStabilityEmt.html#VeraGridEngine.Simulations.SmallSignalStabilityEmt.era_matrix_pencil_core.EraMergedModalData.get_band_low_hz">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_band_low_hz</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return the lower source-band vector.</span>
 
 <span class="sd">        :return: Lower-band vector.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_band_low_hz</span></div>
 
 
 <div class="viewcode-block" id="EraMergedModalData.get_band_high_hz">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SmallSignalStabilityEmt.html#VeraGridEngine.Simulations.SmallSignalStabilityEmt.era_matrix_pencil_core.EraMergedModalData.get_band_high_hz">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_band_high_hz</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return the upper source-band vector.</span>
 
 <span class="sd">        :return: Upper-band vector.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_band_high_hz</span></div>
 
 
 <div class="viewcode-block" id="EraMergedModalData.get_selected_orders">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SmallSignalStabilityEmt.html#VeraGridEngine.Simulations.SmallSignalStabilityEmt.era_matrix_pencil_core.EraMergedModalData.get_selected_orders">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_selected_orders</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">IntVec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return the selected-order vector.</span>
 
 <span class="sd">        :return: Integer vector of orders.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_selected_orders</span></div>
 
 
 <div class="viewcode-block" id="EraMergedModalData.get_observable_count_per_mode">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SmallSignalStabilityEmt.html#VeraGridEngine.Simulations.SmallSignalStabilityEmt.era_matrix_pencil_core.EraMergedModalData.get_observable_count_per_mode">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_observable_count_per_mode</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">IntVec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return the per-mode observable-count vector.</span>
 
 <span class="sd">        :return: Integer vector of observable counts.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_observable_count_per_mode</span></div>
 </div>
 
@@ -735,11 +736,11 @@
 <div class="viewcode-block" id="build_empty_complex_vector">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SmallSignalStabilityEmt.html#VeraGridEngine.Simulations.SmallSignalStabilityEmt.era_matrix_pencil_core.build_empty_complex_vector">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">build_empty_complex_vector</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">CxVec</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Build one empty complex vector.</span>
 
 <span class="sd">    :return: Empty complex vector.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">complex128</span><span class="p">)</span></div>
 
 
@@ -747,11 +748,11 @@
 <div class="viewcode-block" id="build_empty_float_vector">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SmallSignalStabilityEmt.html#VeraGridEngine.Simulations.SmallSignalStabilityEmt.era_matrix_pencil_core.build_empty_float_vector">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">build_empty_float_vector</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Build one empty real vector.</span>
 
 <span class="sd">    :return: Empty real vector.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span></div>
 
 
@@ -759,11 +760,11 @@
 <div class="viewcode-block" id="build_empty_complex_matrix">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SmallSignalStabilityEmt.html#VeraGridEngine.Simulations.SmallSignalStabilityEmt.era_matrix_pencil_core.build_empty_complex_matrix">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">build_empty_complex_matrix</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">CxMat</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Build one empty complex matrix.</span>
 
 <span class="sd">    :return: Empty complex matrix.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">complex128</span><span class="p">)</span></div>
 
 
@@ -771,14 +772,14 @@
 <div class="viewcode-block" id="create_empty_band_result">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SmallSignalStabilityEmt.html#VeraGridEngine.Simulations.SmallSignalStabilityEmt.era_matrix_pencil_core.create_empty_band_result">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">create_empty_band_result</span><span class="p">(</span><span class="n">observable_count</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">low_hz</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">high_hz</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EraBandResult</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Build an empty band result.</span>
 
 <span class="sd">    :param observable_count: Number of observables assigned to the band.</span>
 <span class="sd">    :param low_hz: Lower source-band edge.</span>
 <span class="sd">    :param high_hz: Upper source-band edge.</span>
 <span class="sd">    :return: Empty unsuccessful band result.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="n">EraBandResult</span><span class="p">(</span>
         <span class="n">poles_s</span><span class="o">=</span><span class="n">build_empty_complex_vector</span><span class="p">(),</span>
         <span class="n">poles_z</span><span class="o">=</span><span class="n">build_empty_complex_vector</span><span class="p">(),</span>
@@ -798,11 +799,11 @@
 <div class="viewcode-block" id="create_empty_merged_modal_data">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SmallSignalStabilityEmt.html#VeraGridEngine.Simulations.SmallSignalStabilityEmt.era_matrix_pencil_core.create_empty_merged_modal_data">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">create_empty_merged_modal_data</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">EraMergedModalData</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Build one empty fused modal container.</span>
 
 <span class="sd">    :return: Empty merged modal data.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="n">EraMergedModalData</span><span class="p">(</span>
         <span class="n">poles_s</span><span class="o">=</span><span class="n">build_empty_complex_vector</span><span class="p">(),</span>
         <span class="n">residues</span><span class="o">=</span><span class="n">build_empty_complex_matrix</span><span class="p">(),</span>
@@ -822,7 +823,7 @@
                                       <span class="n">offset</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
                                       <span class="n">amplitude</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
                                       <span class="n">decay_rate</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Evaluate the exponential DC-offset model used during detrending.</span>
 
 <span class="sd">    :param time_data: Time vector.</span>
@@ -830,7 +831,7 @@
 <span class="sd">    :param amplitude: Exponential amplitude term.</span>
 <span class="sd">    :param decay_rate: Positive decay rate.</span>
 <span class="sd">    :return: Model vector.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="n">offset</span> <span class="o">+</span> <span class="n">amplitude</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">decay_rate</span> <span class="o">*</span> <span class="n">time_data</span><span class="p">)</span></div>
 
 
@@ -838,12 +839,12 @@
 <div class="viewcode-block" id="convert_signal_to_2d">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SmallSignalStabilityEmt.html#VeraGridEngine.Simulations.SmallSignalStabilityEmt.era_matrix_pencil_core.convert_signal_to_2d">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">convert_signal_to_2d</span><span class="p">(</span><span class="n">y_data</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Mat</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Ensure that the input observation array is two-dimensional.</span>
 
 <span class="sd">    :param y_data: Raw observation array.</span>
 <span class="sd">    :return: Two-dimensional observation matrix.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">y_data</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
         <span class="n">signal_2d</span><span class="p">:</span> <span class="n">Mat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">y_data</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
@@ -856,13 +857,13 @@
 <div class="viewcode-block" id="infer_uniform_time_step">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SmallSignalStabilityEmt.html#VeraGridEngine.Simulations.SmallSignalStabilityEmt.era_matrix_pencil_core.infer_uniform_time_step">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">infer_uniform_time_step</span><span class="p">(</span><span class="n">time_data</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">fallback_step</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Infer the effective uniform time step from a possibly adaptive time grid.</span>
 
 <span class="sd">    :param time_data: Time vector.</span>
 <span class="sd">    :param fallback_step: Fallback value when the estimate is impossible.</span>
 <span class="sd">    :return: Effective time step.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">n_samples</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">time_data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 
     <span class="k">if</span> <span class="n">n_samples</span> <span class="o">&gt;=</span> <span class="mi">2</span><span class="p">:</span>
@@ -888,14 +889,14 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">resample_to_uniform_time_grid</span><span class="p">(</span><span class="n">time_data</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
                                   <span class="n">y_data</span><span class="p">:</span> <span class="n">Mat</span><span class="p">,</span>
                                   <span class="n">target_step</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Vec</span><span class="p">,</span> <span class="n">Mat</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Resample the observations onto a uniform time grid.</span>
 
 <span class="sd">    :param time_data: Original time vector.</span>
 <span class="sd">    :param y_data: Observation matrix.</span>
 <span class="sd">    :param target_step: Requested uniform time step.</span>
 <span class="sd">    :return: Tuple ``(uniform_time, uniform_signal)``.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">n_samples</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">time_data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
     <span class="n">n_channels</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">y_data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
 
@@ -947,14 +948,14 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">select_mimo_observables</span><span class="p">(</span><span class="n">y_data</span><span class="p">:</span> <span class="n">Mat</span><span class="p">,</span>
                             <span class="n">observable_names</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
                             <span class="n">maximum_observables</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Mat</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Select the observable channels used to build the MIMO Hankel matrix.</span>
 
 <span class="sd">    :param y_data: Observation matrix.</span>
 <span class="sd">    :param observable_names: Optional channel labels.</span>
 <span class="sd">    :param maximum_observables: Optional channel cap. ``0`` means all.</span>
 <span class="sd">    :return: Tuple ``(selected_signal, selected_names)``.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">n_channels</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">y_data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
     <span class="n">names_list</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
     <span class="n">channel_index</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
@@ -963,13 +964,13 @@
         <span class="k">if</span> <span class="n">observable_names</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">channel_index</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">observable_names</span><span class="p">):</span>
             <span class="n">names_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">observable_names</span><span class="p">[</span><span class="n">channel_index</span><span class="p">]))</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">names_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Observable </span><span class="si">{</span><span class="n">channel_index</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="n">names_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">'Observable </span><span class="si">{</span><span class="n">channel_index</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
 
         <span class="n">channel_index</span> <span class="o">+=</span> <span class="mi">1</span>
 
     <span class="k">if</span> <span class="mi">0</span> <span class="o">&lt;</span> <span class="n">maximum_observables</span> <span class="o">&lt;</span> <span class="n">n_channels</span><span class="p">:</span>
         <span class="n">variances</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">y_data</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
-        <span class="n">ranking_indices</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="o">-</span><span class="n">variances</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s2">&quot;stable&quot;</span><span class="p">)</span>
+        <span class="n">ranking_indices</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="o">-</span><span class="n">variances</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s2">"stable"</span><span class="p">)</span>
         <span class="n">selected_indices</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">ranking_indices</span><span class="p">[:</span><span class="n">maximum_observables</span><span class="p">])</span>
         <span class="n">selected_signal</span><span class="p">:</span> <span class="n">Mat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">y_data</span><span class="p">[:,</span> <span class="n">selected_indices</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
         <span class="n">selected_names</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
@@ -991,13 +992,13 @@
 <div class="viewcode-block" id="fit_exponential_dc_component">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SmallSignalStabilityEmt.html#VeraGridEngine.Simulations.SmallSignalStabilityEmt.era_matrix_pencil_core.fit_exponential_dc_component">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">fit_exponential_dc_component</span><span class="p">(</span><span class="n">time_data</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">signal_data</span><span class="p">:</span> <span class="n">Vec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Fit one decaying DC component to a single channel.</span>
 
 <span class="sd">    :param time_data: Time vector.</span>
 <span class="sd">    :param signal_data: One observation channel.</span>
 <span class="sd">    :return: Estimated exponential offset component.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">n_samples</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">signal_data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 
     <span class="k">if</span> <span class="n">n_samples</span> <span class="o">&gt;=</span> <span class="mi">6</span><span class="p">:</span>
@@ -1046,14 +1047,14 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">detrend_exponential_dc_offsets</span><span class="p">(</span><span class="n">time_data</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
                                    <span class="n">y_data</span><span class="p">:</span> <span class="n">Mat</span><span class="p">,</span>
                                    <span class="n">use_exponential_detrending</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Mat</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Remove the exponential DC component from every observation channel.</span>
 
 <span class="sd">    :param time_data: Time vector.</span>
 <span class="sd">    :param y_data: Observation matrix.</span>
 <span class="sd">    :param use_exponential_detrending: Enable flag.</span>
 <span class="sd">    :return: Detrended observation matrix.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">n_samples</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">y_data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
     <span class="n">n_channels</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">y_data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
     <span class="n">detrended_signal</span><span class="p">:</span> <span class="n">Mat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_samples</span><span class="p">,</span> <span class="n">n_channels</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
@@ -1077,12 +1078,12 @@
 <div class="viewcode-block" id="compute_channel_scaling">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SmallSignalStabilityEmt.html#VeraGridEngine.Simulations.SmallSignalStabilityEmt.era_matrix_pencil_core.compute_channel_scaling">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">compute_channel_scaling</span><span class="p">(</span><span class="n">y_data</span><span class="p">:</span> <span class="n">Mat</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EraChannelScaling</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute channel centering and scaling factors.</span>
 
 <span class="sd">    :param y_data: Observation matrix.</span>
 <span class="sd">    :return: Scaling object.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">channel_means</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">y_data</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
     <span class="n">channel_centered</span><span class="p">:</span> <span class="n">Mat</span> <span class="o">=</span> <span class="p">(</span><span class="n">y_data</span> <span class="o">-</span> <span class="n">channel_means</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
     <span class="n">channel_scales</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">channel_centered</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
@@ -1108,13 +1109,13 @@
 <div class="viewcode-block" id="standardize_signal_matrix">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SmallSignalStabilityEmt.html#VeraGridEngine.Simulations.SmallSignalStabilityEmt.era_matrix_pencil_core.standardize_signal_matrix">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">standardize_signal_matrix</span><span class="p">(</span><span class="n">y_data</span><span class="p">:</span> <span class="n">Mat</span><span class="p">,</span> <span class="n">scaling</span><span class="p">:</span> <span class="n">EraChannelScaling</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Mat</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Standardize all channels using the provided scaling object.</span>
 
 <span class="sd">    :param y_data: Observation matrix.</span>
 <span class="sd">    :param scaling: Centering and scaling information.</span>
 <span class="sd">    :return: Standardized observation matrix.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">means</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">=</span> <span class="n">scaling</span><span class="o">.</span><span class="n">get_means</span><span class="p">()</span>
     <span class="n">scales</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">=</span> <span class="n">scaling</span><span class="o">.</span><span class="n">get_scales</span><span class="p">()</span>
     <span class="n">standardized_signal</span><span class="p">:</span> <span class="n">Mat</span> <span class="o">=</span> <span class="p">((</span><span class="n">y_data</span> <span class="o">-</span> <span class="n">means</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span> <span class="o">/</span> <span class="n">scales</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
@@ -1126,13 +1127,13 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SmallSignalStabilityEmt.html#VeraGridEngine.Simulations.SmallSignalStabilityEmt.era_matrix_pencil_core.resolve_nominal_frequency_hz">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">resolve_nominal_frequency_hz</span><span class="p">(</span><span class="n">explicit_nominal_frequency_hz</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
                                  <span class="n">fallback_nominal_frequency_hz</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Resolve the nominal system frequency.</span>
 
 <span class="sd">    :param explicit_nominal_frequency_hz: User override.</span>
 <span class="sd">    :param fallback_nominal_frequency_hz: Grid-base fallback.</span>
 <span class="sd">    :return: Resolved nominal frequency in Hz.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">explicit_nominal_frequency_hz</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">:</span>
         <span class="n">nominal_frequency_hz</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">explicit_nominal_frequency_hz</span>
     <span class="k">else</span><span class="p">:</span>
@@ -1151,7 +1152,7 @@
                            <span class="n">numerator</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
                            <span class="n">denominator</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
                            <span class="n">use_zero_phase_filtering</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Mat</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Apply one transfer-function filter channel-by-channel.</span>
 
 <span class="sd">    :param y_data: Observation matrix.</span>
@@ -1159,7 +1160,7 @@
 <span class="sd">    :param denominator: Denominator coefficients.</span>
 <span class="sd">    :param use_zero_phase_filtering: Use zero-phase filtering when feasible.</span>
 <span class="sd">    :return: Filtered observation matrix.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">n_samples</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">y_data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
     <span class="n">n_channels</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">y_data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
     <span class="n">filtered_signal</span><span class="p">:</span> <span class="n">Mat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_samples</span><span class="p">,</span> <span class="n">n_channels</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
@@ -1187,14 +1188,14 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">apply_sos_filter_matrix</span><span class="p">(</span><span class="n">y_data</span><span class="p">:</span> <span class="n">Mat</span><span class="p">,</span>
                             <span class="n">sos_matrix</span><span class="p">:</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
                             <span class="n">use_zero_phase_filtering</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Mat</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Apply one SOS filter channel-by-channel.</span>
 
 <span class="sd">    :param y_data: Observation matrix.</span>
 <span class="sd">    :param sos_matrix: SOS filter coefficients.</span>
 <span class="sd">    :param use_zero_phase_filtering: Use zero-phase filtering when feasible.</span>
 <span class="sd">    :return: Filtered observation matrix.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">n_samples</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">y_data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
     <span class="n">n_channels</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">y_data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
     <span class="n">filtered_signal</span><span class="p">:</span> <span class="n">Mat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_samples</span><span class="p">,</span> <span class="n">n_channels</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
@@ -1225,7 +1226,7 @@
                               <span class="n">quality_factor</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
                               <span class="n">use_notch_filtering</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
                               <span class="n">use_zero_phase_filtering</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Mat</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Apply the strict fundamental notch filter.</span>
 
 <span class="sd">    :param y_data: Observation matrix.</span>
@@ -1235,7 +1236,7 @@
 <span class="sd">    :param use_notch_filtering: Enable flag.</span>
 <span class="sd">    :param use_zero_phase_filtering: Use zero-phase filtering when feasible.</span>
 <span class="sd">    :return: Filtered observation matrix.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">nyquist_hz</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">sampling_frequency_hz</span>
 
     <span class="k">if</span> <span class="n">use_notch_filtering</span> <span class="ow">and</span> <span class="mf">0.0</span> <span class="o">&lt;</span> <span class="n">nominal_frequency_hz</span> <span class="o">&lt;</span> <span class="n">nyquist_hz</span><span class="p">:</span>
@@ -1264,13 +1265,13 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SmallSignalStabilityEmt.html#VeraGridEngine.Simulations.SmallSignalStabilityEmt.era_matrix_pencil_core.sanitize_analysis_bands">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">sanitize_analysis_bands</span><span class="p">(</span><span class="n">bands</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">EraMatrixPencilBand</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
                             <span class="n">sampling_frequency_hz</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">EraMatrixPencilBand</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Sanitize analysis bands against the current Nyquist limit.</span>
 
 <span class="sd">    :param bands: Requested bands.</span>
 <span class="sd">    :param sampling_frequency_hz: Current sampling frequency.</span>
 <span class="sd">    :return: Sanitized tuple of bands.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">sanitized_list</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">EraMatrixPencilBand</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
     <span class="n">maximum_frequency_hz</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.45</span> <span class="o">*</span> <span class="n">sampling_frequency_hz</span>
     <span class="n">band_index</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
@@ -1321,7 +1322,7 @@
                            <span class="n">high_hz</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
                            <span class="n">sampling_frequency_hz</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
                            <span class="n">filter_order</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Design the real-valued sub-band filter.</span>
 
 <span class="sd">    :param low_hz: Lower band edge.</span>
@@ -1329,7 +1330,7 @@
 <span class="sd">    :param sampling_frequency_hz: Sampling frequency.</span>
 <span class="sd">    :param filter_order: Butterworth order.</span>
 <span class="sd">    :return: SOS matrix or ``None`` when the design is impossible.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">nyquist_hz</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">sampling_frequency_hz</span>
     <span class="n">safe_high_hz</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">high_hz</span><span class="p">,</span> <span class="mf">0.98</span> <span class="o">*</span> <span class="n">nyquist_hz</span><span class="p">)</span>
 
@@ -1338,13 +1339,13 @@
             <span class="k">if</span> <span class="n">low_hz</span> <span class="o">&gt;</span> <span class="mf">0.5</span><span class="p">:</span>
                 <span class="n">normalized_band</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">low_hz</span> <span class="o">/</span> <span class="n">nyquist_hz</span><span class="p">,</span> <span class="n">safe_high_hz</span> <span class="o">/</span> <span class="n">nyquist_hz</span><span class="p">)</span>
                 <span class="n">sos_matrix</span><span class="p">:</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span>
-                    <span class="n">signal</span><span class="o">.</span><span class="n">butter</span><span class="p">(</span><span class="n">filter_order</span><span class="p">,</span> <span class="n">normalized_band</span><span class="p">,</span> <span class="n">btype</span><span class="o">=</span><span class="s1">&#39;bandpass&#39;</span><span class="p">,</span> <span class="n">output</span><span class="o">=</span><span class="s1">&#39;sos&#39;</span><span class="p">),</span>
+                    <span class="n">signal</span><span class="o">.</span><span class="n">butter</span><span class="p">(</span><span class="n">filter_order</span><span class="p">,</span> <span class="n">normalized_band</span><span class="p">,</span> <span class="n">btype</span><span class="o">=</span><span class="s1">'bandpass'</span><span class="p">,</span> <span class="n">output</span><span class="o">=</span><span class="s1">'sos'</span><span class="p">),</span>
                     <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span>
                 <span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">normalized_cutoff</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">safe_high_hz</span> <span class="o">/</span> <span class="n">nyquist_hz</span>
                 <span class="n">sos_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span>
-                    <span class="n">signal</span><span class="o">.</span><span class="n">butter</span><span class="p">(</span><span class="n">filter_order</span><span class="p">,</span> <span class="n">normalized_cutoff</span><span class="p">,</span> <span class="n">btype</span><span class="o">=</span><span class="s1">&#39;lowpass&#39;</span><span class="p">,</span> <span class="n">output</span><span class="o">=</span><span class="s1">&#39;sos&#39;</span><span class="p">),</span>
+                    <span class="n">signal</span><span class="o">.</span><span class="n">butter</span><span class="p">(</span><span class="n">filter_order</span><span class="p">,</span> <span class="n">normalized_cutoff</span><span class="p">,</span> <span class="n">btype</span><span class="o">=</span><span class="s1">'lowpass'</span><span class="p">,</span> <span class="n">output</span><span class="o">=</span><span class="s1">'sos'</span><span class="p">),</span>
                     <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span>
                 <span class="p">)</span>
         <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
@@ -1364,7 +1365,7 @@
                               <span class="n">decimation_safety_factor</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
                               <span class="n">manual_cap_factor</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
                               <span class="n">minimum_samples_per_band</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute the safe integer decimation factor for one band.</span>
 
 <span class="sd">    :param n_samples: Number of input samples.</span>
@@ -1374,7 +1375,7 @@
 <span class="sd">    :param manual_cap_factor: Legacy manual cap.</span>
 <span class="sd">    :param minimum_samples_per_band: Minimum samples allowed after decimation.</span>
 <span class="sd">    :return: Integer decimation factor.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">target_sampling_frequency_hz</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">decimation_safety_factor</span> <span class="o">*</span> <span class="n">band_high_hz</span><span class="p">,</span> <span class="mf">2.5</span> <span class="o">*</span> <span class="n">band_high_hz</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">target_sampling_frequency_hz</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">:</span>
@@ -1412,7 +1413,7 @@
                         <span class="n">scaling</span><span class="p">:</span> <span class="n">EraChannelScaling</span><span class="p">,</span>
                         <span class="n">band</span><span class="p">:</span> <span class="n">EraMatrixPencilBand</span><span class="p">,</span>
                         <span class="n">era_options</span><span class="p">:</span> <span class="n">EraMatrixPencilOptions</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EraBandSignal</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Build one filtered and decimated sub-band record.</span>
 
 <span class="sd">    :param time_data: Uniform time vector.</span>
@@ -1421,7 +1422,7 @@
 <span class="sd">    :param band: Requested analysis band.</span>
 <span class="sd">    :param era_options: Matrix-pencil options.</span>
 <span class="sd">    :return: Prepared band record.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">input_time_step</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">infer_uniform_time_step</span><span class="p">(</span><span class="n">time_data</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
     <span class="n">input_sampling_frequency_hz</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="n">input_time_step</span>
     <span class="n">low_hz</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">band</span><span class="o">.</span><span class="n">get_low_hz</span><span class="p">())</span>
@@ -1499,13 +1500,13 @@
 <div class="viewcode-block" id="compute_block_rows">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SmallSignalStabilityEmt.html#VeraGridEngine.Simulations.SmallSignalStabilityEmt.era_matrix_pencil_core.compute_block_rows">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">compute_block_rows</span><span class="p">(</span><span class="n">n_samples</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">era_options</span><span class="p">:</span> <span class="n">EraMatrixPencilOptions</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute the block-Hankel depth.</span>
 
 <span class="sd">    :param n_samples: Number of band samples.</span>
 <span class="sd">    :param era_options: Matrix-pencil options.</span>
 <span class="sd">    :return: Number of block rows.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">ratio_based_rows</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">era_options</span><span class="o">.</span><span class="n">get_block_rows_ratio</span><span class="p">()</span> <span class="o">*</span> <span class="n">n_samples</span><span class="p">))</span>
     <span class="n">maximum_allowed_rows</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">n_samples</span> <span class="o">-</span> <span class="mi">2</span><span class="p">)</span>
     <span class="n">candidate_rows</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">ratio_based_rows</span><span class="p">,</span> <span class="n">maximum_allowed_rows</span><span class="p">)</span>
@@ -1525,13 +1526,13 @@
 <div class="viewcode-block" id="build_block_hankel_matrix">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SmallSignalStabilityEmt.html#VeraGridEngine.Simulations.SmallSignalStabilityEmt.era_matrix_pencil_core.build_block_hankel_matrix">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">build_block_hankel_matrix</span><span class="p">(</span><span class="n">signal_data</span><span class="p">:</span> <span class="n">Mat</span><span class="p">,</span> <span class="n">block_rows</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CxMat</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Build the MIMO block-Hankel matrix.</span>
 
 <span class="sd">    :param signal_data: Band-limited MIMO observation matrix.</span>
 <span class="sd">    :param block_rows: Number of block rows.</span>
 <span class="sd">    :return: Complex block-Hankel matrix.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="mi">1</span> <span class="o">&lt;=</span> <span class="n">block_rows</span> <span class="o">&lt;=</span> <span class="n">signal_data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
         <span class="n">windows</span> <span class="o">=</span> <span class="n">sliding_window_view</span><span class="p">(</span><span class="n">signal_data</span><span class="p">,</span> <span class="n">window_shape</span><span class="o">=</span><span class="n">block_rows</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
         <span class="n">windows_reordered</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">windows</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
@@ -1550,14 +1551,14 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">build_forward_backward_hankel_matrix</span><span class="p">(</span><span class="n">signal_data</span><span class="p">:</span> <span class="n">Mat</span><span class="p">,</span>
                                          <span class="n">block_rows</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
                                          <span class="n">use_forward_backward</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CxMat</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Build the forward-backward block-Hankel matrix.</span>
 
 <span class="sd">    :param signal_data: Band-limited MIMO observation matrix.</span>
 <span class="sd">    :param block_rows: Number of block rows.</span>
 <span class="sd">    :param use_forward_backward: Enable flag.</span>
 <span class="sd">    :return: Combined forward-backward Hankel matrix.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">forward_hankel</span><span class="p">:</span> <span class="n">CxMat</span> <span class="o">=</span> <span class="n">build_block_hankel_matrix</span><span class="p">(</span><span class="n">signal_data</span><span class="p">,</span> <span class="n">block_rows</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">use_forward_backward</span><span class="p">:</span>
@@ -1578,12 +1579,12 @@
 <div class="viewcode-block" id="build_full_svd_decomposition">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SmallSignalStabilityEmt.html#VeraGridEngine.Simulations.SmallSignalStabilityEmt.era_matrix_pencil_core.build_full_svd_decomposition">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">build_full_svd_decomposition</span><span class="p">(</span><span class="n">hankel_matrix</span><span class="p">:</span> <span class="n">CxMat</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EraSvdDecomposition</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Build one decomposition from a dense full SVD.</span>
 
 <span class="sd">    :param hankel_matrix: Hankel matrix.</span>
 <span class="sd">    :return: SVD decomposition object.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">full_u</span><span class="p">:</span> <span class="n">CxMat</span>
     <span class="n">full_s</span><span class="p">:</span> <span class="n">Vec</span>
     <span class="n">full_vh</span><span class="p">:</span> <span class="n">CxMat</span>
@@ -1606,18 +1607,18 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SmallSignalStabilityEmt.html#VeraGridEngine.Simulations.SmallSignalStabilityEmt.era_matrix_pencil_core.compute_svd_decomposition">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">compute_svd_decomposition</span><span class="p">(</span><span class="n">hankel_matrix</span><span class="p">:</span> <span class="n">CxMat</span><span class="p">,</span>
                               <span class="n">era_options</span><span class="p">:</span> <span class="n">EraMatrixPencilOptions</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EraSvdDecomposition</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute the Hankel SVD using the configured backend.</span>
 
 <span class="sd">    :param hankel_matrix: Forward-backward Hankel matrix.</span>
 <span class="sd">    :param era_options: Matrix-pencil options.</span>
 <span class="sd">    :return: SVD decomposition object.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">min_dimension</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">hankel_matrix</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">hankel_matrix</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
 
     <span class="k">if</span> <span class="n">min_dimension</span> <span class="o">&gt;=</span> <span class="mi">2</span><span class="p">:</span>
         <span class="n">use_truncated_backend</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="n">era_options</span><span class="o">.</span><span class="n">get_svd_solver</span><span class="p">()</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;TruncatedRandomized&#39;</span> <span class="ow">and</span> <span class="n">min_dimension</span> <span class="o">&gt;</span> <span class="nb">max</span><span class="p">(</span><span class="mi">64</span><span class="p">,</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">era_options</span><span class="o">.</span><span class="n">get_max_modes</span><span class="p">())</span>
+            <span class="n">era_options</span><span class="o">.</span><span class="n">get_svd_solver</span><span class="p">()</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s1">'TruncatedRandomized'</span> <span class="ow">and</span> <span class="n">min_dimension</span> <span class="o">&gt;</span> <span class="nb">max</span><span class="p">(</span><span class="mi">64</span><span class="p">,</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">era_options</span><span class="o">.</span><span class="n">get_max_modes</span><span class="p">())</span>
         <span class="p">)</span>
 
         <span class="k">if</span> <span class="n">use_truncated_backend</span><span class="p">:</span>
@@ -1634,7 +1635,7 @@
                 <span class="p">)</span>
                 <span class="k">del</span> <span class="n">svd_u_matrix</span>
 
-                <span class="n">sort_indices</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="o">-</span><span class="n">singular_values</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s2">&quot;stable&quot;</span><span class="p">)</span>
+                <span class="n">sort_indices</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="o">-</span><span class="n">singular_values</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s2">"stable"</span><span class="p">)</span>
                 <span class="n">singular_values_sorted</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">singular_values</span><span class="p">[</span><span class="n">sort_indices</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
                 <span class="n">right_vectors_sorted</span><span class="p">:</span> <span class="n">CxMat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">vh_matrix</span><span class="p">[</span><span class="n">sort_indices</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">conj</span><span class="p">()</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">complex128</span><span class="p">)</span>
                 <span class="n">smallest_sigma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">singular_values_sorted</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]),</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span><span class="p">))</span>
@@ -1665,13 +1666,13 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SmallSignalStabilityEmt.html#VeraGridEngine.Simulations.SmallSignalStabilityEmt.era_matrix_pencil_core.compute_information_criterion_scores">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">compute_information_criterion_scores</span><span class="p">(</span><span class="n">singular_values</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
                                          <span class="n">n_snapshots</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Vec</span><span class="p">,</span> <span class="n">Vec</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute MDL and AIC order-selection scores.</span>
 
 <span class="sd">    :param singular_values: Singular-value vector.</span>
 <span class="sd">    :param n_snapshots: Number of Hankel columns.</span>
 <span class="sd">    :return: Tuple ``(mdl_scores, aic_scores)``.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">n_values</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">singular_values</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
     <span class="n">mdl_scores</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">n_values</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
     <span class="n">aic_scores</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">n_values</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
@@ -1716,14 +1717,14 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">select_model_order</span><span class="p">(</span><span class="n">decomposition</span><span class="p">:</span> <span class="n">EraSvdDecomposition</span><span class="p">,</span>
                        <span class="n">n_snapshots</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
                        <span class="n">era_options</span><span class="p">:</span> <span class="n">EraMatrixPencilOptions</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Select the effective signal subspace order.</span>
 
 <span class="sd">    :param decomposition: SVD decomposition.</span>
 <span class="sd">    :param n_snapshots: Number of Hankel columns.</span>
 <span class="sd">    :param era_options: Matrix-pencil options.</span>
 <span class="sd">    :return: Selected model order.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">singular_values</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">=</span> <span class="n">decomposition</span><span class="o">.</span><span class="n">get_singular_values</span><span class="p">()</span>
     <span class="n">n_values</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">singular_values</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 
@@ -1786,13 +1787,13 @@
 <div class="viewcode-block" id="build_square_tls_pencil">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SmallSignalStabilityEmt.html#VeraGridEngine.Simulations.SmallSignalStabilityEmt.era_matrix_pencil_core.build_square_tls_pencil">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">build_square_tls_pencil</span><span class="p">(</span><span class="n">right_vectors</span><span class="p">:</span> <span class="n">CxMat</span><span class="p">,</span> <span class="n">selected_order</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">CxMat</span><span class="p">,</span> <span class="n">CxMat</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Build the square TLS pencil used by the generalized eigenproblem.</span>
 
 <span class="sd">    :param right_vectors: Right singular vectors as columns.</span>
 <span class="sd">    :param selected_order: Effective model order.</span>
 <span class="sd">    :return: Tuple ``(V2, V1)`` of square matrices.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">n_rows</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">right_vectors</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
     <span class="n">order</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">selected_order</span><span class="p">,</span> <span class="n">right_vectors</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
 
@@ -1804,7 +1805,7 @@
         <span class="c1"># transforming it into a square pencil suitable for the QZ algorithm.</span>
         <span class="n">q_matrix</span><span class="p">:</span> <span class="n">CxMat</span>
         <span class="n">r_matrix</span><span class="p">:</span> <span class="n">CxMat</span>
-        <span class="n">q_matrix</span><span class="p">,</span> <span class="n">r_matrix</span> <span class="o">=</span> <span class="n">la</span><span class="o">.</span><span class="n">qr</span><span class="p">(</span><span class="n">tall_v1</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;economic&#39;</span><span class="p">)</span>
+        <span class="n">q_matrix</span><span class="p">,</span> <span class="n">r_matrix</span> <span class="o">=</span> <span class="n">la</span><span class="o">.</span><span class="n">qr</span><span class="p">(</span><span class="n">tall_v1</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">'economic'</span><span class="p">)</span>
         <span class="n">reduced_v2</span><span class="p">:</span> <span class="n">CxMat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">q_matrix</span><span class="o">.</span><span class="n">conj</span><span class="p">()</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">tall_v2</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">complex128</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">reduced_v2</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">r_matrix</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">complex128</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
@@ -1815,12 +1816,12 @@
 <div class="viewcode-block" id="build_candidate_orders">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SmallSignalStabilityEmt.html#VeraGridEngine.Simulations.SmallSignalStabilityEmt.era_matrix_pencil_core.build_candidate_orders">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">build_candidate_orders</span><span class="p">(</span><span class="n">maximum_order</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">IntVec</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Build the candidate orders explored inside one band.</span>
 
 <span class="sd">    :param maximum_order: Upper-order bound supplied by the IC stage.</span>
 <span class="sd">    :return: Integer vector of candidate orders.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">maximum_order</span> <span class="o">&gt;=</span> <span class="mi">2</span><span class="p">:</span>
         <span class="n">candidate_list</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
         <span class="n">candidate_order</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span>
@@ -1849,14 +1850,14 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">reject_notched_nominal_poles</span><span class="p">(</span><span class="n">z_poles</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span>
                                  <span class="n">s_poles</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span>
                                  <span class="n">era_options</span><span class="p">:</span> <span class="n">EraMatrixPencilOptions</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">CxVec</span><span class="p">,</span> <span class="n">CxVec</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Remove poles that remain too close to the notched nominal frequency.</span>
 
 <span class="sd">    :param z_poles: Discrete-time poles.</span>
 <span class="sd">    :param s_poles: Continuous-time poles.</span>
 <span class="sd">    :param era_options: Matrix-pencil options.</span>
 <span class="sd">    :return: Tuple ``(filtered_z_poles, filtered_s_poles)``.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">nominal_frequency_hz</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">era_options</span><span class="o">.</span><span class="n">get_nominal_frequency_hz</span><span class="p">()</span>
 
     <span class="k">if</span> <span class="n">era_options</span><span class="o">.</span><span class="n">get_use_notch_filtering</span><span class="p">()</span> <span class="ow">and</span> <span class="n">nominal_frequency_hz</span> <span class="o">&gt;</span> <span class="mf">0.0</span> <span class="ow">and</span> <span class="n">s_poles</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
@@ -1883,14 +1884,14 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">reject_excessively_fast_poles</span><span class="p">(</span><span class="n">z_poles</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span>
                                   <span class="n">s_poles</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span>
                                   <span class="n">record_duration_s</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">CxVec</span><span class="p">,</span> <span class="n">CxVec</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Reject poles whose real part is too extreme for the available record length.</span>
 
 <span class="sd">    :param z_poles: Discrete-time poles.</span>
 <span class="sd">    :param s_poles: Continuous-time poles.</span>
 <span class="sd">    :param record_duration_s: Available record length in seconds.</span>
 <span class="sd">    :return: Tuple ``(filtered_z_poles, filtered_s_poles)``.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">record_duration_s</span> <span class="o">&gt;</span> <span class="mf">0.0</span> <span class="ow">and</span> <span class="n">s_poles</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
         <span class="n">maximum_abs_real_part</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">15.0</span> <span class="o">/</span> <span class="n">record_duration_s</span>
         <span class="n">keep_mask</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="n">s_poles</span><span class="p">))</span> <span class="o">&lt;=</span> <span class="n">maximum_abs_real_part</span>
@@ -1917,7 +1918,7 @@
                                <span class="n">era_options</span><span class="p">:</span> <span class="n">EraMatrixPencilOptions</span><span class="p">,</span>
                                <span class="n">decomposition</span><span class="p">:</span> <span class="n">EraSvdDecomposition</span><span class="p">,</span>
                                <span class="n">candidate_order</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EraBandResult</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Solve one band for one explicit candidate order.</span>
 
 <span class="sd">    :param band_signal: Prepared band record.</span>
@@ -1925,7 +1926,7 @@
 <span class="sd">    :param decomposition: Band SVD decomposition.</span>
 <span class="sd">    :param candidate_order: Explicit candidate order.</span>
 <span class="sd">    :return: One band result for that candidate order.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">signal_data</span><span class="p">:</span> <span class="n">Mat</span> <span class="o">=</span> <span class="n">band_signal</span><span class="o">.</span><span class="n">get_signal_data</span><span class="p">()</span>
     <span class="n">observable_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">signal_data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
     <span class="n">low_hz</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">band_signal</span><span class="o">.</span><span class="n">get_low_hz</span><span class="p">()</span>
@@ -2070,12 +2071,12 @@
 <div class="viewcode-block" id="compute_band_result_score">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SmallSignalStabilityEmt.html#VeraGridEngine.Simulations.SmallSignalStabilityEmt.era_matrix_pencil_core.compute_band_result_score">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">compute_band_result_score</span><span class="p">(</span><span class="n">band_result</span><span class="p">:</span> <span class="n">EraBandResult</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute the selection score used to choose the best candidate order.</span>
 
 <span class="sd">    :param band_result: Candidate band result.</span>
 <span class="sd">    :return: Scalar score. Larger is better.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">poles_s</span><span class="p">:</span> <span class="n">CxVec</span> <span class="o">=</span> <span class="n">band_result</span><span class="o">.</span><span class="n">get_poles_s</span><span class="p">()</span>
     <span class="n">modal_energy</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">=</span> <span class="n">band_result</span><span class="o">.</span><span class="n">get_modal_energy</span><span class="p">()</span>
 
@@ -2093,13 +2094,13 @@
 <div class="viewcode-block" id="solve_tls_gevp">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SmallSignalStabilityEmt.html#VeraGridEngine.Simulations.SmallSignalStabilityEmt.era_matrix_pencil_core.solve_tls_gevp">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">solve_tls_gevp</span><span class="p">(</span><span class="n">v2_matrix</span><span class="p">:</span> <span class="n">CxMat</span><span class="p">,</span> <span class="n">v1_matrix</span><span class="p">:</span> <span class="n">CxMat</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CxVec</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Solve the TLS generalized eigenvalue problem with a QZ-based backend.</span>
 
 <span class="sd">    :param v2_matrix: Upper pencil matrix.</span>
 <span class="sd">    :param v1_matrix: Lower pencil matrix.</span>
 <span class="sd">    :return: Discrete-time pole vector.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">matrix_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">v1_matrix</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 
     <span class="k">if</span> <span class="n">matrix_size</span> <span class="o">&gt;=</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">v2_matrix</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="n">v1_matrix</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>
@@ -2129,12 +2130,12 @@
 <div class="viewcode-block" id="filter_discrete_poles">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SmallSignalStabilityEmt.html#VeraGridEngine.Simulations.SmallSignalStabilityEmt.era_matrix_pencil_core.filter_discrete_poles">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">filter_discrete_poles</span><span class="p">(</span><span class="n">z_poles</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CxVec</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Remove obviously invalid discrete-time poles.</span>
 
 <span class="sd">    :param z_poles: Raw generalized eigenvalues.</span>
 <span class="sd">    :return: Sanitized discrete pole vector.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">z_poles</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
         <span class="n">finite_mask</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="n">z_poles</span><span class="p">))</span> <span class="o">&amp;</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">imag</span><span class="p">(</span><span class="n">z_poles</span><span class="p">))</span>
         <span class="n">magnitude_mask</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">z_poles</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">1e-14</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">z_poles</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e8</span><span class="p">)</span>
@@ -2158,7 +2159,7 @@
                                      <span class="n">low_hz</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
                                      <span class="n">high_hz</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
                                      <span class="n">principal_log_tolerance_hz</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">CxVec</span><span class="p">,</span> <span class="n">CxVec</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Map discrete-time poles to continuous time and validate the principal log.</span>
 
 <span class="sd">    :param z_poles: Discrete-time poles.</span>
@@ -2167,7 +2168,7 @@
 <span class="sd">    :param high_hz: Upper band edge.</span>
 <span class="sd">    :param principal_log_tolerance_hz: Validation tolerance in Hz.</span>
 <span class="sd">    :return: Tuple ``(valid_z_poles, valid_s_poles)``.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">z_poles</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">time_step</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">:</span>
         <span class="n">s_poles</span><span class="p">:</span> <span class="n">CxVec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">z_poles</span><span class="p">)</span> <span class="o">/</span> <span class="n">time_step</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">complex128</span><span class="p">)</span>
         <span class="n">frequencies_hz</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">imag</span><span class="p">(</span><span class="n">s_poles</span><span class="p">))</span> <span class="o">/</span> <span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
@@ -2200,7 +2201,7 @@
                                  <span class="n">s_poles</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span>
                                  <span class="n">frequency_tolerance_hz</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
                                  <span class="n">real_part_tolerance</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">CxVec</span><span class="p">,</span> <span class="n">CxVec</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Remove duplicate poles inside one band.</span>
 
 <span class="sd">    :param z_poles: Discrete-time poles.</span>
@@ -2208,7 +2209,7 @@
 <span class="sd">    :param frequency_tolerance_hz: Frequency tolerance in Hz.</span>
 <span class="sd">    :param real_part_tolerance: Real-part tolerance in 1/s.</span>
 <span class="sd">    :return: Tuple ``(unique_z_poles, unique_s_poles)``.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">n_modes</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">s_poles</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 
     <span class="k">if</span> <span class="n">n_modes</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
@@ -2260,7 +2261,7 @@
                          <span class="n">reference_index</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
                          <span class="n">frequency_tolerance_hz</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
                          <span class="n">real_part_tolerance</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Find the conjugate partner of one pole.</span>
 
 <span class="sd">    :param s_poles: Continuous-time poles.</span>
@@ -2268,7 +2269,7 @@
 <span class="sd">    :param frequency_tolerance_hz: Frequency tolerance in Hz.</span>
 <span class="sd">    :param real_part_tolerance: Real-part tolerance in 1/s.</span>
 <span class="sd">    :return: Matching index or ``-1``.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">reference_pole</span><span class="p">:</span> <span class="nb">complex</span> <span class="o">=</span> <span class="nb">complex</span><span class="p">(</span><span class="n">s_poles</span><span class="p">[</span><span class="n">reference_index</span><span class="p">])</span>
     <span class="n">target_pole</span><span class="p">:</span> <span class="nb">complex</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">conjugate</span><span class="p">(</span><span class="n">reference_pole</span><span class="p">)</span>
     <span class="n">n_modes</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">s_poles</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
@@ -2300,7 +2301,7 @@
                                <span class="n">time_step</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
                                <span class="n">frequency_tolerance_hz</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
                                <span class="n">real_part_tolerance</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">CxVec</span><span class="p">,</span> <span class="n">CxVec</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Enforce explicit conjugate-pair symmetry for real-valued EMT signals.</span>
 
 <span class="sd">    :param z_poles: Discrete-time poles.</span>
@@ -2309,7 +2310,7 @@
 <span class="sd">    :param frequency_tolerance_hz: Frequency tolerance in Hz.</span>
 <span class="sd">    :param real_part_tolerance: Real-part tolerance in 1/s.</span>
 <span class="sd">    :return: Tuple ``(symmetrized_z_poles, symmetrized_s_poles)``.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">n_modes</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">s_poles</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 
     <span class="k">if</span> <span class="n">n_modes</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
@@ -2359,13 +2360,13 @@
 <div class="viewcode-block" id="build_vandermonde_matrix">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SmallSignalStabilityEmt.html#VeraGridEngine.Simulations.SmallSignalStabilityEmt.era_matrix_pencil_core.build_vandermonde_matrix">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">build_vandermonde_matrix</span><span class="p">(</span><span class="n">z_poles</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CxMat</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Build the Vandermonde matrix used to fit modal residues.</span>
 
 <span class="sd">    :param z_poles: Discrete-time poles.</span>
 <span class="sd">    :param n_samples: Number of time samples.</span>
 <span class="sd">    :return: Complex Vandermonde matrix.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">n_modes</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">z_poles</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
     <span class="n">vandermonde_matrix</span><span class="p">:</span> <span class="n">CxMat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_samples</span><span class="p">,</span> <span class="n">n_modes</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">complex128</span><span class="p">)</span>
 
@@ -2388,13 +2389,13 @@
 <div class="viewcode-block" id="solve_modal_residues">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SmallSignalStabilityEmt.html#VeraGridEngine.Simulations.SmallSignalStabilityEmt.era_matrix_pencil_core.solve_modal_residues">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">solve_modal_residues</span><span class="p">(</span><span class="n">signal_data</span><span class="p">:</span> <span class="n">Mat</span><span class="p">,</span> <span class="n">z_poles</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">CxMat</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Solve the MIMO residue least-squares problem.</span>
 
 <span class="sd">    :param signal_data: Standardized band-limited signal matrix.</span>
 <span class="sd">    :param z_poles: Discrete-time poles.</span>
 <span class="sd">    :return: Tuple ``(residues, reconstruction_error)``.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">n_samples</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">signal_data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
     <span class="n">n_channels</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">signal_data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
     <span class="n">n_modes</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">z_poles</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
@@ -2412,8 +2413,8 @@
                 <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">signal_data</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">complex128</span><span class="p">),</span>
             <span class="p">)</span>
             <span class="n">reconstructed_signal</span><span class="p">:</span> <span class="n">CxMat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">vandermonde_matrix</span> <span class="o">@</span> <span class="n">residues</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">complex128</span><span class="p">)</span>
-            <span class="n">residual_norm</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">signal_data</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">complex128</span><span class="p">)</span> <span class="o">-</span> <span class="n">reconstructed_signal</span><span class="p">,</span> <span class="nb">ord</span><span class="o">=</span><span class="s1">&#39;fro&#39;</span><span class="p">))</span>
-            <span class="n">signal_norm</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">signal_data</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">complex128</span><span class="p">),</span> <span class="nb">ord</span><span class="o">=</span><span class="s1">&#39;fro&#39;</span><span class="p">)),</span> <span class="mf">1e-12</span><span class="p">)</span>
+            <span class="n">residual_norm</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">signal_data</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">complex128</span><span class="p">)</span> <span class="o">-</span> <span class="n">reconstructed_signal</span><span class="p">,</span> <span class="nb">ord</span><span class="o">=</span><span class="s1">'fro'</span><span class="p">))</span>
+            <span class="n">signal_norm</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">signal_data</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">complex128</span><span class="p">),</span> <span class="nb">ord</span><span class="o">=</span><span class="s1">'fro'</span><span class="p">)),</span> <span class="mf">1e-12</span><span class="p">)</span>
             <span class="n">reconstruction_error</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">residual_norm</span> <span class="o">/</span> <span class="n">signal_norm</span>
             <span class="k">del</span> <span class="n">residual_vector</span>
             <span class="k">del</span> <span class="n">numerical_rank</span>
@@ -2432,13 +2433,13 @@
 <div class="viewcode-block" id="scale_residues_to_physical_units">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SmallSignalStabilityEmt.html#VeraGridEngine.Simulations.SmallSignalStabilityEmt.era_matrix_pencil_core.scale_residues_to_physical_units">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">scale_residues_to_physical_units</span><span class="p">(</span><span class="n">residues</span><span class="p">:</span> <span class="n">CxMat</span><span class="p">,</span> <span class="n">physical_scales</span><span class="p">:</span> <span class="n">Vec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CxMat</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Re-scale residues back to the original physical channel magnitudes.</span>
 
 <span class="sd">    :param residues: Standardized residue matrix.</span>
 <span class="sd">    :param physical_scales: Original per-channel scales.</span>
 <span class="sd">    :return: Physical residue matrix.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">residues</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">residues</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
         <span class="n">physical_residues</span><span class="p">:</span> <span class="n">CxMat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">residues</span> <span class="o">*</span> <span class="n">physical_scales</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">complex128</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
@@ -2451,13 +2452,13 @@
 <div class="viewcode-block" id="build_physical_band_signal">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SmallSignalStabilityEmt.html#VeraGridEngine.Simulations.SmallSignalStabilityEmt.era_matrix_pencil_core.build_physical_band_signal">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">build_physical_band_signal</span><span class="p">(</span><span class="n">signal_data</span><span class="p">:</span> <span class="n">Mat</span><span class="p">,</span> <span class="n">physical_scales</span><span class="p">:</span> <span class="n">Vec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CxMat</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Re-scale the band-limited observations back to physical units.</span>
 
 <span class="sd">    :param signal_data: Standardized band-limited observation matrix.</span>
 <span class="sd">    :param physical_scales: Original per-channel scales.</span>
 <span class="sd">    :return: Physical complex signal matrix.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">signal_data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">signal_data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
         <span class="n">physical_signal</span><span class="p">:</span> <span class="n">CxMat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">signal_data</span> <span class="o">*</span> <span class="n">physical_scales</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">complex128</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
@@ -2472,21 +2473,21 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">compute_modal_energies</span><span class="p">(</span><span class="n">physical_signal_data</span><span class="p">:</span> <span class="n">CxMat</span><span class="p">,</span>
                            <span class="n">z_poles</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span>
                            <span class="n">physical_residues</span><span class="p">:</span> <span class="n">CxMat</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute per-mode modal energy in physical units.</span>
 
 <span class="sd">    :param physical_signal_data: Physical band-limited observations.</span>
 <span class="sd">    :param z_poles: Discrete-time poles.</span>
 <span class="sd">    :param physical_residues: Physical residue matrix.</span>
 <span class="sd">    :return: Relative modal-energy vector.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">n_samples</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">physical_signal_data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
     <span class="n">n_modes</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">z_poles</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
     <span class="n">modal_energy</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_modes</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">n_modes</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">n_samples</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
         <span class="n">vandermonde_matrix</span><span class="p">:</span> <span class="n">CxMat</span> <span class="o">=</span> <span class="n">build_vandermonde_matrix</span><span class="p">(</span><span class="n">z_poles</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">)</span>
-        <span class="n">total_energy</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">physical_signal_data</span><span class="p">,</span> <span class="nb">ord</span><span class="o">=</span><span class="s1">&#39;fro&#39;</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">),</span> <span class="mf">1e-12</span><span class="p">)</span>
+        <span class="n">total_energy</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">physical_signal_data</span><span class="p">,</span> <span class="nb">ord</span><span class="o">=</span><span class="s1">'fro'</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">),</span> <span class="mf">1e-12</span><span class="p">)</span>
         <span class="n">mode_index</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
 
         <span class="c1"># Each mode is evaluated independently so low-energy artefacts can be</span>
@@ -2496,7 +2497,7 @@
                 <span class="n">vandermonde_matrix</span><span class="p">[:,</span> <span class="n">mode_index</span><span class="p">:</span><span class="n">mode_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">@</span> <span class="n">physical_residues</span><span class="p">[</span><span class="n">mode_index</span><span class="p">:</span><span class="n">mode_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="p">:],</span>
                 <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">complex128</span><span class="p">,</span>
             <span class="p">)</span>
-            <span class="n">modal_energy</span><span class="p">[</span><span class="n">mode_index</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">mode_response</span><span class="p">,</span> <span class="nb">ord</span><span class="o">=</span><span class="s1">&#39;fro&#39;</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="n">total_energy</span>
+            <span class="n">modal_energy</span><span class="p">[</span><span class="n">mode_index</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">mode_response</span><span class="p">,</span> <span class="nb">ord</span><span class="o">=</span><span class="s1">'fro'</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="n">total_energy</span>
             <span class="n">mode_index</span> <span class="o">+=</span> <span class="mi">1</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">pass</span>
@@ -2512,7 +2513,7 @@
                                   <span class="n">energy_threshold</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
                                   <span class="n">frequency_tolerance_hz</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
                                   <span class="n">real_part_tolerance</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Build the keep mask while preserving conjugate pairs.</span>
 
 <span class="sd">    :param s_poles: Continuous-time poles.</span>
@@ -2521,7 +2522,7 @@
 <span class="sd">    :param frequency_tolerance_hz: Frequency tolerance in Hz.</span>
 <span class="sd">    :param real_part_tolerance: Real-part tolerance in 1/s.</span>
 <span class="sd">    :return: Boolean keep mask.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">n_modes</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">s_poles</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
     <span class="n">keep_mask</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_modes</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">)</span>
     <span class="n">mode_index</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
@@ -2558,13 +2559,13 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SmallSignalStabilityEmt.html#VeraGridEngine.Simulations.SmallSignalStabilityEmt.era_matrix_pencil_core.extract_band_modes">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">extract_band_modes</span><span class="p">(</span><span class="n">band_signal</span><span class="p">:</span> <span class="n">EraBandSignal</span><span class="p">,</span>
                        <span class="n">era_options</span><span class="p">:</span> <span class="n">EraMatrixPencilOptions</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EraBandResult</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Extract one band of modes using the TLS forward-backward matrix pencil.</span>
 
 <span class="sd">    :param band_signal: Prepared band record.</span>
 <span class="sd">    :param era_options: Matrix-pencil options.</span>
 <span class="sd">    :return: One independent band result.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">signal_data</span><span class="p">:</span> <span class="n">Mat</span> <span class="o">=</span> <span class="n">band_signal</span><span class="o">.</span><span class="n">get_signal_data</span><span class="p">()</span>
     <span class="n">n_samples</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">signal_data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
     <span class="n">observable_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">signal_data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
@@ -2639,7 +2640,7 @@
                                         <span class="n">band_high_hz</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
                                         <span class="n">selected_orders</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span>
                                         <span class="n">observable_count_per_mode</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EraMergedModalData</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Sort fused modes by absolute frequency and then by damping.</span>
 
 <span class="sd">    :param poles_s: Pole vector.</span>
@@ -2651,7 +2652,7 @@
 <span class="sd">    :param selected_orders: Selected-order vector.</span>
 <span class="sd">    :param observable_count_per_mode: Observable-count vector.</span>
 <span class="sd">    :return: Sorted merged modal data.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">n_modes</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">poles_s</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 
     <span class="k">if</span> <span class="n">n_modes</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
@@ -2677,13 +2678,13 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SmallSignalStabilityEmt.html#VeraGridEngine.Simulations.SmallSignalStabilityEmt.era_matrix_pencil_core.merge_band_results">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">merge_band_results</span><span class="p">(</span><span class="n">band_results</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">EraBandResult</span><span class="p">],</span>
                        <span class="n">era_options</span><span class="p">:</span> <span class="n">EraMatrixPencilOptions</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EraMergedModalData</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Fuse the valid band results into one modal set.</span>
 
 <span class="sd">    :param band_results: List of band results.</span>
 <span class="sd">    :param era_options: Matrix-pencil options.</span>
 <span class="sd">    :return: Fused modal data.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">valid_results</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">EraBandResult</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
     <span class="n">band_index</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="n">n_results</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">band_results</span><span class="p">)</span>
@@ -2818,13 +2819,13 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SmallSignalStabilityEmt.html#VeraGridEngine.Simulations.SmallSignalStabilityEmt.era_matrix_pencil_core.build_results_from_merged_modal_data">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">build_results_from_merged_modal_data</span><span class="p">(</span><span class="n">merged_data</span><span class="p">:</span> <span class="n">EraMergedModalData</span><span class="p">,</span>
                                          <span class="n">observable_names</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">EraMatrixPencilResults</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Build the public results object from the fused modal data.</span>
 
 <span class="sd">    :param merged_data: Fused modal data.</span>
 <span class="sd">    :param observable_names: Selected observable labels.</span>
 <span class="sd">    :return: Public results object.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="n">EraMatrixPencilResults</span><span class="p">(</span>
         <span class="n">eigenvalues_s</span><span class="o">=</span><span class="n">merged_data</span><span class="o">.</span><span class="n">get_poles_s</span><span class="p">(),</span>
         <span class="n">residues</span><span class="o">=</span><span class="n">merged_data</span><span class="o">.</span><span class="n">get_residues</span><span class="p">(),</span>
@@ -2846,7 +2847,7 @@
                                             <span class="n">era_options</span><span class="p">:</span> <span class="n">EraMatrixPencilOptions</span><span class="p">,</span>
                                             <span class="n">nominal_frequency_hz</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
                                             <span class="n">observable_names</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EraMatrixPencilResults</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Execute the full EMT frequency-zooming matrix pencil on dense data.</span>
 
 <span class="sd">    :param time_data: Raw time vector.</span>
@@ -2855,7 +2856,7 @@
 <span class="sd">    :param nominal_frequency_hz: Nominal grid frequency.</span>
 <span class="sd">    :param observable_names: Optional channel labels.</span>
 <span class="sd">    :return: Public EMT modal results.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">dense_signal</span><span class="p">:</span> <span class="n">Mat</span> <span class="o">=</span> <span class="n">convert_signal_to_2d</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">y_data</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">))</span>
     <span class="n">dense_time</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">time_data</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
     <span class="n">n_samples</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">dense_signal</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>

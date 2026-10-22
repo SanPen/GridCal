@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Simulations.ATC.available_transfer_capacity_driver &mdash; VeraGrid 6.7.13 documentation</title>
+  <title>VeraGridEngine.Simulations.ATC.available_transfer_capacity_driver &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=16fbabd8"></script>
+      <script src="../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -132,13 +132,13 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.ATC.html#VeraGridEngine.Simulations.ATC.available_transfer_capacity_driver.get_proportional_deltas_sensed">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">()</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_proportional_deltas_sensed</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">idx</span><span class="p">,</span> <span class="n">dP</span><span class="o">=</span><span class="mf">1.0</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 
 <span class="sd">    :param P: all power Injections</span>
 <span class="sd">    :param idx: bus indices of the sending region</span>
 <span class="sd">    :param dP: Power amount</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="c1"># declare the power increment due to the transference</span>
     <span class="n">deltaP</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">P</span><span class="p">))</span>
@@ -178,14 +178,14 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.ATC.html#VeraGridEngine.Simulations.ATC.available_transfer_capacity_driver.scale_proportional_sensed">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">()</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">scale_proportional_sensed</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">idx1</span><span class="p">,</span> <span class="n">idx2</span><span class="p">,</span> <span class="n">dT</span><span class="o">=</span><span class="mf">1.0</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 
 <span class="sd">    :param P: Power vector</span>
 <span class="sd">    :param idx1: indices of sending region</span>
 <span class="sd">    :param idx2: indices of receiving region</span>
 <span class="sd">    :param dT: Exchange amount</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">dPu</span> <span class="o">=</span> <span class="n">get_proportional_deltas_sensed</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">idx1</span><span class="p">,</span> <span class="n">dP</span><span class="o">=</span><span class="n">dT</span><span class="p">)</span>
     <span class="n">dPd</span> <span class="o">=</span> <span class="n">get_proportional_deltas_sensed</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">idx2</span><span class="p">,</span> <span class="n">dP</span><span class="o">=-</span><span class="n">dT</span><span class="p">)</span>
@@ -206,7 +206,7 @@
                <span class="n">bus_a1_idx</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span>
                <span class="n">bus_a2_idx</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span>
                <span class="n">dT</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute power injections to compute the inter-area sensitivities</span>
 <span class="sd">    :param P0: all bus Injections [p.u.]</span>
 <span class="sd">    :param Pgen: bus generation current power [p.u.]</span>
@@ -222,7 +222,7 @@
 <span class="sd">                 3 (or else): shift using generation and load</span>
 
 <span class="sd">    :return: Exchange sensitivity vector for all the lines</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
         <span class="c1"># move the generators based on the generated power</span>
@@ -253,13 +253,13 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.ATC.html#VeraGridEngine.Simulations.ATC.available_transfer_capacity_driver.compute_alpha">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">compute_alpha</span><span class="p">(</span><span class="n">ptdf</span><span class="p">:</span> <span class="n">Mat</span><span class="p">,</span> <span class="n">dP</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">dT</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute line sensitivity to power transfer</span>
 <span class="sd">    :param ptdf: Power transfer distribution factors (n-branch, n-bus)</span>
 <span class="sd">    :param dP: Vector of power increments to used for the power exchange</span>
 <span class="sd">    :param dT: Exchange amount (MW) usually a unitary increment is sufficient</span>
 <span class="sd">    :return: Exchange sensitivity vector for all the lines</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="c1"># compute the line flow increments due to the exchange increment dT in MW</span>
     <span class="n">dflow</span> <span class="o">=</span> <span class="n">ptdf</span> <span class="o">@</span> <span class="n">dP</span>
@@ -275,7 +275,7 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.ATC.html#VeraGridEngine.Simulations.ATC.available_transfer_capacity_driver.compute_alpha_n1">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">compute_alpha_n1</span><span class="p">(</span><span class="n">ptdf</span><span class="p">:</span> <span class="n">Mat</span><span class="p">,</span> <span class="n">lodf</span><span class="p">:</span> <span class="n">Mat</span><span class="p">,</span> <span class="n">dP</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">alpha</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">dT</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Mat</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 
 <span class="sd">    :param ptdf: Power transfer distribution factors (n-branch, n-bus)</span>
 <span class="sd">    :param lodf:</span>
@@ -283,7 +283,7 @@
 <span class="sd">    :param alpha:</span>
 <span class="sd">    :param dT:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># compute the line flow increments due to the exchange increment dT in MW</span>
     <span class="n">dflow</span> <span class="o">=</span> <span class="n">ptdf</span> <span class="o">@</span> <span class="n">dP</span>
 
@@ -306,13 +306,13 @@
                      <span class="n">contingency_rates</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">base_exchange</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">threshold</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
                      <span class="n">time_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span>
     <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Compute all lines&#39; available transfer capacity (ATC)</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Compute all lines' available transfer capacity (ATC)</span>
 <span class="sd">    :param br_idx: array of branch indices to analyze</span>
 <span class="sd">    :param contingency_br_idx: array of branch indices to fail</span>
 <span class="sd">    :param lodf: Line outage distribution factors (n-branch, n-outage branch)</span>
 <span class="sd">    :param alpha: Branch sensitivities to the exchange [p.u.]</span>
-<span class="sd">    :param flows: Branches power injected at the &quot;from&quot; side [MW]</span>
+<span class="sd">    :param flows: Branches power injected at the "from" side [MW]</span>
 <span class="sd">    :param rates: all Branches rates vector</span>
 <span class="sd">    :param contingency_rates: all Branches contingency rates vector</span>
 <span class="sd">    :param base_exchange: amount already exchanges between areas</span>
@@ -334,7 +334,7 @@
 <span class="sd">        loading,  # 12</span>
 <span class="sd">        contingency loading,  # 13</span>
 <span class="sd">        base_exchange #14</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">results</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
 
@@ -343,7 +343,7 @@
         <span class="c1"># if abs(alpha[m]) &gt; threshold and abs(flows[m]) &lt; rates[m]:  # if the branch is relevant enough for the ATC...</span>
         <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">alpha</span><span class="p">[</span><span class="n">m</span><span class="p">])</span> <span class="o">&gt;</span> <span class="n">threshold</span><span class="p">:</span>  <span class="c1"># if the branch is relevant enough for the ATC...</span>
 
-            <span class="c1"># compute the ATC in &quot;N&quot;</span>
+            <span class="c1"># compute the ATC in "N"</span>
             <span class="k">if</span> <span class="n">alpha</span><span class="p">[</span><span class="n">m</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="n">atc_n</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
             <span class="k">elif</span> <span class="n">alpha</span><span class="p">[</span><span class="n">m</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
@@ -351,7 +351,7 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">atc_n</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="n">rates</span><span class="p">[</span><span class="n">m</span><span class="p">]</span> <span class="o">-</span> <span class="n">flows</span><span class="p">[</span><span class="n">m</span><span class="p">])</span> <span class="o">/</span> <span class="n">alpha</span><span class="p">[</span><span class="n">m</span><span class="p">]</span>
 
-            <span class="c1"># explore the ATC in &quot;N-1&quot;</span>
+            <span class="c1"># explore the ATC in "N-1"</span>
             <span class="k">for</span> <span class="n">ic</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">contingency_br_idx</span><span class="p">):</span>  <span class="c1"># for each contingency</span>
 
                 <span class="c1"># compute the exchange sensitivity in contingency conditions</span>
@@ -365,7 +365,7 @@
                     <span class="c1"># now here, do compare with the base situation</span>
                     <span class="c1"># if abs(contingency_flow) &lt;= contingency_rates[m]:</span>
 
-                    <span class="c1"># compute the ATC in &quot;N-1&quot;</span>
+                    <span class="c1"># compute the ATC in "N-1"</span>
                     <span class="k">if</span> <span class="n">beta</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
                         <span class="n">atc_mc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
                     <span class="k">elif</span> <span class="n">beta</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
@@ -403,29 +403,29 @@
     <span class="n">LOCAL_RESULTS_DECLARATIONS</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">()</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;branch_names&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;bus_names&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;rates&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;contingency_rates&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;base_exchange&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;report&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;report_headers&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;report_indices&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;raw_report&quot;</span><span class="p">,</span>
+        <span class="s2">"branch_names"</span><span class="p">,</span>
+        <span class="s2">"bus_names"</span><span class="p">,</span>
+        <span class="s2">"rates"</span><span class="p">,</span>
+        <span class="s2">"contingency_rates"</span><span class="p">,</span>
+        <span class="s2">"base_exchange"</span><span class="p">,</span>
+        <span class="s2">"report"</span><span class="p">,</span>
+        <span class="s2">"report_headers"</span><span class="p">,</span>
+        <span class="s2">"report_indices"</span><span class="p">,</span>
+        <span class="s2">"raw_report"</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">br_names</span><span class="p">,</span> <span class="n">bus_names</span><span class="p">,</span> <span class="n">rates</span><span class="p">,</span> <span class="n">contingency_rates</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
                  <span class="n">clustering_results</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">ClusteringResults</span><span class="p">,</span> <span class="kc">None</span><span class="p">]):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :param br_names:</span>
 <span class="sd">        :param bus_names:</span>
 <span class="sd">        :param rates:</span>
 <span class="sd">        :param contingency_rates:</span>
 <span class="sd">        :param clustering_results:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">ResultsTemplate</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
-                                 <span class="n">name</span><span class="o">=</span><span class="s1">&#39;ATC Results&#39;</span><span class="p">,</span>
+                                 <span class="n">name</span><span class="o">=</span><span class="s1">'ATC Results'</span><span class="p">,</span>
                                  <span class="n">available_results</span><span class="o">=</span><span class="p">[</span>
                                      <span class="n">ResultTypes</span><span class="o">.</span><span class="n">AvailableTransferCapacityReport</span>
                                  <span class="p">],</span>
@@ -446,34 +446,34 @@
 <div class="viewcode-block" id="AvailableTransferCapacityResults.get_steps">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.ATC.html#VeraGridEngine.Simulations.ATC.available_transfer_capacity_driver.AvailableTransferCapacityResults.get_steps">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_steps</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :return: </span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span></div>
 
 
 <div class="viewcode-block" id="AvailableTransferCapacityResults.make_report">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.ATC.html#VeraGridEngine.Simulations.ATC.available_transfer_capacity_driver.AvailableTransferCapacityResults.make_report">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">make_report</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">report_headers</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Time&#39;</span><span class="p">,</span>
-                               <span class="s1">&#39;Branch&#39;</span><span class="p">,</span>
-                               <span class="s1">&#39;Base flow&#39;</span><span class="p">,</span>
-                               <span class="s1">&#39;Rate&#39;</span><span class="p">,</span>
-                               <span class="s1">&#39;Alpha&#39;</span><span class="p">,</span>
-                               <span class="s1">&#39;ATC normal&#39;</span><span class="p">,</span>
-                               <span class="s1">&#39;Limiting contingency branch&#39;</span><span class="p">,</span>
-                               <span class="s1">&#39;Limiting contingency flow&#39;</span><span class="p">,</span>
-                               <span class="s1">&#39;Contingency rate&#39;</span><span class="p">,</span>
-                               <span class="s1">&#39;Beta&#39;</span><span class="p">,</span>
-                               <span class="s1">&#39;Contingency ATC&#39;</span><span class="p">,</span>
-                               <span class="s1">&#39;ATC&#39;</span><span class="p">,</span>
-                               <span class="s1">&#39;Base exchange flow&#39;</span><span class="p">,</span>
-                               <span class="s1">&#39;NTC&#39;</span><span class="p">]</span>
+<span class="sd">        """</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">report_headers</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'Time'</span><span class="p">,</span>
+                               <span class="s1">'Branch'</span><span class="p">,</span>
+                               <span class="s1">'Base flow'</span><span class="p">,</span>
+                               <span class="s1">'Rate'</span><span class="p">,</span>
+                               <span class="s1">'Alpha'</span><span class="p">,</span>
+                               <span class="s1">'ATC normal'</span><span class="p">,</span>
+                               <span class="s1">'Limiting contingency branch'</span><span class="p">,</span>
+                               <span class="s1">'Limiting contingency flow'</span><span class="p">,</span>
+                               <span class="s1">'Contingency rate'</span><span class="p">,</span>
+                               <span class="s1">'Beta'</span><span class="p">,</span>
+                               <span class="s1">'Contingency ATC'</span><span class="p">,</span>
+                               <span class="s1">'ATC'</span><span class="p">,</span>
+                               <span class="s1">'Base exchange flow'</span><span class="p">,</span>
+                               <span class="s1">'NTC'</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">report</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">raw_report</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">report_headers</span><span class="p">)),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">)</span>
 
         <span class="n">rep</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">raw_report</span><span class="p">)</span>
@@ -492,33 +492,33 @@
             <span class="c1"># Branch name</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">report</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">branch_names</span><span class="p">[</span><span class="n">m</span><span class="p">]</span>
 
-            <span class="c1"># Base flow&#39;</span>
+            <span class="c1"># Base flow'</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">report</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">rep</span><span class="p">[:,</span> <span class="mi">10</span><span class="p">]</span>
 
             <span class="c1"># rate</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">report</span><span class="p">[:,</span> <span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rates</span><span class="p">[</span><span class="n">m</span><span class="p">]</span>  <span class="c1"># &#39;Rate&#39;, (time, branch)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">report</span><span class="p">[:,</span> <span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rates</span><span class="p">[</span><span class="n">m</span><span class="p">]</span>  <span class="c1"># 'Rate', (time, branch)</span>
 
             <span class="c1"># alpha</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">report</span><span class="p">[:,</span> <span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="n">rep</span><span class="p">[:,</span> <span class="mi">3</span><span class="p">]</span>
 
-            <span class="c1"># &#39;ATC normal&#39;</span>
+            <span class="c1"># 'ATC normal'</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">report</span><span class="p">[:,</span> <span class="mi">5</span><span class="p">]</span> <span class="o">=</span> <span class="n">rep</span><span class="p">[:,</span> <span class="mi">6</span><span class="p">]</span>
 
             <span class="c1"># contingency info -----</span>
 
-            <span class="c1"># &#39;Limiting contingency branch&#39;</span>
+            <span class="c1"># 'Limiting contingency branch'</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">report</span><span class="p">[:,</span> <span class="mi">6</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">branch_names</span><span class="p">[</span><span class="n">c</span><span class="p">]</span>
 
-            <span class="c1"># &#39;Limiting contingency flow&#39;</span>
+            <span class="c1"># 'Limiting contingency flow'</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">report</span><span class="p">[:,</span> <span class="mi">7</span><span class="p">]</span> <span class="o">=</span> <span class="n">rep</span><span class="p">[:,</span> <span class="mi">11</span><span class="p">]</span>
 
-            <span class="c1"># &#39;Contingency rate&#39; (time, branch)</span>
+            <span class="c1"># 'Contingency rate' (time, branch)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">report</span><span class="p">[:,</span> <span class="mi">8</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">contingency_rates</span><span class="p">[</span><span class="n">m</span><span class="p">]</span>
 
-            <span class="c1"># &#39;Beta&#39;</span>
+            <span class="c1"># 'Beta'</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">report</span><span class="p">[:,</span> <span class="mi">9</span><span class="p">]</span> <span class="o">=</span> <span class="n">rep</span><span class="p">[:,</span> <span class="mi">4</span><span class="p">]</span>
 
-            <span class="c1"># &#39;Contingency ATC&#39;</span>
+            <span class="c1"># 'Contingency ATC'</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">report</span><span class="p">[:,</span> <span class="mi">10</span><span class="p">]</span> <span class="o">=</span> <span class="n">rep</span><span class="p">[:,</span> <span class="mi">7</span><span class="p">]</span>
 
             <span class="c1"># Final ATC (worst between normal ATC and contingency ATC)</span>
@@ -536,33 +536,33 @@
 
             <span class="bp">self</span><span class="o">.</span><span class="n">report</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">report</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="p">:]</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Empty raw report :/&#39;</span><span class="p">)</span></div>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">'Empty raw report :/'</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="AvailableTransferCapacityResults.get_dict">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.ATC.html#VeraGridEngine.Simulations.ATC.available_transfer_capacity_driver.AvailableTransferCapacityResults.get_dict">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Returns a dictionary with the results sorted in a dictionary</span>
 <span class="sd">        :return: dictionary of 2D numpy arrays (probably of complex numbers)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">data</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_dict</span><span class="p">()</span>
-        <span class="n">data</span><span class="p">[</span><span class="s1">&#39;report&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">report</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="n">data</span><span class="p">[</span><span class="s1">'report'</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">report</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">data</span></div>
 
 
 <div class="viewcode-block" id="AvailableTransferCapacityResults.mdl">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.ATC.html#VeraGridEngine.Simulations.ATC.available_transfer_capacity_driver.AvailableTransferCapacityResults.mdl">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">mdl</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">result_type</span><span class="p">:</span> <span class="n">ResultTypes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ResultsTable</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Plot the results</span>
 <span class="sd">        :param result_type:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="k">if</span> <span class="n">result_type</span> <span class="o">==</span> <span class="n">ResultTypes</span><span class="o">.</span><span class="n">AvailableTransferCapacityReport</span><span class="p">:</span>
             <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">report</span><span class="p">)</span>
-            <span class="n">y_label</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+            <span class="n">y_label</span> <span class="o">=</span> <span class="s1">''</span>
             <span class="n">title</span> <span class="o">=</span> <span class="n">result_type</span><span class="o">.</span><span class="n">value</span>
 
             <span class="k">return</span> <span class="n">ResultsTable</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">report</span><span class="p">),</span>
@@ -573,7 +573,7 @@
                                 <span class="n">cols_device_type</span><span class="o">=</span><span class="n">DeviceType</span><span class="o">.</span><span class="n">NoDevice</span><span class="p">,</span>
                                 <span class="n">idx_device_type</span><span class="o">=</span><span class="n">DeviceType</span><span class="o">.</span><span class="n">NoDevice</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Result type not understood:&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">result_type</span><span class="p">))</span></div>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">'Result type not understood:'</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">result_type</span><span class="p">))</span></div>
 </div>
 
 
@@ -582,9 +582,9 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.ATC.html#VeraGridEngine.Simulations.ATC.available_transfer_capacity_driver.AvailableTransferCapacityDriver">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">AvailableTransferCapacityDriver</span><span class="p">(</span><span class="n">DriverTemplate</span><span class="p">):</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;options&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;opf_results&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;t_idx&quot;</span><span class="p">,</span>
+        <span class="s2">"options"</span><span class="p">,</span>
+        <span class="s2">"opf_results"</span><span class="p">,</span>
+        <span class="s2">"t_idx"</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="n">tpe</span> <span class="o">=</span> <span class="n">SimulationTypes</span><span class="o">.</span><span class="n">NetTransferCapacity_run</span>
@@ -595,12 +595,12 @@
                  <span class="n">options</span><span class="p">:</span> <span class="n">AvailableTransferCapacityOptions</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">opf_results</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">OptimalPowerFlowResults</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">t_idx</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Power Transfer Distribution Factors class constructor</span>
 <span class="sd">        @param grid: MultiCircuit Object</span>
 <span class="sd">        @param options: OPF options</span>
 <span class="sd">        @:param pf_results: PowerFlowResults, this is to get the Sf</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">DriverTemplate</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">grid</span><span class="o">=</span><span class="n">grid</span><span class="p">)</span>
 
         <span class="c1"># Options to use</span>
@@ -623,13 +623,13 @@
 <div class="viewcode-block" id="AvailableTransferCapacityDriver.run">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.ATC.html#VeraGridEngine.Simulations.ATC.available_transfer_capacity_driver.AvailableTransferCapacityDriver.run">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Run thread</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">tic</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s2">&quot;Compiling and configuring...&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s2">"Compiling and configuring..."</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s2">&quot;Analyzing&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s2">"Analyzing"</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">report_progress</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
 
         <span class="c1"># get the converted bus indices</span>
@@ -664,12 +664,12 @@
 
         <span class="c1"># compute the branch exchange sensitivity (alpha)</span>
 
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        0: shift generation based on the current generated power</span>
 <span class="sd">         1: shift generation based on the installed power</span>
 <span class="sd">         2: shift load</span>
 <span class="sd">         3 (or else): shift udasing generation and load</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">mode_2_int</span> <span class="o">=</span> <span class="p">{</span><span class="n">AvailableTransferMode</span><span class="o">.</span><span class="n">Generation</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
                       <span class="n">AvailableTransferMode</span><span class="o">.</span><span class="n">InstalledPower</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
                       <span class="n">AvailableTransferMode</span><span class="o">.</span><span class="n">Load</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
@@ -699,7 +699,7 @@
             <span class="n">flows</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">Pf</span>
 
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">Pf</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;The option to use the provided flows is enabled, but no flows are available&#39;</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="s1">'The option to use the provided flows is enabled, but no flows are available'</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
                 <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
@@ -755,9 +755,9 @@
 <div class="viewcode-block" id="AvailableTransferCapacityDriver.get_steps">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.ATC.html#VeraGridEngine.Simulations.ATC.available_transfer_capacity_driver.AvailableTransferCapacityDriver.get_steps">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_steps</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get variations list of strings</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="nb">list</span><span class="p">()</span></div>
 </div>
 

@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Compilers.Gslv.Simulations.linear &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Compilers.Gslv.Simulations.linear &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/license.html">📜 License</a></li>
@@ -117,15 +118,15 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">gslv_linear_matrices</span><span class="p">(</span><span class="n">circuit</span><span class="p">:</span> <span class="n">MultiCircuit</span><span class="p">,</span>
                          <span class="n">distributed_slack</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                          <span class="n">correctValues</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-                         <span class="n">override_branch_controls</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;pg.LinearAnalysis&quot;</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+                         <span class="n">override_branch_controls</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"pg.LinearAnalysis"</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Newton linear analysis</span>
 <span class="sd">    :param circuit: MultiCircuit instance</span>
 <span class="sd">    :param distributed_slack: distribute the PTDF slack</span>
 <span class="sd">    :param correctValues: Correct nonsense values (outsie -1, 1) interval</span>
 <span class="sd">    :param override_branch_controls: Override branch controls</span>
 <span class="sd">    :return: Newton LinearAnalysisMatrices object</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">gslv_circuit</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">to_gslv</span><span class="p">(</span><span class="n">circuit</span><span class="o">=</span><span class="n">circuit</span><span class="p">,</span>
                               <span class="n">use_time_series</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                               <span class="n">override_branch_controls</span><span class="o">=</span><span class="n">override_branch_controls</span><span class="p">)</span>

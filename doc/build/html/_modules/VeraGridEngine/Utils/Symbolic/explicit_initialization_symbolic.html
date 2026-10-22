@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Utils.Symbolic.explicit_initialization_symbolic &mdash; VeraGrid 6.7.13 documentation</title>
+  <title>VeraGridEngine.Utils.Symbolic.explicit_initialization_symbolic &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=16fbabd8"></script>
+      <script src="../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -159,14 +159,14 @@
 <div class="viewcode-block" id="SelfImplicitSolveResult">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.explicit_initialization_symbolic.SelfImplicitSolveResult">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">SelfImplicitSolveResult</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Store the outcome of one scalar self-implicit initialization solve.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Store the outcome of one scalar self-implicit initialization solve."""</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;value&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;converged&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;iterations&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;residual&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;status&quot;</span><span class="p">,</span>
+        <span class="s2">"value"</span><span class="p">,</span>
+        <span class="s2">"converged"</span><span class="p">,</span>
+        <span class="s2">"iterations"</span><span class="p">,</span>
+        <span class="s2">"residual"</span><span class="p">,</span>
+        <span class="s2">"status"</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
@@ -177,7 +177,7 @@
             <span class="n">residual</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
             <span class="n">status</span><span class="p">:</span> <span class="n">SelfImplicitSolveStatus</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Build a scalar self-implicit solve result.</span>
+<span class="w">        </span><span class="sd">"""Build a scalar self-implicit solve result.</span>
 
 <span class="sd">        :param value: Final candidate value. A failed solve does not commit this</span>
 <span class="sd">            candidate to the target array.</span>
@@ -186,7 +186,7 @@
 <span class="sd">        :param residual: Absolute fixed-point residual of the final candidate.</span>
 <span class="sd">        :param status: Exact reason why the solve stopped.</span>
 <span class="sd">        :return: None.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">value</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">converged</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">converged</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">iterations</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">iterations</span>
@@ -198,15 +198,15 @@
 <div class="viewcode-block" id="ExplicitInitializationResult">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.explicit_initialization_symbolic.ExplicitInitializationResult">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">ExplicitInitializationResult</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Store the transactional outcome of common explicit initialization.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Store the transactional outcome of common explicit initialization."""</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;init_guess&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;diff_init_guess&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;converged&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;failed_variable&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;self_implicit_result&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;message&quot;</span><span class="p">,</span>
+        <span class="s2">"init_guess"</span><span class="p">,</span>
+        <span class="s2">"diff_init_guess"</span><span class="p">,</span>
+        <span class="s2">"converged"</span><span class="p">,</span>
+        <span class="s2">"failed_variable"</span><span class="p">,</span>
+        <span class="s2">"self_implicit_result"</span><span class="p">,</span>
+        <span class="s2">"message"</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
@@ -218,7 +218,7 @@
             <span class="n">self_implicit_result</span><span class="p">:</span> <span class="n">SelfImplicitSolveResult</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
             <span class="n">message</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Build the result returned by the common explicit initializer.</span>
+<span class="w">        </span><span class="sd">"""Build the result returned by the common explicit initializer.</span>
 
 <span class="sd">        :param init_guess: Committed algebraic and state initialization values.</span>
 <span class="sd">        :param diff_init_guess: Committed differential initialization values.</span>
@@ -227,7 +227,7 @@
 <span class="sd">        :param self_implicit_result: Scalar failure diagnostics, if present.</span>
 <span class="sd">        :param message: Human-readable outcome description.</span>
 <span class="sd">        :return: None.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">init_guess</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">complex</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="n">init_guess</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">diff_init_guess</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">complex</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="n">diff_init_guess</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">converged</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">converged</span>
@@ -236,7 +236,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">message</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">message</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">complex</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Expose the historical two-dictionary result without changing legacy callers.</span>
+<span class="w">        </span><span class="sd">"""Expose the historical two-dictionary result without changing legacy callers.</span>
 
 <span class="sd">        A failed result raises before yielding either dictionary, ensuring that</span>
 <span class="sd">        tuple-unpacking callers cannot silently continue with unresolved values.</span>
@@ -244,7 +244,7 @@
 <span class="sd">        :return: Iterator over the state/algebraic and differential guess dictionaries.</span>
 <span class="sd">        :rtype: Iterator[Dict[int, float | int | complex | None]]</span>
 <span class="sd">        :raises RuntimeError: If explicit initialization did not converge.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">converged</span><span class="p">:</span>
             <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">init_guess</span>
             <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">diff_init_guess</span>
@@ -269,7 +269,7 @@
         <span class="n">diff_init_guess</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">external_uid_values</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Build the UID-to-value bindings needed to evaluate one symbolic expression.</span>
 
 <span class="sd">    :param eq: Symbolic expression to analyze.</span>
@@ -295,7 +295,7 @@
 <span class="sd">    :param external_uid_values: Explicit values for variables owned outside the symbolic block.</span>
 <span class="sd">    :return: Numeric bindings for the expression variables.</span>
 <span class="sd">    :rtype: Dict[int, float]</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">uid_bindings</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
     <span class="n">vars_list</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Var</span><span class="p">]</span> <span class="o">=</span> <span class="n">find_vars_order</span><span class="p">(</span><span class="n">eq</span><span class="p">)</span>
 
@@ -335,10 +335,10 @@
     <span class="k">return</span> <span class="n">uid_bindings</span></div>
 
 
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 <span class="sd">This function initializes the parameters, variables and derivatives of symbolic blocks. </span>
 <span class="sd">Works for both RMS and EMT simulations since the symbolic block is the same.</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 
 
 
@@ -359,7 +359,7 @@
         <span class="n">diff_init_guess</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">external_uid_values</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">complex</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Evaluate one explicit initialization equation using the shared bindings.</span>
 
 <span class="sd">    :param eq: Symbolic expression or constant.</span>
@@ -386,7 +386,7 @@
 <span class="sd">    :return: Evaluated scalar value.</span>
 <span class="sd">    :rtype: float</span>
 <span class="sd">    :raises RuntimeError: If a constant equation has no concrete value.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">eq</span><span class="p">,</span> <span class="n">Const</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">eq</span><span class="o">.</span><span class="n">value</span>
     <span class="k">else</span><span class="p">:</span>
@@ -408,9 +408,9 @@
             <span class="k">return</span> <span class="n">eq</span><span class="o">.</span><span class="n">eval_uid</span><span class="p">(</span><span class="n">uid_bindings</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
             <span class="n">unresolved</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Var</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">vr</span> <span class="k">for</span> <span class="n">vr</span> <span class="ow">in</span> <span class="n">find_vars_order</span><span class="p">(</span><span class="n">eq</span><span class="p">)</span> <span class="k">if</span> <span class="n">vr</span><span class="o">.</span><span class="n">uid</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">uid_bindings</span><span class="p">]</span>
-            <span class="n">unresolved_desc</span> <span class="o">=</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">vr</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> (uid=</span><span class="si">{</span><span class="n">vr</span><span class="o">.</span><span class="n">uid</span><span class="si">}</span><span class="s2">)&quot;</span> <span class="k">for</span> <span class="n">vr</span> <span class="ow">in</span> <span class="n">unresolved</span><span class="p">)</span>
+            <span class="n">unresolved_desc</span> <span class="o">=</span> <span class="s2">", "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">vr</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> (uid=</span><span class="si">{</span><span class="n">vr</span><span class="o">.</span><span class="n">uid</span><span class="si">}</span><span class="s2">)"</span> <span class="k">for</span> <span class="n">vr</span> <span class="ow">in</span> <span class="n">unresolved</span><span class="p">)</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;Failed to evaluate explicit init equation &#39;</span><span class="si">{</span><span class="n">eq</span><span class="si">}</span><span class="s2">&#39; with unresolved vars: </span><span class="si">{</span><span class="n">unresolved_desc</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">"Failed to evaluate explicit init equation '</span><span class="si">{</span><span class="n">eq</span><span class="si">}</span><span class="s2">' with unresolved vars: </span><span class="si">{</span><span class="n">unresolved_desc</span><span class="si">}</span><span class="s2">"</span>
             <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span></div>
 
 
@@ -424,7 +424,7 @@
         <span class="n">event_params_array</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
         <span class="n">params_array</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Evaluate one compiled single-equation callable and normalize its scalar output.</span>
 
 <span class="sd">    The backend callable may return a length-one numpy vector or a scalar-like</span>
@@ -442,7 +442,7 @@
 <span class="sd">    :type params_array: np.ndarray</span>
 <span class="sd">    :return: Evaluated scalar value.</span>
 <span class="sd">    :rtype: float</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">result</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="n">eq_fn</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dx</span><span class="p">,</span> <span class="n">event_params_array</span><span class="p">,</span> <span class="n">params_array</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
@@ -461,7 +461,7 @@
         <span class="n">event_eq_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">result</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">complex</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">  Store the calculated value in the equations array</span>
 
 <span class="sd">    :param event_param:</span>
@@ -476,7 +476,7 @@
 <span class="sd">    :type result: float</span>
 <span class="sd">    :return: None</span>
 <span class="sd">    :rtype: None</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">resolved_event_eq</span><span class="p">:</span> <span class="n">Const</span> <span class="o">=</span> <span class="n">Const</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
 
     <span class="n">event_parameters_eqs</span><span class="p">[</span><span class="n">event_eq_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">resolved_event_eq</span>
@@ -488,11 +488,11 @@
 <div class="viewcode-block" id="SymbolicVectorSingleEquationCompiler">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.explicit_initialization_symbolic.SymbolicVectorSingleEquationCompiler">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">SymbolicVectorSingleEquationCompiler</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compile one self-implicit equation using the EMT symbolic-vector backend.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
-    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;_compiler_names_dict&quot;</span><span class="p">,</span> <span class="s2">&quot;_alias_names_dict&quot;</span><span class="p">,</span> <span class="s2">&quot;_vars_name&quot;</span><span class="p">,</span> <span class="s2">&quot;_diff_name&quot;</span><span class="p">,</span> <span class="s2">&quot;_event_params_name&quot;</span><span class="p">,</span> <span class="s2">&quot;_params_name&quot;</span><span class="p">)</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"_compiler_names_dict"</span><span class="p">,</span> <span class="s2">"_alias_names_dict"</span><span class="p">,</span> <span class="s2">"_vars_name"</span><span class="p">,</span> <span class="s2">"_diff_name"</span><span class="p">,</span> <span class="s2">"_event_params_name"</span><span class="p">,</span> <span class="s2">"_params_name"</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
@@ -503,7 +503,7 @@
             <span class="n">event_params_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
             <span class="n">params_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Build the EMT single-equation compiler wrapper.</span>
 
 <span class="sd">        :param compiler_names_dict: Compiler variable name map.</span>
@@ -520,7 +520,7 @@
 <span class="sd">        :type params_name: str</span>
 <span class="sd">        :return: None</span>
 <span class="sd">        :rtype: None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_compiler_names_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">compiler_names_dict</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_alias_names_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">alias_names_dict</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_vars_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">vars_name</span>
@@ -534,7 +534,7 @@
             <span class="bp">self</span><span class="p">,</span>
             <span class="n">eq</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Expr</span><span class="p">,</span> <span class="n">Const</span><span class="p">],</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Compile one symbolic equation with the EMT symbolic-vector backend.</span>
 
 <span class="sd">        :param eq: Equation to compile.</span>
@@ -542,9 +542,9 @@
 <span class="sd">        :return: Evaluator with signature ``(x, dx, event_params, params)``.</span>
 <span class="sd">        :rtype: Callable[[np.ndarray, np.ndarray, np.ndarray, np.ndarray], np.ndarray]</span>
 <span class="sd">        :raises TypeError: If the equation is not symbolic.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">eq</span><span class="p">,</span> <span class="n">Const</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Self-implicit initialization requires a symbolic expression, not a constant&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">"Self-implicit initialization requires a symbolic expression, not a constant"</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">compiled_eq</span><span class="p">:</span> <span class="n">SymbolicVector</span> <span class="o">=</span> <span class="n">SymbolicVector</span><span class="p">(</span>
                 <span class="p">[</span><span class="n">eq</span><span class="p">],</span>
@@ -563,18 +563,18 @@
 <div class="viewcode-block" id="RmsSingleEquationCompiler">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.explicit_initialization_symbolic.RmsSingleEquationCompiler">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">RmsSingleEquationCompiler</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compile one self-implicit equation using the RMS JIT backend.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
-    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;_rms_compiler&quot;</span><span class="p">,</span> <span class="s2">&quot;_func_name_prefix&quot;</span><span class="p">,</span> <span class="s2">&quot;_counter&quot;</span><span class="p">)</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"_rms_compiler"</span><span class="p">,</span> <span class="s2">"_func_name_prefix"</span><span class="p">,</span> <span class="s2">"_counter"</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
             <span class="n">rms_compiler</span><span class="p">:</span> <span class="n">RMSCompiler</span><span class="p">,</span>
-            <span class="n">func_name_prefix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;equation&quot;</span><span class="p">,</span>
+            <span class="n">func_name_prefix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"equation"</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Build the RMS single-equation compiler wrapper.</span>
 
 <span class="sd">        :param rms_compiler: Configured RMS compiler instance.</span>
@@ -583,7 +583,7 @@
 <span class="sd">        :type func_name_prefix: str</span>
 <span class="sd">        :return: None</span>
 <span class="sd">        :rtype: None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_rms_compiler</span><span class="p">:</span> <span class="n">RMSCompiler</span> <span class="o">=</span> <span class="n">rms_compiler</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_func_name_prefix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">func_name_prefix</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_counter</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
@@ -594,7 +594,7 @@
             <span class="bp">self</span><span class="p">,</span>
             <span class="n">eq</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Expr</span><span class="p">,</span> <span class="n">Const</span><span class="p">],</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Compile one symbolic equation with the RMS JIT backend.</span>
 
 <span class="sd">        :param eq: Equation to compile.</span>
@@ -602,11 +602,11 @@
 <span class="sd">        :return: Evaluator with signature ``(x, dx, event_params, params)``.</span>
 <span class="sd">        :rtype: Callable[[np.ndarray, np.ndarray, np.ndarray, np.ndarray], np.ndarray]</span>
 <span class="sd">        :raises TypeError: If the equation is not symbolic.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">eq</span><span class="p">,</span> <span class="n">Const</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Self-implicit initialization requires a symbolic expression, not a constant&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">"Self-implicit initialization requires a symbolic expression, not a constant"</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">func_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_func_name_prefix</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_counter</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="n">func_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_func_name_prefix</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_counter</span><span class="si">}</span><span class="s2">"</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_counter</span> <span class="o">+=</span> <span class="mi">1</span>
             <span class="n">compiled_eq</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rms_compiler</span><span class="o">.</span><span class="n">compile_rhs</span><span class="p">([</span><span class="n">eq</span><span class="p">],</span> <span class="n">func_name</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">compiled_eq</span></div>
@@ -620,7 +620,7 @@
         <span class="n">compile_single_equation</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">SymbolicVectorSingleEquationCompiler</span><span class="p">,</span> <span class="n">RmsSingleEquationCompiler</span><span class="p">],</span>
         <span class="n">eq</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Expr</span><span class="p">,</span> <span class="n">Const</span><span class="p">],</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compile one equation through the explicit wrapper object.</span>
 
 <span class="sd">    :param compile_single_equation: Wrapper object selecting the backend.</span>
@@ -630,7 +630,7 @@
 <span class="sd">    :return: Evaluator with signature ``(x, dx, event_params, params)``.</span>
 <span class="sd">    :rtype: Callable[[np.ndarray, np.ndarray, np.ndarray, np.ndarray], Union[np.ndarray, float]]</span>
 <span class="sd">    :raises TypeError: If the wrapper object type is unsupported.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">compile_single_equation</span><span class="p">,</span> <span class="n">SymbolicVectorSingleEquationCompiler</span><span class="p">):</span>
         <span class="n">compiled_eq</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
             <span class="n">compile_single_equation</span><span class="o">.</span><span class="n">compile_equation</span><span class="p">(</span><span class="n">eq</span><span class="p">))</span>
@@ -639,14 +639,14 @@
         <span class="n">compiled_eq</span> <span class="o">=</span> <span class="n">compile_single_equation</span><span class="o">.</span><span class="n">compile_equation</span><span class="p">(</span><span class="n">eq</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">compiled_eq</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Unsupported explicit initialization single-equation compiler wrapper&quot;</span><span class="p">)</span></div>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">"Unsupported explicit initialization single-equation compiler wrapper"</span><span class="p">)</span></div>
 
 
 
 <div class="viewcode-block" id="add_items">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.explicit_initialization_symbolic.add_items">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">add_items</span><span class="p">(</span><span class="n">blk</span><span class="p">,</span> <span class="n">init_vars</span><span class="p">,</span> <span class="n">init_event</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    adds items from a block to the dictionary</span>
 <span class="sd">    :param blk:</span>
 <span class="sd">    :type blk:</span>
@@ -655,7 +655,7 @@
 <span class="sd">    init_dict</span>
 <span class="sd">    :return:</span>
 <span class="sd">    :rtype:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">init_var_key</span><span class="p">:</span> <span class="n">Var</span>
     <span class="n">init_var_value</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Expr</span><span class="p">,</span> <span class="n">Const</span><span class="p">]</span>
@@ -681,7 +681,7 @@
 <div class="viewcode-block" id="build_init_dict">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.explicit_initialization_symbolic.build_init_dict">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">build_init_dict</span><span class="p">(</span><span class="n">mdl</span><span class="p">,</span> <span class="n">init_vars</span><span class="p">,</span> <span class="n">init_event</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    builds initialization dictionary from mdl</span>
 <span class="sd">    :param mdl:</span>
 <span class="sd">    :type mdl:</span>
@@ -691,7 +691,7 @@
 <span class="sd">    init_dict</span>
 <span class="sd">    :return:</span>
 <span class="sd">    :rtype:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">add_items</span><span class="p">(</span><span class="n">mdl</span><span class="p">,</span> <span class="n">init_vars</span><span class="p">,</span> <span class="n">init_event</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">blk</span> <span class="ow">in</span> <span class="n">mdl</span><span class="o">.</span><span class="n">children</span><span class="p">:</span>
         <span class="n">build_init_dict</span><span class="p">(</span><span class="n">blk</span><span class="p">,</span> <span class="n">init_vars</span><span class="p">,</span> <span class="n">init_event</span><span class="p">)</span></div>
@@ -701,11 +701,11 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">_coerce_procedural_initial_expression</span><span class="p">(</span>
         <span class="n">expression</span><span class="p">:</span> <span class="n">Expr</span> <span class="o">|</span> <span class="n">Comparison</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">bool</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Expr</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert one procedural startup source into a symbolic expression.</span>
+<span class="w">    </span><span class="sd">"""Convert one procedural startup source into a symbolic expression.</span>
 
 <span class="sd">    :param expression: Procedural expression or scalar startup value.</span>
 <span class="sd">    :return: Symbolic expression accepted by the explicit dependency graph.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">expression</span><span class="p">,</span> <span class="n">Comparison</span><span class="p">):</span>
         <span class="n">result</span><span class="p">:</span> <span class="n">Expr</span> <span class="o">=</span> <span class="n">expression</span><span class="o">.</span><span class="n">to_expression</span><span class="p">()</span>
     <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">expression</span><span class="p">,</span> <span class="n">Expr</span><span class="p">):</span>
@@ -718,7 +718,7 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">_coerce_procedural_boolean_initial_expression</span><span class="p">(</span>
         <span class="n">expression</span><span class="p">:</span> <span class="n">Expr</span> <span class="o">|</span> <span class="n">Comparison</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">bool</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Expr</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert one procedural condition into its zero-or-one startup value.</span>
+<span class="w">    </span><span class="sd">"""Convert one procedural condition into its zero-or-one startup value.</span>
 
 <span class="sd">    Procedural runtime conditions use a strict ``&gt; 0.5`` threshold. Explicit</span>
 <span class="sd">    initialization must apply the same rule when a model supplies a numeric</span>
@@ -726,7 +726,7 @@
 
 <span class="sd">    :param expression: Procedural condition or scalar startup value.</span>
 <span class="sd">    :return: Symbolic zero-or-one expression matching runtime evaluation.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">expression</span><span class="p">,</span> <span class="n">Comparison</span><span class="p">):</span>
         <span class="n">result</span><span class="p">:</span> <span class="n">Expr</span> <span class="o">=</span> <span class="n">expression</span><span class="o">.</span><span class="n">to_expression</span><span class="p">()</span>
     <span class="k">else</span><span class="p">:</span>
@@ -740,7 +740,7 @@
         <span class="n">output_var_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">output_var_uid</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Var</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Resolve one procedural output against declared runtime parameters.</span>
+<span class="w">    </span><span class="sd">"""Resolve one procedural output against declared runtime parameters.</span>
 
 <span class="sd">    Stable UID is authoritative for current files. Name lookup remains as the</span>
 <span class="sd">    legacy fallback and succeeds only when the name is unambiguous.</span>
@@ -749,7 +749,7 @@
 <span class="sd">    :param output_var_name: Persisted output name used by legacy entries.</span>
 <span class="sd">    :param output_var_uid: Stable output UID when present in the entry.</span>
 <span class="sd">    :return: Matching runtime variable, or ``None`` when it cannot be resolved safely.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">output_var</span><span class="p">:</span> <span class="n">Var</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">candidate_var</span><span class="p">:</span> <span class="n">Var</span>
 
@@ -780,7 +780,7 @@
         <span class="n">mdl</span><span class="p">:</span> <span class="n">Block</span><span class="p">,</span>
         <span class="n">init_event</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Var</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="n">Expr</span><span class="p">,</span> <span class="n">Const</span><span class="p">]],</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Promote deterministic procedural startup values into the init graph.</span>
+<span class="w">    </span><span class="sd">"""Promote deterministic procedural startup values into the init graph.</span>
 
 <span class="sd">    Pure sampling, delay-history, gradient, saturation and startup-deterministic</span>
 <span class="sd">    latch entries all have a well-defined first value. Their outputs remain in</span>
@@ -792,7 +792,7 @@
 <span class="sd">    :param mdl: Symbolic block whose procedural entries are inspected.</span>
 <span class="sd">    :param init_event: Runtime initialization equations updated in place.</span>
 <span class="sd">    :return: None.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">procedural_entry</span><span class="p">:</span> <span class="nb">object</span>
 
     <span class="k">for</span> <span class="n">procedural_entry</span> <span class="ow">in</span> <span class="n">mdl</span><span class="o">.</span><span class="n">procedural_logic</span><span class="p">:</span>
@@ -859,11 +859,11 @@
                 <span class="n">expression</span><span class="o">=</span><span class="n">procedural_entry</span><span class="o">.</span><span class="n">input_expr</span><span class="p">,</span>
             <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">output_var_name</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+            <span class="n">output_var_name</span> <span class="o">=</span> <span class="s2">""</span>
             <span class="n">output_var_uid</span> <span class="o">=</span> <span class="kc">None</span>
             <span class="n">source_expression</span> <span class="o">=</span> <span class="kc">None</span>
 
-        <span class="k">if</span> <span class="n">output_var_name</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span> <span class="ow">or</span> <span class="n">source_expression</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">output_var_name</span> <span class="o">==</span> <span class="s2">""</span> <span class="ow">or</span> <span class="n">source_expression</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">pass</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">output_var</span><span class="p">:</span> <span class="n">Var</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">_find_procedural_initial_output</span><span class="p">(</span>
@@ -891,7 +891,7 @@
         <span class="n">mdl</span><span class="p">:</span> <span class="n">Block</span><span class="p">,</span>
         <span class="n">direct_initializers</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Var</span><span class="p">,</span> <span class="n">Expr</span><span class="p">],</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Collect explicit ``variable - expression`` algebraic assignments.</span>
+<span class="w">    </span><span class="sd">"""Collect explicit ``variable - expression`` algebraic assignments.</span>
 
 <span class="sd">    PowerFactory ``inc(...)`` expressions can depend on an intermediate</span>
 <span class="sd">    algebraic assignment. Those intermediates must be evaluated before the</span>
@@ -901,7 +901,7 @@
 <span class="sd">    :param mdl: Symbolic block whose algebraic equations are inspected.</span>
 <span class="sd">    :param direct_initializers: Direct assignments collected recursively.</span>
 <span class="sd">    :return: None.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">algebraic_var_uids</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
     <span class="n">state_var_uids</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
     <span class="n">all_blocks</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Block</span><span class="p">]</span> <span class="o">=</span> <span class="n">mdl</span><span class="o">.</span><span class="n">get_all_blocks</span><span class="p">()</span>
@@ -933,7 +933,7 @@
     <span class="k">for</span> <span class="n">algebraic_eq</span> <span class="ow">in</span> <span class="n">mdl</span><span class="o">.</span><span class="n">algebraic_eqs</span><span class="p">:</span>
         <span class="k">if</span> <span class="p">(</span>
                 <span class="nb">isinstance</span><span class="p">(</span><span class="n">algebraic_eq</span><span class="p">,</span> <span class="n">BinOp</span><span class="p">)</span>
-                <span class="ow">and</span> <span class="n">algebraic_eq</span><span class="o">.</span><span class="n">op</span> <span class="o">==</span> <span class="s2">&quot;-&quot;</span>
+                <span class="ow">and</span> <span class="n">algebraic_eq</span><span class="o">.</span><span class="n">op</span> <span class="o">==</span> <span class="s2">"-"</span>
                 <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">algebraic_eq</span><span class="o">.</span><span class="n">left</span><span class="p">,</span> <span class="n">Var</span><span class="p">)</span>
                 <span class="ow">and</span> <span class="n">algebraic_eq</span><span class="o">.</span><span class="n">left</span><span class="o">.</span><span class="n">uid</span> <span class="ow">in</span> <span class="n">algebraic_var_uids</span>
                 <span class="ow">and</span> <span class="ow">not</span> <span class="n">algebraic_eq</span><span class="o">.</span><span class="n">right</span><span class="o">.</span><span class="n">contains_var</span><span class="p">(</span><span class="n">algebraic_eq</span><span class="o">.</span><span class="n">left</span><span class="p">)</span>
@@ -959,7 +959,7 @@
         <span class="n">init_vars</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Var</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="n">Expr</span><span class="p">,</span> <span class="n">Const</span><span class="p">]],</span>
         <span class="n">visited_uids</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check whether one initialization dependency reaches a target variable.</span>
+<span class="w">    </span><span class="sd">"""Check whether one initialization dependency reaches a target variable.</span>
 
 <span class="sd">    Direct algebraic assignments are inferred from DAE residuals rather than</span>
 <span class="sd">    explicitly declared as initialization equations. Before admitting one of</span>
@@ -971,7 +971,7 @@
 <span class="sd">    :param init_vars: Candidate initialization equations indexed by target variable.</span>
 <span class="sd">    :param visited_uids: Variable identities already inspected during this traversal.</span>
 <span class="sd">    :return: Whether the dependency chain reaches ``target_uid``.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">start_var</span><span class="o">.</span><span class="n">uid</span> <span class="o">==</span> <span class="n">target_uid</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">True</span>
     <span class="k">else</span><span class="p">:</span>
@@ -1019,13 +1019,13 @@
         <span class="n">direct_initializers</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Var</span><span class="p">,</span> <span class="n">Expr</span><span class="p">],</span>
         <span class="n">preserved_var_uids</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Add direct algebraic assignments required by initialization equations.</span>
+<span class="w">    </span><span class="sd">"""Add direct algebraic assignments required by initialization equations.</span>
 
 <span class="sd">    :param init_vars: Unified explicit initialization equations, updated in place.</span>
 <span class="sd">    :param direct_initializers: Available direct algebraic assignments.</span>
 <span class="sd">    :param preserved_var_uids: Variables already seeded by an external operating point.</span>
 <span class="sd">    :return: None.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">dependency_added</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
 
     <span class="c1"># Re-scan a fixed snapshot on each pass because a newly added direct</span>
@@ -1083,7 +1083,7 @@
         <span class="n">mdl</span><span class="p">:</span> <span class="n">Block</span><span class="p">,</span>
         <span class="n">preserved_var_uids</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">set</span><span class="p">[</span><span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="n">Var</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="n">Expr</span><span class="p">,</span> <span class="n">Const</span><span class="p">]],</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Var</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">Var</span><span class="p">]],</span> <span class="n">List</span><span class="p">[</span><span class="n">Var</span><span class="p">],</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Var</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="n">Expr</span><span class="p">,</span> <span class="n">Const</span><span class="p">]]]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Build the unified dependency graph used by the explicit initializer.</span>
 
 <span class="sd">    :param mdl: Symbolic block containing event, init, and diff-init equations.</span>
@@ -1093,7 +1093,7 @@
 <span class="sd">    :return: Unified equation dictionary, dependency map, and topological order.</span>
 <span class="sd">    :rtype: Tuple[Dict[Var, Union[Expr, Const]], Dict[Var, List[Var]], List[Var]]</span>
 <span class="sd">    :raises RuntimeError: If a cross-variable cycle is detected.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">normalize_event_parameter_initialization</span><span class="p">(</span><span class="n">block</span><span class="o">=</span><span class="n">mdl</span><span class="p">)</span>
 
     <span class="n">init_vars</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
@@ -1195,13 +1195,13 @@
                 <span class="n">dep_var</span><span class="p">:</span> <span class="n">Var</span>
                 <span class="k">for</span> <span class="n">dep_var</span> <span class="ow">in</span> <span class="n">deps</span><span class="p">:</span>
                     <span class="n">dep_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">dep_var</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
-                <span class="n">cyclic_dependencies</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">cyclic_var</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> &lt;- </span><span class="si">{</span><span class="n">dep_names</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">cyclic_dependencies</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">cyclic_var</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> &lt;- </span><span class="si">{</span><span class="n">dep_names</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">cyclic_dependencies</span> <span class="o">=</span> <span class="n">cyclic_dependencies</span>
 
         <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-            <span class="s2">&quot;Cycle detected between different variables: &quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;vars=</span><span class="si">{</span><span class="n">cyclic_vars</span><span class="si">}</span><span class="s2">; deps=</span><span class="si">{</span><span class="n">cyclic_dependencies</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="s2">"Cycle detected between different variables: "</span>
+            <span class="sa">f</span><span class="s2">"vars=</span><span class="si">{</span><span class="n">cyclic_vars</span><span class="si">}</span><span class="s2">; deps=</span><span class="si">{</span><span class="n">cyclic_dependencies</span><span class="si">}</span><span class="s2">"</span>
         <span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">init_vars</span><span class="p">,</span> <span class="n">dependencies</span><span class="p">,</span> <span class="n">topo_order</span><span class="p">,</span> <span class="n">init_event</span></div>
@@ -1218,7 +1218,7 @@
         <span class="n">event_params_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">params_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SymbolicVectorSingleEquationCompiler</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Build the EMT single-equation compiler wrapper.</span>
 
 <span class="sd">    :param compiler_names_dict: Compiler variable name map.</span>
@@ -1235,7 +1235,7 @@
 <span class="sd">    :type params_name: str</span>
 <span class="sd">    :return: Wrapper object compiling one equation to the common four-array signature.</span>
 <span class="sd">    :rtype: SymbolicVectorSingleEquationCompiler</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">compiler_wrapper</span><span class="p">:</span> <span class="n">SymbolicVectorSingleEquationCompiler</span> <span class="o">=</span> <span class="n">SymbolicVectorSingleEquationCompiler</span><span class="p">(</span>
         <span class="n">compiler_names_dict</span><span class="o">=</span><span class="n">compiler_names_dict</span><span class="p">,</span>
         <span class="n">alias_names_dict</span><span class="o">=</span><span class="n">alias_names_dict</span><span class="p">,</span>
@@ -1252,9 +1252,9 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.explicit_initialization_symbolic.build_rms_single_equation_compiler">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">build_rms_single_equation_compiler</span><span class="p">(</span>
         <span class="n">rms_compiler</span><span class="p">:</span> <span class="n">RMSCompiler</span><span class="p">,</span>
-        <span class="n">func_name_prefix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;equation&quot;</span><span class="p">,</span>
+        <span class="n">func_name_prefix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"equation"</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RmsSingleEquationCompiler</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Build the RMS single-equation compiler wrapper.</span>
 
 <span class="sd">    :param rms_compiler: Configured RMS compiler instance.</span>
@@ -1263,7 +1263,7 @@
 <span class="sd">    :type func_name_prefix: str</span>
 <span class="sd">    :return: Wrapper object compiling one equation to the common four-array signature.</span>
 <span class="sd">    :rtype: RmsSingleEquationCompiler</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">compiler_wrapper</span><span class="p">:</span> <span class="n">RmsSingleEquationCompiler</span> <span class="o">=</span> <span class="n">RmsSingleEquationCompiler</span><span class="p">(</span>
         <span class="n">rms_compiler</span><span class="o">=</span><span class="n">rms_compiler</span><span class="p">,</span>
         <span class="n">func_name_prefix</span><span class="o">=</span><span class="n">func_name_prefix</span><span class="p">,</span>
@@ -1285,7 +1285,7 @@
         <span class="n">tol</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-8</span><span class="p">,</span>
         <span class="n">max_iter</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">50</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SelfImplicitSolveResult</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Solve a scalar self-implicit initialization equation with the shared signature.</span>
 
 <span class="sd">    :param eq_fn: Compiled single-equation callable.</span>
@@ -1309,7 +1309,7 @@
 <span class="sd">    :return: Scalar solution candidate and exact convergence diagnostics. Failed</span>
 <span class="sd">        candidates are never committed to ``target_array``.</span>
 <span class="sd">    :rtype: SelfImplicitSolveResult</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">original_value</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">target_array</span><span class="p">[</span><span class="n">target_idx</span><span class="p">])</span>
     <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">original_value</span><span class="p">):</span>
         <span class="k">pass</span>
@@ -1318,7 +1318,7 @@
             <span class="n">value</span><span class="o">=</span><span class="n">original_value</span><span class="p">,</span>
             <span class="n">converged</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
             <span class="n">iterations</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
-            <span class="n">residual</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="s2">&quot;inf&quot;</span><span class="p">),</span>
+            <span class="n">residual</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="s2">"inf"</span><span class="p">),</span>
             <span class="n">status</span><span class="o">=</span><span class="n">SelfImplicitSolveStatus</span><span class="o">.</span><span class="n">INVALID_INITIAL_GUESS</span><span class="p">,</span>
         <span class="p">)</span>
 
@@ -1328,7 +1328,7 @@
     <span class="n">x0</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">original_value</span>
     <span class="n">x1</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">x0</span> <span class="o">+</span> <span class="mf">0.1</span>
     <span class="n">final_candidate</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">x0</span>
-    <span class="n">final_residual</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s2">&quot;inf&quot;</span><span class="p">)</span>
+    <span class="n">final_residual</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s2">"inf"</span><span class="p">)</span>
     <span class="n">iteration_index</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
 
     <span class="k">try</span><span class="p">:</span>
@@ -1348,7 +1348,7 @@
                 <span class="n">value</span><span class="o">=</span><span class="n">x0</span><span class="p">,</span>
                 <span class="n">converged</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                 <span class="n">iterations</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
-                <span class="n">residual</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="s2">&quot;inf&quot;</span><span class="p">),</span>
+                <span class="n">residual</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="s2">"inf"</span><span class="p">),</span>
                 <span class="n">status</span><span class="o">=</span><span class="n">SelfImplicitSolveStatus</span><span class="o">.</span><span class="n">NON_FINITE_RESIDUAL</span><span class="p">,</span>
             <span class="p">)</span>
 
@@ -1382,7 +1382,7 @@
                     <span class="n">value</span><span class="o">=</span><span class="n">final_candidate</span><span class="p">,</span>
                     <span class="n">converged</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                     <span class="n">iterations</span><span class="o">=</span><span class="n">iteration_index</span><span class="p">,</span>
-                    <span class="n">residual</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="s2">&quot;inf&quot;</span><span class="p">),</span>
+                    <span class="n">residual</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="s2">"inf"</span><span class="p">),</span>
                     <span class="n">status</span><span class="o">=</span><span class="n">SelfImplicitSolveStatus</span><span class="o">.</span><span class="n">NON_FINITE_RESIDUAL</span><span class="p">,</span>
                 <span class="p">)</span>
 
@@ -1444,7 +1444,7 @@
         <span class="n">mdl</span><span class="p">:</span> <span class="n">Block</span><span class="p">,</span>
         <span class="n">external_name_values</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Resolve external symbolic inputs to their exact equation UIDs.</span>
+<span class="w">    </span><span class="sd">"""Resolve external symbolic inputs to their exact equation UIDs.</span>
 
 <span class="sd">    Imported expressions may own external variables that are intentionally not</span>
 <span class="sd">    part of the DAE state, derivative, or parameter vectors. The RMS wrapper</span>
@@ -1454,7 +1454,7 @@
 <span class="sd">    :param mdl: Symbolic block whose initialization graph consumes external inputs.</span>
 <span class="sd">    :param external_name_values: External values keyed by declared symbolic name.</span>
 <span class="sd">    :return: External values keyed by the exact variable UIDs used by the block.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">external_uid_values</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
     <span class="n">runtime_block</span><span class="p">:</span> <span class="n">Block</span>
     <span class="k">for</span> <span class="n">runtime_block</span> <span class="ow">in</span> <span class="n">mdl</span><span class="o">.</span><span class="n">get_all_blocks</span><span class="p">():</span>
@@ -1517,7 +1517,7 @@
         <span class="n">event_params_array_seed</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ExplicitInitializationResult</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Run the universal explicit initialization core shared by RMS and EMT flows.</span>
 
 <span class="sd">    :param mdl: Symbolic model block.</span>
@@ -1559,7 +1559,7 @@
 <span class="sd">    :return: Transactional explicit-initialization result. The caller-owned</span>
 <span class="sd">        dictionaries and runtime-equation list are updated only on success.</span>
 <span class="sd">    :rtype: ExplicitInitializationResult</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">_</span> <span class="o">=</span> <span class="n">constant_parameters</span>
 
     <span class="c1"># Resolve the complete block on local stores. A failed self-implicit</span>
@@ -1579,8 +1579,8 @@
         <span class="n">event_params_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">event_params_array_seed</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">event_params_array</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">variable_parameters</span><span class="p">),):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s2">&quot;Explicit initialization runtime seed has shape &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">event_params_array</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">; expected </span><span class="si">{</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">variable_parameters</span><span class="p">),)</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="s2">"Explicit initialization runtime seed has shape "</span>
+                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">event_params_array</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">; expected </span><span class="si">{</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">variable_parameters</span><span class="p">),)</span><span class="si">}</span><span class="s2">"</span>
             <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">pass</span>
@@ -1598,7 +1598,7 @@
             <span class="k">if</span> <span class="n">parameter_value</span><span class="o">.</span><span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">parameter_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">constant_parameters</span><span class="p">[</span><span class="n">parameter_index</span><span class="p">]</span><span class="o">.</span><span class="n">name</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;Constant parameter &#39;</span><span class="si">{</span><span class="n">parameter_name</span><span class="si">}</span><span class="s2">&#39; has no explicit initialization value&quot;</span>
+                    <span class="sa">f</span><span class="s2">"Constant parameter '</span><span class="si">{</span><span class="n">parameter_name</span><span class="si">}</span><span class="s2">' has no explicit initialization value"</span>
                 <span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">numeric_params_array</span><span class="p">[</span><span class="n">parameter_index</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">parameter_value</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
@@ -1669,7 +1669,7 @@
             <span class="p">)</span>
 
             <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;event_param:</span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> initialized with: </span><span class="si">{</span><span class="n">result</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"event_param:</span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> initialized with: </span><span class="si">{</span><span class="n">result</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">pass</span>
 
@@ -1697,7 +1697,7 @@
                     <span class="n">dx</span><span class="p">[</span><span class="n">uid2idx_diff</span><span class="p">[</span><span class="n">var</span><span class="o">.</span><span class="n">uid</span><span class="p">]]</span> <span class="o">=</span> <span class="n">result</span>
                     <span class="n">working_diff_init_guess</span><span class="p">[</span><span class="n">var</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unable to classify explicit variable </span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unable to classify explicit variable </span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
             <span class="k">else</span><span class="p">:</span>
                 <span class="c1"># Todo: refactor this to use compile_rhs function already built in jit_compiler</span>
@@ -1721,10 +1721,10 @@
                         <span class="n">working_init_guess</span><span class="p">[</span><span class="n">var</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span>
                     <span class="k">else</span><span class="p">:</span>
                         <span class="n">failure_message</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="p">(</span>
-                            <span class="sa">f</span><span class="s2">&quot;Self-implicit initialization did not converge for &#39;</span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39;: &quot;</span>
-                            <span class="sa">f</span><span class="s2">&quot;status=</span><span class="si">{</span><span class="n">self_implicit_result</span><span class="o">.</span><span class="n">status</span><span class="si">}</span><span class="s2">, &quot;</span>
-                            <span class="sa">f</span><span class="s2">&quot;iterations=</span><span class="si">{</span><span class="n">self_implicit_result</span><span class="o">.</span><span class="n">iterations</span><span class="si">}</span><span class="s2">, &quot;</span>
-                            <span class="sa">f</span><span class="s2">&quot;residual=</span><span class="si">{</span><span class="n">self_implicit_result</span><span class="o">.</span><span class="n">residual</span><span class="si">:</span><span class="s2">.6g</span><span class="si">}</span><span class="s2">.&quot;</span>
+                            <span class="sa">f</span><span class="s2">"Self-implicit initialization did not converge for '</span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">': "</span>
+                            <span class="sa">f</span><span class="s2">"status=</span><span class="si">{</span><span class="n">self_implicit_result</span><span class="o">.</span><span class="n">status</span><span class="si">}</span><span class="s2">, "</span>
+                            <span class="sa">f</span><span class="s2">"iterations=</span><span class="si">{</span><span class="n">self_implicit_result</span><span class="o">.</span><span class="n">iterations</span><span class="si">}</span><span class="s2">, "</span>
+                            <span class="sa">f</span><span class="s2">"residual=</span><span class="si">{</span><span class="n">self_implicit_result</span><span class="o">.</span><span class="n">residual</span><span class="si">:</span><span class="s2">.6g</span><span class="si">}</span><span class="s2">."</span>
                         <span class="p">)</span>
                         <span class="k">return</span> <span class="n">ExplicitInitializationResult</span><span class="p">(</span>
                             <span class="n">init_guess</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">init_guess</span><span class="p">),</span>
@@ -1751,10 +1751,10 @@
                         <span class="n">working_diff_init_guess</span><span class="p">[</span><span class="n">var</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span>
                     <span class="k">else</span><span class="p">:</span>
                         <span class="n">failure_message</span> <span class="o">=</span> <span class="p">(</span>
-                            <span class="sa">f</span><span class="s2">&quot;Self-implicit initialization did not converge for &#39;</span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39;: &quot;</span>
-                            <span class="sa">f</span><span class="s2">&quot;status=</span><span class="si">{</span><span class="n">self_implicit_result</span><span class="o">.</span><span class="n">status</span><span class="si">}</span><span class="s2">, &quot;</span>
-                            <span class="sa">f</span><span class="s2">&quot;iterations=</span><span class="si">{</span><span class="n">self_implicit_result</span><span class="o">.</span><span class="n">iterations</span><span class="si">}</span><span class="s2">, &quot;</span>
-                            <span class="sa">f</span><span class="s2">&quot;residual=</span><span class="si">{</span><span class="n">self_implicit_result</span><span class="o">.</span><span class="n">residual</span><span class="si">:</span><span class="s2">.6g</span><span class="si">}</span><span class="s2">.&quot;</span>
+                            <span class="sa">f</span><span class="s2">"Self-implicit initialization did not converge for '</span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">': "</span>
+                            <span class="sa">f</span><span class="s2">"status=</span><span class="si">{</span><span class="n">self_implicit_result</span><span class="o">.</span><span class="n">status</span><span class="si">}</span><span class="s2">, "</span>
+                            <span class="sa">f</span><span class="s2">"iterations=</span><span class="si">{</span><span class="n">self_implicit_result</span><span class="o">.</span><span class="n">iterations</span><span class="si">}</span><span class="s2">, "</span>
+                            <span class="sa">f</span><span class="s2">"residual=</span><span class="si">{</span><span class="n">self_implicit_result</span><span class="o">.</span><span class="n">residual</span><span class="si">:</span><span class="s2">.6g</span><span class="si">}</span><span class="s2">."</span>
                         <span class="p">)</span>
                         <span class="k">return</span> <span class="n">ExplicitInitializationResult</span><span class="p">(</span>
                             <span class="n">init_guess</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">init_guess</span><span class="p">),</span>
@@ -1765,10 +1765,10 @@
                             <span class="n">message</span><span class="o">=</span><span class="n">failure_message</span><span class="p">,</span>
                         <span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unable to classify self-implicit variable </span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unable to classify self-implicit variable </span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;explicit_init:</span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> = </span><span class="si">{</span><span class="n">result</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"explicit_init:</span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> = </span><span class="si">{</span><span class="n">result</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">pass</span>
 
@@ -1791,7 +1791,7 @@
         <span class="n">converged</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
         <span class="n">failed_variable</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">self_implicit_result</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-        <span class="n">message</span><span class="o">=</span><span class="s2">&quot;Explicit initialization completed successfully.&quot;</span><span class="p">,</span>
+        <span class="n">message</span><span class="o">=</span><span class="s2">"Explicit initialization completed successfully."</span><span class="p">,</span>
     <span class="p">)</span></div>
 
 </pre></div>

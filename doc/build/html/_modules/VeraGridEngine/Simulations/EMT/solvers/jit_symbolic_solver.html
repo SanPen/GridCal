@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Simulations.EMT.solvers.jit_symbolic_solver &mdash; VeraGrid 6.7.13 documentation</title>
+  <title>VeraGridEngine.Simulations.EMT.solvers.jit_symbolic_solver &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../../_static/documentation_options.js?v=16fbabd8"></script>
+      <script src="../../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../../_static/js/theme.js"></script>
@@ -149,7 +149,7 @@
         <span class="n">runtime_params</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
         <span class="n">t0</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Use trapezoidal BDF2 startup only when its initial slope is valid.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Use trapezoidal BDF2 startup only when its initial slope is valid."""</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">bindings</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
             <span class="n">uid</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">x0</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span> <span class="k">for</span> <span class="n">uid</span><span class="p">,</span> <span class="n">idx</span> <span class="ow">in</span> <span class="n">problem</span><span class="o">.</span><span class="n">uid2idx_vars</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
@@ -182,39 +182,39 @@
 <div class="viewcode-block" id="SymbolicCompiledNumbaKernelCache">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.solvers.html#VeraGridEngine.Simulations.EMT.solvers.jit_symbolic_solver.SymbolicCompiledNumbaKernelCache">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">SymbolicCompiledNumbaKernelCache</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    In-process cache of Numba-compiled symbolic kernels.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
-    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;_cache&quot;</span><span class="p">]</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"_cache"</span><span class="p">]</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Build the symbolic compiled-kernel cache.</span>
 
 <span class="sd">        :return: None.</span>
 <span class="sd">        :rtype: None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
 
 <div class="viewcode-block" id="SymbolicCompiledNumbaKernelCache.get">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.solvers.html#VeraGridEngine.Simulations.EMT.solvers.jit_symbolic_solver.SymbolicCompiledNumbaKernelCache.get">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cache_key</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return one cached compiled kernel.</span>
 
 <span class="sd">        :param cache_key: Deterministic cache key.</span>
 <span class="sd">        :type cache_key: str</span>
 <span class="sd">        :return: Cached compiled kernel or ``None``.</span>
 <span class="sd">        :rtype: Callable[..., Any] | None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">cache_key</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="SymbolicCompiledNumbaKernelCache.set">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.solvers.html#VeraGridEngine.Simulations.EMT.solvers.jit_symbolic_solver.SymbolicCompiledNumbaKernelCache.set">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cache_key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">kernel</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Store one compiled kernel.</span>
 
 <span class="sd">        :param cache_key: Deterministic cache key.</span>
@@ -223,7 +223,7 @@
 <span class="sd">        :type kernel: Callable[..., Any]</span>
 <span class="sd">        :return: None.</span>
 <span class="sd">        :rtype: None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">[</span><span class="n">cache_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">kernel</span></div>
 </div>
 
@@ -233,7 +233,7 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_safe_njit</span><span class="p">(</span><span class="n">py_func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">fastmath</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">cache</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compile one symbolic kernel with an in-process Numba cache.</span>
 
 <span class="sd">    :param py_func: Python function to compile.</span>
@@ -244,9 +244,9 @@
 <span class="sd">    :type cache: bool</span>
 <span class="sd">    :return: Compiled kernel.</span>
 <span class="sd">    :rtype: Callable[..., Any]</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">cache_payload</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;|&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">py_func</span><span class="o">.</span><span class="vm">__module__</span><span class="p">,</span> <span class="n">py_func</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">fastmath</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">cache</span><span class="p">)])</span>
-    <span class="n">cache_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">sha256</span><span class="p">(</span><span class="n">cache_payload</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()</span>
+<span class="sd">    """</span>
+    <span class="n">cache_payload</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"|"</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">py_func</span><span class="o">.</span><span class="vm">__module__</span><span class="p">,</span> <span class="n">py_func</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">fastmath</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">cache</span><span class="p">)])</span>
+    <span class="n">cache_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">sha256</span><span class="p">(</span><span class="n">cache_payload</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">"utf-8"</span><span class="p">))</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()</span>
     <span class="n">cached_kernel</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">SYMBOLIC_NUMBA_KERNEL_CACHE</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">cache_key</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">cached_kernel</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -260,7 +260,7 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_should_use_numba_residual_backend</span><span class="p">(</span><span class="n">total_equation_count</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Decide whether one residual backend should be wrapped with Numba.</span>
 
 <span class="sd">    Small and medium EMT systems often spend much more wall time in the first</span>
@@ -272,7 +272,7 @@
 <span class="sd">    :type total_equation_count: int</span>
 <span class="sd">    :return: ``True`` when the residual backend should use Numba.</span>
 <span class="sd">    :rtype: bool</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># Avoid disproportionate Numba lowering time for medium sparse EMT cases.</span>
     <span class="n">small_system_threshold</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">800</span>
 
@@ -283,7 +283,7 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_should_use_numba_jacobian_backend</span><span class="p">(</span><span class="n">total_variable_count</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">jacobian_expression_count</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Decide whether one Jacobian backend should be wrapped with Numba.</span>
 
 <span class="sd">    The Jacobian kernel is usually much larger than the residual kernel. Moderate</span>
@@ -298,7 +298,7 @@
 <span class="sd">    :type jacobian_expression_count: int</span>
 <span class="sd">    :return: ``True`` when the Jacobian backend should use Numba.</span>
 <span class="sd">    :rtype: bool</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">small_variable_threshold</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">160</span>
     <span class="n">medium_variable_threshold</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">220</span>
     <span class="n">moderate_jacobian_threshold</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4000</span>
@@ -318,14 +318,14 @@
 <div class="viewcode-block" id="get_vars_in_expr">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.solvers.html#VeraGridEngine.Simulations.EMT.solvers.jit_symbolic_solver.get_vars_in_expr">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_vars_in_expr</span><span class="p">(</span><span class="n">expr</span><span class="p">:</span> <span class="n">Expr</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Set</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Recursively collects UIDs of all variables present in an expression.</span>
 
 <span class="sd">    :param expr: The symbolic expression to analyze.</span>
 <span class="sd">    :type expr: Expr</span>
 <span class="sd">    :return: A set containing the unique identifiers (UIDs) of the variables.</span>
 <span class="sd">    :rtype: Set[int]</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">found</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
     <span class="n">stack</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Expr</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
     <span class="n">visited</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
@@ -376,10 +376,10 @@
 <div class="viewcode-block" id="Predictor">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.solvers.html#VeraGridEngine.Simulations.EMT.solvers.jit_symbolic_solver.Predictor">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">Predictor</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Computes an explicit predictor for the Newton initial guess x_iter.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;n_states&#39;</span><span class="p">]</span>
+<span class="sd">    """</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'n_states'</span><span class="p">]</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                  <span class="n">n_states</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -393,7 +393,7 @@
                 <span class="n">dx_prev</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
                 <span class="n">h</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
                 <span class="n">pred_method</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">DynamicIntegrationMethod</span><span class="o">|</span><span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="n">DynamicIntegrationMethod</span><span class="o">.</span><span class="n">DaeBackEuler</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Apply predictor in-place and return x_iter.</span>
 <span class="sd">        :param x_iter: Array to be written with the predictor guess (in-place).</span>
 <span class="sd">        :param x_prev: Previous full variable vector at time n.</span>
@@ -401,7 +401,7 @@
 <span class="sd">        :param h: Time step.</span>
 <span class="sd">        :param pred_method: Integration method enum/value at the prediction step</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="c1"># Default: no-op predictor</span>
         <span class="n">x_iter</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">x_prev</span>
@@ -410,7 +410,7 @@
         <span class="k">if</span> <span class="n">pred_method</span> <span class="o">==</span> <span class="n">DynamicIntegrationMethod</span><span class="o">.</span><span class="n">OdeEuler</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_predict_euler_state</span><span class="p">(</span><span class="n">x_iter</span><span class="p">,</span> <span class="n">x_prev</span><span class="p">,</span> <span class="n">dx_prev</span><span class="p">,</span> <span class="n">h</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">pred_method</span> <span class="o">==</span> <span class="n">DynamicIntegrationMethod</span><span class="o">.</span><span class="n">DaeBDF2</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;predictor method </span><span class="si">{</span><span class="n">pred_method</span><span class="si">}</span><span class="s2"> &quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"predictor method </span><span class="si">{</span><span class="n">pred_method</span><span class="si">}</span><span class="s2"> "</span><span class="p">)</span>
 
         <span class="c1"># Otherwise keep default x_iter = x_prev</span>
         <span class="k">return</span> <span class="n">x_iter</span></div>
@@ -424,11 +424,11 @@
                              <span class="n">x_prev</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
                              <span class="n">dx_prev</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
                              <span class="n">h</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Explicit Euler predictor for the *state* subset:</span>
 <span class="sd">            x_{n+1}^0 = x_n + h * dx_n   (states only)</span>
 <span class="sd">        Algebraics remain at x_prev by default (already set in caller).</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">ns</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_states</span>
         <span class="n">x_iter</span><span class="p">[:</span><span class="n">ns</span><span class="p">]</span> <span class="o">=</span> <span class="n">x_prev</span><span class="p">[:</span><span class="n">ns</span><span class="p">]</span> <span class="o">+</span> <span class="n">h</span> <span class="o">*</span> <span class="n">dx_prev</span><span class="p">[:</span><span class="n">ns</span><span class="p">]</span>
         <span class="k">return</span> <span class="n">x_iter</span></div>
@@ -438,7 +438,7 @@
 <div class="viewcode-block" id="fill_full_parameter_buffer">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.solvers.html#VeraGridEngine.Simulations.EMT.solvers.jit_symbolic_solver.fill_full_parameter_buffer">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">fill_full_parameter_buffer</span><span class="p">(</span><span class="n">runtime_params</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">static_params</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">full_params_out</span><span class="p">:</span> <span class="n">Vec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Write runtime and static parameters into one preallocated full buffer.</span>
 
 <span class="sd">    :param runtime_params: Runtime parameter slice.</span>
@@ -449,7 +449,7 @@
 <span class="sd">    :type full_params_out: Vec</span>
 <span class="sd">    :return: None.</span>
 <span class="sd">    :rtype: None</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">n_runtime</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">runtime_params</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">n_static</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">static_params</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
@@ -475,7 +475,7 @@
         <span class="n">x_prev2</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
         <span class="n">residual_out</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Evaluate all residual batches into a caller-owned buffer.</span>
 
 <span class="sd">    :param kernel_list: Batched residual kernels.</span>
@@ -496,7 +496,7 @@
 <span class="sd">    :type residual_out: Vec</span>
 <span class="sd">    :return: Residual infinity norm.</span>
 <span class="sd">    :rtype: float</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">residual_out</span><span class="p">[:]</span> <span class="o">=</span> <span class="mf">0.0</span>
 
     <span class="c1"># The residual stays split in batches to keep code generation tractable for</span>
@@ -509,79 +509,79 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_dense_lu_bundle_solve</span><span class="p">(</span><span class="n">bundle</span><span class="p">:</span> <span class="n">DenseSolveBundle</span><span class="p">,</span> <span class="n">rhs</span><span class="p">:</span> <span class="n">Vec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Solve one dense LU system.</span>
 
 <span class="sd">    :param bundle: Dense LU bundle ``(factorization, matrix)``.</span>
 <span class="sd">    :param rhs: Right-hand side vector.</span>
 <span class="sd">    :return: Solution vector.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="n">lu_solve</span><span class="p">(</span><span class="n">bundle</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">rhs</span><span class="p">)</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_dense_lu_bundle_fallback</span><span class="p">(</span><span class="n">bundle</span><span class="p">:</span> <span class="n">DenseSolveBundle</span><span class="p">,</span> <span class="n">rhs</span><span class="p">:</span> <span class="n">Vec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Solve one dense fallback least-squares system.</span>
 
 <span class="sd">    :param bundle: Dense LU bundle ``(factorization, matrix)``.</span>
 <span class="sd">    :param rhs: Right-hand side vector.</span>
 <span class="sd">    :return: Fallback solution vector.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="n">dense_lstsq_fallback</span><span class="p">(</span><span class="n">bundle</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">rhs</span><span class="p">)</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_dense_lu_bundle_matrix</span><span class="p">(</span><span class="n">bundle</span><span class="p">:</span> <span class="n">DenseSolveBundle</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Return the dense Jacobian matrix stored in one LU bundle.</span>
 
 <span class="sd">    :param bundle: Dense LU bundle ``(factorization, matrix)``.</span>
 <span class="sd">    :return: Dense Jacobian matrix.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="n">bundle</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_sparse_lu_bundle_solve</span><span class="p">(</span><span class="n">bundle</span><span class="p">:</span> <span class="n">SparseSolveBundle</span><span class="p">,</span> <span class="n">rhs</span><span class="p">:</span> <span class="n">Vec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Solve one sparse LU system.</span>
 
 <span class="sd">    :param bundle: Sparse LU bundle ``(factorization, matrix)``.</span>
 <span class="sd">    :param rhs: Right-hand side vector.</span>
 <span class="sd">    :return: Solution vector.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="n">bundle</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">rhs</span><span class="p">)</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_sparse_lu_bundle_fallback</span><span class="p">(</span><span class="n">bundle</span><span class="p">:</span> <span class="n">SparseSolveBundle</span><span class="p">,</span> <span class="n">rhs</span><span class="p">:</span> <span class="n">Vec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Solve one sparse fallback least-squares system.</span>
 
 <span class="sd">    :param bundle: Sparse LU bundle ``(factorization, matrix)``.</span>
 <span class="sd">    :param rhs: Right-hand side vector.</span>
 <span class="sd">    :return: Fallback solution vector.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="n">sparse_lsqr_fallback</span><span class="p">(</span><span class="n">bundle</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">rhs</span><span class="p">)</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_sparse_lu_bundle_matrix</span><span class="p">(</span><span class="n">bundle</span><span class="p">:</span> <span class="n">SparseSolveBundle</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CscMat</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Return the sparse Jacobian matrix stored in one LU bundle.</span>
 
 <span class="sd">    :param bundle: Sparse LU bundle ``(factorization, matrix)``.</span>
 <span class="sd">    :return: Sparse Jacobian matrix.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="n">bundle</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
 
 
 <div class="viewcode-block" id="HybridJacobianEvaluator">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.solvers.html#VeraGridEngine.Simulations.EMT.solvers.jit_symbolic_solver.HybridJacobianEvaluator">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">HybridJacobianEvaluator</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Evaluates the JIT-compiled Jacobian and formats it as either Dense or Sparse.</span>
 <span class="sd">    This class replaces nested functions to ensure memory determinism and strict type safety.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span>
-        <span class="s1">&#39;kernel_jit&#39;</span><span class="p">,</span> <span class="s1">&#39;use_sparse&#39;</span><span class="p">,</span> <span class="s1">&#39;n_vars&#39;</span><span class="p">,</span> <span class="s1">&#39;alpha_mult&#39;</span><span class="p">,</span> <span class="s1">&#39;np_rows&#39;</span><span class="p">,</span> <span class="s1">&#39;np_cols&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_params_with_alpha_buffer&#39;</span><span class="p">,</span> <span class="s1">&#39;_dense_data_buffer&#39;</span>
+        <span class="s1">'kernel_jit'</span><span class="p">,</span> <span class="s1">'use_sparse'</span><span class="p">,</span> <span class="s1">'n_vars'</span><span class="p">,</span> <span class="s1">'alpha_mult'</span><span class="p">,</span> <span class="s1">'np_rows'</span><span class="p">,</span> <span class="s1">'np_cols'</span><span class="p">,</span>
+        <span class="s1">'_params_with_alpha_buffer'</span><span class="p">,</span> <span class="s1">'_dense_data_buffer'</span>
     <span class="p">]</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
@@ -592,7 +592,7 @@
                  <span class="n">parameter_count</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
                  <span class="n">np_rows</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">IntVec</span><span class="o">|</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">np_cols</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">IntVec</span><span class="o">|</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Initializes the evaluator with the compiled Numba kernel and matrix topology.</span>
 
 <span class="sd">        :param kernel_jit: The compiled Numba function for the Jacobian.</span>
@@ -608,7 +608,7 @@
 <span class="sd">        :param np_cols: Column indices for the sparse matrix format.</span>
 <span class="sd">        :type np_cols: IntVec</span>
 <span class="sd">        :rtype: None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">kernel_jit</span> <span class="o">=</span> <span class="n">kernel_jit</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">use_sparse</span> <span class="o">=</span> <span class="n">use_sparse</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">n_vars</span> <span class="o">=</span> <span class="n">n_vars</span>
@@ -626,7 +626,7 @@
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.solvers.html#VeraGridEngine.Simulations.EMT.solvers.jit_symbolic_solver.HybridJacobianEvaluator.evaluate">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">states</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">params</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">history</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">d_history</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">h</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
                  <span class="n">history2</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Vec</span><span class="o">|</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Mat</span> <span class="o">|</span> <span class="n">CscMat</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Executes the JIT kernel and constructs the resulting Jacobian matrix.</span>
 
 <span class="sd">        :param states: The current state vector.</span>
@@ -643,7 +643,7 @@
 <span class="sd">        :type history2: Vec</span>
 <span class="sd">        :return: The assembled Jacobian matrix (Dense or Sparse CSC).</span>
 <span class="sd">        :rtype: Mat | CscMat</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># The Jacobian kernel expects the extra alpha scaling factor appended at</span>
         <span class="c1"># the end of the parameter vector. The buffer is reused every call.</span>
         <span class="n">params_with_alpha</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_params_with_alpha_buffer</span>
@@ -671,18 +671,18 @@
 <div class="viewcode-block" id="ResidualTrialEvaluator">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.solvers.html#VeraGridEngine.Simulations.EMT.solvers.jit_symbolic_solver.ResidualTrialEvaluator">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">ResidualTrialEvaluator</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Callable helper to evaluate residual norms during Newton backtracking.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;kernel_list&#39;</span><span class="p">,</span> <span class="s1">&#39;full_params&#39;</span><span class="p">,</span> <span class="s1">&#39;x_prev&#39;</span><span class="p">,</span> <span class="s1">&#39;dx_prev&#39;</span><span class="p">,</span> <span class="s1">&#39;h_eff&#39;</span><span class="p">,</span> <span class="s1">&#39;x_prev2&#39;</span><span class="p">]</span>
+<span class="sd">    """</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'kernel_list'</span><span class="p">,</span> <span class="s1">'full_params'</span><span class="p">,</span> <span class="s1">'x_prev'</span><span class="p">,</span> <span class="s1">'dx_prev'</span><span class="p">,</span> <span class="s1">'h_eff'</span><span class="p">,</span> <span class="s1">'x_prev2'</span><span class="p">]</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Build one empty backtracking evaluator.</span>
 
 <span class="sd">        :return: None.</span>
 <span class="sd">        :rtype: None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">kernel_list</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">full_params</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">x_prev</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
@@ -699,7 +699,7 @@
                     <span class="n">dx_prev</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
                     <span class="n">h_eff</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
                     <span class="n">x_prev2</span><span class="p">:</span> <span class="n">Vec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Store the residual-evaluation context of the current Newton step.</span>
 
 <span class="sd">        :param kernel_list: Batched residual kernels.</span>
@@ -716,7 +716,7 @@
 <span class="sd">        :type x_prev2: Vec</span>
 <span class="sd">        :return: None.</span>
 <span class="sd">        :rtype: None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">kernel_list</span> <span class="o">=</span> <span class="n">kernel_list</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">full_params</span> <span class="o">=</span> <span class="n">full_params</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">x_prev</span> <span class="o">=</span> <span class="n">x_prev</span>
@@ -726,7 +726,7 @@
 
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">candidate_x</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">out_res</span><span class="p">:</span> <span class="n">Vec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Evaluate one trial Newton iterate during backtracking.</span>
 
 <span class="sd">        :param candidate_x: Trial iterate.</span>
@@ -735,7 +735,7 @@
 <span class="sd">        :type out_res: Vec</span>
 <span class="sd">        :return: Residual infinity norm.</span>
 <span class="sd">        :rtype: float</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel_list</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
         <span class="k">else</span><span class="p">:</span>
@@ -763,15 +763,15 @@
 <span class="k">class</span><span class="w"> </span><span class="nc">JitSymbolicSolver</span><span class="p">:</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span>
-        <span class="s1">&#39;problem&#39;</span><span class="p">,</span> <span class="s1">&#39;t0&#39;</span><span class="p">,</span> <span class="s1">&#39;t_end&#39;</span><span class="p">,</span> <span class="s1">&#39;h&#39;</span><span class="p">,</span> <span class="s1">&#39;method&#39;</span><span class="p">,</span> <span class="s1">&#39;pred_method&#39;</span><span class="p">,</span> <span class="s1">&#39;dense_threshold&#39;</span><span class="p">,</span> <span class="s1">&#39;verbose&#39;</span><span class="p">,</span> <span class="s1">&#39;newton_max_iter&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;steps&#39;</span><span class="p">,</span> <span class="s1">&#39;t&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="s1">&#39;dy&#39;</span><span class="p">,</span> <span class="s1">&#39;jit_kernels&#39;</span><span class="p">,</span> <span class="s1">&#39;jit_jacobian_symbolic&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;state_vars&#39;</span><span class="p">,</span> <span class="s1">&#39;algebraic_vars&#39;</span><span class="p">,</span> <span class="s1">&#39;state_eqs&#39;</span><span class="p">,</span> <span class="s1">&#39;algebraic_eqs&#39;</span><span class="p">,</span> <span class="s1">&#39;diff_vars&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;jit_compiler&#39;</span><span class="p">,</span> <span class="s1">&#39;_residual_debug_info&#39;</span><span class="p">,</span> <span class="s1">&#39;_newton_diag_config&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_predictor&#39;</span><span class="p">,</span> <span class="s1">&#39;_runtime_param_count&#39;</span><span class="p">,</span> <span class="s1">&#39;_static_parameter_buffer&#39;</span><span class="p">,</span> <span class="s1">&#39;_full_parameter_buffer&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_residual_buffer&#39;</span><span class="p">,</span> <span class="s1">&#39;_trial_state_buffer&#39;</span><span class="p">,</span> <span class="s1">&#39;_trial_residual_buffer&#39;</span><span class="p">,</span> <span class="s1">&#39;_trial_residual_evaluator&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_backend_build_stats&#39;</span><span class="p">,</span> <span class="s1">&#39;_last_runtime_stats&#39;</span><span class="p">,</span> <span class="s1">&#39;_last_sim_loop_time&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_max_residual_inf_fail&#39;</span><span class="p">,</span> <span class="s1">&#39;_max_state_residual_inf_fail&#39;</span><span class="p">,</span> <span class="s1">&#39;_cancel_checker&#39;</span><span class="p">,</span> <span class="s1">&#39;_progress_signal&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_newton_tolerance&#39;</span>
+        <span class="s1">'problem'</span><span class="p">,</span> <span class="s1">'t0'</span><span class="p">,</span> <span class="s1">'t_end'</span><span class="p">,</span> <span class="s1">'h'</span><span class="p">,</span> <span class="s1">'method'</span><span class="p">,</span> <span class="s1">'pred_method'</span><span class="p">,</span> <span class="s1">'dense_threshold'</span><span class="p">,</span> <span class="s1">'verbose'</span><span class="p">,</span> <span class="s1">'newton_max_iter'</span><span class="p">,</span>
+        <span class="s1">'steps'</span><span class="p">,</span> <span class="s1">'t'</span><span class="p">,</span> <span class="s1">'y'</span><span class="p">,</span> <span class="s1">'dy'</span><span class="p">,</span> <span class="s1">'jit_kernels'</span><span class="p">,</span> <span class="s1">'jit_jacobian_symbolic'</span><span class="p">,</span>
+        <span class="s1">'state_vars'</span><span class="p">,</span> <span class="s1">'algebraic_vars'</span><span class="p">,</span> <span class="s1">'state_eqs'</span><span class="p">,</span> <span class="s1">'algebraic_eqs'</span><span class="p">,</span> <span class="s1">'diff_vars'</span><span class="p">,</span>
+        <span class="s1">'jit_compiler'</span><span class="p">,</span> <span class="s1">'_residual_debug_info'</span><span class="p">,</span> <span class="s1">'_newton_diag_config'</span><span class="p">,</span>
+        <span class="s1">'_predictor'</span><span class="p">,</span> <span class="s1">'_runtime_param_count'</span><span class="p">,</span> <span class="s1">'_static_parameter_buffer'</span><span class="p">,</span> <span class="s1">'_full_parameter_buffer'</span><span class="p">,</span>
+        <span class="s1">'_residual_buffer'</span><span class="p">,</span> <span class="s1">'_trial_state_buffer'</span><span class="p">,</span> <span class="s1">'_trial_residual_buffer'</span><span class="p">,</span> <span class="s1">'_trial_residual_evaluator'</span><span class="p">,</span>
+        <span class="s1">'_backend_build_stats'</span><span class="p">,</span> <span class="s1">'_last_runtime_stats'</span><span class="p">,</span> <span class="s1">'_last_sim_loop_time'</span><span class="p">,</span>
+        <span class="s1">'_max_residual_inf_fail'</span><span class="p">,</span> <span class="s1">'_max_state_residual_inf_fail'</span><span class="p">,</span> <span class="s1">'_cancel_checker'</span><span class="p">,</span> <span class="s1">'_progress_signal'</span><span class="p">,</span>
+        <span class="s1">'_newton_tolerance'</span>
     <span class="p">]</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
@@ -790,7 +790,7 @@
                  <span class="n">progress_signal</span><span class="p">:</span> <span class="n">DummySignal</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">cancel_checker</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="nb">bool</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">newton_tolerance</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0e-6</span><span class="p">)</span><span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        :param problem: The DAE problem definition.</span>
 <span class="sd">        :param t0: Initial time.</span>
 <span class="sd">        :param t_end: End time.</span>
@@ -803,7 +803,7 @@
 <span class="sd">        :param newton_tolerance: Absolute infinity-norm tolerance for Newton residual convergence.</span>
 <span class="sd">        :param progress_signal: Optional progress signal updated during the simulation loop.</span>
 <span class="sd">        :type progress_signal: DummySignal | None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">jit_compiler</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">problem</span> <span class="o">=</span> <span class="n">problem</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">t0</span> <span class="o">=</span> <span class="n">t0</span>
@@ -815,7 +815,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">newton_max_iter</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">newton_max_iter</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_newton_tolerance</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">newton_tolerance</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_newton_tolerance</span><span class="p">)</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_newton_tolerance</span> <span class="o">&lt;=</span> <span class="mf">0.0</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;newton_tolerance must be finite and greater than zero.&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"newton_tolerance must be finite and greater than zero."</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_max_residual_inf_fail</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">max_residual_inf_fail</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_max_state_residual_inf_fail</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">max_state_residual_inf_fail</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_newton_diag_config</span> <span class="o">=</span> <span class="n">newton_diag_config</span> <span class="ow">or</span> <span class="n">NewtonDiagnosticsConfig</span><span class="p">(</span>
@@ -874,7 +874,7 @@
 <div class="viewcode-block" id="JitSymbolicSolver.build_jit_kernel">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.solvers.html#VeraGridEngine.Simulations.EMT.solvers.jit_symbolic_solver.JitSymbolicSolver.build_jit_kernel">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">build_jit_kernel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">method</span><span class="p">:</span> <span class="n">DynamicIntegrationMethod</span><span class="p">)</span><span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Compiles the numerical residual function using JIT.</span>
 <span class="sd">        It uses a batching strategy (splitting equations into chunks) to prevent</span>
 <span class="sd">        Numba/LLVM from hanging when compiling very large non-linear systems.</span>
@@ -882,11 +882,11 @@
 <span class="sd">        :param method: The dynamic integration method to compile for.</span>
 <span class="sd">        :type method: DynamicIntegrationMethod</span>
 <span class="sd">        :rtype: None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">t_start_build</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;--- [JIT] Compiling Implicit Kernel (</span><span class="si">{</span><span class="n">method</span><span class="si">}</span><span class="s2">) ---&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"--- [JIT] Compiling Implicit Kernel (</span><span class="si">{</span><span class="n">method</span><span class="si">}</span><span class="s2">) ---"</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">pass</span>
 
@@ -904,7 +904,7 @@
 
         <span class="n">equations</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Expr</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
         <span class="n">residual_debug_info</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
-        <span class="n">synthetic_diff_terms</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Var</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">Var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;d_</span><span class="si">{</span><span class="n">sv</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">base_var</span><span class="o">=</span><span class="n">sv</span><span class="p">)</span> <span class="k">for</span> <span class="n">sv</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">state_vars</span><span class="p">]</span>
+        <span class="n">synthetic_diff_terms</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Var</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">Var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">"d_</span><span class="si">{</span><span class="n">sv</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">base_var</span><span class="o">=</span><span class="n">sv</span><span class="p">)</span> <span class="k">for</span> <span class="n">sv</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">state_vars</span><span class="p">]</span>
 
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">rhs</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">state_eqs</span><span class="p">):</span>
             <span class="n">sv</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">state_vars</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
@@ -913,10 +913,10 @@
             <span class="n">equations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">d_term</span> <span class="o">-</span> <span class="n">rhs</span><span class="p">)</span>
 
             <span class="n">residual_debug_info</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
-                <span class="s2">&quot;kind&quot;</span><span class="p">:</span> <span class="s2">&quot;STATE&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;label&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;d_</span><span class="si">{</span><span class="n">sv</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> - rhs_</span><span class="si">{</span><span class="n">sv</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;var_name&quot;</span><span class="p">:</span> <span class="n">sv</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
-                <span class="s2">&quot;state_idx&quot;</span><span class="p">:</span> <span class="n">var_uid_to_global_idx</span><span class="p">[</span><span class="n">sv</span><span class="o">.</span><span class="n">uid</span><span class="p">],</span>
+                <span class="s2">"kind"</span><span class="p">:</span> <span class="s2">"STATE"</span><span class="p">,</span>
+                <span class="s2">"label"</span><span class="p">:</span> <span class="sa">f</span><span class="s2">"d_</span><span class="si">{</span><span class="n">sv</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> - rhs_</span><span class="si">{</span><span class="n">sv</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+                <span class="s2">"var_name"</span><span class="p">:</span> <span class="n">sv</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                <span class="s2">"state_idx"</span><span class="p">:</span> <span class="n">var_uid_to_global_idx</span><span class="p">[</span><span class="n">sv</span><span class="o">.</span><span class="n">uid</span><span class="p">],</span>
             <span class="p">})</span>
 
         <span class="n">equations</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">algebraic_eqs</span><span class="p">)</span>
@@ -928,17 +928,17 @@
             <span class="c1">#</span>
             <span class="k">if</span> <span class="n">av</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">residual_debug_info</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
-                    <span class="s2">&quot;kind&quot;</span><span class="p">:</span> <span class="s2">&quot;ALG&quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;label&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;alg for </span><span class="si">{</span><span class="n">av</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;var_name&quot;</span><span class="p">:</span> <span class="n">av</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
-                    <span class="s2">&quot;state_idx&quot;</span><span class="p">:</span> <span class="n">var_uid_to_global_idx</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">av</span><span class="o">.</span><span class="n">uid</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+                    <span class="s2">"kind"</span><span class="p">:</span> <span class="s2">"ALG"</span><span class="p">,</span>
+                    <span class="s2">"label"</span><span class="p">:</span> <span class="sa">f</span><span class="s2">"alg for </span><span class="si">{</span><span class="n">av</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+                    <span class="s2">"var_name"</span><span class="p">:</span> <span class="n">av</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                    <span class="s2">"state_idx"</span><span class="p">:</span> <span class="n">var_uid_to_global_idx</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">av</span><span class="o">.</span><span class="n">uid</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
                 <span class="p">})</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">residual_debug_info</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
-                    <span class="s2">&quot;kind&quot;</span><span class="p">:</span> <span class="s2">&quot;ALG&quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;label&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;ALG_EQ_</span><span class="si">{</span><span class="n">j</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;var_name&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;&lt;no algebraic var for eq </span><span class="si">{</span><span class="n">j</span><span class="si">}</span><span class="s2">&gt;&quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;state_idx&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+                    <span class="s2">"kind"</span><span class="p">:</span> <span class="s2">"ALG"</span><span class="p">,</span>
+                    <span class="s2">"label"</span><span class="p">:</span> <span class="sa">f</span><span class="s2">"ALG_EQ_</span><span class="si">{</span><span class="n">j</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+                    <span class="s2">"var_name"</span><span class="p">:</span> <span class="sa">f</span><span class="s2">"&lt;no algebraic var for eq </span><span class="si">{</span><span class="n">j</span><span class="si">}</span><span class="s2">&gt;"</span><span class="p">,</span>
+                    <span class="s2">"state_idx"</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
                 <span class="p">})</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">jit_compiler</span> <span class="o">=</span> <span class="n">EquationCompiler</span><span class="p">(</span><span class="n">variables</span><span class="o">=</span><span class="n">sorted_vars</span><span class="p">,</span> <span class="n">parameters</span><span class="o">=</span><span class="n">all_params</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">)</span>
@@ -953,19 +953,19 @@
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">use_numba_residual_backend</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;   [JIT] Residual backend uses Numba kernels.&quot;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">"   [JIT] Residual backend uses Numba kernels."</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;   [JIT] Residual backend uses generated Python kernels to avoid cold-start compilation cost.&quot;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">"   [JIT] Residual backend uses generated Python kernels to avoid cold-start compilation cost."</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">pass</span>
 
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_eqs</span><span class="p">,</span> <span class="n">BATCH_SIZE</span><span class="p">):</span>
             <span class="n">chunk</span> <span class="o">=</span> <span class="n">equations</span><span class="p">[</span><span class="n">i</span><span class="p">:</span> <span class="n">i</span> <span class="o">+</span> <span class="n">BATCH_SIZE</span><span class="p">]</span>
-            <span class="n">f_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;jit_step_</span><span class="si">{</span><span class="n">method</span><span class="si">}</span><span class="s2">_part_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="n">f_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"jit_step_</span><span class="si">{</span><span class="n">method</span><span class="si">}</span><span class="s2">_part_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">"</span>
             <span class="n">py_func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>
             <span class="n">wrapped_kernel</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>
 
-            <span class="c1"># Compile inplace: the function writes directly to the &#39;residuals&#39; array</span>
+            <span class="c1"># Compile inplace: the function writes directly to the 'residuals' array</span>
             <span class="n">py_func</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">jit_compiler</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">chunk</span><span class="p">,</span> <span class="n">func_name</span><span class="o">=</span><span class="n">f_name</span><span class="p">,</span> <span class="n">use_cse</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="n">i</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
             <span class="c1"># Small systems are faster end-to-end when they avoid the first lazy Numba compilation.</span>
@@ -978,25 +978,25 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">jit_kernels</span><span class="p">[</span><span class="n">method</span><span class="p">]</span> <span class="o">=</span> <span class="n">batched_kernels</span>
         <span class="n">elapsed_s</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span> <span class="o">-</span> <span class="n">t_start_build</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_backend_build_stats</span><span class="p">[</span><span class="s1">&#39;residual_compile_s&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">elapsed_s</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_backend_build_stats</span><span class="p">[</span><span class="s1">&#39;residual_batches&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="nb">float</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">batched_kernels</span><span class="p">))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_backend_build_stats</span><span class="p">[</span><span class="s1">&#39;total_s&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">elapsed_s</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_backend_build_stats</span><span class="p">[</span><span class="s1">'residual_compile_s'</span><span class="p">]</span> <span class="o">+=</span> <span class="n">elapsed_s</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_backend_build_stats</span><span class="p">[</span><span class="s1">'residual_batches'</span><span class="p">]</span> <span class="o">+=</span> <span class="nb">float</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">batched_kernels</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_backend_build_stats</span><span class="p">[</span><span class="s1">'total_s'</span><span class="p">]</span> <span class="o">+=</span> <span class="n">elapsed_s</span></div>
 
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_build_jit_symbolic_hybrid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">method</span><span class="p">:</span> <span class="n">DynamicIntegrationMethod</span><span class="p">,</span> <span class="n">use_sparse</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span><span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Compiles a Hybrid Symbolic Jacobian.</span>
 <span class="sd">        It generates a Numba kernel that evaluates the Jacobian entries and</span>
 <span class="sd">        returns either a Scipy CSC Matrix (Sparse mode) or a Numpy Array (Dense mode).</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">cache_key</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">method</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">use_sparse</span><span class="si">}</span><span class="s2">&quot;</span>
+<span class="sd">        """</span>
+        <span class="n">cache_key</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">method</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">use_sparse</span><span class="si">}</span><span class="s2">"</span>
         <span class="k">if</span> <span class="n">cache_key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">jit_jacobian_symbolic</span><span class="p">:</span>
             <span class="k">return</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">pass</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;--- [JIT-SD] Compiling Hybrid Symbolic Jacobian (</span><span class="si">{</span><span class="s1">&#39;SPARSE&#39;</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">use_sparse</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s1">&#39;DENSE&#39;</span><span class="si">}</span><span class="s2">) ---&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"--- [JIT-SD] Compiling Hybrid Symbolic Jacobian (</span><span class="si">{</span><span class="s1">'SPARSE'</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">use_sparse</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s1">'DENSE'</span><span class="si">}</span><span class="s2">) ---"</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">pass</span>
         <span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
@@ -1014,7 +1014,7 @@
             <span class="n">var_uid_to_idx</span><span class="p">[</span><span class="n">v</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span> <span class="o">=</span> <span class="n">i</span>
 
         <span class="n">equations</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Expr</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
-        <span class="n">synthetic_diff_terms</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Var</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">Var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;d_</span><span class="si">{</span><span class="n">sv</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">base_var</span><span class="o">=</span><span class="n">sv</span><span class="p">)</span> <span class="k">for</span> <span class="n">sv</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">state_vars</span><span class="p">]</span>
+        <span class="n">synthetic_diff_terms</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Var</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">Var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">"d_</span><span class="si">{</span><span class="n">sv</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">base_var</span><span class="o">=</span><span class="n">sv</span><span class="p">)</span> <span class="k">for</span> <span class="n">sv</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">state_vars</span><span class="p">]</span>
 
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">rhs</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">state_eqs</span><span class="p">):</span>
             <span class="n">d_term</span> <span class="o">=</span> <span class="n">synthetic_diff_terms</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
@@ -1027,7 +1027,7 @@
         <span class="n">jac_expression</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Expr</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
         <span class="n">rows</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
         <span class="n">cols</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
-        <span class="n">alpha_sym</span> <span class="o">=</span> <span class="n">Var</span><span class="p">(</span><span class="s2">&quot;alpha_scaling_factor&quot;</span><span class="p">)</span>
+        <span class="n">alpha_sym</span> <span class="o">=</span> <span class="n">Var</span><span class="p">(</span><span class="s2">"alpha_scaling_factor"</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">use_sparse</span><span class="p">:</span>
             <span class="n">nnz</span> <span class="o">=</span> <span class="mi">0</span>
@@ -1064,7 +1064,7 @@
                         <span class="k">pass</span>
 
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;   [JIT-SD] Topology Analysis: </span><span class="si">{</span><span class="n">nnz</span><span class="si">}</span><span class="s2"> non-zeros (Sparsity: </span><span class="si">{</span><span class="mf">1.0</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">nnz</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="p">(</span><span class="n">N</span><span class="w"> </span><span class="o">**</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="si">:</span><span class="s2">.2%</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"   [JIT-SD] Topology Analysis: </span><span class="si">{</span><span class="n">nnz</span><span class="si">}</span><span class="s2"> non-zeros (Sparsity: </span><span class="si">{</span><span class="mf">1.0</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">nnz</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="p">(</span><span class="n">N</span><span class="w"> </span><span class="o">**</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="si">:</span><span class="s2">.2%</span><span class="si">}</span><span class="s2">)"</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">r</span><span class="p">,</span> <span class="n">eq</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">equations</span><span class="p">):</span>
                 <span class="k">for</span> <span class="n">c</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">sorted_vars</span><span class="p">):</span>
@@ -1081,7 +1081,7 @@
         <span class="n">compile_params</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">all_params</span><span class="p">)</span>
         <span class="n">compile_params</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">alpha_sym</span><span class="p">)</span>
         <span class="n">compiler</span> <span class="o">=</span> <span class="n">EquationCompiler</span><span class="p">(</span><span class="n">variables</span><span class="o">=</span><span class="n">sorted_vars</span><span class="p">,</span> <span class="n">parameters</span><span class="o">=</span><span class="n">compile_params</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">)</span>
-        <span class="n">func_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;jac_eval_</span><span class="si">{</span><span class="n">method</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">N</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="s1">&#39;sparse&#39;</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">use_sparse</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s1">&#39;dense&#39;</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="n">func_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"jac_eval_</span><span class="si">{</span><span class="n">method</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">N</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="s1">'sparse'</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">use_sparse</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s1">'dense'</span><span class="si">}</span><span class="s2">"</span>
         <span class="n">kernel_py</span> <span class="o">=</span> <span class="n">compiler</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">jac_expression</span><span class="p">,</span> <span class="n">func_name</span><span class="o">=</span><span class="n">func_name</span><span class="p">,</span> <span class="n">use_cse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="n">use_numba_jacobian_backend</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">_should_use_numba_jacobian_backend</span><span class="p">(</span>
             <span class="n">total_variable_count</span><span class="o">=</span><span class="n">N</span><span class="p">,</span>
@@ -1097,9 +1097,9 @@
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">use_numba_jacobian_backend</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;   [JIT-SD] Jacobian backend uses Numba kernels.&quot;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">"   [JIT-SD] Jacobian backend uses Numba kernels."</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;   [JIT-SD] Jacobian backend uses generated Python kernels to avoid cold-start compilation cost.&quot;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">"   [JIT-SD] Jacobian backend uses generated Python kernels to avoid cold-start compilation cost."</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">pass</span>
 
@@ -1125,11 +1125,11 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">jit_jacobian_symbolic</span><span class="p">[</span><span class="n">cache_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">evaluator_obj</span>
         <span class="n">elapsed_s</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span> <span class="o">-</span> <span class="n">t0</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_backend_build_stats</span><span class="p">[</span><span class="s1">&#39;jacobian_compile_s&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">elapsed_s</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_backend_build_stats</span><span class="p">[</span><span class="s1">&#39;jacobian_builds&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="mf">1.0</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_backend_build_stats</span><span class="p">[</span><span class="s1">&#39;total_s&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">elapsed_s</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_backend_build_stats</span><span class="p">[</span><span class="s1">'jacobian_compile_s'</span><span class="p">]</span> <span class="o">+=</span> <span class="n">elapsed_s</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_backend_build_stats</span><span class="p">[</span><span class="s1">'jacobian_builds'</span><span class="p">]</span> <span class="o">+=</span> <span class="mf">1.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_backend_build_stats</span><span class="p">[</span><span class="s1">'total_s'</span><span class="p">]</span> <span class="o">+=</span> <span class="n">elapsed_s</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;   [JIT-SD] Compilation finished in </span><span class="si">{</span><span class="n">elapsed_s</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">s&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"   [JIT-SD] Compilation finished in </span><span class="si">{</span><span class="n">elapsed_s</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">s"</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">pass</span>
 
@@ -1140,14 +1140,14 @@
                  <span class="n">dx0</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Vec</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">params0</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Vec</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">boundary_updater</span><span class="p">:</span> <span class="n">EmtBoundaryUpdateProtocol</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Vec</span><span class="p">,</span> <span class="n">Mat</span><span class="p">,</span> <span class="n">Mat</span><span class="p">,</span> <span class="nb">bool</span><span class="p">,</span> <span class="nb">bool</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Main JIT simulation loop using the Symbolic Differentiation (SD) backend.</span>
 <span class="sd">        :param x0: Initial state vector.</span>
 <span class="sd">        :param dx0: Initial derivative vector.</span>
 <span class="sd">        :param params0: Initial event parameters.</span>
 <span class="sd">        :param boundary_updater: Optional override for the problem boundary updater.</span>
 <span class="sd">        :return: A tuple containing the time vector and the state trajectory matrix. Tuple[Vec, Mat]</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">t_start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
         <span class="n">method</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span>
 
@@ -1166,11 +1166,11 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">pass</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_build_jit_symbolic_hybrid</span><span class="p">(</span><span class="n">method</span><span class="p">,</span> <span class="n">use_sparse</span><span class="o">=</span><span class="n">is_sparse</span><span class="p">)</span>
-        <span class="n">jac_key_main</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">method</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">is_sparse</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="n">jac_key_main</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">method</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">is_sparse</span><span class="si">}</span><span class="s2">"</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
-            <span class="n">mode_str</span> <span class="o">=</span> <span class="s2">&quot;DENSE&quot;</span> <span class="k">if</span> <span class="n">use_dense_solver</span> <span class="k">else</span> <span class="s2">&quot;SPARSE&quot;</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;   [Config] System N=</span><span class="si">{</span><span class="n">n_eqs</span><span class="si">}</span><span class="s2">. Using </span><span class="si">{</span><span class="n">mode_str</span><span class="si">}</span><span class="s2"> linear solver (Threshold=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">dense_threshold</span><span class="si">}</span><span class="s2">).&quot;</span><span class="p">)</span>
+            <span class="n">mode_str</span> <span class="o">=</span> <span class="s2">"DENSE"</span> <span class="k">if</span> <span class="n">use_dense_solver</span> <span class="k">else</span> <span class="s2">"SPARSE"</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"   [Config] System N=</span><span class="si">{</span><span class="n">n_eqs</span><span class="si">}</span><span class="s2">. Using </span><span class="si">{</span><span class="n">mode_str</span><span class="si">}</span><span class="s2"> linear solver (Threshold=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">dense_threshold</span><span class="si">}</span><span class="s2">)."</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">pass</span>
 
@@ -1229,7 +1229,7 @@
             <span class="k">if</span> <span class="n">startup_method</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">jit_kernels</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">build_jit_kernel</span><span class="p">(</span><span class="n">startup_method</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_build_jit_symbolic_hybrid</span><span class="p">(</span><span class="n">startup_method</span><span class="p">,</span> <span class="n">use_sparse</span><span class="o">=</span><span class="n">is_sparse</span><span class="p">)</span>
-            <span class="n">startup_jac_key</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">startup_method</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">is_sparse</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="n">startup_jac_key</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">startup_method</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">is_sparse</span><span class="si">}</span><span class="s2">"</span>
 
         <span class="n">trace_collector</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">problem</span><span class="o">.</span><span class="n">get_newton_trace_collector</span><span class="p">()</span>
         <span class="n">diag_cfg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_newton_diag_config</span>
@@ -1250,7 +1250,7 @@
                 <span class="n">fallback_solve</span><span class="o">=</span><span class="n">_dense_lu_bundle_fallback</span><span class="p">,</span>
                 <span class="n">collector</span><span class="o">=</span><span class="n">trace_collector</span><span class="p">,</span>
                 <span class="n">config</span><span class="o">=</span><span class="n">diag_cfg</span><span class="p">,</span>
-                <span class="n">solver_name</span><span class="o">=</span><span class="s2">&quot;dense_lu&quot;</span><span class="p">,</span>
+                <span class="n">solver_name</span><span class="o">=</span><span class="s2">"dense_lu"</span><span class="p">,</span>
                 <span class="n">matrix_getter</span><span class="o">=</span><span class="n">_dense_lu_bundle_matrix</span><span class="p">,</span>
             <span class="p">)</span>
             <span class="n">sparse_solve</span> <span class="o">=</span> <span class="n">with_newton_diagnostics</span><span class="p">(</span>
@@ -1258,14 +1258,14 @@
                 <span class="n">fallback_solve</span><span class="o">=</span><span class="n">_sparse_lu_bundle_fallback</span><span class="p">,</span>
                 <span class="n">collector</span><span class="o">=</span><span class="n">trace_collector</span><span class="p">,</span>
                 <span class="n">config</span><span class="o">=</span><span class="n">diag_cfg</span><span class="p">,</span>
-                <span class="n">solver_name</span><span class="o">=</span><span class="s2">&quot;superlu&quot;</span><span class="p">,</span>
+                <span class="n">solver_name</span><span class="o">=</span><span class="s2">"superlu"</span><span class="p">,</span>
                 <span class="n">matrix_getter</span><span class="o">=</span><span class="n">_sparse_lu_bundle_matrix</span><span class="p">,</span>
             <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">pass</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;-&gt; Starting JIT Simulation (</span><span class="si">{</span><span class="n">method</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">steps</span><span class="si">}</span><span class="s2"> steps)...&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"-&gt; Starting JIT Simulation (</span><span class="si">{</span><span class="n">method</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">steps</span><span class="si">}</span><span class="s2"> steps)..."</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">pass</span>
 
@@ -1274,7 +1274,7 @@
         <span class="n">jacobian_evaluation_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="n">aligned_substep_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="n">failed_substep_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="n">first_failed_time_s</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s2">&quot;nan&quot;</span><span class="p">)</span>
+        <span class="n">first_failed_time_s</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s2">"nan"</span><span class="p">)</span>
         <span class="n">failed_substep_times_s</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
 
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">steps</span><span class="p">):</span>
@@ -1315,15 +1315,15 @@
 
                 <span class="k">if</span> <span class="n">h_eff</span> <span class="o">&lt;=</span> <span class="mf">0.0</span><span class="p">:</span>
                     <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-                        <span class="sa">f</span><span class="s2">&quot;Invalid EMT substep size h_eff=</span><span class="si">{</span><span class="n">h_eff</span><span class="si">}</span><span class="s2"> at macro step </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">.&quot;</span>
+                        <span class="sa">f</span><span class="s2">"Invalid EMT substep size h_eff=</span><span class="si">{</span><span class="n">h_eff</span><span class="si">}</span><span class="s2"> at macro step </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">."</span>
                     <span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="k">pass</span>
 
                 <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="n">DynamicIntegrationMethod</span><span class="o">.</span><span class="n">DaeBDF2</span> <span class="ow">and</span> <span class="n">t_curr</span> <span class="o">!=</span> <span class="n">t_step_target</span><span class="p">:</span>
                     <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-                        <span class="s2">&quot;force_step_alignment with DAE BDF2 is not implemented yet. &quot;</span>
-                        <span class="s2">&quot;Use DaeTrapezoidal or implement variable-step BDF2 coefficients.&quot;</span>
+                        <span class="s2">"force_step_alignment with DAE BDF2 is not implemented yet. "</span>
+                        <span class="s2">"Use DaeTrapezoidal or implement variable-step BDF2 coefficients."</span>
                     <span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="k">pass</span>
@@ -1389,7 +1389,7 @@
                         <span class="n">t</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">t_curr</span><span class="p">),</span>
                         <span class="n">step_idx</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">i</span><span class="p">),</span>
                         <span class="n">newton_iter</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">k</span><span class="p">),</span>
-                        <span class="n">phase</span><span class="o">=</span><span class="s2">&quot;jit&quot;</span><span class="p">,</span>
+                        <span class="n">phase</span><span class="o">=</span><span class="s2">"jit"</span><span class="p">,</span>
                         <span class="n">method</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">method</span><span class="p">)</span>
                     <span class="p">)</span>
 
@@ -1419,9 +1419,9 @@
 
                     <span class="k">if</span> <span class="n">res_norm_inf</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_max_residual_inf_fail</span><span class="p">:</span>
                         <span class="c1">#raise RuntimeError(</span>
-                        <span class="c1">#    &quot;JIT solver aborted due to large nonlinear residual: &quot;</span>
-                        <span class="c1">#    f&quot;res_inf={res_norm_inf:.6e} at t={t_curr:.6e}, step={i}, iter={k}, &quot;</span>
-                        <span class="c1">#    f&quot;limit={self._max_residual_inf_fail:.6e}.&quot;</span>
+                        <span class="c1">#    "JIT solver aborted due to large nonlinear residual: "</span>
+                        <span class="c1">#    f"res_inf={res_norm_inf:.6e} at t={t_curr:.6e}, step={i}, iter={k}, "</span>
+                        <span class="c1">#    f"limit={self._max_residual_inf_fail:.6e}."</span>
                         <span class="c1">#)</span>
                         <span class="n">_</span> <span class="o">=</span> <span class="mi">0</span>
 
@@ -1429,13 +1429,13 @@
                         <span class="n">state_res_inf</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">res</span><span class="p">[:</span><span class="n">n_states</span><span class="p">])))</span>
                         <span class="k">if</span> <span class="n">state_res_inf</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_max_state_residual_inf_fail</span><span class="p">:</span>
                             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-                                <span class="s2">&quot;JIT solver aborted due to large state residual: &quot;</span>
-                                <span class="sa">f</span><span class="s2">&quot;state_res_inf=</span><span class="si">{</span><span class="n">state_res_inf</span><span class="si">:</span><span class="s2">.6e</span><span class="si">}</span><span class="s2"> at t=</span><span class="si">{</span><span class="n">t_curr</span><span class="si">:</span><span class="s2">.6e</span><span class="si">}</span><span class="s2">, step=</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">, iter=</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">, &quot;</span>
-                                <span class="sa">f</span><span class="s2">&quot;limit=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_max_state_residual_inf_fail</span><span class="si">:</span><span class="s2">.6e</span><span class="si">}</span><span class="s2">.&quot;</span>
+                                <span class="s2">"JIT solver aborted due to large state residual: "</span>
+                                <span class="sa">f</span><span class="s2">"state_res_inf=</span><span class="si">{</span><span class="n">state_res_inf</span><span class="si">:</span><span class="s2">.6e</span><span class="si">}</span><span class="s2"> at t=</span><span class="si">{</span><span class="n">t_curr</span><span class="si">:</span><span class="s2">.6e</span><span class="si">}</span><span class="s2">, step=</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">, iter=</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">, "</span>
+                                <span class="sa">f</span><span class="s2">"limit=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_max_state_residual_inf_fail</span><span class="si">:</span><span class="s2">.6e</span><span class="si">}</span><span class="s2">."</span>
                             <span class="p">)</span>
 
                     <span class="n">ctx</span><span class="o">.</span><span class="n">res_norm_inf</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">res_norm_inf</span><span class="p">)</span>
-                    <span class="k">if</span> <span class="n">trace_collector</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">trace_collector</span><span class="p">,</span> <span class="s2">&quot;record_residual_vector&quot;</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">trace_collector</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">trace_collector</span><span class="p">,</span> <span class="s2">"record_residual_vector"</span><span class="p">):</span>
                         <span class="n">trace_collector</span><span class="o">.</span><span class="n">record_residual_vector</span><span class="p">(</span>
                             <span class="n">ctx</span><span class="o">=</span><span class="n">ctx</span><span class="p">,</span>
                             <span class="n">residual</span><span class="o">=</span><span class="n">res</span><span class="p">,</span>
@@ -1640,7 +1640,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">dy</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">dx_prev</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;JIT Finished: </span><span class="si">{</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">t_start</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">s&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"JIT Finished: </span><span class="si">{</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">t_start</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">s"</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">pass</span>
 
@@ -1662,42 +1662,42 @@
 <div class="viewcode-block" id="JitSymbolicSolver.get_backend_build_stats">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.solvers.html#VeraGridEngine.Simulations.EMT.solvers.jit_symbolic_solver.JitSymbolicSolver.get_backend_build_stats">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_backend_build_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return setup timings collected during backend compilation.</span>
 
 <span class="sd">        :return: Backend build statistics.</span>
 <span class="sd">        :rtype: Dict[str, float]</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_backend_build_stats</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="JitSymbolicSolver.get_last_runtime_stats">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.solvers.html#VeraGridEngine.Simulations.EMT.solvers.jit_symbolic_solver.JitSymbolicSolver.get_last_runtime_stats">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_last_runtime_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return runtime statistics collected during the latest simulation.</span>
 
 <span class="sd">        :return: Runtime statistics.</span>
 <span class="sd">        :rtype: Dict[str, Any]</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_last_runtime_stats</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="JitSymbolicSolver.get_last_sim_loop_time">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.solvers.html#VeraGridEngine.Simulations.EMT.solvers.jit_symbolic_solver.JitSymbolicSolver.get_last_sim_loop_time">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_last_sim_loop_time</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return the latest integration-loop wall time.</span>
 
 <span class="sd">        :return: Latest loop time in seconds.</span>
 <span class="sd">        :rtype: float</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_last_sim_loop_time</span></div>
 </div>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_clip_debug_text</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">width</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Format text for residual debug tables with width clipping.</span>
 
 <span class="sd">    :param value: Value to be converted to string.</span>
@@ -1706,17 +1706,17 @@
 <span class="sd">    :type width: int</span>
 <span class="sd">    :return: Left-justified clipped text.</span>
 <span class="sd">    :rtype: str</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">text</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">width</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">text</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="n">width</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">width</span> <span class="o">&lt;=</span> <span class="mi">3</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">text</span><span class="p">[:</span><span class="n">width</span><span class="p">]</span>
-    <span class="k">return</span> <span class="n">text</span><span class="p">[:</span><span class="n">width</span> <span class="o">-</span> <span class="mi">3</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;...&quot;</span>
+    <span class="k">return</span> <span class="n">text</span><span class="p">[:</span><span class="n">width</span> <span class="o">-</span> <span class="mi">3</span><span class="p">]</span> <span class="o">+</span> <span class="s2">"..."</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_format_debug_number</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">width</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">13</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Format numeric values for debug output tables.</span>
 
 <span class="sd">    :param value: Value to format.</span>
@@ -1725,9 +1725,9 @@
 <span class="sd">    :type width: int</span>
 <span class="sd">    :return: Right-justified formatted value.</span>
 <span class="sd">    :rtype: str</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">return</span> <span class="s2">&quot; &quot;</span> <span class="o">*</span> <span class="n">width</span>
+        <span class="k">return</span> <span class="s2">" "</span> <span class="o">*</span> <span class="n">width</span>
 
     <span class="k">try</span><span class="p">:</span>
         <span class="n">float_value</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
@@ -1735,22 +1735,22 @@
         <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="n">width</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">float_value</span><span class="p">):</span>
-        <span class="k">return</span> <span class="s2">&quot;nan&quot;</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="n">width</span><span class="p">)</span>
+        <span class="k">return</span> <span class="s2">"nan"</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="n">width</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">float_value</span><span class="si">:</span><span class="s2"> .6e</span><span class="si">}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="n">width</span><span class="p">)</span>
+    <span class="k">return</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">float_value</span><span class="si">:</span><span class="s2"> .6e</span><span class="si">}</span><span class="s2">"</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="n">width</span><span class="p">)</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_print_full_params_debug</span><span class="p">(</span><span class="n">full_params</span><span class="p">:</span> <span class="n">Vec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Print the numeric contents of the assembled solver parameter vector.</span>
 
 <span class="sd">    :param full_params: Full parameter vector passed to the residual kernels.</span>
 <span class="sd">    :type full_params: Vec</span>
 <span class="sd">    :rtype: None</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">FULL params[] ORDER (numeric values):&quot;</span><span class="p">)</span>
+<span class="sd">    """</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">FULL params[] ORDER (numeric values):"</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">param_value</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">full_params</span><span class="p">):</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">idx</span><span class="si">:</span><span class="s2">3d</span><span class="si">}</span><span class="s2">  val=</span><span class="si">{</span><span class="nb">float</span><span class="p">(</span><span class="n">param_value</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">idx</span><span class="si">:</span><span class="s2">3d</span><span class="si">}</span><span class="s2">  val=</span><span class="si">{</span><span class="nb">float</span><span class="p">(</span><span class="n">param_value</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_print_residual_debug_table</span><span class="p">(</span><span class="n">res</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
@@ -1761,7 +1761,7 @@
                                 <span class="n">debug_info</span><span class="p">:</span> <span class="nb">list</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
                                 <span class="n">step_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
                                 <span class="n">iter_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Print a formatted table with the largest residuals and relevant state values.</span>
 
 <span class="sd">    :param res: Current residual vector.</span>
@@ -1781,20 +1781,20 @@
 <span class="sd">    :param iter_idx: Newton iteration index.</span>
 <span class="sd">    :type iter_idx: int</span>
 <span class="sd">    :rtype: None</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">[Residual Debug] Sizes:&quot;</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  n_eqs(res)       = </span><span class="si">{</span><span class="n">n_eqs</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  len(debug_info)  = </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">debug_info</span><span class="p">)</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">debug_info</span><span class="w"> </span><span class="ow">is</span><span class="w"> </span><span class="ow">not</span><span class="w"> </span><span class="kc">None</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s1">&#39;None&#39;</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  n_states(vec)    = </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">x_iter</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="sd">    """</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">[Residual Debug] Sizes:"</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"  n_eqs(res)       = </span><span class="si">{</span><span class="n">n_eqs</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"  len(debug_info)  = </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">debug_info</span><span class="p">)</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">debug_info</span><span class="w"> </span><span class="ow">is</span><span class="w"> </span><span class="ow">not</span><span class="w"> </span><span class="kc">None</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s1">'None'</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"  n_states(vec)    = </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">x_iter</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">debug_info</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  [WARNING] self._residual_debug_info is missing.&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"  [WARNING] self._residual_debug_info is missing."</span><span class="p">)</span>
     <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">debug_info</span><span class="p">)</span> <span class="o">!=</span> <span class="n">n_eqs</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  [WARNING] len(self._residual_debug_info) != n_eqs&quot;</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;            residual table labels may be wrong.</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"  [WARNING] len(self._residual_debug_info) != n_eqs"</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"            residual table labels may be wrong.</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
 
     <span class="n">abs_res</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
-    <span class="n">top_indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">abs_res</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s2">&quot;stable&quot;</span><span class="p">)[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">top_indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">abs_res</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s2">"stable"</span><span class="p">)[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
 
     <span class="n">width_idx</span> <span class="o">=</span> <span class="mi">4</span>
     <span class="n">width_kind</span> <span class="o">=</span> <span class="mi">6</span>
@@ -1807,34 +1807,34 @@
     <span class="n">width_xpr</span> <span class="o">=</span> <span class="mi">13</span>
     <span class="n">width_dxpr</span> <span class="o">=</span> <span class="mi">13</span>
 
-    <span class="n">title</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&gt;&gt;&gt; TOP 20 LARGEST RESIDUALS (Step </span><span class="si">{</span><span class="n">step_idx</span><span class="si">}</span><span class="s2">, Iter </span><span class="si">{</span><span class="n">iter_idx</span><span class="si">}</span><span class="s2">) &lt;&lt;&lt;&quot;</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">title</span><span class="p">)</span>
+    <span class="n">title</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"&gt;&gt;&gt; TOP 20 LARGEST RESIDUALS (Step </span><span class="si">{</span><span class="n">step_idx</span><span class="si">}</span><span class="s2">, Iter </span><span class="si">{</span><span class="n">iter_idx</span><span class="si">}</span><span class="s2">) &lt;&lt;&lt;"</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">"</span> <span class="o">+</span> <span class="n">title</span><span class="p">)</span>
     <span class="n">header</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="s1">&#39;idx&#39;</span><span class="si">:</span><span class="s2">&gt;</span><span class="si">{</span><span class="n">width_idx</span><span class="si">}}</span><span class="s2"> | &quot;</span>
-        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="s1">&#39;kind&#39;</span><span class="si">:</span><span class="s2">&lt;</span><span class="si">{</span><span class="n">width_kind</span><span class="si">}}</span><span class="s2"> | &quot;</span>
-        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="s1">&#39;state_i&#39;</span><span class="si">:</span><span class="s2">&gt;</span><span class="si">{</span><span class="n">width_state_idx</span><span class="si">}}</span><span class="s2"> | &quot;</span>
-        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="s1">&#39;var_name&#39;</span><span class="si">:</span><span class="s2">&lt;</span><span class="si">{</span><span class="n">width_var_name</span><span class="si">}}</span><span class="s2"> | &quot;</span>
-        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="s1">&#39;label&#39;</span><span class="si">:</span><span class="s2">&lt;</span><span class="si">{</span><span class="n">width_label</span><span class="si">}}</span><span class="s2"> | &quot;</span>
-        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="s1">&#39;res&#39;</span><span class="si">:</span><span class="s2">&gt;</span><span class="si">{</span><span class="n">width_res</span><span class="si">}}</span><span class="s2"> | &quot;</span>
-        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="s1">&#39;|res|&#39;</span><span class="si">:</span><span class="s2">&gt;</span><span class="si">{</span><span class="n">width_abs</span><span class="si">}}</span><span class="s2"> | &quot;</span>
-        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="s1">&#39;x_iter&#39;</span><span class="si">:</span><span class="s2">&gt;</span><span class="si">{</span><span class="n">width_xit</span><span class="si">}}</span><span class="s2"> | &quot;</span>
-        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="s1">&#39;x_prev&#39;</span><span class="si">:</span><span class="s2">&gt;</span><span class="si">{</span><span class="n">width_xpr</span><span class="si">}}</span><span class="s2"> | &quot;</span>
-        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="s1">&#39;dx_prev&#39;</span><span class="si">:</span><span class="s2">&gt;</span><span class="si">{</span><span class="n">width_dxpr</span><span class="si">}}</span><span class="s2">&quot;</span>
+        <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="s1">'idx'</span><span class="si">:</span><span class="s2">&gt;</span><span class="si">{</span><span class="n">width_idx</span><span class="si">}}</span><span class="s2"> | "</span>
+        <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="s1">'kind'</span><span class="si">:</span><span class="s2">&lt;</span><span class="si">{</span><span class="n">width_kind</span><span class="si">}}</span><span class="s2"> | "</span>
+        <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="s1">'state_i'</span><span class="si">:</span><span class="s2">&gt;</span><span class="si">{</span><span class="n">width_state_idx</span><span class="si">}}</span><span class="s2"> | "</span>
+        <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="s1">'var_name'</span><span class="si">:</span><span class="s2">&lt;</span><span class="si">{</span><span class="n">width_var_name</span><span class="si">}}</span><span class="s2"> | "</span>
+        <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="s1">'label'</span><span class="si">:</span><span class="s2">&lt;</span><span class="si">{</span><span class="n">width_label</span><span class="si">}}</span><span class="s2"> | "</span>
+        <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="s1">'res'</span><span class="si">:</span><span class="s2">&gt;</span><span class="si">{</span><span class="n">width_res</span><span class="si">}}</span><span class="s2"> | "</span>
+        <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="s1">'|res|'</span><span class="si">:</span><span class="s2">&gt;</span><span class="si">{</span><span class="n">width_abs</span><span class="si">}}</span><span class="s2"> | "</span>
+        <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="s1">'x_iter'</span><span class="si">:</span><span class="s2">&gt;</span><span class="si">{</span><span class="n">width_xit</span><span class="si">}}</span><span class="s2"> | "</span>
+        <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="s1">'x_prev'</span><span class="si">:</span><span class="s2">&gt;</span><span class="si">{</span><span class="n">width_xpr</span><span class="si">}}</span><span class="s2"> | "</span>
+        <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="s1">'dx_prev'</span><span class="si">:</span><span class="s2">&gt;</span><span class="si">{</span><span class="n">width_dxpr</span><span class="si">}}</span><span class="s2">"</span>
     <span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">header</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;-&quot;</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">header</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"-"</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">header</span><span class="p">))</span>
 
     <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="n">top_indices</span><span class="p">[:</span><span class="mi">20</span><span class="p">]:</span>
         <span class="k">if</span> <span class="n">debug_info</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">idx</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">debug_info</span><span class="p">):</span>
             <span class="n">info</span> <span class="o">=</span> <span class="n">debug_info</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
-            <span class="n">kind</span> <span class="o">=</span> <span class="n">info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;kind&quot;</span><span class="p">,</span> <span class="s2">&quot;UNK&quot;</span><span class="p">)</span>
-            <span class="n">var_name</span> <span class="o">=</span> <span class="n">info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;var_name&quot;</span><span class="p">,</span> <span class="s2">&quot;&lt;?&gt;&quot;</span><span class="p">)</span>
-            <span class="n">label</span> <span class="o">=</span> <span class="n">info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;label&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;residual_</span><span class="si">{</span><span class="n">idx</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-            <span class="n">state_idx</span> <span class="o">=</span> <span class="n">info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;state_idx&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="n">kind</span> <span class="o">=</span> <span class="n">info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"kind"</span><span class="p">,</span> <span class="s2">"UNK"</span><span class="p">)</span>
+            <span class="n">var_name</span> <span class="o">=</span> <span class="n">info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"var_name"</span><span class="p">,</span> <span class="s2">"&lt;?&gt;"</span><span class="p">)</span>
+            <span class="n">label</span> <span class="o">=</span> <span class="n">info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"label"</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"residual_</span><span class="si">{</span><span class="n">idx</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+            <span class="n">state_idx</span> <span class="o">=</span> <span class="n">info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"state_idx"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">kind</span> <span class="o">=</span> <span class="s2">&quot;UNK&quot;</span>
-            <span class="n">var_name</span> <span class="o">=</span> <span class="s2">&quot;&lt;?&gt;&quot;</span>
-            <span class="n">label</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;residual_</span><span class="si">{</span><span class="n">idx</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="n">kind</span> <span class="o">=</span> <span class="s2">"UNK"</span>
+            <span class="n">var_name</span> <span class="o">=</span> <span class="s2">"&lt;?&gt;"</span>
+            <span class="n">label</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"residual_</span><span class="si">{</span><span class="n">idx</span><span class="si">}</span><span class="s2">"</span>
             <span class="n">state_idx</span> <span class="o">=</span> <span class="kc">None</span>
 
         <span class="k">if</span> <span class="n">state_idx</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">state_idx</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">x_iter</span><span class="p">):</span>
@@ -1844,27 +1844,27 @@
             <span class="n">x_it</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
             <span class="n">x_pr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
 
-        <span class="k">if</span> <span class="n">kind</span> <span class="o">==</span> <span class="s2">&quot;STATE&quot;</span> <span class="ow">and</span> <span class="n">state_idx</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">state_idx</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">dx_prev</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">kind</span> <span class="o">==</span> <span class="s2">"STATE"</span> <span class="ow">and</span> <span class="n">state_idx</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">state_idx</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">dx_prev</span><span class="p">):</span>
             <span class="n">dx_pr</span> <span class="o">=</span> <span class="n">dx_prev</span><span class="p">[</span><span class="n">state_idx</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">dx_pr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
 
         <span class="n">row</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">idx</span><span class="si">:</span><span class="s2">&gt;</span><span class="si">{</span><span class="n">width_idx</span><span class="si">}</span><span class="s2">d</span><span class="si">}</span><span class="s2"> | &quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">kind</span><span class="si">:</span><span class="s2">&lt;</span><span class="si">{</span><span class="n">width_kind</span><span class="si">}}</span><span class="s2"> | &quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">state_idx</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">state_idx</span><span class="w"> </span><span class="ow">is</span><span class="w"> </span><span class="ow">not</span><span class="w"> </span><span class="kc">None</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="o">-</span><span class="mi">1</span><span class="si">:</span><span class="s2">&gt;</span><span class="si">{</span><span class="n">width_state_idx</span><span class="si">}</span><span class="s2">d</span><span class="si">}</span><span class="s2"> | &quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">_clip_debug_text</span><span class="p">(</span><span class="n">var_name</span><span class="p">,</span><span class="w"> </span><span class="n">width_var_name</span><span class="p">)</span><span class="si">}</span><span class="s2"> | &quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">_clip_debug_text</span><span class="p">(</span><span class="n">label</span><span class="p">,</span><span class="w"> </span><span class="n">width_label</span><span class="p">)</span><span class="si">}</span><span class="s2"> | &quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">_format_debug_number</span><span class="p">(</span><span class="n">res</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span><span class="w"> </span><span class="n">width_res</span><span class="p">)</span><span class="si">}</span><span class="s2"> | &quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">_format_debug_number</span><span class="p">(</span><span class="n">abs_res</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span><span class="w"> </span><span class="n">width_abs</span><span class="p">)</span><span class="si">}</span><span class="s2"> | &quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">_format_debug_number</span><span class="p">(</span><span class="n">x_it</span><span class="p">,</span><span class="w"> </span><span class="n">width_xit</span><span class="p">)</span><span class="si">}</span><span class="s2"> | &quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">_format_debug_number</span><span class="p">(</span><span class="n">x_pr</span><span class="p">,</span><span class="w"> </span><span class="n">width_xpr</span><span class="p">)</span><span class="si">}</span><span class="s2"> | &quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">_format_debug_number</span><span class="p">(</span><span class="n">dx_pr</span><span class="p">,</span><span class="w"> </span><span class="n">width_dxpr</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">idx</span><span class="si">:</span><span class="s2">&gt;</span><span class="si">{</span><span class="n">width_idx</span><span class="si">}</span><span class="s2">d</span><span class="si">}</span><span class="s2"> | "</span>
+            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">kind</span><span class="si">:</span><span class="s2">&lt;</span><span class="si">{</span><span class="n">width_kind</span><span class="si">}}</span><span class="s2"> | "</span>
+            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">state_idx</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">state_idx</span><span class="w"> </span><span class="ow">is</span><span class="w"> </span><span class="ow">not</span><span class="w"> </span><span class="kc">None</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="o">-</span><span class="mi">1</span><span class="si">:</span><span class="s2">&gt;</span><span class="si">{</span><span class="n">width_state_idx</span><span class="si">}</span><span class="s2">d</span><span class="si">}</span><span class="s2"> | "</span>
+            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">_clip_debug_text</span><span class="p">(</span><span class="n">var_name</span><span class="p">,</span><span class="w"> </span><span class="n">width_var_name</span><span class="p">)</span><span class="si">}</span><span class="s2"> | "</span>
+            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">_clip_debug_text</span><span class="p">(</span><span class="n">label</span><span class="p">,</span><span class="w"> </span><span class="n">width_label</span><span class="p">)</span><span class="si">}</span><span class="s2"> | "</span>
+            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">_format_debug_number</span><span class="p">(</span><span class="n">res</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span><span class="w"> </span><span class="n">width_res</span><span class="p">)</span><span class="si">}</span><span class="s2"> | "</span>
+            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">_format_debug_number</span><span class="p">(</span><span class="n">abs_res</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span><span class="w"> </span><span class="n">width_abs</span><span class="p">)</span><span class="si">}</span><span class="s2"> | "</span>
+            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">_format_debug_number</span><span class="p">(</span><span class="n">x_it</span><span class="p">,</span><span class="w"> </span><span class="n">width_xit</span><span class="p">)</span><span class="si">}</span><span class="s2"> | "</span>
+            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">_format_debug_number</span><span class="p">(</span><span class="n">x_pr</span><span class="p">,</span><span class="w"> </span><span class="n">width_xpr</span><span class="p">)</span><span class="si">}</span><span class="s2"> | "</span>
+            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">_format_debug_number</span><span class="p">(</span><span class="n">dx_pr</span><span class="p">,</span><span class="w"> </span><span class="n">width_dxpr</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span>
         <span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
 
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;-&quot;</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">header</span><span class="p">))</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;=&quot;</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">header</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"-"</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">header</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"="</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">header</span><span class="p">)</span> <span class="o">+</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
 </pre></div>
 
            </div>

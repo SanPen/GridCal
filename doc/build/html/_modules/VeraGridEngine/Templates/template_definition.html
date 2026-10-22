@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Templates.template_definition &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Templates.template_definition &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/license.html">📜 License</a></li>
@@ -137,19 +138,19 @@
 <div class="viewcode-block" id="TemplateProp">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Templates.html#VeraGridEngine.Templates.template_definition.TemplateProp">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">TemplateProp</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    property representing a template input</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;name&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;units&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;descr&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;tpe&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;display&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;editable&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;value&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;allowed_values&quot;</span><span class="p">,</span>
+        <span class="s2">"name"</span><span class="p">,</span>
+        <span class="s2">"units"</span><span class="p">,</span>
+        <span class="s2">"descr"</span><span class="p">,</span>
+        <span class="s2">"tpe"</span><span class="p">,</span>
+        <span class="s2">"display"</span><span class="p">,</span>
+        <span class="s2">"editable"</span><span class="p">,</span>
+        <span class="s2">"value"</span><span class="p">,</span>
+        <span class="s2">"allowed_values"</span><span class="p">,</span>
 
     <span class="p">)</span>
 
@@ -160,7 +161,7 @@
                  <span class="n">tpe</span><span class="p">:</span> <span class="n">TEMPLATEPROP_TYPES</span><span class="p">,</span>
                  <span class="n">value</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">allowed_values</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Enum</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Describe one editable input of a symbolic template builder.</span>
+<span class="w">        </span><span class="sd">"""Describe one editable input of a symbolic template builder.</span>
 
 <span class="sd">        When ``allowed_values`` is provided for an enum property, editors must</span>
 <span class="sd">        offer only that subset instead of every member of the enum class.</span>
@@ -172,7 +173,7 @@
 <span class="sd">        :param value: Default property value.</span>
 <span class="sd">        :param allowed_values: Optional ordered subset of permitted enum members.</span>
 <span class="sd">        :return: None.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">name</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">units</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">units</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">descr</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">descr</span>
@@ -191,17 +192,17 @@
 <span class="k">class</span><span class="w"> </span><span class="nc">TemplateDefinition</span><span class="p">:</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s1">&#39;vf&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;params&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;params_dict&#39;</span><span class="p">,</span>
+        <span class="s1">'vf'</span><span class="p">,</span>
+        <span class="s1">'params'</span><span class="p">,</span>
+        <span class="s1">'params_dict'</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vf</span><span class="p">,</span> <span class="n">params</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :param vf:</span>
 <span class="sd">        :param params:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">vf</span> <span class="o">=</span> <span class="n">vf</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">params</span> <span class="o">=</span> <span class="n">params</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">params_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">p</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="n">p</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">params</span><span class="p">}</span>
@@ -209,14 +210,14 @@
 <div class="viewcode-block" id="TemplateDefinition.get_value">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Templates.html#VeraGridEngine.Templates.template_definition.TemplateDefinition.get_value">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :param name:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">prp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">params_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">prp</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown parameter: </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unknown parameter: </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">prp</span><span class="o">.</span><span class="n">value</span></div>
 
@@ -224,7 +225,7 @@
 <div class="viewcode-block" id="TemplateDefinition.eval">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Templates.html#VeraGridEngine.Templates.template_definition.TemplateDefinition.eval">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">eval</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Not implemented eval&quot;</span><span class="p">)</span></div>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">"Not implemented eval"</span><span class="p">)</span></div>
 </div>
 
 
@@ -233,36 +234,36 @@
 <span class="c1"># class ArbitraryWaveformVoltageSourceEmtTemplate(TemplateDefinition):</span>
 <span class="c1">#</span>
 <span class="c1">#     def __init__(self, vf):</span>
-<span class="c1">#         &quot;&quot;&quot;</span>
+<span class="c1">#         """</span>
 <span class="c1">#</span>
 <span class="c1">#         :param vf: variable factory.</span>
-<span class="c1">#         &quot;&quot;&quot;</span>
+<span class="c1">#         """</span>
 <span class="c1">#         super().__init__(</span>
 <span class="c1">#             vf,</span>
 <span class="c1">#             params=[</span>
-<span class="c1">#                 TemplateProp(name=&quot;phN&quot;, units=&quot;&quot;, descr=&quot;Whether neutral is active.&quot;, tpe=bool),</span>
-<span class="c1">#                 TemplateProp(name=&quot;phA&quot;, units=&quot;&quot;, descr=&quot;Whether phase A is active.&quot;, tpe=bool),</span>
-<span class="c1">#                 TemplateProp(name=&quot;phB&quot;, units=&quot;&quot;, descr=&quot;Whether phase B is active.&quot;, tpe=bool),</span>
-<span class="c1">#                 TemplateProp(name=&quot;phC&quot;, units=&quot;&quot;, descr=&quot;Whether phase C is active.&quot;, tpe=bool),</span>
-<span class="c1">#                 TemplateProp(name=&quot;time_points&quot;, units=&quot;s&quot;, descr=&quot;Strictly increasing waveform times.&quot;, tpe=Sequence[float]),</span>
-<span class="c1">#                 TemplateProp(name=&quot;value_points&quot;, units=&quot;&quot;, descr=&quot;Matching waveform values.&quot;, tpe=Sequence[float]),</span>
-<span class="c1">#                 TemplateProp(name=&quot;source_conductance_value&quot;, units=&quot;Siemens&quot;, descr=&quot;Norton conductance.&quot;, tpe=float),</span>
-<span class="c1">#                 TemplateProp(name=&quot;name&quot;, units=&quot;&quot;, descr=&quot;Name of the emt model.&quot;, tpe=str),</span>
+<span class="c1">#                 TemplateProp(name="phN", units="", descr="Whether neutral is active.", tpe=bool),</span>
+<span class="c1">#                 TemplateProp(name="phA", units="", descr="Whether phase A is active.", tpe=bool),</span>
+<span class="c1">#                 TemplateProp(name="phB", units="", descr="Whether phase B is active.", tpe=bool),</span>
+<span class="c1">#                 TemplateProp(name="phC", units="", descr="Whether phase C is active.", tpe=bool),</span>
+<span class="c1">#                 TemplateProp(name="time_points", units="s", descr="Strictly increasing waveform times.", tpe=Sequence[float]),</span>
+<span class="c1">#                 TemplateProp(name="value_points", units="", descr="Matching waveform values.", tpe=Sequence[float]),</span>
+<span class="c1">#                 TemplateProp(name="source_conductance_value", units="Siemens", descr="Norton conductance.", tpe=float),</span>
+<span class="c1">#                 TemplateProp(name="name", units="", descr="Name of the emt model.", tpe=str),</span>
 <span class="c1">#             ]</span>
 <span class="c1">#         )</span>
 <span class="c1">#</span>
 <span class="c1">#     def eval(self) -&gt; EmtModelTemplate:</span>
-<span class="c1">#         &quot;&quot;&quot;</span>
-<span class="c1">#         &quot;&quot;&quot;</span>
+<span class="c1">#         """</span>
+<span class="c1">#         """</span>
 <span class="c1">#</span>
-<span class="c1">#         phN: bool = self.get_value(&quot;phN&quot;)</span>
-<span class="c1">#         phA: bool = self.get_value(&quot;phN&quot;)</span>
-<span class="c1">#         phB: bool = self.get_value(&quot;phN&quot;)</span>
-<span class="c1">#         phC: bool = self.get_value(&quot;phN&quot;)</span>
-<span class="c1">#         time_points: Sequence[float] = self.get_value(&quot;time_points&quot;)</span>
-<span class="c1">#         value_points: Sequence[float] = self.get_value(&quot;value_points&quot;)</span>
-<span class="c1">#         source_conductance_value: float = self.get_value(&quot;source_conductance_value&quot;)</span>
-<span class="c1">#         name: str = self.get_value(&quot;name&quot;)</span>
+<span class="c1">#         phN: bool = self.get_value("phN")</span>
+<span class="c1">#         phA: bool = self.get_value("phN")</span>
+<span class="c1">#         phB: bool = self.get_value("phN")</span>
+<span class="c1">#         phC: bool = self.get_value("phN")</span>
+<span class="c1">#         time_points: Sequence[float] = self.get_value("time_points")</span>
+<span class="c1">#         value_points: Sequence[float] = self.get_value("value_points")</span>
+<span class="c1">#         source_conductance_value: float = self.get_value("source_conductance_value")</span>
+<span class="c1">#         name: str = self.get_value("name")</span>
 <span class="c1">#</span>
 <span class="c1">#         return get_arbitrary_waveform_voltage_source_emt_template(</span>
 <span class="c1">#             self.vf, phN, phA, phB, phC, time_points, value_points, source_conductance_value, name</span>

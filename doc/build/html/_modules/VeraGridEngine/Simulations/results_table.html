@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Simulations.results_table &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Simulations.results_table &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/license.html">📜 License</a></li>
@@ -120,36 +121,36 @@
 <div class="viewcode-block" id="ResultsTable">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Simulations.html#VeraGridEngine.Simulations.results_table.ResultsTable">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">ResultsTable</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Class to populate a Qt table view with data from the results</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;data_c&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;cols_c&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;index_c&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;editable&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;editable_min_idx&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;palette&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;title&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;x_label&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;y_label&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;units&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;r&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;c&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;isDate&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;decimals&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;format_string&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;formatter&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;cols_device_type&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;idx_device_type&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;_col_devices&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;_idx_devices&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;plot_type&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;damping_ratio_boundary&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;plot_title&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;complex_plot_x_column&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;complex_plot_y_columns&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;complex_plot_y_scales&quot;</span><span class="p">,</span>
+        <span class="s2">"data_c"</span><span class="p">,</span>
+        <span class="s2">"cols_c"</span><span class="p">,</span>
+        <span class="s2">"index_c"</span><span class="p">,</span>
+        <span class="s2">"editable"</span><span class="p">,</span>
+        <span class="s2">"editable_min_idx"</span><span class="p">,</span>
+        <span class="s2">"palette"</span><span class="p">,</span>
+        <span class="s2">"title"</span><span class="p">,</span>
+        <span class="s2">"x_label"</span><span class="p">,</span>
+        <span class="s2">"y_label"</span><span class="p">,</span>
+        <span class="s2">"units"</span><span class="p">,</span>
+        <span class="s2">"r"</span><span class="p">,</span>
+        <span class="s2">"c"</span><span class="p">,</span>
+        <span class="s2">"isDate"</span><span class="p">,</span>
+        <span class="s2">"decimals"</span><span class="p">,</span>
+        <span class="s2">"format_string"</span><span class="p">,</span>
+        <span class="s2">"formatter"</span><span class="p">,</span>
+        <span class="s2">"cols_device_type"</span><span class="p">,</span>
+        <span class="s2">"idx_device_type"</span><span class="p">,</span>
+        <span class="s2">"_col_devices"</span><span class="p">,</span>
+        <span class="s2">"_idx_devices"</span><span class="p">,</span>
+        <span class="s2">"plot_type"</span><span class="p">,</span>
+        <span class="s2">"damping_ratio_boundary"</span><span class="p">,</span>
+        <span class="s2">"plot_title"</span><span class="p">,</span>
+        <span class="s2">"complex_plot_x_column"</span><span class="p">,</span>
+        <span class="s2">"complex_plot_y_columns"</span><span class="p">,</span>
+        <span class="s2">"complex_plot_y_scales"</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
@@ -159,9 +160,9 @@
                  <span class="n">title</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
                  <span class="n">cols_device_type</span><span class="p">:</span> <span class="n">DeviceType</span><span class="p">,</span>
                  <span class="n">idx_device_type</span><span class="p">:</span> <span class="n">DeviceType</span><span class="p">,</span>
-                 <span class="n">units</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-                 <span class="n">xlabel</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-                 <span class="n">ylabel</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+                 <span class="n">units</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">,</span>
+                 <span class="n">xlabel</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">,</span>
+                 <span class="n">ylabel</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">,</span>
                  <span class="n">editable</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
                  <span class="n">palette</span><span class="p">:</span> <span class="nb">object</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">editable_min_idx</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
@@ -172,7 +173,7 @@
                  <span class="n">complex_plot_x_column</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">complex_plot_y_columns</span><span class="p">:</span> <span class="n">StrVec</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">complex_plot_y_scales</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        ResultsTable constructor</span>
 <span class="sd">        :param data:</span>
 <span class="sd">        :param columns:</span>
@@ -191,7 +192,7 @@
 <span class="sd">        :param complex_plot_y_columns: Allowed imaginary-coordinate column names.</span>
 <span class="sd">        :param complex_plot_y_scales: Overlay scales corresponding to the allowed imaginary columns.</span>
 <span class="sd">        :return: None.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
             <span class="c1"># assert compatible dimensions</span>
             <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
@@ -205,7 +206,7 @@
 
             <span class="bp">self</span><span class="o">.</span><span class="n">data_c</span> <span class="o">=</span> <span class="n">data</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Unsupported number of dimensions </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">ndim</span><span class="p">))</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">"Unsupported number of dimensions </span><span class="si">{}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">ndim</span><span class="p">))</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">cols_c</span> <span class="o">=</span> <span class="n">columns</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">index_c</span> <span class="o">=</span> <span class="n">index</span>
@@ -225,7 +226,7 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">isDate</span> <span class="o">=</span> <span class="kc">True</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">decimals</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">decimals</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">format_string</span> <span class="o">=</span> <span class="s1">&#39;.&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">decimals</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;f&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">format_string</span> <span class="o">=</span> <span class="s1">'.'</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">decimals</span><span class="p">)</span> <span class="o">+</span> <span class="s1">'f'</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">formatter</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">format_string</span> <span class="o">%</span> <span class="n">x</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">cols_device_type</span><span class="p">:</span> <span class="n">DeviceType</span> <span class="o">=</span> <span class="n">cols_device_type</span>
@@ -253,59 +254,59 @@
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">complex_plot_y_columns</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">complex_plot_y_scales</span><span class="p">):</span>
             <span class="k">pass</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Complex plot Y columns and scales must have the same length.&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Complex plot Y columns and scales must have the same length."</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Backward-compatible alias for the table numeric payload.</span>
 
 <span class="sd">        :return: Table data array.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_c</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">col_devices</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_col_devices</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">idx_devices</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_idx_devices</span>
 
 <div class="viewcode-block" id="ResultsTable.set_col_devices">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Simulations.html#VeraGridEngine.Simulations.results_table.ResultsTable.set_col_devices">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">set_col_devices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">devices_list</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">ALL_DEV_TYPES</span><span class="p">]):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Set the list of devices that matches the results for filtering</span>
 <span class="sd">        :param devices_list:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_col_devices</span> <span class="o">=</span> <span class="n">devices_list</span></div>
 
 
 <div class="viewcode-block" id="ResultsTable.set_idx_devices">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Simulations.html#VeraGridEngine.Simulations.results_table.ResultsTable.set_idx_devices">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">set_idx_devices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">devices_list</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">ALL_DEV_TYPES</span><span class="p">]):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Set the list of devices that matches the results for filtering</span>
 <span class="sd">        :param devices_list:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_idx_devices</span> <span class="o">=</span> <span class="n">devices_list</span></div>
 
 
 <div class="viewcode-block" id="ResultsTable.transpose">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Simulations.html#VeraGridEngine.Simulations.results_table.ResultsTable.transpose">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">transpose</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Transpose the results in-place</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data_c</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_c</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">r</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">c</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_c</span><span class="o">.</span><span class="n">shape</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">x_label</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_label</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_label</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_label</span>
@@ -326,16 +327,16 @@
 <div class="viewcode-block" id="ResultsTable.sort_column">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Simulations.html#VeraGridEngine.Simulations.results_table.ResultsTable.sort_column">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">sort_column</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">c</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">max_to_min</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :param c:</span>
 <span class="sd">        :param max_to_min:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">sorting_arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_c</span><span class="p">[:,</span> <span class="n">c</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Not a float column...&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">"Not a float column..."</span><span class="p">)</span>
             <span class="n">sorting_arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_c</span><span class="p">[:,</span> <span class="n">c</span><span class="p">]</span>
 
         <span class="k">if</span> <span class="n">max_to_min</span><span class="p">:</span>
@@ -349,12 +350,12 @@
 
 <div class="viewcode-block" id="ResultsTable.slice_cols">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Simulations.html#VeraGridEngine.Simulations.results_table.ResultsTable.slice_cols">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">slice_cols</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">col_idx</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;ResultsTable&quot;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">slice_cols</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">col_idx</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"ResultsTable"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Make column slicing</span>
 <span class="sd">        :param col_idx: indices of the columns</span>
 <span class="sd">        :return: Nothing</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">sliced_model</span> <span class="o">=</span> <span class="n">ResultsTable</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">data_c</span><span class="p">[:,</span> <span class="n">col_idx</span><span class="p">],</span>
                                     <span class="n">columns</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">cols_c</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">col_idx</span><span class="p">]),</span>
                                     <span class="n">index</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">index_c</span><span class="p">),</span>
@@ -380,12 +381,12 @@
 
 <div class="viewcode-block" id="ResultsTable.slice_rows">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Simulations.html#VeraGridEngine.Simulations.results_table.ResultsTable.slice_rows">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">slice_rows</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;ResultsTable&quot;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">slice_rows</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"ResultsTable"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Make rows slicing</span>
 <span class="sd">        :param idx: indices of the columns</span>
 <span class="sd">        :return: Nothing</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">sliced_model</span> <span class="o">=</span> <span class="n">ResultsTable</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">data_c</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="p">:],</span>
                                     <span class="n">columns</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cols_c</span><span class="p">,</span>
                                     <span class="n">index</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">index_c</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">idx</span><span class="p">]),</span>
@@ -411,13 +412,13 @@
 
 <div class="viewcode-block" id="ResultsTable.slice_all">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Simulations.html#VeraGridEngine.Simulations.results_table.ResultsTable.slice_all">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">slice_all</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">row_idx</span><span class="p">,</span> <span class="n">col_idx</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;ResultsTable&quot;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">slice_all</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">row_idx</span><span class="p">,</span> <span class="n">col_idx</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"ResultsTable"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Make rows slicing</span>
 <span class="sd">        :param row_idx: indices of the rows</span>
 <span class="sd">        :param col_idx: indices of the columns</span>
 <span class="sd">        :return: ResultsTable</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">sliced_model</span> <span class="o">=</span> <span class="n">ResultsTable</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">data_c</span><span class="p">[</span><span class="n">row_idx</span><span class="p">,</span> <span class="p">:][:,</span> <span class="n">col_idx</span><span class="p">],</span>
                                     <span class="n">columns</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">cols_c</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">col_idx</span><span class="p">]),</span>
                                     <span class="n">index</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">index_c</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">row_idx</span><span class="p">]),</span>
@@ -443,11 +444,11 @@
 <div class="viewcode-block" id="ResultsTable.search_in_columns">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Simulations.html#VeraGridEngine.Simulations.results_table.ResultsTable.search_in_columns">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">search_in_columns</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">txt</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Search stuff</span>
 <span class="sd">        :param txt:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">idx</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
         <span class="n">txt2</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">txt</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cols_c</span><span class="p">):</span>
@@ -463,11 +464,11 @@
 <div class="viewcode-block" id="ResultsTable.search_in_rows">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Simulations.html#VeraGridEngine.Simulations.results_table.ResultsTable.search_in_rows">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">search_in_rows</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">txt</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Search stuff</span>
 <span class="sd">        :param txt:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">idx</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
         <span class="n">txt2</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">txt</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">index_c</span><span class="p">):</span>
@@ -483,31 +484,31 @@
 <div class="viewcode-block" id="ResultsTable.copy_to_column">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Simulations.html#VeraGridEngine.Simulations.results_table.ResultsTable.copy_to_column">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">copy_to_column</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">row</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">col</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Copies one value to all the column</span>
 <span class="sd">        @param row: Row of the value</span>
 <span class="sd">        @param col: Column of the value</span>
 <span class="sd">        @return: Nothing</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data_c</span><span class="p">[:,</span> <span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_c</span><span class="p">[</span><span class="n">row</span><span class="p">,</span> <span class="n">col</span><span class="p">]</span></div>
 
 
 <div class="viewcode-block" id="ResultsTable.is_complex">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Simulations.html#VeraGridEngine.Simulations.results_table.ResultsTable.is_complex">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">is_complex</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Is the data complex?</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_c</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="nb">complex</span></div>
 
 
 <div class="viewcode-block" id="ResultsTable.get_data">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Simulations.html#VeraGridEngine.Simulations.results_table.ResultsTable.get_data">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Returns: index, columns, data</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cols_c</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">n</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
@@ -532,10 +533,10 @@
 <div class="viewcode-block" id="ResultsTable.convert_to_cdf">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Simulations.html#VeraGridEngine.Simulations.results_table.ResultsTable.convert_to_cdf">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">convert_to_cdf</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Convert the data in-place to CDF based</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="c1"># calculate the proportional values of samples</span>
         <span class="n">n</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_c</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
@@ -547,7 +548,7 @@
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_c</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">data_c</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_c</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">x_label</span> <span class="o">=</span> <span class="s1">&#39;Probability of value&lt;=x&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">x_label</span> <span class="o">=</span> <span class="s1">'Probability of value&lt;=x'</span>
 
         <span class="c1"># Independent column sorting destroys complex coordinate pairs and</span>
         <span class="c1"># eigenvector component relationships.</span>
@@ -562,10 +563,10 @@
 <div class="viewcode-block" id="ResultsTable.convert_to_abs">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Simulations.html#VeraGridEngine.Simulations.results_table.ResultsTable.convert_to_abs">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">convert_to_abs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Convert the data to abs</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">data_c</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_c</span><span class="p">)</span>
 
@@ -578,15 +579,15 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">complex_plot_y_columns</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">str_</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">complex_plot_y_scales</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Could not convert to abs :/&#39;</span><span class="p">)</span></div>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">'Could not convert to abs :/'</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="ResultsTable.to_df">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Simulations.html#VeraGridEngine.Simulations.results_table.ResultsTable.to_df">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">to_df</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        get DataFrame</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">index</span><span class="p">,</span> <span class="n">columns</span><span class="p">,</span> <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span>
 
         <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">index</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="n">columns</span><span class="p">)</span></div>
@@ -595,29 +596,29 @@
 <div class="viewcode-block" id="ResultsTable.save_to_excel">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Simulations.html#VeraGridEngine.Simulations.results_table.ResultsTable.save_to_excel">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">save_to_excel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_name</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        save data to excel</span>
 <span class="sd">        :param file_name:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">to_df</span><span class="p">()</span><span class="o">.</span><span class="n">to_excel</span><span class="p">(</span><span class="n">file_name</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="ResultsTable.save_to_csv">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Simulations.html#VeraGridEngine.Simulations.results_table.ResultsTable.save_to_csv">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">save_to_csv</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_name</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Save data to csv</span>
 <span class="sd">        :param file_name:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">to_df</span><span class="p">()</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">file_name</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="ResultsTable.get_data_frame">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Simulations.html#VeraGridEngine.Simulations.results_table.ResultsTable.get_data_frame">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_data_frame</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Save data to csv</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">index</span><span class="p">,</span> <span class="n">columns</span><span class="p">,</span> <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">index</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="n">columns</span><span class="p">)</span></div>
 </div>

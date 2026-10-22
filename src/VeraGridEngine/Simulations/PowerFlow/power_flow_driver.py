@@ -11,9 +11,9 @@ from VeraGridEngine.Simulations.PowerFlow.power_flow_worker import multi_island_
 from VeraGridEngine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
 from VeraGridEngine.Devices.multi_circuit import MultiCircuit
 from VeraGridEngine.Simulations.driver_template import DriverTemplate
-from VeraGridEngine.Compilers.Gslv.activation import GSLV_AVAILABLE
+from VeraGridEngine.Compilers.Gslv.activation import GSLV_AVAILABLE, GSLV_UNAVAILABLE_REASON
 from VeraGridEngine.Compilers.Gslv.Simulations.power_flow import gslv_pf, translate_gslv_pf_results
-from VeraGridEngine.Compilers.circuit_to_pgm import PGM_AVAILABLE, pgm_pf
+from VeraGridEngine.Compilers.circuit_to_pgm import PGM_AVAILABLE, PGM_UNAVAILABLE_REASON, pgm_pf
 from VeraGridEngine.enumerations import EngineType, SimulationTypes
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
@@ -135,11 +135,11 @@ class PowerFlowDriver(DriverTemplate):
         self.report_text("Compiling and configuring...")
         if self.engine == EngineType.GSLV and not GSLV_AVAILABLE:
             self.engine = EngineType.VeraGrid
-            self.logger.add_warning('Failed back to VeraGrid')
+            self.logger.add_warning(f'GSLV unavailable: {GSLV_UNAVAILABLE_REASON}; falling back to VeraGrid')
 
         if self.engine == EngineType.PGM and not PGM_AVAILABLE:
             self.engine = EngineType.VeraGrid
-            self.logger.add_warning('Failed back to VeraGrid')
+            self.logger.add_warning(f'PGM unavailable: {PGM_UNAVAILABLE_REASON}; falling back to VeraGrid')
 
         if self.engine == EngineType.VeraGrid:
 

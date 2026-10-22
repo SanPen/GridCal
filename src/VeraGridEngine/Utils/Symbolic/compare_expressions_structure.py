@@ -1060,7 +1060,7 @@ def _hash_expr(expr: Expr) -> str:
     if isinstance(expr, Func2):
         h = hashlib.sha256()
         arg_hash = _hash_expr(expr.arg1) + _hash_expr(expr.arg2)
-        if expr.name in {"min", "max", "atan2"}:
+        if expr.name in {"min", "max"}:
             arg_hash = "".join(sorted([_hash_expr(expr.arg1), _hash_expr(expr.arg2)]))
         h.update(f"Func2:{expr.name}:{arg_hash}".encode())
         return h.hexdigest()
@@ -1129,7 +1129,7 @@ def _to_dag_recursive(expr: Expr, memo: Dict[str, DAGNode]) -> DAGNode:
         arg1 = _to_dag_recursive(expr.arg1, memo)
         arg2 = _to_dag_recursive(expr.arg2, memo)
         children = [arg1, arg2]
-        if expr.name in {"min", "max", "atan2"}:
+        if expr.name in {"min", "max"}:
             children = sorted(children, key=lambda n: n.structural_hash)
         node = DAGNode(op=f"Func2:{expr.name}", children=children, structural_hash=h, expr=expr)
         memo[h] = node

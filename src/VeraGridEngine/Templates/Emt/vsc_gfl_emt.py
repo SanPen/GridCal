@@ -167,17 +167,13 @@ def build_gfl_converter_model_emt(vfactory: VarFactory, inputs,
     Build power control loop model for Grid Following Converter for EMT simulation.
     Supports multiple control modes via ConverterControlType.
 
-    Args:
-        inputs: [vc_A, vc_B, vc_C, vg_A, vg_B, vg_C, i_A, i_B, i_C, Vdc,
-                 Pt_vsc, Qt_vsc, Vpk_ref, phi_v_ref]
-        control1: First control mode (typically active power or DC voltage related)
-        control2: Second control mode (typically reactive power or AC voltage related)
-        multilinear: Use multilinearization for Park transforms
-
-    Returns:
-        gfl_block: The complete converter block
-        i_a_inj, i_b_inj, i_c_inj: Three-phase bus injection currents
-        P, Q: Active and reactive power measurements
+    :param vfactory: Variable factory used to construct the symbolic model.
+    :param inputs: Converter voltages, currents, references, and initial power values.
+    :param control1: First control mode, typically related to active power or DC voltage.
+    :param control2: Second control mode, typically related to reactive power or AC voltage.
+    :param multilinear: Whether to use multilinearized Park transforms.
+    :param frozen_voltage_source: Whether to keep the converter voltage source fixed.
+    :return: Converter block together with its active and reactive power measurements.
     """
     vc_a   = inputs[0]
     vc_b   = inputs[1]

@@ -9,7 +9,7 @@ import json
 import warnings
 import numpy as np
 import pandas as pd
-from typing import List, Dict, Tuple, Union, Any, Set, Generator, Sequence
+from typing import List, Dict, Tuple, Union, Any, Set, Generator, Sequence, Optional
 import datetime as dateslib
 
 from VeraGridEngine.basic_structures import IntVec, StrVec, Vec, Mat, ObjVec, BoolVec
@@ -7092,26 +7092,37 @@ class Assets:
             else:
                 print('The template is not a EmtModelTemplate!')
 
-    def delete_emt_model(self, obj: dev.EmtModelTemplate):
+    def delete_emt_model(self, obj: dev.EmtModelTemplate) -> None:
+        """Remove a library template and clear matching device references.
+
+        Injections and branches own template references through ``emt_template``.
+        Buses own independently constructed Blocks and have no such reference.
+        Existing setters retain materialized Blocks when the reference is cleared,
+        matching RMS deletion and explicit custom-model ownership.
+
+        :param obj: Library template whose matching references must be cleared.
+        :return: None; an absent library entry is handled without an exception.
         """
-        Delete EMT model from the collection
-        :param obj: DynamicModel object
-        """
-        for elm in self.buses:
-            if elm.emt_model.template == obj:
-                elm.emt_model.template = None
+        # Use the canonical reference setter rather than undeclared Block state.
+        injection: INJECTION_DEVICE_TYPES
+        for injection in self.get_injection_devices_iter():
+            if injection.emt_template == obj:
+                injection.emt_template = None
+            else:
+                pass
 
-        for elm in self.get_injection_devices_iter():
-            if elm.emt_model.template == obj:
-                elm.emt_model.template = None
+        # Apply the same ownership rule to every existing branch collection.
+        branch: BRANCH_TYPES
+        for branch in self.get_branches_iter(add_vsc=True, add_hvdc=True, add_switch=True):
+            if branch.emt_template == obj:
+                branch.emt_template = None
+            else:
+                pass
 
-        for elm in self.get_branches_iter(add_vsc=True, add_hvdc=True, add_switch=True):
-            if elm.emt_model.template == obj:
-                elm.emt_model.template = None
-
-        try:
+        # Idempotent removal preserves the established missing-entry behavior.
+        if obj in self._emt_models:
             self._emt_models.remove(obj)
-        except ValueError:
+        else:
             pass
 
     def get_emt_models_by_device_type(self, tpe: DeviceType) -> List[dev.EmtModelTemplate]:
@@ -8825,6 +8836,9 @@ class Assets:
 
         elif obj.device_type == DeviceType.SwitchDevice:
             self.add_switch(obj=obj)
+
+        elif obj.device_type == DeviceType.ShortCircuitEvent:
+            self.add_short_circuit_event(obj=obj)
         else:
             raise Exception('Element type not understood ' + str(obj.device_type))
 
@@ -9595,6 +9609,9 @@ class Assets:
 
         elif elm_type == DeviceType.ShortCircuitEvent:
             elm = dev.ShortCircuitEvent()
+
+        elif elm_type == DeviceType.ManufacturerNativeModelDevice:
+            elm = dev.ManufacturerNativeModel()
 
         elif elm_type == DeviceType.RemedialActionDevice:
             elm = dev.RemedialAction()

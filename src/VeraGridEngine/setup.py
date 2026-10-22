@@ -101,7 +101,7 @@ package_data: Dict[str, List[str]] = {
         'data/fmu/**/*.c',
         'data/fmu/**/*.h',
         'data/native_worker/source/*.c',
-        'data/native_worker/source/*.h'
+        'data/native_worker/source/*.h',
     ],
 }
 

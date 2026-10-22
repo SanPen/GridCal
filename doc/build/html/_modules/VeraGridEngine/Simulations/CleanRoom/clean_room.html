@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Simulations.CleanRoom.clean_room &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Simulations.CleanRoom.clean_room &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/license.html">📜 License</a></li>
@@ -106,7 +107,7 @@
 <span class="c1"># License, v. 2.0. If a copy of the MPL was not distributed with this</span>
 <span class="c1"># file, You can obtain one at https://mozilla.org/MPL/2.0/.</span>
 <span class="c1"># SPDX-License-Identifier: MPL-2.0</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 <span class="sd">Hierarchical country-scale load generator</span>
 <span class="sd">================================================================================</span>
 
@@ -140,7 +141,7 @@
 <span class="sd">   Optional monthly anchoring is also provided.</span>
 
 <span class="sd">Hard constraint from user:</span>
-<span class="sd">- Never use &quot;*&quot; as an argument in any function signature.</span>
+<span class="sd">- Never use "*" as an argument in any function signature.</span>
 <span class="sd">- Add reStructuredText docstrings to all functions (done).</span>
 
 <span class="sd">Input conventions</span>
@@ -157,7 +158,7 @@
 <span class="sd">- For huge N (many devices), share training batches can be heavy. Use:</span>
 <span class="sd">    - smaller batch_size_share</span>
 <span class="sd">    - share_chunk_size &gt; 0 to chunk the forward pass over devices</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
@@ -184,7 +185,7 @@
 <div class="viewcode-block" id="select_torch_device">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.CleanRoom.html#VeraGridEngine.Simulations.CleanRoom.clean_room.select_torch_device">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">select_torch_device</span><span class="p">(</span><span class="n">prefer_cuda</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Select a safe torch device.</span>
 
 <span class="sd">    This prevents crashes when torch reports CUDA availability but the current</span>
@@ -198,37 +199,37 @@
 
 <span class="sd">    :param prefer_cuda: Try CUDA if True.</span>
 <span class="sd">    :param verbose: Print diagnostic info if True.</span>
-<span class="sd">    :returns: ``torch.device(&#39;cuda&#39;)`` if usable else ``torch.device(&#39;cpu&#39;)``.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    :returns: ``torch.device('cuda')`` if usable else ``torch.device('cpu')``.</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">prefer_cuda</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">&quot;cpu&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">"cpu"</span><span class="p">)</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">():</span>
-        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">&quot;cpu&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">"cpu"</span><span class="p">)</span>
 
     <span class="k">with</span> <span class="n">warnings</span><span class="o">.</span><span class="n">catch_warnings</span><span class="p">():</span>
-        <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">)</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s2">"ignore"</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">_</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">current_device</span><span class="p">()</span>
-            <span class="n">a</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">64</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">&quot;cuda&quot;</span><span class="p">)</span>
-            <span class="n">b</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">64</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">&quot;cuda&quot;</span><span class="p">)</span>
+            <span class="n">a</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">64</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">"cuda"</span><span class="p">)</span>
+            <span class="n">b</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">64</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">"cuda"</span><span class="p">)</span>
             <span class="n">_</span> <span class="o">=</span> <span class="n">a</span> <span class="o">@</span> <span class="n">b</span>
             <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">synchronize</span><span class="p">()</span>
             <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
                 <span class="n">name</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">get_device_name</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
                 <span class="n">cap</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">get_device_capability</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[device] CUDA OK: </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> (cc </span><span class="si">{</span><span class="n">cap</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">cap</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
-            <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">&quot;cuda&quot;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"[device] CUDA OK: </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> (cc </span><span class="si">{</span><span class="n">cap</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">cap</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">)"</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">"cuda"</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;[device] CUDA detected but unusable — falling back to CPU&quot;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">"[device] CUDA detected but unusable — falling back to CPU"</span><span class="p">)</span>
                 <span class="k">try</span><span class="p">:</span>
                     <span class="n">name</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">get_device_name</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
                     <span class="n">cap</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">get_device_capability</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[device] GPU: </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> (cc </span><span class="si">{</span><span class="n">cap</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">cap</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"[device] GPU: </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> (cc </span><span class="si">{</span><span class="n">cap</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">cap</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">)"</span><span class="p">)</span>
                 <span class="k">except</span> <span class="ne">AssertionError</span><span class="p">:</span>
                     <span class="k">pass</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Reason:&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
-            <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">&quot;cpu&quot;</span><span class="p">)</span></div>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">"Reason:"</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">"cpu"</span><span class="p">)</span></div>
 
 
 
@@ -239,13 +240,13 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.CleanRoom.html#VeraGridEngine.Simulations.CleanRoom.clean_room.TimeGrid">[docs]</a>
 <span class="nd">@dataclass</span><span class="p">(</span><span class="n">slots</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">TimeGrid</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Time grid diagnostics.</span>
 
 <span class="sd">    :param dt_seconds: Dominant timestep in seconds.</span>
 <span class="sd">    :param is_regular: True if timestamp jitter is within tolerance.</span>
 <span class="sd">    :param jitter_frac_p95: 95th percentile of relative jitter wrt dt.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">dt_seconds</span><span class="p">:</span> <span class="nb">int</span>
     <span class="n">is_regular</span><span class="p">:</span> <span class="nb">bool</span>
     <span class="n">jitter_frac_p95</span><span class="p">:</span> <span class="nb">float</span></div>
@@ -255,18 +256,18 @@
 <div class="viewcode-block" id="infer_time_grid">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.CleanRoom.html#VeraGridEngine.Simulations.CleanRoom.clean_room.infer_time_grid">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">infer_time_grid</span><span class="p">(</span><span class="n">timestamps</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">jitter_tol</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TimeGrid</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Infer dominant timestep and regularity from Unix timestamps.</span>
 
 <span class="sd">    :param timestamps: Unix timestamps (seconds), shape ``(T,)``.</span>
 <span class="sd">    :param jitter_tol: Relative tolerance for regularity check.</span>
 <span class="sd">    :returns: :class:`TimeGrid`.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">ts</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">timestamps</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
     <span class="n">dts</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">ts</span><span class="p">)</span>
     <span class="n">dts</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">=</span> <span class="n">dts</span><span class="p">[</span><span class="n">dts</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">dts</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Not enough timestamps to infer dt.&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Not enough timestamps to infer dt."</span><span class="p">)</span>
     <span class="n">vals</span><span class="p">,</span> <span class="n">counts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">dts</span><span class="p">,</span> <span class="n">return_counts</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="n">dt_mode</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">vals</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">counts</span><span class="p">)])</span>
     <span class="n">jitter</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">dts</span> <span class="o">-</span> <span class="n">dt_mode</span><span class="p">)</span> <span class="o">/</span> <span class="nb">max</span><span class="p">(</span><span class="n">dt_mode</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
@@ -280,7 +281,7 @@
 <div class="viewcode-block" id="calendar_features_unix">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.CleanRoom.html#VeraGridEngine.Simulations.CleanRoom.clean_room.calendar_features_unix">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">calendar_features_unix</span><span class="p">(</span><span class="n">timestamps</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Mat</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute resolution-independent calendar features from Unix timestamps.</span>
 
 <span class="sd">    Features (columns)</span>
@@ -292,7 +293,7 @@
 
 <span class="sd">    :param timestamps: Unix timestamps (seconds), shape ``(T,)``.</span>
 <span class="sd">    :returns: Feature matrix, shape ``(T, Fcal)`` (float32).</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">ts</span><span class="p">:</span> <span class="n">IntVec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">timestamps</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
     <span class="n">sec_day</span> <span class="o">=</span> <span class="mi">86400</span>
     <span class="n">sec_week</span> <span class="o">=</span> <span class="mi">7</span> <span class="o">*</span> <span class="n">sec_day</span>
@@ -318,12 +319,12 @@
 <div class="viewcode-block" id="ensure_2d_temp">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.CleanRoom.html#VeraGridEngine.Simulations.CleanRoom.clean_room.ensure_2d_temp">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">ensure_2d_temp</span><span class="p">(</span><span class="n">temp</span><span class="p">:</span> <span class="n">Mat</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Mat</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Ensure temperature array has shape ``(T,R)``.</span>
 
 <span class="sd">    :param temp: Temperature array. Accepted shapes: ``(T,)``, ``(T,1)``, ``(T,R)``.</span>
 <span class="sd">    :returns: Temperature array ``(T,R)`` (float32).</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">arr</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">temp</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">arr</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
         <span class="n">arr</span> <span class="o">=</span> <span class="n">arr</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span>
@@ -334,12 +335,12 @@
 <div class="viewcode-block" id="compute_aggregate">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.CleanRoom.html#VeraGridEngine.Simulations.CleanRoom.clean_room.compute_aggregate">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">compute_aggregate</span><span class="p">(</span><span class="n">P</span><span class="p">:</span> <span class="n">Mat</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute aggregate series from device matrix.</span>
 
 <span class="sd">    :param P: Power matrix ``(T,N)``, may contain NaNs.</span>
 <span class="sd">    :returns: Aggregate power ``(T,)`` (float32).</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nansum</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span></div>
 
 
@@ -347,7 +348,7 @@
 <div class="viewcode-block" id="stable_shares">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.CleanRoom.html#VeraGridEngine.Simulations.CleanRoom.clean_room.stable_shares">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">stable_shares</span><span class="p">(</span><span class="n">P</span><span class="p">:</span> <span class="n">Mat</span><span class="p">,</span> <span class="n">eps</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Mat</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute per-time shares:</span>
 
 <span class="sd">        s(t,i) = P(t,i) / sum_j P(t,j)</span>
@@ -357,7 +358,7 @@
 <span class="sd">    :param P: Power matrix ``(T,N)``, NaNs allowed.</span>
 <span class="sd">    :param eps: Epsilon added to the per-time denominator.</span>
 <span class="sd">    :returns: Shares matrix ``(T,N)`` (float32).</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">P_clean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan_to_num</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="n">nan</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
     <span class="n">denom</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">P_clean</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">+</span> <span class="nb">float</span><span class="p">(</span><span class="n">eps</span><span class="p">)</span>
     <span class="n">shares</span><span class="p">:</span> <span class="n">Mat</span> <span class="o">=</span> <span class="n">P_clean</span> <span class="o">/</span> <span class="n">denom</span>
@@ -368,7 +369,7 @@
 <div class="viewcode-block" id="compute_month_index">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.CleanRoom.html#VeraGridEngine.Simulations.CleanRoom.clean_room.compute_month_index">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">compute_month_index</span><span class="p">(</span><span class="n">timestamps</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">IntVec</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute a month index ``0..11`` from Unix timestamps (approx).</span>
 
 <span class="sd">    This uses a simplified 365-day year mapping (no leap years). It is intended</span>
@@ -376,7 +377,7 @@
 
 <span class="sd">    :param timestamps: Unix timestamps (seconds), shape ``(T,)``.</span>
 <span class="sd">    :returns: Month indices, shape ``(T,)`` (int64).</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">ts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">timestamps</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
     <span class="n">sec_day</span> <span class="o">=</span> <span class="mi">86400</span>
     <span class="n">day_of_the_year</span><span class="p">:</span> <span class="n">IntVec</span> <span class="o">=</span> <span class="p">((</span><span class="n">ts</span> <span class="o">//</span> <span class="n">sec_day</span><span class="p">)</span> <span class="o">%</span> <span class="mi">365</span><span class="p">)</span>
@@ -394,7 +395,7 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.CleanRoom.html#VeraGridEngine.Simulations.CleanRoom.clean_room.AggregateBatch">[docs]</a>
 <span class="nd">@dataclass</span><span class="p">(</span><span class="n">slots</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">AggregateBatch</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Strongly-typed batch for the aggregate model.</span>
 
 <span class="sd">    :param y_ctx: Tensor (L,)</span>
@@ -402,7 +403,7 @@
 <span class="sd">    :param cal_t: Tensor (1,F)</span>
 <span class="sd">    :param temp_t: Tensor (1,1)</span>
 <span class="sd">    :param y_next: Tensor (1,)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">y_ctx</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
     <span class="n">temp_hist</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
     <span class="n">cal_t</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
@@ -411,10 +412,10 @@
 
 <div class="viewcode-block" id="AggregateBatch.to">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.CleanRoom.html#VeraGridEngine.Simulations.CleanRoom.clean_room.AggregateBatch.to">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">to</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;AggregateBatch&quot;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">to</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"AggregateBatch"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Move tensors to device.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">AggregateBatch</span><span class="p">(</span>
             <span class="n">y_ctx</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">y_ctx</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">),</span>
             <span class="n">temp_hist</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">temp_hist</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">),</span>
@@ -430,14 +431,14 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.CleanRoom.html#VeraGridEngine.Simulations.CleanRoom.clean_room.ShareBatch">[docs]</a>
 <span class="nd">@dataclass</span><span class="p">(</span><span class="n">slots</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">ShareBatch</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Strongly-typed batch for the share model.</span>
 
 <span class="sd">    :param cal_t: Tensor (F,)</span>
 <span class="sd">    :param temp_dev_t: Tensor (N,)</span>
 <span class="sd">    :param y_agg_t: Tensor (1,)</span>
 <span class="sd">    :param share_t: Tensor (N,)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">cal_t</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
     <span class="n">temp_dev_t</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
     <span class="n">y_agg_t</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
@@ -445,10 +446,10 @@
 
 <div class="viewcode-block" id="ShareBatch.to">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.CleanRoom.html#VeraGridEngine.Simulations.CleanRoom.clean_room.ShareBatch.to">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">to</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;ShareBatch&quot;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">to</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"ShareBatch"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Move tensors to device.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">ShareBatch</span><span class="p">(</span>
             <span class="n">cal_t</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cal_t</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">),</span>
             <span class="n">temp_dev_t</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">temp_dev_t</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">),</span>
@@ -462,7 +463,7 @@
 <div class="viewcode-block" id="AggregateDataset">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.CleanRoom.html#VeraGridEngine.Simulations.CleanRoom.clean_room.AggregateDataset">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">AggregateDataset</span><span class="p">(</span><span class="n">Dataset</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Random window dataset for aggregate model.</span>
 
 <span class="sd">    Target</span>
@@ -476,7 +477,7 @@
 <span class="sd">    - ``cal_t``: shape ``(1,F)``</span>
 <span class="sd">    - ``temp_t``: shape ``(1,1)``</span>
 <span class="sd">    - ``y_next``: shape ``(1,)``</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                  <span class="n">timestamps</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
@@ -485,14 +486,14 @@
                  <span class="n">context_len</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
                  <span class="n">samples_per_epoch</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
                  <span class="n">eps_agg</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        :param timestamps: Unix timestamps ``(T,)``.</span>
 <span class="sd">        :param P_agg: Aggregate power ``(T,)``.</span>
 <span class="sd">        :param temp: Temperature ``(T,R)``.</span>
 <span class="sd">        :param context_len: Context length ``L``.</span>
 <span class="sd">        :param samples_per_epoch: Random samples per epoch.</span>
 <span class="sd">        :param eps_agg: Log stabilization epsilon.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">timestamps</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">timestamps</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">temp</span> <span class="o">=</span> <span class="n">ensure_2d_temp</span><span class="p">(</span><span class="n">temp</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">cal</span> <span class="o">=</span> <span class="n">calendar_features_unix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">timestamps</span><span class="p">)</span>
@@ -504,19 +505,19 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">P_agg</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">eps_agg</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">T</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">T</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">L</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Not enough time steps for chosen context_len.&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Not enough time steps for chosen context_len."</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        :returns: Number of samples per epoch.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">samples</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AggregateBatch</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        :param idx: Unused (random sampling).</span>
 <span class="sd">        :returns: Batch element dictionary.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">L</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">T</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
         <span class="n">y_ctx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">[</span><span class="n">t</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">L</span><span class="p">:</span><span class="n">t</span><span class="p">]</span>
         <span class="n">y_next</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">[</span><span class="n">t</span><span class="p">]</span>
@@ -537,7 +538,7 @@
 <div class="viewcode-block" id="ShareVectorDataset">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.CleanRoom.html#VeraGridEngine.Simulations.CleanRoom.clean_room.ShareVectorDataset">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">ShareVectorDataset</span><span class="p">(</span><span class="n">Dataset</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Dataset for simplex-constrained share vectors at time t.</span>
 
 <span class="sd">    Target</span>
@@ -550,7 +551,7 @@
 <span class="sd">    - ``temp_dev_t``: shape ``(N,)`` temperature per device region at time t</span>
 <span class="sd">    - ``y_agg_t``: shape ``(1,)`` log aggregate at time t (conditioning)</span>
 <span class="sd">    - ``share_t``: shape ``(N,)`` target share vector</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                  <span class="n">timestamps</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span>
@@ -560,7 +561,7 @@
                  <span class="n">samples_per_epoch</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
                  <span class="n">eps_share_denominator</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
                  <span class="n">eps_agg</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        :param timestamps: Unix timestamps ``(T,)``.</span>
 <span class="sd">        :param P: Device powers ``(T,N)`` (NaNs allowed).</span>
 <span class="sd">        :param region_id: Device region indices ``(N,)``.</span>
@@ -568,7 +569,7 @@
 <span class="sd">        :param samples_per_epoch: Random samples per epoch.</span>
 <span class="sd">        :param eps_share_denominator: Epsilon for share denominator.</span>
 <span class="sd">        :param eps_agg: Epsilon for aggregate log.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">timestamps</span><span class="p">:</span> <span class="n">IntVec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">timestamps</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">calendar_features</span><span class="p">:</span> <span class="n">Mat</span> <span class="o">=</span> <span class="n">calendar_features_unix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">timestamps</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">P</span><span class="p">:</span> <span class="n">Mat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
@@ -581,10 +582,10 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">N</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">P</span><span class="o">.</span><span class="n">shape</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">region_id</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;region_id must have length N.&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"region_id must have length N."</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">temperature</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">T</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;temp must have T rows.&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"temp must have T rows."</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">share</span> <span class="o">=</span> <span class="n">stable_shares</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">P</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">eps_share_denominator</span><span class="p">)</span>
 
@@ -595,16 +596,16 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">temp_dev</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">temperature</span><span class="p">[:,</span> <span class="bp">self</span><span class="o">.</span><span class="n">region_id</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        :returns: Number of samples per epoch.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">samples</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ShareBatch</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        :param idx: Unused (random sampling).</span>
 <span class="sd">        :returns: Batch element dictionary.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">ShareBatch</span><span class="p">(</span>
             <span class="n">cal_t</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">calendar_features</span><span class="p">[</span><span class="n">t</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span>
@@ -618,9 +619,9 @@
 <div class="viewcode-block" id="collate_aggregate">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.CleanRoom.html#VeraGridEngine.Simulations.CleanRoom.clean_room.collate_aggregate">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">collate_aggregate</span><span class="p">(</span><span class="n">batch</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">AggregateBatch</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">AggregateBatch</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Stack AggregateBatch list into one AggregateBatch.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="n">AggregateBatch</span><span class="p">(</span>
         <span class="n">y_ctx</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">b</span><span class="o">.</span><span class="n">y_ctx</span> <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">batch</span><span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span>
         <span class="n">temp_hist</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">b</span><span class="o">.</span><span class="n">temp_hist</span> <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">batch</span><span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span>
@@ -634,9 +635,9 @@
 <div class="viewcode-block" id="collate_share">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.CleanRoom.html#VeraGridEngine.Simulations.CleanRoom.clean_room.collate_share">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">collate_share</span><span class="p">(</span><span class="n">batch</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">ShareBatch</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">ShareBatch</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Stack ShareBatch list into one ShareBatch.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="n">ShareBatch</span><span class="p">(</span>
         <span class="n">cal_t</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">b</span><span class="o">.</span><span class="n">cal_t</span> <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">batch</span><span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span>
         <span class="n">temp_dev_t</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">b</span><span class="o">.</span><span class="n">temp_dev_t</span> <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">batch</span><span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span>
@@ -652,13 +653,13 @@
 <div class="viewcode-block" id="SafeGRU">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.CleanRoom.html#VeraGridEngine.Simulations.CleanRoom.clean_room.SafeGRU">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">SafeGRU</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">GRU</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    GRU variant that disables cuDNN flatten_parameters path.</span>
 
 <span class="sd">    :returns: None</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">        GRU that automatically enables or disables flatten_parameters()</span>
 <span class="sd">        depending on whether the current device supports cuDNN RNN kernels.</span>
 
@@ -667,21 +668,21 @@
 <span class="sd">        - No warnings</span>
 <span class="sd">        - Fast path on supported GPUs</span>
 <span class="sd">        - Safe path everywhere else</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_proj</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">hidden</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">batch_first</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        :param hidden: GRU hidden size.</span>
 <span class="sd">        :param input_proj: Projection size for GRU input.</span>
 <span class="sd">        :param batch_first:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">input_proj</span><span class="p">,</span> <span class="n">hidden</span><span class="p">,</span> <span class="n">batch_first</span><span class="o">=</span><span class="n">batch_first</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_flatten_safe</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_detect_flatten_safety</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Probe whether flatten_parameters() is safe on the current device.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">():</span>
             <span class="k">return</span> <span class="kc">False</span>
 
@@ -716,7 +717,7 @@
 <div class="viewcode-block" id="AggregateARModel">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.CleanRoom.html#VeraGridEngine.Simulations.CleanRoom.clean_room.AggregateARModel">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">AggregateARModel</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Aggregate one-step probabilistic model.</span>
 
 <span class="sd">    Learns</span>
@@ -726,14 +727,14 @@
 <span class="sd">    Predicts</span>
 <span class="sd">    --------</span>
 <span class="sd">    Normal distribution parameters ``(mu, sigma)`` for the next step.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cal_dim</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">hidden</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">input_proj</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        :param cal_dim: Calendar feature dimension.</span>
 <span class="sd">        :param hidden: GRU hidden size.</span>
 <span class="sd">        :param input_proj: Projection size for GRU input.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">in_proj</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">input_proj</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">gru</span> <span class="o">=</span> <span class="n">SafeGRU</span><span class="p">(</span><span class="n">input_proj</span><span class="p">,</span> <span class="n">hidden</span><span class="p">,</span> <span class="n">batch_first</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -756,13 +757,13 @@
                 <span class="n">temp_hist</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
                 <span class="n">cal_t</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
                 <span class="n">temp_t</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        :param y_ctx: Tensor ``(B,L)``.</span>
 <span class="sd">        :param temp_hist: Tensor ``(B,L,1)``.</span>
 <span class="sd">        :param cal_t: Tensor ``(B,1,F)``.</span>
 <span class="sd">        :param temp_t: Tensor ``(B,1,1)``.</span>
 <span class="sd">        :returns: ``(mu, sigma)`` each shape ``(B,1)``.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">y_ctx</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="n">temp_hist</span><span class="p">],</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
         <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">in_proj</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
         <span class="n">_</span><span class="p">,</span> <span class="n">h</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gru</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
@@ -780,14 +781,14 @@
 <div class="viewcode-block" id="ShareSoftmaxModel">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.CleanRoom.html#VeraGridEngine.Simulations.CleanRoom.clean_room.ShareSoftmaxModel">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">ShareSoftmaxModel</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Simplex-constrained share model.</span>
 
 <span class="sd">    Produces logits for all devices at a given time t, then uses softmax to</span>
 <span class="sd">    obtain shares on the simplex.</span>
 
 <span class="sd">    The forward can optionally chunk over devices to reduce memory.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                  <span class="n">n_devices</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
@@ -796,14 +797,14 @@
                  <span class="n">dev_emb_dim</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
                  <span class="n">reg_emb_dim</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
                  <span class="n">hidden</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        :param n_devices: Number of devices ``N``.</span>
 <span class="sd">        :param n_regions: Number of regions ``R``.</span>
 <span class="sd">        :param cal_dim: Calendar feature dimension.</span>
 <span class="sd">        :param dev_emb_dim: Device embedding dimension.</span>
 <span class="sd">        :param reg_emb_dim: Region embedding dimension.</span>
 <span class="sd">        :param hidden: Hidden size of per-device MLP.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">n_devices</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">n_devices</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">n_regions</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">n_regions</span><span class="p">)</span>
@@ -830,7 +831,7 @@
                 <span class="n">y_agg_t</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
                 <span class="n">region_id</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
                 <span class="n">chunk_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Compute logits for all devices.</span>
 
 <span class="sd">        :param cal_t: Tensor ``(B,F)`` calendar features.</span>
@@ -839,7 +840,7 @@
 <span class="sd">        :param region_id: Tensor ``(N,)`` region index per device.</span>
 <span class="sd">        :param chunk_size: If ``&gt;0``, chunk forward pass over devices.</span>
 <span class="sd">        :returns: Logits tensor ``(B,N)``.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">B</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">cal_t</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
         <span class="n">N</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_devices</span><span class="p">)</span>
         <span class="n">device</span> <span class="o">=</span> <span class="n">cal_t</span><span class="o">.</span><span class="n">device</span>
@@ -892,14 +893,14 @@
 <div class="viewcode-block" id="gaussian_nll">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.CleanRoom.html#VeraGridEngine.Simulations.CleanRoom.clean_room.gaussian_nll">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">gaussian_nll</span><span class="p">(</span><span class="n">y</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">mu</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">sigma</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Gaussian negative log-likelihood.</span>
 
 <span class="sd">    :param y: Target tensor ``(B,1)``.</span>
 <span class="sd">    :param mu: Mean tensor ``(B,1)``.</span>
 <span class="sd">    :param sigma: Std dev tensor ``(B,1)``.</span>
 <span class="sd">    :returns: Scalar loss tensor.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">nll</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span> <span class="o">+</span> <span class="n">torch</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">sigma</span><span class="p">)</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">((</span><span class="n">y</span> <span class="o">-</span> <span class="n">mu</span><span class="p">)</span> <span class="o">/</span> <span class="n">sigma</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
     <span class="k">return</span> <span class="n">nll</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span></div>
 
@@ -908,15 +909,15 @@
 <div class="viewcode-block" id="share_kl_loss">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.CleanRoom.html#VeraGridEngine.Simulations.CleanRoom.clean_room.share_kl_loss">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">share_kl_loss</span><span class="p">(</span><span class="n">logits</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">target_share</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    KL divergence between target shares and predicted shares.</span>
 
 <span class="sd">    :param logits: Logits tensor ``(B,N)``.</span>
 <span class="sd">    :param target_share: Target shares tensor ``(B,N)`` with rows summing to 1.</span>
 <span class="sd">    :returns: Scalar loss tensor.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">log_pred</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">log_softmax</span><span class="p">(</span><span class="n">logits</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">F</span><span class="o">.</span><span class="n">kl_div</span><span class="p">(</span><span class="n">log_pred</span><span class="p">,</span> <span class="n">target_share</span><span class="p">,</span> <span class="n">reduction</span><span class="o">=</span><span class="s2">&quot;batchmean&quot;</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">F</span><span class="o">.</span><span class="n">kl_div</span><span class="p">(</span><span class="n">log_pred</span><span class="p">,</span> <span class="n">target_share</span><span class="p">,</span> <span class="n">reduction</span><span class="o">=</span><span class="s2">"batchmean"</span><span class="p">)</span></div>
 
 
 
@@ -937,7 +938,7 @@
         <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
         <span class="n">eps_agg</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">AggregateARModel</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Train the aggregate model.</span>
 
 <span class="sd">    :param timestamps: Unix timestamps ``(T,)``.</span>
@@ -951,7 +952,7 @@
 <span class="sd">    :param verbose: Print progress.</span>
 <span class="sd">    :param eps_agg: Epsilon for log stability.</span>
 <span class="sd">    :returns: ``(model, losses, meta)``.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">device</span> <span class="o">=</span> <span class="n">select_torch_device</span><span class="p">(</span><span class="n">prefer_cuda</span><span class="p">,</span> <span class="n">verbose</span><span class="p">)</span>
     <span class="n">cal_dim</span> <span class="o">=</span> <span class="n">calendar_features_unix</span><span class="p">(</span><span class="n">timestamps</span><span class="p">)</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
 
@@ -984,15 +985,15 @@
 
         <span class="n">losses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">loss</span><span class="o">.</span><span class="n">item</span><span class="p">()))</span>
         <span class="k">if</span> <span class="n">verbose</span> <span class="ow">and</span> <span class="n">step</span> <span class="o">%</span> <span class="mi">500</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[agg step </span><span class="si">{</span><span class="n">step</span><span class="si">:</span><span class="s2">6d</span><span class="si">}</span><span class="s2">] NLL=</span><span class="si">{</span><span class="n">loss</span><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"[agg step </span><span class="si">{</span><span class="n">step</span><span class="si">:</span><span class="s2">6d</span><span class="si">}</span><span class="s2">] NLL=</span><span class="si">{</span><span class="n">loss</span><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
     <span class="n">meta</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s2">&quot;device&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">device</span><span class="p">),</span>
-        <span class="s2">&quot;cal_dim&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">cal_dim</span><span class="p">),</span>
-        <span class="s2">&quot;hidden&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">hidden</span><span class="p">),</span>
-        <span class="s2">&quot;input_proj&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">input_proj</span><span class="p">),</span>
-        <span class="s2">&quot;context_len&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">context_len</span><span class="p">),</span>
-        <span class="s2">&quot;eps_agg&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">eps_agg</span><span class="p">),</span>
+        <span class="s2">"device"</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">device</span><span class="p">),</span>
+        <span class="s2">"cal_dim"</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">cal_dim</span><span class="p">),</span>
+        <span class="s2">"hidden"</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">hidden</span><span class="p">),</span>
+        <span class="s2">"input_proj"</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">input_proj</span><span class="p">),</span>
+        <span class="s2">"context_len"</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">context_len</span><span class="p">),</span>
+        <span class="s2">"eps_agg"</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">eps_agg</span><span class="p">),</span>
     <span class="p">}</span>
     <span class="k">return</span> <span class="n">model</span><span class="p">,</span> <span class="n">losses</span><span class="p">,</span> <span class="n">meta</span></div>
 
@@ -1014,7 +1015,7 @@
         <span class="n">eps_agg</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
         <span class="n">chunk_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">ShareSoftmaxModel</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Train the simplex share model.</span>
 
 <span class="sd">    :param timestamps: Unix timestamps ``(T,)``.</span>
@@ -1030,7 +1031,7 @@
 <span class="sd">    :param eps_agg: Epsilon for aggregate log.</span>
 <span class="sd">    :param chunk_size: Forward chunk size over devices (0 disables).</span>
 <span class="sd">    :returns: ``(model, losses, meta)``.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">device</span> <span class="o">=</span> <span class="n">select_torch_device</span><span class="p">(</span><span class="n">prefer_cuda</span><span class="p">,</span> <span class="n">verbose</span><span class="p">)</span>
     <span class="n">ts</span><span class="p">:</span> <span class="n">IntVec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">timestamps</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
     <span class="n">cal_dim</span> <span class="o">=</span> <span class="n">calendar_features_unix</span><span class="p">(</span><span class="n">ts</span><span class="p">)</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
@@ -1080,19 +1081,19 @@
 
         <span class="n">losses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">loss</span><span class="o">.</span><span class="n">item</span><span class="p">()))</span>
         <span class="k">if</span> <span class="n">verbose</span> <span class="ow">and</span> <span class="n">step</span> <span class="o">%</span> <span class="mi">500</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[share step </span><span class="si">{</span><span class="n">step</span><span class="si">:</span><span class="s2">6d</span><span class="si">}</span><span class="s2">] KL=</span><span class="si">{</span><span class="n">loss</span><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"[share step </span><span class="si">{</span><span class="n">step</span><span class="si">:</span><span class="s2">6d</span><span class="si">}</span><span class="s2">] KL=</span><span class="si">{</span><span class="n">loss</span><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
     <span class="n">meta</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s2">&quot;device&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">device</span><span class="p">),</span>
-        <span class="s2">&quot;cal_dim&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">cal_dim</span><span class="p">),</span>
-        <span class="s2">&quot;n_devices&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">N</span><span class="p">),</span>
-        <span class="s2">&quot;n_regions&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">R</span><span class="p">),</span>
-        <span class="s2">&quot;dev_emb_dim&quot;</span><span class="p">:</span> <span class="mi">32</span><span class="p">,</span>
-        <span class="s2">&quot;reg_emb_dim&quot;</span><span class="p">:</span> <span class="mi">8</span><span class="p">,</span>
-        <span class="s2">&quot;hidden&quot;</span><span class="p">:</span> <span class="mi">128</span><span class="p">,</span>
-        <span class="s2">&quot;eps_share_denom&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">eps_share_denominator</span><span class="p">),</span>
-        <span class="s2">&quot;eps_agg&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">eps_agg</span><span class="p">),</span>
-        <span class="s2">&quot;chunk_size&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">chunk_size</span><span class="p">),</span>
+        <span class="s2">"device"</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">device</span><span class="p">),</span>
+        <span class="s2">"cal_dim"</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">cal_dim</span><span class="p">),</span>
+        <span class="s2">"n_devices"</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">N</span><span class="p">),</span>
+        <span class="s2">"n_regions"</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">R</span><span class="p">),</span>
+        <span class="s2">"dev_emb_dim"</span><span class="p">:</span> <span class="mi">32</span><span class="p">,</span>
+        <span class="s2">"reg_emb_dim"</span><span class="p">:</span> <span class="mi">8</span><span class="p">,</span>
+        <span class="s2">"hidden"</span><span class="p">:</span> <span class="mi">128</span><span class="p">,</span>
+        <span class="s2">"eps_share_denom"</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">eps_share_denominator</span><span class="p">),</span>
+        <span class="s2">"eps_agg"</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">eps_agg</span><span class="p">),</span>
+        <span class="s2">"chunk_size"</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">chunk_size</span><span class="p">),</span>
     <span class="p">}</span>
     <span class="k">return</span> <span class="n">model</span><span class="p">,</span> <span class="n">losses</span><span class="p">,</span> <span class="n">meta</span></div>
 
@@ -1112,7 +1113,7 @@
         <span class="n">seed</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">sigma_damp</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Sample y_agg(t) auto-regressively and return per-step effective sigma.</span>
 
 <span class="sd">    The effective sigma used for sampling is:</span>
@@ -1125,7 +1126,7 @@
 <span class="sd">    :param seed: RNG seed.</span>
 <span class="sd">    :param sigma_damp: Multiplicative damping factor in [0,1].</span>
 <span class="sd">    :returns: ``(y_syn, sigma_eff_hist)`` each shape ``(T,)``.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">torch</span><span class="o">.</span><span class="n">manual_seed</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">seed</span><span class="p">))</span>
     <span class="n">device</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">())</span><span class="o">.</span><span class="n">device</span>
 
@@ -1172,7 +1173,7 @@
 <div class="viewcode-block" id="lognormal_mean_correction">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.CleanRoom.html#VeraGridEngine.Simulations.CleanRoom.clean_room.lognormal_mean_correction">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">lognormal_mean_correction</span><span class="p">(</span><span class="n">y</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">sigma_eff</span><span class="p">:</span> <span class="n">Vec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Apply log-normal mean correction when mapping y to power:</span>
 
 <span class="sd">        P = exp(y - 0.5 * sigma_eff^2)</span>
@@ -1180,7 +1181,7 @@
 <span class="sd">    :param y: Log series ``(T,)``.</span>
 <span class="sd">    :param sigma_eff: Effective sigma used in sampling ``(T,)``.</span>
 <span class="sd">    :returns: Corrected power series ``(T,)``.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">y_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
     <span class="n">s_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">sigma_eff</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">y_arr</span> <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">s_arr</span> <span class="o">**</span> <span class="mi">2</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span></div>
@@ -1190,7 +1191,7 @@
 <div class="viewcode-block" id="anchor_log_mean_global">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.CleanRoom.html#VeraGridEngine.Simulations.CleanRoom.clean_room.anchor_log_mean_global">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">anchor_log_mean_global</span><span class="p">(</span><span class="n">y_syn</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">y_real</span><span class="p">:</span> <span class="n">Vec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Anchor synthetic log-series to match the real mean (global).</span>
 
 <span class="sd">        y_syn := y_syn + (mean(y_real) - mean(y_syn))</span>
@@ -1198,7 +1199,7 @@
 <span class="sd">    :param y_syn: Synthetic log series ``(T,)``.</span>
 <span class="sd">    :param y_real: Real log series ``(T,)``.</span>
 <span class="sd">    :returns: Mean-anchored synthetic log series ``(T,)``.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">ys</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">y_syn</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
     <span class="n">yr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">y_real</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
     <span class="n">delta</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">yr</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">ys</span><span class="p">))</span>
@@ -1209,7 +1210,7 @@
 <div class="viewcode-block" id="anchor_log_mean_monthly">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.CleanRoom.html#VeraGridEngine.Simulations.CleanRoom.clean_room.anchor_log_mean_monthly">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">anchor_log_mean_monthly</span><span class="p">(</span><span class="n">y_syn</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">y_real</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">timestamps</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Anchor synthetic log-series to match real mean per month.</span>
 
 <span class="sd">    This reduces seasonal bias if the AR rollout drifts differently across months.</span>
@@ -1218,7 +1219,7 @@
 <span class="sd">    :param y_real: Real log series ``(T,)``.</span>
 <span class="sd">    :param timestamps: Unix timestamps ``(T,)``.</span>
 <span class="sd">    :returns: Month-anchored synthetic log series ``(T,)``.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">ys</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">y_syn</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
     <span class="n">yr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">y_real</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
     <span class="n">month</span> <span class="o">=</span> <span class="n">compute_month_index</span><span class="p">(</span><span class="n">timestamps</span><span class="p">)</span>
@@ -1249,7 +1250,7 @@
         <span class="n">logit_noise_std</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
         <span class="n">chunk_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Mat</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Sample shares s(t,:) using softmax(logits + noise), ensuring simplex constraints.</span>
 
 <span class="sd">    :param model: Trained share model.</span>
@@ -1261,7 +1262,7 @@
 <span class="sd">    :param logit_noise_std: Std of Gaussian noise added to logits before softmax.</span>
 <span class="sd">    :param chunk_size: Forward chunk size over devices (0 disables).</span>
 <span class="sd">    :returns: Shares matrix ``(T,N)`` with row sums == 1 (numerical tolerance).</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">torch</span><span class="o">.</span><span class="n">manual_seed</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">seed</span><span class="p">))</span>
     <span class="n">device</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">())</span><span class="o">.</span><span class="n">device</span>
 
@@ -1298,13 +1299,13 @@
 <div class="viewcode-block" id="reconstruct_power_from_shares">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.CleanRoom.html#VeraGridEngine.Simulations.CleanRoom.clean_room.reconstruct_power_from_shares">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">reconstruct_power_from_shares</span><span class="p">(</span><span class="n">P_agg</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">shares</span><span class="p">:</span> <span class="n">Mat</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Mat</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Reconstruct device powers from aggregate and shares.</span>
 
 <span class="sd">    :param P_agg: Aggregate power ``(T,)``.</span>
 <span class="sd">    :param shares: Shares ``(T,N)``.</span>
 <span class="sd">    :returns: Device power matrix ``(T,N)``.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">shares</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">P_agg</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)[:,</span> <span class="kc">None</span><span class="p">])</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span></div>
 
 
@@ -1315,13 +1316,13 @@
 <div class="viewcode-block" id="save_artifact">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.CleanRoom.html#VeraGridEngine.Simulations.CleanRoom.clean_room.save_artifact">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">save_artifact</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">payload</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Save payload via torch.save.</span>
 
 <span class="sd">    :param path: Artifact path.</span>
 <span class="sd">    :param payload: Serializable dict.</span>
 <span class="sd">    :returns: None</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">path</span><span class="p">)),</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="n">torch</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">payload</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span></div>
 
@@ -1330,12 +1331,12 @@
 <div class="viewcode-block" id="load_artifact">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.CleanRoom.html#VeraGridEngine.Simulations.CleanRoom.clean_room.load_artifact">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">load_artifact</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">map_location</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Load payload via torch.load.</span>
 
 <span class="sd">    Explicitly sets weights_only=False for compatibility with PyTorch &gt;= 2.6</span>
 <span class="sd">    when loading trusted, self-generated artifacts.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span>
         <span class="n">path</span><span class="p">,</span>
         <span class="n">map_location</span><span class="o">=</span><span class="n">map_location</span><span class="p">,</span>
@@ -1366,7 +1367,7 @@
         <span class="n">jitter_tol</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
         <span class="n">share_chunk_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">AggregateARModel</span><span class="p">,</span> <span class="n">ShareSoftmaxModel</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Load or train hierarchical artifact (aggregate + simplex shares).</span>
 
 <span class="sd">    :param artifact_path: Artifact file path.</span>
@@ -1388,42 +1389,42 @@
 <span class="sd">    :param jitter_tol: Timestamp jitter tolerance.</span>
 <span class="sd">    :param share_chunk_size: Chunking for share forward pass.</span>
 <span class="sd">    :returns: ``(agg_model, share_model, meta, agg_losses, share_losses)``.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">device</span> <span class="o">=</span> <span class="n">select_torch_device</span><span class="p">(</span><span class="n">prefer_cuda</span><span class="p">,</span> <span class="n">verbose</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">artifact_path</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[artifact] Loading: </span><span class="si">{</span><span class="n">artifact_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"[artifact] Loading: </span><span class="si">{</span><span class="n">artifact_path</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         <span class="n">payload</span> <span class="o">=</span> <span class="n">load_artifact</span><span class="p">(</span><span class="n">artifact_path</span><span class="p">,</span> <span class="n">device</span><span class="p">)</span>
 
-        <span class="n">agg_cfg</span> <span class="o">=</span> <span class="n">payload</span><span class="p">[</span><span class="s2">&quot;agg_config&quot;</span><span class="p">]</span>
-        <span class="n">share_cfg</span> <span class="o">=</span> <span class="n">payload</span><span class="p">[</span><span class="s2">&quot;share_config&quot;</span><span class="p">]</span>
-        <span class="n">meta</span> <span class="o">=</span> <span class="n">payload</span><span class="p">[</span><span class="s2">&quot;meta&quot;</span><span class="p">]</span>
+        <span class="n">agg_cfg</span> <span class="o">=</span> <span class="n">payload</span><span class="p">[</span><span class="s2">"agg_config"</span><span class="p">]</span>
+        <span class="n">share_cfg</span> <span class="o">=</span> <span class="n">payload</span><span class="p">[</span><span class="s2">"share_config"</span><span class="p">]</span>
+        <span class="n">meta</span> <span class="o">=</span> <span class="n">payload</span><span class="p">[</span><span class="s2">"meta"</span><span class="p">]</span>
 
-        <span class="n">agg_model</span> <span class="o">=</span> <span class="n">AggregateARModel</span><span class="p">(</span><span class="n">agg_cfg</span><span class="p">[</span><span class="s2">&quot;cal_dim&quot;</span><span class="p">],</span> <span class="n">agg_cfg</span><span class="p">[</span><span class="s2">&quot;hidden&quot;</span><span class="p">],</span> <span class="n">agg_cfg</span><span class="p">[</span><span class="s2">&quot;input_proj&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
-        <span class="n">agg_model</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">payload</span><span class="p">[</span><span class="s2">&quot;agg_state&quot;</span><span class="p">])</span>
+        <span class="n">agg_model</span> <span class="o">=</span> <span class="n">AggregateARModel</span><span class="p">(</span><span class="n">agg_cfg</span><span class="p">[</span><span class="s2">"cal_dim"</span><span class="p">],</span> <span class="n">agg_cfg</span><span class="p">[</span><span class="s2">"hidden"</span><span class="p">],</span> <span class="n">agg_cfg</span><span class="p">[</span><span class="s2">"input_proj"</span><span class="p">])</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+        <span class="n">agg_model</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">payload</span><span class="p">[</span><span class="s2">"agg_state"</span><span class="p">])</span>
         <span class="n">agg_model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
 
         <span class="n">share_model</span> <span class="o">=</span> <span class="n">ShareSoftmaxModel</span><span class="p">(</span>
-            <span class="n">n_devices</span><span class="o">=</span><span class="n">share_cfg</span><span class="p">[</span><span class="s2">&quot;n_devices&quot;</span><span class="p">],</span>
-            <span class="n">n_regions</span><span class="o">=</span><span class="n">share_cfg</span><span class="p">[</span><span class="s2">&quot;n_regions&quot;</span><span class="p">],</span>
-            <span class="n">cal_dim</span><span class="o">=</span><span class="n">share_cfg</span><span class="p">[</span><span class="s2">&quot;cal_dim&quot;</span><span class="p">],</span>
-            <span class="n">dev_emb_dim</span><span class="o">=</span><span class="n">share_cfg</span><span class="p">[</span><span class="s2">&quot;dev_emb_dim&quot;</span><span class="p">],</span>
-            <span class="n">reg_emb_dim</span><span class="o">=</span><span class="n">share_cfg</span><span class="p">[</span><span class="s2">&quot;reg_emb_dim&quot;</span><span class="p">],</span>
-            <span class="n">hidden</span><span class="o">=</span><span class="n">share_cfg</span><span class="p">[</span><span class="s2">&quot;hidden&quot;</span><span class="p">],</span>
+            <span class="n">n_devices</span><span class="o">=</span><span class="n">share_cfg</span><span class="p">[</span><span class="s2">"n_devices"</span><span class="p">],</span>
+            <span class="n">n_regions</span><span class="o">=</span><span class="n">share_cfg</span><span class="p">[</span><span class="s2">"n_regions"</span><span class="p">],</span>
+            <span class="n">cal_dim</span><span class="o">=</span><span class="n">share_cfg</span><span class="p">[</span><span class="s2">"cal_dim"</span><span class="p">],</span>
+            <span class="n">dev_emb_dim</span><span class="o">=</span><span class="n">share_cfg</span><span class="p">[</span><span class="s2">"dev_emb_dim"</span><span class="p">],</span>
+            <span class="n">reg_emb_dim</span><span class="o">=</span><span class="n">share_cfg</span><span class="p">[</span><span class="s2">"reg_emb_dim"</span><span class="p">],</span>
+            <span class="n">hidden</span><span class="o">=</span><span class="n">share_cfg</span><span class="p">[</span><span class="s2">"hidden"</span><span class="p">],</span>
         <span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
-        <span class="n">share_model</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">payload</span><span class="p">[</span><span class="s2">&quot;share_state&quot;</span><span class="p">])</span>
+        <span class="n">share_model</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">payload</span><span class="p">[</span><span class="s2">"share_state"</span><span class="p">])</span>
         <span class="n">share_model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
 
         <span class="k">return</span> <span class="n">agg_model</span><span class="p">,</span> <span class="n">share_model</span><span class="p">,</span> <span class="n">meta</span><span class="p">,</span> <span class="p">[],</span> <span class="p">[]</span>
 
     <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[artifact] Not found, training and saving to: </span><span class="si">{</span><span class="n">artifact_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"[artifact] Not found, training and saving to: </span><span class="si">{</span><span class="n">artifact_path</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
     <span class="n">temp_arr</span> <span class="o">=</span> <span class="n">ensure_2d_temp</span><span class="p">(</span><span class="n">temp</span><span class="p">)</span>
     <span class="n">grid</span> <span class="o">=</span> <span class="n">infer_time_grid</span><span class="p">(</span><span class="n">timestamps</span><span class="p">,</span> <span class="n">jitter_tol</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[time] dt=</span><span class="si">{</span><span class="n">grid</span><span class="o">.</span><span class="n">dt_seconds</span><span class="si">}</span><span class="s2">s regular=</span><span class="si">{</span><span class="n">grid</span><span class="o">.</span><span class="n">is_regular</span><span class="si">}</span><span class="s2"> jitter_p95=</span><span class="si">{</span><span class="n">grid</span><span class="o">.</span><span class="n">jitter_frac_p95</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"[time] dt=</span><span class="si">{</span><span class="n">grid</span><span class="o">.</span><span class="n">dt_seconds</span><span class="si">}</span><span class="s2">s regular=</span><span class="si">{</span><span class="n">grid</span><span class="o">.</span><span class="n">is_regular</span><span class="si">}</span><span class="s2"> jitter_p95=</span><span class="si">{</span><span class="n">grid</span><span class="o">.</span><span class="n">jitter_frac_p95</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
     <span class="n">P_agg</span> <span class="o">=</span> <span class="n">compute_aggregate</span><span class="p">(</span><span class="n">P</span><span class="p">)</span>
 
@@ -1456,35 +1457,35 @@
     <span class="p">)</span>
 
     <span class="n">meta</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s2">&quot;time_grid&quot;</span><span class="p">:</span> <span class="n">asdict</span><span class="p">(</span><span class="n">grid</span><span class="p">),</span>
-        <span class="s2">&quot;context_len&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">context_len</span><span class="p">),</span>
-        <span class="s2">&quot;eps_agg&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">eps_agg</span><span class="p">),</span>
-        <span class="s2">&quot;eps_share_denom&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">eps_share_denominator</span><span class="p">),</span>
-        <span class="s2">&quot;n_devices&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">P</span><span class="p">)</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
-        <span class="s2">&quot;n_regions&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">temp_arr</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
-        <span class="s2">&quot;device&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">device</span><span class="p">),</span>
-        <span class="s2">&quot;agg_meta&quot;</span><span class="p">:</span> <span class="n">agg_meta</span><span class="p">,</span>
-        <span class="s2">&quot;share_meta&quot;</span><span class="p">:</span> <span class="n">share_meta</span><span class="p">,</span>
+        <span class="s2">"time_grid"</span><span class="p">:</span> <span class="n">asdict</span><span class="p">(</span><span class="n">grid</span><span class="p">),</span>
+        <span class="s2">"context_len"</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">context_len</span><span class="p">),</span>
+        <span class="s2">"eps_agg"</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">eps_agg</span><span class="p">),</span>
+        <span class="s2">"eps_share_denom"</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">eps_share_denominator</span><span class="p">),</span>
+        <span class="s2">"n_devices"</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">P</span><span class="p">)</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
+        <span class="s2">"n_regions"</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">temp_arr</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
+        <span class="s2">"device"</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">device</span><span class="p">),</span>
+        <span class="s2">"agg_meta"</span><span class="p">:</span> <span class="n">agg_meta</span><span class="p">,</span>
+        <span class="s2">"share_meta"</span><span class="p">:</span> <span class="n">share_meta</span><span class="p">,</span>
     <span class="p">}</span>
 
     <span class="n">payload</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s2">&quot;agg_state&quot;</span><span class="p">:</span> <span class="n">agg_model</span><span class="o">.</span><span class="n">state_dict</span><span class="p">(),</span>
-        <span class="s2">&quot;share_state&quot;</span><span class="p">:</span> <span class="n">share_model</span><span class="o">.</span><span class="n">state_dict</span><span class="p">(),</span>
-        <span class="s2">&quot;agg_config&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;cal_dim&quot;</span><span class="p">:</span> <span class="n">agg_meta</span><span class="p">[</span><span class="s2">&quot;cal_dim&quot;</span><span class="p">],</span>
-            <span class="s2">&quot;hidden&quot;</span><span class="p">:</span> <span class="n">agg_meta</span><span class="p">[</span><span class="s2">&quot;hidden&quot;</span><span class="p">],</span>
-            <span class="s2">&quot;input_proj&quot;</span><span class="p">:</span> <span class="n">agg_meta</span><span class="p">[</span><span class="s2">&quot;input_proj&quot;</span><span class="p">],</span>
+        <span class="s2">"agg_state"</span><span class="p">:</span> <span class="n">agg_model</span><span class="o">.</span><span class="n">state_dict</span><span class="p">(),</span>
+        <span class="s2">"share_state"</span><span class="p">:</span> <span class="n">share_model</span><span class="o">.</span><span class="n">state_dict</span><span class="p">(),</span>
+        <span class="s2">"agg_config"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"cal_dim"</span><span class="p">:</span> <span class="n">agg_meta</span><span class="p">[</span><span class="s2">"cal_dim"</span><span class="p">],</span>
+            <span class="s2">"hidden"</span><span class="p">:</span> <span class="n">agg_meta</span><span class="p">[</span><span class="s2">"hidden"</span><span class="p">],</span>
+            <span class="s2">"input_proj"</span><span class="p">:</span> <span class="n">agg_meta</span><span class="p">[</span><span class="s2">"input_proj"</span><span class="p">],</span>
         <span class="p">},</span>
-        <span class="s2">&quot;share_config&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;n_devices&quot;</span><span class="p">:</span> <span class="n">share_meta</span><span class="p">[</span><span class="s2">&quot;n_devices&quot;</span><span class="p">],</span>
-            <span class="s2">&quot;n_regions&quot;</span><span class="p">:</span> <span class="n">share_meta</span><span class="p">[</span><span class="s2">&quot;n_regions&quot;</span><span class="p">],</span>
-            <span class="s2">&quot;cal_dim&quot;</span><span class="p">:</span> <span class="n">share_meta</span><span class="p">[</span><span class="s2">&quot;cal_dim&quot;</span><span class="p">],</span>
-            <span class="s2">&quot;dev_emb_dim&quot;</span><span class="p">:</span> <span class="n">share_meta</span><span class="p">[</span><span class="s2">&quot;dev_emb_dim&quot;</span><span class="p">],</span>
-            <span class="s2">&quot;reg_emb_dim&quot;</span><span class="p">:</span> <span class="n">share_meta</span><span class="p">[</span><span class="s2">&quot;reg_emb_dim&quot;</span><span class="p">],</span>
-            <span class="s2">&quot;hidden&quot;</span><span class="p">:</span> <span class="n">share_meta</span><span class="p">[</span><span class="s2">&quot;hidden&quot;</span><span class="p">],</span>
+        <span class="s2">"share_config"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"n_devices"</span><span class="p">:</span> <span class="n">share_meta</span><span class="p">[</span><span class="s2">"n_devices"</span><span class="p">],</span>
+            <span class="s2">"n_regions"</span><span class="p">:</span> <span class="n">share_meta</span><span class="p">[</span><span class="s2">"n_regions"</span><span class="p">],</span>
+            <span class="s2">"cal_dim"</span><span class="p">:</span> <span class="n">share_meta</span><span class="p">[</span><span class="s2">"cal_dim"</span><span class="p">],</span>
+            <span class="s2">"dev_emb_dim"</span><span class="p">:</span> <span class="n">share_meta</span><span class="p">[</span><span class="s2">"dev_emb_dim"</span><span class="p">],</span>
+            <span class="s2">"reg_emb_dim"</span><span class="p">:</span> <span class="n">share_meta</span><span class="p">[</span><span class="s2">"reg_emb_dim"</span><span class="p">],</span>
+            <span class="s2">"hidden"</span><span class="p">:</span> <span class="n">share_meta</span><span class="p">[</span><span class="s2">"hidden"</span><span class="p">],</span>
         <span class="p">},</span>
-        <span class="s2">&quot;meta&quot;</span><span class="p">:</span> <span class="n">meta</span><span class="p">,</span>
-        <span class="s2">&quot;torch_version&quot;</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">__version__</span><span class="p">,</span>
+        <span class="s2">"meta"</span><span class="p">:</span> <span class="n">meta</span><span class="p">,</span>
+        <span class="s2">"torch_version"</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">__version__</span><span class="p">,</span>
     <span class="p">}</span>
     <span class="n">save_artifact</span><span class="p">(</span><span class="n">artifact_path</span><span class="p">,</span> <span class="n">payload</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">agg_model</span><span class="p">,</span> <span class="n">share_model</span><span class="p">,</span> <span class="n">meta</span><span class="p">,</span> <span class="n">agg_losses</span><span class="p">,</span> <span class="n">share_losses</span></div>
@@ -1511,7 +1512,7 @@
         <span class="n">logit_noise_std</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
         <span class="n">share_chunk_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Generate synthetic aggregate and device series.</span>
 
 <span class="sd">    Steps</span>
@@ -1533,17 +1534,17 @@
 <span class="sd">    :param seed: RNG seed.</span>
 <span class="sd">    :param eps_agg: Aggregate log epsilon.</span>
 <span class="sd">    :param sigma_damp: Sampling sigma damping factor in [0,1].</span>
-<span class="sd">    :param anchoring: &quot;none&quot;, &quot;global&quot;, or &quot;monthly&quot;.</span>
+<span class="sd">    :param anchoring: "none", "global", or "monthly".</span>
 <span class="sd">    :param logit_noise_std: Logit noise std for share sampling.</span>
 <span class="sd">    :param share_chunk_size: Chunking for share forward pass.</span>
 <span class="sd">    :returns: ``(y_real, y_syn, sigma_eff_hist, P_agg_syn, P_syn)``.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">P_real_clean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan_to_num</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">P_real</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="n">nan</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
     <span class="n">P_agg_real</span> <span class="o">=</span> <span class="n">compute_aggregate</span><span class="p">(</span><span class="n">P_real_clean</span><span class="p">)</span>
     <span class="n">y_real</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">P_agg_real</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span> <span class="o">+</span> <span class="nb">float</span><span class="p">(</span><span class="n">eps_agg</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">y_real</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="nb">int</span><span class="p">(</span><span class="n">context_len</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Not enough samples to form initial context_len for aggregate model.&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Not enough samples to form initial context_len for aggregate model."</span><span class="p">)</span>
 
     <span class="n">y_init</span> <span class="o">=</span> <span class="n">y_real</span><span class="p">[:</span><span class="nb">int</span><span class="p">(</span><span class="n">context_len</span><span class="p">)]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 
@@ -1557,14 +1558,14 @@
     <span class="p">)</span>
 
     <span class="n">anch</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">anchoring</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
-    <span class="k">if</span> <span class="n">anch</span> <span class="o">==</span> <span class="s2">&quot;global&quot;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">anch</span> <span class="o">==</span> <span class="s2">"global"</span><span class="p">:</span>
         <span class="n">y_syn</span> <span class="o">=</span> <span class="n">anchor_log_mean_global</span><span class="p">(</span><span class="n">y_syn</span><span class="p">,</span> <span class="n">y_real</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="n">anch</span> <span class="o">==</span> <span class="s2">&quot;monthly&quot;</span><span class="p">:</span>
+    <span class="k">elif</span> <span class="n">anch</span> <span class="o">==</span> <span class="s2">"monthly"</span><span class="p">:</span>
         <span class="n">y_syn</span> <span class="o">=</span> <span class="n">anchor_log_mean_monthly</span><span class="p">(</span><span class="n">y_syn</span><span class="p">,</span> <span class="n">y_real</span><span class="p">,</span> <span class="n">timestamps</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="n">anch</span> <span class="o">==</span> <span class="s2">&quot;none&quot;</span><span class="p">:</span>
+    <span class="k">elif</span> <span class="n">anch</span> <span class="o">==</span> <span class="s2">"none"</span><span class="p">:</span>
         <span class="k">pass</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;anchoring must be one of: &#39;none&#39;, &#39;global&#39;, &#39;monthly&#39;&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"anchoring must be one of: 'none', 'global', 'monthly'"</span><span class="p">)</span>
 
     <span class="n">P_agg_syn</span> <span class="o">=</span> <span class="n">lognormal_mean_correction</span><span class="p">(</span><span class="n">y_syn</span><span class="p">,</span> <span class="n">sigma_eff_hist</span><span class="p">)</span>
 
@@ -1598,7 +1599,7 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.CleanRoom.html#VeraGridEngine.Simulations.CleanRoom.clean_room.HierarchicalZipSpec">[docs]</a>
 <span class="nd">@dataclass</span><span class="p">(</span><span class="n">slots</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">HierarchicalZipSpec</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Serializable, future-safe spec for training and generation.</span>
 
 <span class="sd">    All fields are JSON-serialisable primitives.</span>
@@ -1617,7 +1618,7 @@
 <span class="sd">    :param share_chunk_size: Chunk size for ShareSoftmaxModel forward (0 disables).</span>
 <span class="sd">    :param sigma_damp: Damping factor for aggregate sampling sigma.</span>
 <span class="sd">    :param logit_noise_std: Optional noise added to share logits during sampling.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">context_len</span><span class="p">:</span> <span class="nb">int</span>
     <span class="n">steps_agg</span><span class="p">:</span> <span class="nb">int</span>
     <span class="n">steps_share</span><span class="p">:</span> <span class="nb">int</span>
@@ -1638,7 +1639,7 @@
 <div class="viewcode-block" id="HierarchicalZipArtifact">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.CleanRoom.html#VeraGridEngine.Simulations.CleanRoom.clean_room.HierarchicalZipArtifact">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">HierarchicalZipArtifact</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Orchestrates training, prediction, and durable ZIP save/load for the</span>
 <span class="sd">    hierarchical (aggregate + simplex shares) generator, using the existing</span>
 <span class="sd">    functions/classes already present in clean_room1.py.</span>
@@ -1646,16 +1647,16 @@
 <span class="sd">    This class NEVER pickles model objects. It only stores:</span>
 <span class="sd">    - state_dict tensors (.pt)</span>
 <span class="sd">    - JSON specs/meta/losses</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;spec&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;agg_model&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;share_model&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;agg_losses&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;share_losses&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;agg_meta&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;share_meta&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;device&quot;</span><span class="p">,</span>
+        <span class="s2">"spec"</span><span class="p">,</span>
+        <span class="s2">"agg_model"</span><span class="p">,</span>
+        <span class="s2">"share_model"</span><span class="p">,</span>
+        <span class="s2">"agg_losses"</span><span class="p">,</span>
+        <span class="s2">"share_losses"</span><span class="p">,</span>
+        <span class="s2">"agg_meta"</span><span class="p">,</span>
+        <span class="s2">"share_meta"</span><span class="p">,</span>
+        <span class="s2">"device"</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spec</span><span class="p">:</span> <span class="n">HierarchicalZipSpec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -1670,7 +1671,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">agg_meta</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">share_meta</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">&quot;cpu&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">"cpu"</span><span class="p">)</span>
 
     <span class="c1"># ------------------------------------------------------------------</span>
     <span class="c1"># Training</span>
@@ -1683,7 +1684,7 @@
               <span class="n">P</span><span class="p">:</span> <span class="n">Mat</span><span class="p">,</span>
               <span class="n">region_id</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span>
               <span class="n">temp</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Train both aggregate and share models.</span>
 
 <span class="sd">        :param timestamps: Unix timestamps (T,).</span>
@@ -1691,7 +1692,7 @@
 <span class="sd">        :param region_id: Region index per device (N,).</span>
 <span class="sd">        :param temp: Temperature matrix (T,R).</span>
 <span class="sd">        :returns: None (models stored in self).</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># Aggregate target</span>
         <span class="n">P_arr</span><span class="p">:</span> <span class="n">Mat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
         <span class="n">P_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan_to_num</span><span class="p">(</span><span class="n">P_arr</span><span class="p">,</span> <span class="n">nan</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
@@ -1747,7 +1748,7 @@
                 <span class="n">region_id</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span>
                 <span class="n">y_agg_init</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
                 <span class="n">seed</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Generate synthetic device powers (T,N).</span>
 
 <span class="sd">        Uses:</span>
@@ -1762,9 +1763,9 @@
 <span class="sd">        :param y_agg_init: Initial context for aggregate log-series (L,).</span>
 <span class="sd">        :param seed: RNG seed.</span>
 <span class="sd">        :returns: Synthetic device power matrix (T,N).</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">agg_model</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">share_model</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Models are not loaded or trained&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">"Models are not loaded or trained"</span><span class="p">)</span>
 
         <span class="n">y_syn</span><span class="p">,</span> <span class="n">sigma_eff</span> <span class="o">=</span> <span class="n">sample_aggregate</span><span class="p">(</span>
             <span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">agg_model</span><span class="p">,</span>
@@ -1798,7 +1799,7 @@
 <div class="viewcode-block" id="HierarchicalZipArtifact.save">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.CleanRoom.html#VeraGridEngine.Simulations.CleanRoom.clean_room.HierarchicalZipArtifact.save">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">zip_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Save a ZIP artifact containing:</span>
 <span class="sd">        - aggregate_state.pt</span>
 <span class="sd">        - share_state.pt</span>
@@ -1809,9 +1810,9 @@
 
 <span class="sd">        :param zip_path: Destination ZIP path.</span>
 <span class="sd">        :returns: None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">agg_model</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">share_model</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Models are not loaded or trained&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">"Models are not loaded or trained"</span><span class="p">)</span>
 
         <span class="n">agg_sd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">agg_model</span><span class="o">.</span><span class="n">state_dict</span><span class="p">()</span>
         <span class="n">share_sd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">share_model</span><span class="o">.</span><span class="n">state_dict</span><span class="p">()</span>
@@ -1819,34 +1820,34 @@
         <span class="c1"># JSON payloads</span>
         <span class="n">spec_json</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">asdict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">spec</span><span class="p">),</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
         <span class="n">meta_json</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span>
-            <span class="p">{</span><span class="s2">&quot;agg_meta&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">agg_meta</span><span class="p">,</span> <span class="s2">&quot;share_meta&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">share_meta</span><span class="p">},</span>
+            <span class="p">{</span><span class="s2">"agg_meta"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">agg_meta</span><span class="p">,</span> <span class="s2">"share_meta"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">share_meta</span><span class="p">},</span>
             <span class="n">indent</span><span class="o">=</span><span class="mi">2</span>
         <span class="p">)</span>
         <span class="n">losses_agg_json</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">agg_losses</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
         <span class="n">losses_share_json</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">share_losses</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 
-        <span class="k">with</span> <span class="n">zipfile</span><span class="o">.</span><span class="n">ZipFile</span><span class="p">(</span><span class="n">zip_path</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">compression</span><span class="o">=</span><span class="n">zipfile</span><span class="o">.</span><span class="n">ZIP_DEFLATED</span><span class="p">)</span> <span class="k">as</span> <span class="n">zf</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">zipfile</span><span class="o">.</span><span class="n">ZipFile</span><span class="p">(</span><span class="n">zip_path</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">"w"</span><span class="p">,</span> <span class="n">compression</span><span class="o">=</span><span class="n">zipfile</span><span class="o">.</span><span class="n">ZIP_DEFLATED</span><span class="p">)</span> <span class="k">as</span> <span class="n">zf</span><span class="p">:</span>
             <span class="c1"># Weights as .pt (state_dict only)</span>
             <span class="n">buf</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">()</span>
             <span class="n">torch</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">agg_sd</span><span class="p">,</span> <span class="n">buf</span><span class="p">)</span>
-            <span class="n">zf</span><span class="o">.</span><span class="n">writestr</span><span class="p">(</span><span class="s2">&quot;aggregate_state.pt&quot;</span><span class="p">,</span> <span class="n">buf</span><span class="o">.</span><span class="n">getvalue</span><span class="p">())</span>
+            <span class="n">zf</span><span class="o">.</span><span class="n">writestr</span><span class="p">(</span><span class="s2">"aggregate_state.pt"</span><span class="p">,</span> <span class="n">buf</span><span class="o">.</span><span class="n">getvalue</span><span class="p">())</span>
 
             <span class="n">buf</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">()</span>
             <span class="n">torch</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">share_sd</span><span class="p">,</span> <span class="n">buf</span><span class="p">)</span>
-            <span class="n">zf</span><span class="o">.</span><span class="n">writestr</span><span class="p">(</span><span class="s2">&quot;share_state.pt&quot;</span><span class="p">,</span> <span class="n">buf</span><span class="o">.</span><span class="n">getvalue</span><span class="p">())</span>
+            <span class="n">zf</span><span class="o">.</span><span class="n">writestr</span><span class="p">(</span><span class="s2">"share_state.pt"</span><span class="p">,</span> <span class="n">buf</span><span class="o">.</span><span class="n">getvalue</span><span class="p">())</span>
 
             <span class="c1"># JSON files</span>
-            <span class="n">zf</span><span class="o">.</span><span class="n">writestr</span><span class="p">(</span><span class="s2">&quot;spec.json&quot;</span><span class="p">,</span> <span class="n">spec_json</span><span class="p">)</span>
-            <span class="n">zf</span><span class="o">.</span><span class="n">writestr</span><span class="p">(</span><span class="s2">&quot;meta.json&quot;</span><span class="p">,</span> <span class="n">meta_json</span><span class="p">)</span>
-            <span class="n">zf</span><span class="o">.</span><span class="n">writestr</span><span class="p">(</span><span class="s2">&quot;losses_agg.json&quot;</span><span class="p">,</span> <span class="n">losses_agg_json</span><span class="p">)</span>
-            <span class="n">zf</span><span class="o">.</span><span class="n">writestr</span><span class="p">(</span><span class="s2">&quot;losses_share.json&quot;</span><span class="p">,</span> <span class="n">losses_share_json</span><span class="p">)</span></div>
+            <span class="n">zf</span><span class="o">.</span><span class="n">writestr</span><span class="p">(</span><span class="s2">"spec.json"</span><span class="p">,</span> <span class="n">spec_json</span><span class="p">)</span>
+            <span class="n">zf</span><span class="o">.</span><span class="n">writestr</span><span class="p">(</span><span class="s2">"meta.json"</span><span class="p">,</span> <span class="n">meta_json</span><span class="p">)</span>
+            <span class="n">zf</span><span class="o">.</span><span class="n">writestr</span><span class="p">(</span><span class="s2">"losses_agg.json"</span><span class="p">,</span> <span class="n">losses_agg_json</span><span class="p">)</span>
+            <span class="n">zf</span><span class="o">.</span><span class="n">writestr</span><span class="p">(</span><span class="s2">"losses_share.json"</span><span class="p">,</span> <span class="n">losses_share_json</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="HierarchicalZipArtifact.load">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.CleanRoom.html#VeraGridEngine.Simulations.CleanRoom.clean_room.HierarchicalZipArtifact.load">[docs]</a>
     <span class="nd">@classmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">load</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">zip_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">map_location</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="s2">&quot;HierarchicalZipArtifact&quot;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">load</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">zip_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">map_location</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="s2">"HierarchicalZipArtifact"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Load from a ZIP artifact produced by save().</span>
 
 <span class="sd">        Reconstruction is explicit:</span>
@@ -1858,20 +1859,20 @@
 <span class="sd">        :param zip_path: ZIP path.</span>
 <span class="sd">        :param map_location: Target torch device (cpu/cuda). If None, CPU.</span>
 <span class="sd">        :returns: Loaded HierarchicalZipArtifact instance.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">device</span> <span class="o">=</span> <span class="n">map_location</span> <span class="k">if</span> <span class="n">map_location</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">&quot;cpu&quot;</span><span class="p">)</span>
+<span class="sd">        """</span>
+        <span class="n">device</span> <span class="o">=</span> <span class="n">map_location</span> <span class="k">if</span> <span class="n">map_location</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">"cpu"</span><span class="p">)</span>
 
-        <span class="k">with</span> <span class="n">zipfile</span><span class="o">.</span><span class="n">ZipFile</span><span class="p">(</span><span class="n">zip_path</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">zf</span><span class="p">:</span>
-            <span class="n">spec</span> <span class="o">=</span> <span class="n">HierarchicalZipSpec</span><span class="p">(</span><span class="o">**</span><span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">zf</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s2">&quot;spec.json&quot;</span><span class="p">)))</span>
-            <span class="n">meta</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">zf</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s2">&quot;meta.json&quot;</span><span class="p">))</span>
-            <span class="n">agg_meta</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">meta</span><span class="p">[</span><span class="s2">&quot;agg_meta&quot;</span><span class="p">])</span>
-            <span class="n">share_meta</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">meta</span><span class="p">[</span><span class="s2">&quot;share_meta&quot;</span><span class="p">])</span>
+        <span class="k">with</span> <span class="n">zipfile</span><span class="o">.</span><span class="n">ZipFile</span><span class="p">(</span><span class="n">zip_path</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">"r"</span><span class="p">)</span> <span class="k">as</span> <span class="n">zf</span><span class="p">:</span>
+            <span class="n">spec</span> <span class="o">=</span> <span class="n">HierarchicalZipSpec</span><span class="p">(</span><span class="o">**</span><span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">zf</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s2">"spec.json"</span><span class="p">)))</span>
+            <span class="n">meta</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">zf</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s2">"meta.json"</span><span class="p">))</span>
+            <span class="n">agg_meta</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">meta</span><span class="p">[</span><span class="s2">"agg_meta"</span><span class="p">])</span>
+            <span class="n">share_meta</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">meta</span><span class="p">[</span><span class="s2">"share_meta"</span><span class="p">])</span>
 
-            <span class="n">agg_sd</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">(</span><span class="n">zf</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s2">&quot;aggregate_state.pt&quot;</span><span class="p">)),</span> <span class="n">map_location</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
-            <span class="n">share_sd</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">(</span><span class="n">zf</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s2">&quot;share_state.pt&quot;</span><span class="p">)),</span> <span class="n">map_location</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+            <span class="n">agg_sd</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">(</span><span class="n">zf</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s2">"aggregate_state.pt"</span><span class="p">)),</span> <span class="n">map_location</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+            <span class="n">share_sd</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">(</span><span class="n">zf</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s2">"share_state.pt"</span><span class="p">)),</span> <span class="n">map_location</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
 
-            <span class="n">agg_losses</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">zf</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s2">&quot;losses_agg.json&quot;</span><span class="p">)))</span>
-            <span class="n">share_losses</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">zf</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s2">&quot;losses_share.json&quot;</span><span class="p">)))</span>
+            <span class="n">agg_losses</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">zf</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s2">"losses_agg.json"</span><span class="p">)))</span>
+            <span class="n">share_losses</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">zf</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s2">"losses_share.json"</span><span class="p">)))</span>
 
         <span class="n">obj</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span><span class="n">spec</span><span class="o">=</span><span class="n">spec</span><span class="p">)</span>
         <span class="n">obj</span><span class="o">.</span><span class="n">agg_meta</span> <span class="o">=</span> <span class="n">agg_meta</span>
@@ -1882,19 +1883,19 @@
 
         <span class="c1"># Explicit reconstruction from meta dicts returned by your training fns</span>
         <span class="n">obj</span><span class="o">.</span><span class="n">agg_model</span> <span class="o">=</span> <span class="n">AggregateARModel</span><span class="p">(</span>
-            <span class="nb">int</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">agg_meta</span><span class="p">[</span><span class="s2">&quot;cal_dim&quot;</span><span class="p">]),</span>
-            <span class="nb">int</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">agg_meta</span><span class="p">[</span><span class="s2">&quot;hidden&quot;</span><span class="p">]),</span>
-            <span class="nb">int</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">agg_meta</span><span class="p">[</span><span class="s2">&quot;input_proj&quot;</span><span class="p">]),</span>
+            <span class="nb">int</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">agg_meta</span><span class="p">[</span><span class="s2">"cal_dim"</span><span class="p">]),</span>
+            <span class="nb">int</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">agg_meta</span><span class="p">[</span><span class="s2">"hidden"</span><span class="p">]),</span>
+            <span class="nb">int</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">agg_meta</span><span class="p">[</span><span class="s2">"input_proj"</span><span class="p">]),</span>
         <span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
         <span class="n">obj</span><span class="o">.</span><span class="n">agg_model</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">agg_sd</span><span class="p">)</span>
 
         <span class="n">obj</span><span class="o">.</span><span class="n">share_model</span> <span class="o">=</span> <span class="n">ShareSoftmaxModel</span><span class="p">(</span>
-            <span class="n">n_devices</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">share_meta</span><span class="p">[</span><span class="s2">&quot;n_devices&quot;</span><span class="p">]),</span>
-            <span class="n">n_regions</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">share_meta</span><span class="p">[</span><span class="s2">&quot;n_regions&quot;</span><span class="p">]),</span>
-            <span class="n">cal_dim</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">share_meta</span><span class="p">[</span><span class="s2">&quot;cal_dim&quot;</span><span class="p">]),</span>
-            <span class="n">dev_emb_dim</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">share_meta</span><span class="p">[</span><span class="s2">&quot;dev_emb_dim&quot;</span><span class="p">]),</span>
-            <span class="n">reg_emb_dim</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">share_meta</span><span class="p">[</span><span class="s2">&quot;reg_emb_dim&quot;</span><span class="p">]),</span>
-            <span class="n">hidden</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">share_meta</span><span class="p">[</span><span class="s2">&quot;hidden&quot;</span><span class="p">]),</span>
+            <span class="n">n_devices</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">share_meta</span><span class="p">[</span><span class="s2">"n_devices"</span><span class="p">]),</span>
+            <span class="n">n_regions</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">share_meta</span><span class="p">[</span><span class="s2">"n_regions"</span><span class="p">]),</span>
+            <span class="n">cal_dim</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">share_meta</span><span class="p">[</span><span class="s2">"cal_dim"</span><span class="p">]),</span>
+            <span class="n">dev_emb_dim</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">share_meta</span><span class="p">[</span><span class="s2">"dev_emb_dim"</span><span class="p">]),</span>
+            <span class="n">reg_emb_dim</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">share_meta</span><span class="p">[</span><span class="s2">"reg_emb_dim"</span><span class="p">]),</span>
+            <span class="n">hidden</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">share_meta</span><span class="p">[</span><span class="s2">"hidden"</span><span class="p">]),</span>
         <span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
         <span class="n">obj</span><span class="o">.</span><span class="n">share_model</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">share_sd</span><span class="p">)</span>
 
@@ -1909,7 +1910,7 @@
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_make_synthetic_demo_data</span><span class="p">(</span><span class="n">T</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">N</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">R</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">seed</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span>
     <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Create a small synthetic dataset so the demo can run standalone.</span>
 
 <span class="sd">    :param T: number of timesteps</span>
@@ -1917,7 +1918,7 @@
 <span class="sd">    :param R: number of regions</span>
 <span class="sd">    :param seed: RNG seed</span>
 <span class="sd">    :returns: (timestamps, P, region_id, temp)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">seed</span><span class="p">))</span>
     <span class="n">timestamps</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span> <span class="o">*</span> <span class="mi">3600</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">(</span><span class="mi">1700000000</span><span class="p">)</span>  <span class="c1"># hourly unix times</span>
 

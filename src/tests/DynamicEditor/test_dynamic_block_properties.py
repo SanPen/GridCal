@@ -13,7 +13,11 @@ from PySide6.QtTest import QTest
 import pytest
 
 import VeraGrid.Gui.DynamicModelEditor.Editor.dynamic_editor_graphics as graph
-from VeraGrid.Gui.DynamicModelEditor.Editor.dynamic_block_editor import DynamicBlockEditorGUI
+from VeraGrid.Gui.DynamicModelEditor.Editor.dynamic_block_editor import (
+    build_derivative_port_keys,
+    build_integrator_port_keys,
+    DynamicBlockEditorGUI,
+)
 from VeraGridEngine.enumerations import BlockSymbolKind
 from VeraGrid.Gui.DynamicModelEditor.Editor.BlockProperties import (
     BlockParameterDraftModel,
@@ -36,6 +40,13 @@ from VeraGrid.Gui.DynamicModelEditor.Editor.BlockProperties import RuntimeModeDr
 from VeraGrid.Gui.DynamicModelEditor.Editor.BlockProperties.add_symbol_dialog import (
     AddSymbolDialog,
     AddSymbolSelection,
+)
+from VeraGrid.Gui.DynamicModelEditor.Editor.BlockProperties.SpecialConfigTabs.lookup_1d_config_tab import (
+    Lookup1DConfigTab,
+    Lookup1DTableModel,
+)
+from VeraGrid.Gui.DynamicModelEditor.Editor.BlockProperties.SpecialConfigTabs.table_configuration_data import (
+    generate_curve_points_from_expression,
 )
 from VeraGrid.Gui.DynamicModelEditor.Editor.BlockProperties import (
     EquationExportEntry,
@@ -80,15 +91,29 @@ from VeraGridEngine.enumerations import (
     BlockSymbolCategory,
     DeviceType,
     DynamicSimulationMode,
+    DerivativeInactiveBehavior,
+    DerivativeOrder,
+    DerivativePortRole,
+    DerivativeScalingMode,
     EmtFaultPlacementSide,
     IeeeCigreDllDataType,
     EquationExportSection,
     FaultType,
+    IntegratorBoundSource,
+    IntegratorHoldMode,
+    IntegratorPortRole,
+    IntegratorResetMode,
+    IntegratorSaturationMode,
+    IntegratorScalingMode,
     ParamPowerFlowReferenceType,
     ProceduralLogicType,
     VarPowerFlowReferenceType,
 )
-from VeraGridEngine.Utils.Symbolic.block import Block, normalize_event_parameter_initialization
+from VeraGridEngine.Utils.Symbolic.block import (
+    Block,
+    dynamic_model_contract_from_data,
+    normalize_event_parameter_initialization,
+)
 from VeraGridEngine.Utils.Symbolic.symbolic import Const, Expr, Var, get_expression_vars, symbolic_to_string
 from VeraGridEngine.Utils.procedural_logic import (
     HardSaturationLogic,
@@ -97,6 +122,7 @@ from VeraGridEngine.Utils.procedural_logic import (
     ProceduralLogicCodec,
 )
 from VeraGridEngine.Templates.Emt.generator_emt_type_template import get_governor_emt
+from VeraGridEngine.Templates.Emt.load_RLC_emt_template import get_shunt_r_emt_template, get_shunt_rlc_combo_emt_template
 from VeraGridEngine.Templates.Rms.genqec_exc_gov_sat_template_v2 import get_genqec_rms
 from VeraGridEngine.Templates.Rms.genrow_rms_template import get_genrow_rms_template
 from VeraGridEngine.Templates.template_definition import TemplateDefinition, TemplateProp
@@ -116,7 +142,11 @@ from VeraGridEngine.Templates.ProceduralLogicCatalog import (
     build_procedural_block_catalog_template,
 )
 from VeraGrid.Gui.DynamicModelEditor.Editor.DynamicLibrary.dynamic_editor_library import (
+    DerivativePresetDescriptor,
+    IntegratorPresetDescriptor,
     LibraryDeviceTemplateSpec,
+    build_derivative_preset_descriptors,
+    build_integrator_preset_descriptors,
     build_dynamic_library_device_template,
     get_dynamic_library_device_specs,
     get_dynamic_library_procedural_descriptors,
@@ -2074,8 +2104,357 @@ def test_every_builder_backed_library_block_has_a_valid_default() -> None:
             block_type.name,
         )
         assert builder is not None
+        template: Block | EmtModelTemplate | RmsModelTemplate = builder.eval()
+        if isinstance(template, Block):
+            built_block: Block = template
+        else:
+            built_block = template.block
+        assert isinstance(built_block, Block)
+
+
+def test_configurable_integrators_use_the_dynamic_integrator_canvas_item() -> None:
+    """Every integrator structure must use the dedicated dynamic item."""
+    assert BlockType.INTEGRATOR not in DynamicBlockEditorGUI.UNARY_MATH_BLOCK_TYPES
+    assert BlockType.STARTUP_FREEZE_INTEGRATOR not in DynamicBlockEditorGUI.UNARY_MATH_BLOCK_TYPES
+    assert issubclass(graph.IntegratorItem, graph.BlockItem)
+
+
+def test_configurable_derivatives_use_the_dynamic_derivative_canvas_item() -> None:
+    """Every derivative structure must use the dedicated dynamic item.
+
+    :return: None.
+    """
+    assert BlockType.DERIVATIVE not in DynamicBlockEditorGUI.UNARY_MATH_BLOCK_TYPES
+    assert issubclass(graph.DerivativeItem, graph.BlockItem)
+
+
+def test_derivative_library_presets_share_the_canonical_builder() -> None:
+    """Derivative Library shortcuts must configure one normal block type.
+
+    :return: None.
+    """
+    presets: tuple[tuple[str, DerivativePresetDescriptor], ...] = build_derivative_preset_descriptors()
+    assert len(presets) == 6
+    assert set(preset.get_block_type() for _, preset in presets) == set((BlockType.DERIVATIVE,))
+
+    preset_label: str
+    preset: DerivativePresetDescriptor
+    for preset_label, preset in presets:
+        builder: TemplateDefinition | None = create_default_template_builder(
+            VarFactory(),
+            preset.get_block_type(),
+            preset_label,
+        )
+        assert builder is not None
+        preset.apply_to_template_builder(builder=builder)
         template: EmtModelTemplate = builder.eval()
-        assert isinstance(template.block, Block)
+        assert template.block.modal_template_config is not None
+        assert template.block.modal_template_config["order"] == preset.get_derivative_order().name
+        assert template.block.modal_template_config["scaling"] == preset.get_scaling_mode().name
+        assert (
+            template.block.modal_template_config["non_positive_time"]
+            == preset.get_inactive_behavior().name
+        )
+
+
+def test_configurable_derivative_builds_and_recovers_general_structure() -> None:
+    """The canonical derivative must retain every structural selection.
+
+    :return: None.
+    """
+    builder: TemplateDefinition | None = create_default_template_builder(
+        VarFactory(),
+        BlockType.DERIVATIVE,
+        "derivative",
+    )
+    assert builder is not None
+    builder.params_dict["order"].value = DerivativeOrder.SECOND
+    builder.params_dict["scaling"].value = DerivativeScalingMode.GAIN_DERIVATIVE_TIME
+    builder.params_dict["non_positive_time"].value = DerivativeInactiveBehavior.FALLBACK_TIME
+
+    template: EmtModelTemplate = builder.eval()
+    block: Block = template.block
+    event_names: set[str] = set(variable.name for variable in block.event_dict)
+
+    assert len(block.state_vars) == 2
+    assert len(block.state_eqs) == 2
+    assert len(block.in_vars) == 1
+    assert len(block.out_vars) == 1
+    assert "derivative_gain_K" in event_names
+    assert "derivative_time_Td" in event_names
+    assert "derivative_fallback_time" in event_names
+
+    # Simulate the contract round trip performed by normal file persistence,
+    # then rename structural variables to prove recovery does not inspect them.
+    block.dynamic_model_contract = dynamic_model_contract_from_data(
+        block.dynamic_model_contract.to_data()
+    )
+    variable_index: int
+    event_variable: Var
+    for variable_index, event_variable in enumerate(block.event_dict):
+        event_variable.name = f"renamed_derivative_parameter_{variable_index}"
+    else:
+        pass
+    mode_variable: Var
+    for variable_index, mode_variable in enumerate(block.mode_dict):
+        mode_variable.name = f"renamed_derivative_mode_{variable_index}"
+    else:
+        pass
+    recovered_builder: TemplateDefinition | None = create_default_template_builder(
+        VarFactory(),
+        BlockType.DERIVATIVE,
+        "derivative",
+    )
+    assert recovered_builder is not None
+    initialize_template_builder_from_block(
+        builder=recovered_builder,
+        block=block,
+        block_type=BlockType.DERIVATIVE,
+    )
+    assert recovered_builder.get_value("order") == DerivativeOrder.SECOND
+    assert recovered_builder.get_value("scaling") == DerivativeScalingMode.GAIN_DERIVATIVE_TIME
+    assert (
+        recovered_builder.get_value("non_positive_time")
+        == DerivativeInactiveBehavior.FALLBACK_TIME
+    )
+
+
+def test_derivative_port_keys_do_not_depend_on_variable_names() -> None:
+    """Derivative regeneration must preserve its one input and output wire.
+
+    :return: None.
+    """
+    input_keys: list[tuple[str, str]] = build_derivative_port_keys(is_input=True)
+    output_keys: list[tuple[str, str]] = build_derivative_port_keys(is_input=False)
+    assert input_keys == list((("derivative_role", DerivativePortRole.INPUT.name),))
+    assert output_keys == list((("derivative_role", DerivativePortRole.OUTPUT.name),))
+
+
+def test_integrator_library_presets_share_the_canonical_builders() -> None:
+    """Library shortcuts must remain configurations, not duplicate blocks."""
+    presets: tuple[tuple[str, IntegratorPresetDescriptor], ...] = build_integrator_preset_descriptors()
+    assert len(presets) == 9
+    assert set(preset.get_block_type() for _, preset in presets) == set((
+        BlockType.INTEGRATOR,
+        BlockType.STARTUP_FREEZE_INTEGRATOR,
+    ))
+
+    preset_label: str
+    preset: IntegratorPresetDescriptor
+    for preset_label, preset in presets:
+        builder: TemplateDefinition | None = create_default_template_builder(
+            VarFactory(),
+            preset.get_block_type(),
+            preset_label,
+        )
+        assert builder is not None
+        preset.apply_to_template_builder(builder=builder)
+        template: EmtModelTemplate = builder.eval()
+        assert template.block.modal_template_config is not None
+        assert template.block.modal_template_config["scaling"] == preset.get_scaling_mode().name
+        assert template.block.modal_template_config["hold_input"] == preset.get_hold_mode().name
+        assert template.block.modal_template_config["reset"] == preset.get_reset_mode().name
+        assert (
+            template.block.modal_template_config["output_saturation"]
+            == preset.get_saturation_mode().name
+        )
+
+
+def test_configurable_integrator_builds_and_recovers_general_structure() -> None:
+    """One canonical integrator must replace the legacy structural variants."""
+    builder: TemplateDefinition | None = create_default_template_builder(
+        VarFactory(),
+        BlockType.INTEGRATOR,
+        "integrator",
+    )
+    assert builder is not None
+    builder.params_dict["scaling"].value = IntegratorScalingMode.GAIN
+    builder.params_dict["hold_input"].value = IntegratorHoldMode.SIGNAL
+    builder.params_dict["reset"].value = IntegratorResetMode.SIGNAL
+    builder.params_dict["output_saturation"].value = IntegratorSaturationMode.BOTH
+    builder.params_dict["bound_source"].value = IntegratorBoundSource.PARAMETER
+    builder.params_dict["scale_bounds_by_gain"].value = True
+
+    template: EmtModelTemplate = builder.eval()
+    block: Block = template.block
+    input_names: list[str] = list(variable.name for variable in block.in_vars)
+    event_names: set[str] = set(variable.name for variable in block.event_dict)
+
+    assert input_names == list((
+        "integrator_input",
+        "integrator_hold",
+        "integrator_reset_value",
+        "integrator_reset",
+    ))
+    assert "integrator_gain_K" in event_names
+    assert "integrator_bound_gain_K" in event_names
+    assert "integrator_lower_bound" in event_names
+    assert "integrator_upper_bound" in event_names
+    assert len(block.state_vars) == 1
+    assert len(block.state_eqs) == 1
+    assert len(block.out_vars) == 1
+    assert block.modal_template_kind == "configurable_integrator"
+    assert block.modal_template_config is not None
+    assert block.modal_template_config["output_saturation"] == IntegratorSaturationMode.BOTH.name
+
+    # Simulate persistence and rename all structural parameters. General
+    # Structure must be recovered only from the persisted modal contract.
+    block.dynamic_model_contract = dynamic_model_contract_from_data(
+        block.dynamic_model_contract.to_data()
+    )
+    variable_index: int
+    event_variable: Var
+    for variable_index, event_variable in enumerate(block.event_dict):
+        event_variable.name = f"renamed_integrator_parameter_{variable_index}"
+    else:
+        pass
+    mode_variable: Var
+    for variable_index, mode_variable in enumerate(block.mode_dict):
+        mode_variable.name = f"renamed_integrator_mode_{variable_index}"
+    else:
+        pass
+    recovered_builder: TemplateDefinition | None = create_default_template_builder(
+        VarFactory(),
+        BlockType.INTEGRATOR,
+        "integrator",
+    )
+    assert recovered_builder is not None
+    initialize_template_builder_from_block(
+        builder=recovered_builder,
+        block=block,
+        block_type=BlockType.INTEGRATOR,
+    )
+    assert recovered_builder.get_value("scaling") == IntegratorScalingMode.GAIN
+    assert recovered_builder.get_value("hold_input") == IntegratorHoldMode.SIGNAL
+    assert recovered_builder.get_value("reset") == IntegratorResetMode.SIGNAL
+    assert recovered_builder.get_value("output_saturation") == IntegratorSaturationMode.BOTH
+    assert recovered_builder.get_value("bound_source") == IntegratorBoundSource.PARAMETER
+    assert recovered_builder.get_value("scale_bounds_by_gain") is True
+
+
+def test_startup_freeze_integrator_uses_global_time_and_duration_parameter() -> None:
+    """The dedicated startup variant must expose timing without a duplicate family."""
+    builder: TemplateDefinition | None = create_default_template_builder(
+        VarFactory(),
+        BlockType.STARTUP_FREEZE_INTEGRATOR,
+        "startup_integrator",
+    )
+    assert builder is not None
+
+    template: EmtModelTemplate = builder.eval()
+    block: Block = template.block
+    event_names: set[str] = set(variable.name for variable in block.event_dict)
+    mode_names: set[str] = set(variable.name for variable in block.mode_dict)
+    startup_time: Var | None = None
+    mode_variable: Var
+    for mode_variable in block.mode_dict:
+        if mode_variable.name == "integrator_startup_time":
+            startup_time = mode_variable
+        else:
+            pass
+
+    assert "integrator_freeze_duration" in event_names
+    assert "integrator_startup_time" in mode_names
+    assert startup_time is not None
+    startup_expression: Expr | Const = block.mode_dict[startup_time]
+    assert isinstance(startup_expression, Var)
+    assert startup_expression.name == "glob_time"
+    assert "integrator_startup_time" not in set(variable.name for variable in block.init_eqs)
+    assert len(block.procedural_logic) == 1
+
+
+def test_reset_to_initial_state_uses_a_runtime_mode_snapshot() -> None:
+    """Reset-to-initial-state must not create an unclassified init-equation target."""
+    builder: TemplateDefinition | None = create_default_template_builder(
+        VarFactory(),
+        BlockType.INTEGRATOR,
+        "resettable_integrator",
+    )
+    assert builder is not None
+    builder.params_dict["reset"].value = IntegratorResetMode.INITIAL_STATE
+
+    template: EmtModelTemplate = builder.eval()
+    block: Block = template.block
+    mode_names: set[str] = set(variable.name for variable in block.mode_dict)
+    init_names: set[str] = set(variable.name for variable in block.init_eqs)
+
+    assert "integrator_initial_state" in mode_names
+    assert "integrator_initial_state" not in init_names
+
+
+def test_integrator_port_keys_do_not_depend_on_connected_variable_names() -> None:
+    """Every configurable port must retain its semantic role after connection renaming."""
+    builder: TemplateDefinition | None = create_default_template_builder(
+        VarFactory(),
+        BlockType.INTEGRATOR,
+        "connected_integrator",
+    )
+    assert builder is not None
+    builder.params_dict["hold_input"].value = IntegratorHoldMode.SIGNAL
+    builder.params_dict["reset"].value = IntegratorResetMode.SIGNAL
+    builder.params_dict["output_saturation"].value = IntegratorSaturationMode.BOTH
+    builder.params_dict["bound_source"].value = IntegratorBoundSource.SIGNAL
+
+    template: EmtModelTemplate = builder.eval()
+    block: Block = template.block
+    input_index: int
+    input_variable: Var
+    for input_index, input_variable in enumerate(block.in_vars):
+        input_variable.name = f"external_signal_{input_index}"
+    else:
+        pass
+
+    input_keys: list[tuple[str, str]] = build_integrator_port_keys(
+        block=block,
+        is_input=True,
+    )
+    assert input_keys == list((
+        ("integrator_role", IntegratorPortRole.INPUT.name),
+        ("integrator_role", IntegratorPortRole.HOLD.name),
+        ("integrator_role", IntegratorPortRole.RESET_VALUE.name),
+        ("integrator_role", IntegratorPortRole.RESET.name),
+        ("integrator_role", IntegratorPortRole.LOWER_BOUND.name),
+        ("integrator_role", IntegratorPortRole.UPPER_BOUND.name),
+    ))
+
+
+def test_connected_signal_bound_structure_recovers_without_port_names() -> None:
+    """A reopened integrator must recover signal-bound roles from its contract."""
+    builder: TemplateDefinition | None = create_default_template_builder(
+        VarFactory(),
+        BlockType.INTEGRATOR,
+        "upper_limited_integrator",
+    )
+    assert builder is not None
+    builder.params_dict["output_saturation"].value = IntegratorSaturationMode.UPPER
+    builder.params_dict["bound_source"].value = IntegratorBoundSource.SIGNAL
+
+    template: EmtModelTemplate = builder.eval()
+    block: Block = template.block
+    block.in_vars[1].name = "connected_external_upper_limit"
+    block.dynamic_model_contract = dynamic_model_contract_from_data(
+        block.dynamic_model_contract.to_data()
+    )
+
+    recovered_builder: TemplateDefinition | None = create_default_template_builder(
+        VarFactory(),
+        BlockType.INTEGRATOR,
+        "upper_limited_integrator",
+    )
+    assert recovered_builder is not None
+    initialize_template_builder_from_block(
+        builder=recovered_builder,
+        block=block,
+        block_type=BlockType.INTEGRATOR,
+    )
+
+    assert recovered_builder.get_value("output_saturation") == IntegratorSaturationMode.UPPER
+    assert recovered_builder.get_value("bound_source") == IntegratorBoundSource.SIGNAL
+    assert block.modal_template_config is not None
+    assert build_integrator_port_keys(block=block, is_input=True) == list((
+        ("integrator_role", IntegratorPortRole.INPUT.name),
+        ("integrator_role", IntegratorPortRole.UPPER_BOUND.name),
+    ))
 
 
 def test_every_phase_selective_builder_defaults_to_abc_without_neutral() -> None:
@@ -3224,6 +3603,78 @@ def test_symbol_mapping_column_applies_power_flow_and_device_references() -> Non
     dialogue.close()
 
 
+@pytest.mark.parametrize("combined", (False, True))
+def test_declared_event_sizing_mapping_survives_property_apply(combined: bool) -> None:
+    """Retain declared RLC sizing while applying an ordinary nominal edit.
+
+    :param combined: Cover the direct owner and the standalone wrapper hierarchy.
+    :return: None; mapping loss, source mutation before Apply or stale default fails.
+    """
+    application: QtWidgets.QApplication = get_qt_application()
+    factory: VarFactory = VarFactory()
+    template: EmtModelTemplate
+    if combined:
+        template = get_shunt_rlc_combo_emt_template(factory, include_r=True, include_l=False, include_c=False)
+    else:
+        template = get_shunt_r_emt_template(factory)
+    block: Block = template.block
+    sizing: Var = block.external_mapping[VarPowerFlowReferenceType.VmSizing]
+    dialogue: DynamicBlockPropertiesDialog = DynamicBlockPropertiesDialog(block, "GENERIC", factory)
+    row_index: int
+    edited: bool = False
+    for row_index in range(dialogue._parameter_model.rowCount()):
+        name_index: QtCore.QModelIndex = dialogue._parameter_model.index(row_index, 1)
+        if name_index.data() == sizing.name:
+            assert dialogue._parameter_model.setData(dialogue._parameter_model.index(row_index, 2), "1.13")
+            edited = True
+        else:
+            pass
+    assert edited
+    dialogue.apply_changes()
+    assert block.external_mapping[VarPowerFlowReferenceType.VmSizing].uid == sizing.uid
+    owner: Block = block if combined else block.children[0]
+    parameter: Var
+    expression: Expr
+    found: bool = False
+    for parameter, expression in owner.event_dict.items():
+        if parameter.uid == sizing.uid:
+            assert isinstance(expression, Const) and expression.value == 1.13
+            found = True
+        else:
+            pass
+    assert found and QtWidgets.QApplication.instance() is application
+    dialogue.close()
+
+
+@pytest.mark.parametrize("reference", (VarPowerFlowReferenceType.VmSizing, VarPowerFlowReferenceType.Vm, VarPowerFlowReferenceType.Vpk))
+def test_runtime_reference_mapping_survives_uid_roundtrip(reference: VarPowerFlowReferenceType) -> None:
+    """Recognize persisted owner-local identities and preserve readonly PF sources.
+
+    :param reference: New sizing, legacy operating magnitude or source amplitude role.
+    :return: None; external/static references must bind their declared UID after Apply.
+    """
+    application: QtWidgets.QApplication = get_qt_application()
+    runtime: Var = Var("nominal")
+    static: Var = Var("scheduled_power")
+    original: Block = Block(
+        name="parsed_runtime_reference",
+        event_dict=dict(((runtime, Const(1.1)),)),
+        parameters=dict(((static, Const(None)),)),
+        external_mapping=dict(((reference, runtime), (VarPowerFlowReferenceType.NOTHING, None))),
+        api_obj_mapping=dict(((ParamPowerFlowReferenceType.Pl0, static), (ParamPowerFlowReferenceType.Ql0, None))),
+    )
+    restored: Block = Block.parse(original.to_dict())
+    dialogue: DynamicBlockPropertiesDialog = DynamicBlockPropertiesDialog(restored, "GENERIC", VarFactory())
+    dialogue.apply_changes()
+    assert restored.external_mapping[reference].uid == runtime.uid
+    assert restored.api_obj_mapping[ParamPowerFlowReferenceType.Pl0].uid == static.uid
+    assert len(restored.external_mapping) == 2 and len(restored.api_obj_mapping) == 2
+    assert restored.external_mapping[VarPowerFlowReferenceType.NOTHING] is None
+    assert restored.api_obj_mapping[ParamPowerFlowReferenceType.Ql0] is None
+    assert QtWidgets.QApplication.instance() is application
+    dialogue.close()
+
+
 def test_mapping_editability_matches_variable_and_parameter_semantics() -> None:
     """Both immutable and event parameters may edit device mappings."""
     application: QtWidgets.QApplication = get_qt_application()
@@ -3595,47 +4046,291 @@ def test_genqec_equations_render_as_literal_text_and_wrap_long_roots() -> None:
         assert wrapped_line.get_size().width() <= 520
 
 
-def test_lookup_and_jmarti_builders_expose_conditional_special_settings() -> None:
-    """Structured lookup data and JMarti options belong in the optional second tab."""
+def test_lookup_1d_properties_owns_only_generated_table_parameters() -> None:
+    """Show the dedicated lookup tab while retaining ordinary parameters.
+
+    :return: None.
+    """
     application: QtWidgets.QApplication = get_qt_application()
     _unused_application: QtWidgets.QApplication = application
-    block_type: BlockType
-    for block_type in (
-        BlockType.LOOKUP_ARRAY_LINEAR,
-        BlockType.EMT_JMARTI_LINE,
-    ):
-        var_factory: VarFactory = VarFactory()
-        builder: TemplateDefinition | None = create_default_template_builder(
-            var_factory,
-            block_type,
-            block_type.name,
-        )
-        assert builder is not None
-        template: EmtModelTemplate = builder.eval()
-        block: Block = template.block
-        initialize_template_builder_from_block(builder, block, block_type)
-        dialogue: DynamicBlockPropertiesDialog = DynamicBlockPropertiesDialog(
-            block,
-            block_type.name,
-            var_factory,
-            structural_block_type=block_type,
-            structural_builder=builder,
-        )
-        tab_names: list[str] = list()
-        tab_index: int
-        for tab_index in range(dialogue.ui.tab_widget.count()):
-            tab_names.append(dialogue.ui.tab_widget.tabText(tab_index))
-        assert tab_names == list((
-            "General options",
-            "DAE model",
-            "LaTeX rendering",
-            "Special configuration",
-        ))
-        if block_type == BlockType.EMT_JMARTI_LINE:
-            assert dialogue._special_structural_model.rowCount() > 20
+    var_factory: VarFactory = VarFactory()
+    builder: TemplateDefinition | None = create_default_template_builder(
+        var_factory=var_factory,
+        block_type=BlockType.LOOKUP_ARRAY_LINEAR,
+        item_name="lookup_visibility",
+    )
+    assert builder is not None
+    template: EmtModelTemplate = builder.eval()
+    block: Block = template.block
+    initialize_template_builder_from_block(
+        builder=builder,
+        block=block,
+        block_type=BlockType.LOOKUP_ARRAY_LINEAR,
+    )
+
+    # Add one unrelated event parameter to prove the filter is based on exact
+    # structured ownership rather than hiding the complete parameter category.
+    ordinary_variable: Var = var_factory.add_var("ordinary_lookup_parameter")
+    block.event_dict[ordinary_variable] = var_factory.add_const(
+        value=3.0,
+        name="ordinary_lookup_parameter",
+    )
+    dialogue: DynamicBlockPropertiesDialog = DynamicBlockPropertiesDialog(
+        block=block,
+        block_type_name=BlockType.LOOKUP_ARRAY_LINEAR.name,
+        var_factory=var_factory,
+        structural_block_type=BlockType.LOOKUP_ARRAY_LINEAR,
+        structural_builder=builder,
+    )
+
+    tab_names: list[str] = list()
+    tab_index: int
+    for tab_index in range(dialogue.ui.tab_widget.count()):
+        tab_names.append(dialogue.ui.tab_widget.tabText(tab_index))
+    assert tab_names == list((
+        "General options",
+        "DAE model",
+        "LaTeX rendering",
+        "Table configuration",
+    ))
+    assert isinstance(dialogue._special_config_tab, Lookup1DConfigTab)
+    assert dialogue._special_config_tab.ui.plotter._title == "Lookup curve"
+    assert dialogue._special_config_tab.ui.plotter.axis_x.get_title() == "x"
+    assert dialogue._special_config_tab.ui.plotter.axis_y.get_title() == "y"
+    assert not dialogue._special_config_tab.ui.sort_button.isCheckable()
+
+    generated_variables: list[Var] = list()
+    event_variable: Var
+    for event_variable in block.event_dict:
+        if event_variable.name.startswith("arr_x") or event_variable.name.startswith("arr_y"):
+            generated_variables.append(event_variable)
         else:
-            assert dialogue._special_structural_model.rowCount() > 0
-        dialogue.close()
+            pass
+    assert len(generated_variables) == 6
+    for event_variable in generated_variables:
+        assert not find_property_index(dialogue, event_variable.name, block).isValid()
+        assert not dialogue._parameter_model.find_value_index(block, event_variable).isValid()
+
+    # The symbols remain in the backing model and DAE namespace; only their
+    # duplicate visual rows and generic value drafts are removed.
+    symbol_names: set[str] = set()
+    row_index: int
+    for row_index in range(dialogue._symbol_model.rowCount()):
+        symbol_row: BlockSymbolDraftRow | None = dialogue._symbol_model.get_row(row_index)
+        if symbol_row is not None:
+            symbol_names.add(symbol_row.get_name())
+        else:
+            pass
+    for event_variable in generated_variables:
+        assert event_variable.name in symbol_names
+        assert event_variable.name in dialogue._namespace
+
+    assert find_property_index(dialogue, ordinary_variable.name, block).isValid()
+    assert dialogue._parameter_model.find_value_index(block, ordinary_variable).isValid()
+    close_dirty_block_property_dialogue(dialogue)
+
+
+def test_lookup_1d_table_edit_survives_builder_recovery() -> None:
+    """Persist an edited table through rebuild data and builder recovery.
+
+    :return: None.
+    """
+    application: QtWidgets.QApplication = get_qt_application()
+    _unused_application: QtWidgets.QApplication = application
+    var_factory: VarFactory = VarFactory()
+    builder: TemplateDefinition | None = create_default_template_builder(
+        var_factory=var_factory,
+        block_type=BlockType.LOOKUP_ARRAY_SPLINE,
+        item_name="lookup_persistence",
+    )
+    assert builder is not None
+    template: EmtModelTemplate = builder.eval()
+    block: Block = template.block
+    initialize_template_builder_from_block(
+        builder=builder,
+        block=block,
+        block_type=BlockType.LOOKUP_ARRAY_SPLINE,
+    )
+    dialogue: DynamicBlockPropertiesDialog = DynamicBlockPropertiesDialog(
+        block=block,
+        block_type_name=BlockType.LOOKUP_ARRAY_SPLINE.name,
+        var_factory=var_factory,
+        structural_block_type=BlockType.LOOKUP_ARRAY_SPLINE,
+        structural_builder=builder,
+    )
+    assert isinstance(dialogue._special_config_tab, Lookup1DConfigTab)
+    table_model: Lookup1DTableModel = dialogue._special_config_tab._table_model
+    changed_index: QtCore.QModelIndex = table_model.index(1, 1)
+    assert table_model.setData(
+        changed_index,
+        2.5,
+        int(QtCore.Qt.ItemDataRole.EditRole),
+    )
+    assert dialogue._special_config_tab.has_changes()
+    assert dialogue._special_config_tab.get_validation_error() is None
+    dialogue._special_config_tab.apply_draft_to_builder()
+    assert builder.params_dict["points"].value == (
+        (0.0, 0.0),
+        (0.02, 2.5),
+        (0.04, 0.0),
+    )
+
+    rebuilt_template: EmtModelTemplate = builder.eval()
+    restored_builder: TemplateDefinition | None = create_default_template_builder(
+        var_factory=VarFactory(),
+        block_type=BlockType.LOOKUP_ARRAY_SPLINE,
+        item_name="lookup_persistence",
+    )
+    assert restored_builder is not None
+    initialize_template_builder_from_block(
+        builder=restored_builder,
+        block=rebuilt_template.block,
+        block_type=BlockType.LOOKUP_ARRAY_SPLINE,
+    )
+    assert restored_builder.params_dict["points"].value == (
+        (0.0, 0.0),
+        (0.02, 2.5),
+        (0.04, 0.0),
+    )
+    close_dirty_block_property_dialogue(dialogue)
+
+
+def test_lookup_1d_function_generator_uses_restricted_symbolic_expression() -> None:
+    """Generate finite evenly spaced points without evaluating Python code.
+
+    :return: None.
+    """
+    generated_result: tuple[
+        tuple[tuple[float, float], ...],
+        str | None,
+    ] = generate_curve_points_from_expression(
+        expression_text="x**2 + 1",
+        x_minimum=-1.0,
+        x_maximum=1.0,
+        point_count=5,
+    )
+    generated_points: tuple[tuple[float, float], ...] = generated_result[0]
+    validation_error: str | None = generated_result[1]
+    assert validation_error is None
+    assert generated_points == (
+        (-1.0, 2.0),
+        (-0.5, 1.25),
+        (0.0, 1.0),
+        (0.5, 1.25),
+        (1.0, 2.0),
+    )
+
+    rejected_result: tuple[
+        tuple[tuple[float, float], ...],
+        str | None,
+    ] = generate_curve_points_from_expression(
+        expression_text="open('lookup.txt')",
+        x_minimum=0.0,
+        x_maximum=1.0,
+        point_count=3,
+    )
+    assert rejected_result[0] == tuple()
+    assert rejected_result[1] is not None
+    assert "Invalid f(x) expression" in rejected_result[1]
+
+
+def test_lookup_1d_function_generator_replaces_only_valid_table_draft() -> None:
+    """Keep the existing table on errors and stage valid generated samples.
+
+    :return: None.
+    """
+    application: QtWidgets.QApplication = get_qt_application()
+    _unused_application: QtWidgets.QApplication = application
+    var_factory: VarFactory = VarFactory()
+    builder: TemplateDefinition | None = create_default_template_builder(
+        var_factory=var_factory,
+        block_type=BlockType.LOOKUP_ARRAY_LINEAR,
+        item_name="lookup_function_generator",
+    )
+    assert builder is not None
+    template: EmtModelTemplate = builder.eval()
+    block: Block = template.block
+    initialize_template_builder_from_block(
+        builder=builder,
+        block=block,
+        block_type=BlockType.LOOKUP_ARRAY_LINEAR,
+    )
+    dialogue: DynamicBlockPropertiesDialog = DynamicBlockPropertiesDialog(
+        block=block,
+        block_type_name=BlockType.LOOKUP_ARRAY_LINEAR.name,
+        var_factory=var_factory,
+        structural_block_type=BlockType.LOOKUP_ARRAY_LINEAR,
+        structural_builder=builder,
+    )
+    assert isinstance(dialogue._special_config_tab, Lookup1DConfigTab)
+    lookup_tab: Lookup1DConfigTab = dialogue._special_config_tab
+    original_points: tuple[tuple[float, float], ...] = (
+        lookup_tab._table_model.get_points()
+    )
+
+    lookup_tab.ui.function_expression_line_edit.setText("unknown_function(x)")
+    lookup_tab.generate_function_points()
+    assert lookup_tab._table_model.get_points() == original_points
+    assert lookup_tab.ui.function_error_label.text() != ""
+
+    lookup_tab.ui.function_expression_line_edit.setText("x**2")
+    lookup_tab.ui.function_x_minimum_spin_box.setValue(-1.0)
+    lookup_tab.ui.function_x_maximum_spin_box.setValue(1.0)
+    lookup_tab.ui.function_point_count_spin_box.setValue(3)
+    lookup_tab.generate_function_points()
+    assert lookup_tab.ui.function_error_label.text() == ""
+    assert lookup_tab._table_model.get_points() == (
+        (-1.0, 1.0),
+        (0.0, 0.0),
+        (1.0, 1.0),
+    )
+    assert lookup_tab.has_changes()
+    assert lookup_tab.get_validation_error() is None
+    lookup_tab.apply_draft_to_builder()
+    assert builder.params_dict["points"].value == (
+        (-1.0, 1.0),
+        (0.0, 0.0),
+        (1.0, 1.0),
+    )
+    close_dirty_block_property_dialogue(dialogue)
+
+
+def test_unimplemented_lookup_matrix_keeps_generic_parameter_editing() -> None:
+    """Keep generated values visible until Lookup 2D has its own editor.
+
+    :return: None.
+    """
+    application: QtWidgets.QApplication = get_qt_application()
+    _unused_application: QtWidgets.QApplication = application
+    var_factory: VarFactory = VarFactory()
+    builder: TemplateDefinition | None = create_default_template_builder(
+        var_factory=var_factory,
+        block_type=BlockType.LOOKUP_MATRIX_LINEAR,
+        item_name="matrix_fallback",
+    )
+    assert builder is not None
+    template: EmtModelTemplate = builder.eval()
+    block: Block = template.block
+    initialize_template_builder_from_block(
+        builder=builder,
+        block=block,
+        block_type=BlockType.LOOKUP_MATRIX_LINEAR,
+    )
+    dialogue: DynamicBlockPropertiesDialog = DynamicBlockPropertiesDialog(
+        block=block,
+        block_type_name=BlockType.LOOKUP_MATRIX_LINEAR.name,
+        var_factory=var_factory,
+        structural_block_type=BlockType.LOOKUP_MATRIX_LINEAR,
+        structural_builder=builder,
+    )
+    assert dialogue._special_config_tab is None
+
+    first_parameter: Var = next(iter(block.event_dict))
+    assert first_parameter.name.startswith("arr_")
+    assert find_property_index(dialogue, first_parameter.name, block).isValid()
+    assert dialogue._parameter_model.find_value_index(block, first_parameter).isValid()
+    dialogue.prepare_to_delete()
+    dialogue.close()
 
 
 def test_dynamic_lookup_builder_recovers_point_count_and_boundary_rule() -> None:
@@ -4143,7 +4838,12 @@ def test_manufacturer_native_controller_follows_emt_interface_wrappers() -> None
     application.processEvents()
 
     child_item_result: graph.BlockItem | graph.GenericBlockItem | None = (
-        editor.create_template_block_item(template=template, x_pos=320.0, y_pos=180.0)
+        editor.create_materialized_template_block_item(
+            template=template,
+            x_pos=320.0,
+            y_pos=180.0,
+            source_var_factory=var_factory,
+        )
     )
     assert isinstance(child_item_result, graph.GenericBlockItem)
     child_item: graph.GenericBlockItem = child_item_result

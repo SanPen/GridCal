@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Topology.simulation_indices &mdash; VeraGrid 6.7.13 documentation</title>
+  <title>VeraGridEngine.Topology.simulation_indices &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=16fbabd8"></script>
+      <script src="../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/js/theme.js"></script>
@@ -119,13 +119,13 @@
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">compile_types</span><span class="p">(</span><span class="n">Pbus</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
                   <span class="n">types</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">IntVec</span><span class="p">,</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">IntVec</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compile the types.</span>
 <span class="sd">    :param Pbus: array of real power Injections per node used to choose the slack as</span>
 <span class="sd">                 the node with greater generation if no slack is provided</span>
 <span class="sd">    :param types: array of tentative node types (it may be modified internally)</span>
 <span class="sd">    :return: ref, pq, pv, pqpv</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="c1"># check that Sbus is a 1D array</span>
     <span class="k">assert</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">Pbus</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span>
@@ -178,7 +178,7 @@
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Topology.html#VeraGridEngine.Topology.simulation_indices.replace_bus_types">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">replace_bus_types</span><span class="p">(</span><span class="n">bus_types</span><span class="p">,</span> <span class="n">pq_val</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">pv_val</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">pqv_val</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">p_val</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 
 <span class="sd">    :param bus_types:</span>
 <span class="sd">    :param pq_val:</span>
@@ -186,7 +186,7 @@
 <span class="sd">    :param pqv_val:</span>
 <span class="sd">    :param p_val:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">bus_types</span><span class="p">)):</span>
 
         <span class="k">if</span> <span class="n">bus_types</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="n">pqv_val</span><span class="p">:</span>
@@ -200,24 +200,24 @@
 <div class="viewcode-block" id="SimulationIndices">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Topology.html#VeraGridEngine.Topology.simulation_indices.SimulationIndices">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">SimulationIndices</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Class to handle the simulation indices</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;bus_types&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;tap_module_control_mode&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;tap_controlled_buses&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;tap_phase_control_mode&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;F&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;T&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;ac&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;dc&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;pq&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;pv&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;p&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;pqv&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;vd&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;no_slack&quot;</span><span class="p">,</span>
+        <span class="s2">"bus_types"</span><span class="p">,</span>
+        <span class="s2">"tap_module_control_mode"</span><span class="p">,</span>
+        <span class="s2">"tap_controlled_buses"</span><span class="p">,</span>
+        <span class="s2">"tap_phase_control_mode"</span><span class="p">,</span>
+        <span class="s2">"F"</span><span class="p">,</span>
+        <span class="s2">"T"</span><span class="p">,</span>
+        <span class="s2">"ac"</span><span class="p">,</span>
+        <span class="s2">"dc"</span><span class="p">,</span>
+        <span class="s2">"pq"</span><span class="p">,</span>
+        <span class="s2">"pv"</span><span class="p">,</span>
+        <span class="s2">"p"</span><span class="p">,</span>
+        <span class="s2">"pqv"</span><span class="p">,</span>
+        <span class="s2">"vd"</span><span class="p">,</span>
+        <span class="s2">"no_slack"</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
@@ -230,7 +230,7 @@
                  <span class="n">T</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span>
                  <span class="n">is_dc_bus</span><span class="p">:</span> <span class="n">BoolVec</span><span class="p">,</span>
                  <span class="n">force_only_pq_pv_vd_types</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :param bus_types: Array of Bus type initial guess</span>
 <span class="sd">        :param Pbus: Array of Active power per bus</span>
@@ -240,7 +240,7 @@
 <span class="sd">        :param is_dc_bus: Array of is DC ? per bus</span>
 <span class="sd">        :param force_only_pq_pv_vd_types: if true, all bus types are forced into PQ PV or VD,</span>
 <span class="sd">                                          for certain types of simulations that cannot handle other bus types</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># master aray of bus types (nbus)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">bus_types</span> <span class="o">=</span> <span class="n">bus_types</span>
 
@@ -274,10 +274,10 @@
 <div class="viewcode-block" id="SimulationIndices.get_branch_controls_indices">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Topology.html#VeraGridEngine.Topology.simulation_indices.SimulationIndices.get_branch_controls_indices">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_branch_controls_indices</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">IntVec</span><span class="p">,</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">IntVec</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Analyze the control branches and compute the indices</span>
 <span class="sd">        :return:  k_m, k_tau, k_mtau</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">k_pf_tau</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
         <span class="n">k_pt_tau</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
         <span class="n">k_qf_m</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
@@ -310,7 +310,7 @@
                 <span class="k">pass</span>
 
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown tap phase module mode </span><span class="si">{</span><span class="n">ctrl_m</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unknown tap phase module mode </span><span class="si">{</span><span class="n">ctrl_m</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
             <span class="c1"># analyze tap-phase controls</span>
             <span class="k">if</span> <span class="n">ctrl_tau</span> <span class="o">==</span> <span class="n">TapPhaseControl</span><span class="o">.</span><span class="n">Pf</span><span class="o">.</span><span class="n">idx</span><span class="p">():</span>
@@ -326,7 +326,7 @@
                 <span class="k">pass</span>
 
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown tap phase control mode </span><span class="si">{</span><span class="n">ctrl_tau</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unknown tap phase control mode </span><span class="si">{</span><span class="n">ctrl_tau</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
         <span class="c1"># convert lists to integer arrays</span>
         <span class="n">k_pf_tau</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">k_pf_tau</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>

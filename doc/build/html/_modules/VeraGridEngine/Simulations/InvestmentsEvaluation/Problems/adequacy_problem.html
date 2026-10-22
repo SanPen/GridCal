@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Simulations.InvestmentsEvaluation.Problems.adequacy_problem &mdash; VeraGrid 6.7.13 documentation</title>
+  <title>VeraGridEngine.Simulations.InvestmentsEvaluation.Problems.adequacy_problem &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../../_static/documentation_options.js?v=16fbabd8"></script>
+      <script src="../../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../../_static/js/theme.js"></script>
@@ -125,13 +125,13 @@
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.InvestmentsEvaluation.Problems.html#VeraGridEngine.Simulations.InvestmentsEvaluation.Problems.adequacy_problem.correct_x">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">correct_x</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">lb</span><span class="p">,</span> <span class="n">ub</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Correct x in place to the given boundaries</span>
 <span class="sd">    :param x:</span>
 <span class="sd">    :param lb:</span>
 <span class="sd">    :param ub:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)):</span>
         <span class="k">if</span> <span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">lb</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
             <span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">lb</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
@@ -144,14 +144,14 @@
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.InvestmentsEvaluation.Problems.html#VeraGridEngine.Simulations.InvestmentsEvaluation.Problems.adequacy_problem.apply_actives_mask">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">apply_actives_mask</span><span class="p">(</span><span class="n">original_active</span><span class="p">:</span> <span class="n">IntMat</span><span class="p">,</span> <span class="n">mask_indices</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">mask</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">years_starts_indices</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 
 <span class="sd">    :param original_active:</span>
 <span class="sd">    :param mask_indices:</span>
 <span class="sd">    :param mask: x applied to generators or batteries (goes from 0 to N-years + 1)</span>
 <span class="sd">    :param years_starts_indices: array saying in which profile index starts each year</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">active</span> <span class="o">=</span> <span class="n">original_active</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">mask_indices</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">mask</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
@@ -168,11 +168,11 @@
 <div class="viewcode-block" id="determine_starting_index_of_every_year">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.InvestmentsEvaluation.Problems.html#VeraGridEngine.Simulations.InvestmentsEvaluation.Problems.adequacy_problem.determine_starting_index_of_every_year">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">determine_starting_index_of_every_year</span><span class="p">(</span><span class="n">index</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">IntVec</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Find the index where each different year starts</span>
 <span class="sd">    :param index:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">indices</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
     <span class="n">year_prev</span> <span class="o">=</span> <span class="n">index</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">year</span>
     <span class="n">indices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
@@ -188,33 +188,33 @@
 <div class="viewcode-block" id="AdequacyInvestmentProblem">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.InvestmentsEvaluation.Problems.html#VeraGridEngine.Simulations.InvestmentsEvaluation.Problems.adequacy_problem.AdequacyInvestmentProblem">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">AdequacyInvestmentProblem</span><span class="p">(</span><span class="n">BlackBoxProblemTemplate</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Adequacy investment optimization problem.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;n_monte_carlo_sim&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;use_monte_carlo&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;minimum_firm_share&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;use_firm_capacity_penalty&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;save_file&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;clustering_results&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;time_indices&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;output_f&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;greedy_dispatch_inputs&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;years_starts_indices&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;total_load&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;inv_group_capex&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;gen_mttf&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;gen_mttr&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;gen_capex&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;batt_capex&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;dim&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;dt&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;dim2gen&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;dim2batt&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;inv_gen_idx&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;inv_batt_idx&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;branches_cost&quot;</span><span class="p">,</span>
+        <span class="s2">"n_monte_carlo_sim"</span><span class="p">,</span>
+        <span class="s2">"use_monte_carlo"</span><span class="p">,</span>
+        <span class="s2">"minimum_firm_share"</span><span class="p">,</span>
+        <span class="s2">"use_firm_capacity_penalty"</span><span class="p">,</span>
+        <span class="s2">"save_file"</span><span class="p">,</span>
+        <span class="s2">"clustering_results"</span><span class="p">,</span>
+        <span class="s2">"time_indices"</span><span class="p">,</span>
+        <span class="s2">"output_f"</span><span class="p">,</span>
+        <span class="s2">"greedy_dispatch_inputs"</span><span class="p">,</span>
+        <span class="s2">"years_starts_indices"</span><span class="p">,</span>
+        <span class="s2">"total_load"</span><span class="p">,</span>
+        <span class="s2">"inv_group_capex"</span><span class="p">,</span>
+        <span class="s2">"gen_mttf"</span><span class="p">,</span>
+        <span class="s2">"gen_mttr"</span><span class="p">,</span>
+        <span class="s2">"gen_capex"</span><span class="p">,</span>
+        <span class="s2">"batt_capex"</span><span class="p">,</span>
+        <span class="s2">"dim"</span><span class="p">,</span>
+        <span class="s2">"dt"</span><span class="p">,</span>
+        <span class="s2">"dim2gen"</span><span class="p">,</span>
+        <span class="s2">"dim2batt"</span><span class="p">,</span>
+        <span class="s2">"inv_gen_idx"</span><span class="p">,</span>
+        <span class="s2">"inv_batt_idx"</span><span class="p">,</span>
+        <span class="s2">"branches_cost"</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
@@ -226,7 +226,7 @@
                  <span class="n">save_file</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
                  <span class="n">time_indices</span><span class="p">:</span> <span class="n">IntVec</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">clustering_results</span><span class="p">:</span> <span class="n">ClusteringResults</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :param grid:</span>
 <span class="sd">        :param n_monte_carlo_sim:</span>
@@ -236,7 +236,7 @@
 <span class="sd">        :param save_file:</span>
 <span class="sd">        :param time_indices: array of time indices to use, if None all are used</span>
 <span class="sd">        :param clustering_results: optional clustering results</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">grid</span><span class="o">=</span><span class="n">grid</span><span class="p">,</span>
                          <span class="n">x_dim</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">grid</span><span class="o">.</span><span class="n">investments_groups</span><span class="p">),</span>
                          <span class="n">plot_x_idx</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">plot_y_idx</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
@@ -258,7 +258,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">time_indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">clustering_results</span><span class="o">.</span><span class="n">time_indices</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">save_file</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">output_f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;adequacy_output.csv&quot;</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">output_f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s2">"adequacy_output.csv"</span><span class="p">,</span> <span class="s2">"w"</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">output_f</span> <span class="o">=</span> <span class="kc">None</span>
 
@@ -289,8 +289,8 @@
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_f</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="c1"># write header</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">output_f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;n_inv,LOLE(MWh),CAPEX(M$),&quot;</span>
-                                <span class="o">+</span> <span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">get_investment_groups_names</span><span class="p">())</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">output_f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">"n_inv,LOLE(MWh),CAPEX(M$),"</span>
+                                <span class="o">+</span> <span class="s2">","</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">get_investment_groups_names</span><span class="p">())</span> <span class="o">+</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">get_time_deltas_in_hours</span><span class="p">()</span>
         <span class="n">gen_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">idtag</span><span class="p">:</span> <span class="n">idx</span> <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">idtag</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">nc</span><span class="o">.</span><span class="n">generator_data</span><span class="o">.</span><span class="n">idtag</span><span class="p">)}</span>
@@ -325,10 +325,10 @@
 <div class="viewcode-block" id="AdequacyInvestmentProblem.n_objectives">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.InvestmentsEvaluation.Problems.html#VeraGridEngine.Simulations.InvestmentsEvaluation.Problems.adequacy_problem.AdequacyInvestmentProblem.n_objectives">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">n_objectives</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Number of objectives (size of f)</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_firm_capacity_penalty</span><span class="p">:</span>
             <span class="k">return</span> <span class="mi">5</span>
         <span class="k">else</span><span class="p">:</span>
@@ -338,51 +338,51 @@
 <div class="viewcode-block" id="AdequacyInvestmentProblem.n_vars">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.InvestmentsEvaluation.Problems.html#VeraGridEngine.Simulations.InvestmentsEvaluation.Problems.adequacy_problem.AdequacyInvestmentProblem.n_vars">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">n_vars</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Number of variables (size of x)</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_dim</span></div>
 
 
 <div class="viewcode-block" id="AdequacyInvestmentProblem.get_objectives_names">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.InvestmentsEvaluation.Problems.html#VeraGridEngine.Simulations.InvestmentsEvaluation.Problems.adequacy_problem.AdequacyInvestmentProblem.get_objectives_names">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_objectives_names</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StrVec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get a list of names for the elements of f</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_firm_capacity_penalty</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="s2">&quot;LOLE&quot;</span><span class="p">,</span>
-                             <span class="s2">&quot;CAPEX&quot;</span><span class="p">,</span>
-                             <span class="s2">&quot;Unitary electricity cost&quot;</span><span class="p">,</span>
-                             <span class="s2">&quot;Curtailment&quot;</span><span class="p">,</span>
-                             <span class="s2">&quot;Firm capacity penalty&quot;</span><span class="p">])</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="s2">"LOLE"</span><span class="p">,</span>
+                             <span class="s2">"CAPEX"</span><span class="p">,</span>
+                             <span class="s2">"Unitary electricity cost"</span><span class="p">,</span>
+                             <span class="s2">"Curtailment"</span><span class="p">,</span>
+                             <span class="s2">"Firm capacity penalty"</span><span class="p">])</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="s2">&quot;LOLE&quot;</span><span class="p">,</span>
-                             <span class="s2">&quot;CAPEX&quot;</span><span class="p">,</span>
-                             <span class="s2">&quot;Unitary electricity cost&quot;</span><span class="p">,</span>
-                             <span class="s2">&quot;Curtailment&quot;</span><span class="p">])</span></div>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="s2">"LOLE"</span><span class="p">,</span>
+                             <span class="s2">"CAPEX"</span><span class="p">,</span>
+                             <span class="s2">"Unitary electricity cost"</span><span class="p">,</span>
+                             <span class="s2">"Curtailment"</span><span class="p">])</span></div>
 
 
 <div class="viewcode-block" id="AdequacyInvestmentProblem.get_vars_names">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.InvestmentsEvaluation.Problems.html#VeraGridEngine.Simulations.InvestmentsEvaluation.Problems.adequacy_problem.AdequacyInvestmentProblem.get_vars_names">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_vars_names</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StrVec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get a list of names for the elements of x</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">e</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">investments_groups</span><span class="p">])</span></div>
 
 
 <div class="viewcode-block" id="AdequacyInvestmentProblem.objective_function">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.InvestmentsEvaluation.Problems.html#VeraGridEngine.Simulations.InvestmentsEvaluation.Problems.adequacy_problem.AdequacyInvestmentProblem.objective_function">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">objective_function</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">|</span> <span class="n">IntVec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Evaluate x and return f(x)</span>
 <span class="sd">        :param x: array of variable values</span>
 <span class="sd">        :return: array of objectives</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># correct x</span>
         <span class="n">correct_x</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">x</span><span class="p">,</span> <span class="n">lb</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">x_min</span><span class="p">,</span> <span class="n">ub</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">x_max</span><span class="p">)</span>
 
@@ -392,7 +392,7 @@
 
         <span class="c1"># compute the firm capacity</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_firm_capacity_penalty</span><span class="p">:</span>
-            <span class="c1"># a generator is &quot;firm&quot; if it is dispatchable</span>
+            <span class="c1"># a generator is "firm" if it is dispatchable</span>
             <span class="n">P_firm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">greedy_dispatch_inputs</span><span class="o">.</span><span class="n">gen_dispatchable</span>
                             <span class="o">*</span> <span class="n">gen_mask</span>
                             <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">greedy_dispatch_inputs</span><span class="o">.</span><span class="n">gen_p_max</span><span class="p">)</span>
@@ -492,16 +492,16 @@
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_f</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="c1"># write header</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">output_f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">sum</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="si">}</span><span class="s2">,</span><span class="si">{</span><span class="n">lole</span><span class="si">}</span><span class="s2">,</span><span class="si">{</span><span class="n">capex</span><span class="si">}</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">xi</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">xi</span> <span class="ow">in</span> <span class="n">x</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">output_f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">sum</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="si">}</span><span class="s2">,</span><span class="si">{</span><span class="n">lole</span><span class="si">}</span><span class="s2">,</span><span class="si">{</span><span class="n">capex</span><span class="si">}</span><span class="s2">"</span> <span class="o">+</span> <span class="s2">","</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">xi</span><span class="si">}</span><span class="s2">"</span> <span class="k">for</span> <span class="n">xi</span> <span class="ow">in</span> <span class="n">x</span><span class="p">])</span> <span class="o">+</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
 
         <span class="n">unit_cost</span> <span class="o">=</span> <span class="n">total_cost</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">total_load</span>
 
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;n_inv: </span><span class="si">{</span><span class="nb">sum</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="si">}</span><span class="s2">, &quot;</span>
-              <span class="sa">f</span><span class="s2">&quot;lole: </span><span class="si">{</span><span class="n">lole</span><span class="si">}</span><span class="s2">, &quot;</span>
-              <span class="sa">f</span><span class="s2">&quot;capex: </span><span class="si">{</span><span class="n">capex</span><span class="si">}</span><span class="s2">, &quot;</span>
-              <span class="sa">f</span><span class="s2">&quot;e cost: </span><span class="si">{</span><span class="n">unit_cost</span><span class="si">}</span><span class="s2">, &quot;</span>
-              <span class="sa">f</span><span class="s2">&quot;curtailment: </span><span class="si">{</span><span class="n">ndg_curtailment</span><span class="si">}</span><span class="s2">, &quot;</span>
-              <span class="sa">f</span><span class="s2">&quot;firm penalty </span><span class="si">{</span><span class="n">firm_capacity_penalty</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"n_inv: </span><span class="si">{</span><span class="nb">sum</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="si">}</span><span class="s2">, "</span>
+              <span class="sa">f</span><span class="s2">"lole: </span><span class="si">{</span><span class="n">lole</span><span class="si">}</span><span class="s2">, "</span>
+              <span class="sa">f</span><span class="s2">"capex: </span><span class="si">{</span><span class="n">capex</span><span class="si">}</span><span class="s2">, "</span>
+              <span class="sa">f</span><span class="s2">"e cost: </span><span class="si">{</span><span class="n">unit_cost</span><span class="si">}</span><span class="s2">, "</span>
+              <span class="sa">f</span><span class="s2">"curtailment: </span><span class="si">{</span><span class="n">ndg_curtailment</span><span class="si">}</span><span class="s2">, "</span>
+              <span class="sa">f</span><span class="s2">"firm penalty </span><span class="si">{</span><span class="n">firm_capacity_penalty</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_firm_capacity_penalty</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">lole</span><span class="p">,</span> <span class="n">capex</span><span class="p">,</span> <span class="n">unit_cost</span><span class="p">,</span> <span class="n">ndg_curtailment</span><span class="p">,</span> <span class="n">firm_capacity_penalty</span><span class="p">])</span>

@@ -17,9 +17,8 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QAbstractButton, QAbstractItemView, QApplication, QDialog,
     QDialogButtonBox, QFrame, QHBoxLayout, QHeaderView,
-    QLabel, QSizePolicy, QSpacerItem,
-    QTreeWidget, QTreeWidgetItem, QVBoxLayout,
-    QWidget)
+    QLabel, QSizePolicy, QSpacerItem, QTreeWidget,
+    QTreeWidgetItem, QVBoxLayout, QWidget)
 
 from VeraGrid.Gui.DynamicModelEditor.Editor.ElementDialogues.MeasurementsDialog.measurement_widgets import DeviceSelectionLabel
 
@@ -66,14 +65,13 @@ class Ui_MeasurementsDialog(object):
 
         self.verticalLayout_4.addWidget(self.frame)
 
+        self.measurement_tree = QTreeWidget(MeasurementsDialog)
+        self.measurement_tree.setObjectName(u"measurement_tree")
         sizePolicy1 = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.MinimumExpanding)
         sizePolicy1.setHorizontalStretch(0)
         sizePolicy1.setVerticalStretch(0)
-        self.measurement_tree = QTreeWidget(MeasurementsDialog)
-        self.measurement_tree.setObjectName(u"measurement_tree")
         sizePolicy1.setHeightForWidth(self.measurement_tree.sizePolicy().hasHeightForWidth())
         self.measurement_tree.setSizePolicy(sizePolicy1)
-        self.measurement_tree.setColumnCount(3)
         self.measurement_tree.setAlternatingRowColors(True)
         self.measurement_tree.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
         self.measurement_tree.setRootIsDecorated(True)

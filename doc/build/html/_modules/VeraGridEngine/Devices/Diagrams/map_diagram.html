@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Devices.Diagrams.map_diagram &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Devices.Diagrams.map_diagram &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/license.html">📜 License</a></li>
@@ -122,19 +123,19 @@
 <div class="viewcode-block" id="MapDiagram">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Diagrams.html#VeraGridEngine.Devices.Diagrams.map_diagram.MapDiagram">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">MapDiagram</span><span class="p">(</span><span class="n">BaseDiagram</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    MapDiagram</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s1">&#39;tile_source&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;start_level&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;longitude&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;latitude&#39;</span><span class="p">,</span>
+        <span class="s1">'tile_source'</span><span class="p">,</span>
+        <span class="s1">'start_level'</span><span class="p">,</span>
+        <span class="s1">'longitude'</span><span class="p">,</span>
+        <span class="s1">'latitude'</span><span class="p">,</span>
     <span class="p">)</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idtag</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
-                 <span class="n">tile_source</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">start_level</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">11</span><span class="p">,</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idtag</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">''</span><span class="p">,</span>
+                 <span class="n">tile_source</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">''</span><span class="p">,</span> <span class="n">start_level</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">11</span><span class="p">,</span>
                  <span class="n">longitude</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="o">-</span><span class="mf">15.41</span><span class="p">,</span> <span class="n">latitude</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">40.11</span><span class="p">,</span>
                  <span class="n">use_flow_based_width</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
                  <span class="n">min_branch_width</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
@@ -144,13 +145,13 @@
                  <span class="n">arrow_size</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
                  <span class="n">palette</span><span class="p">:</span> <span class="n">Colormaps</span> <span class="o">=</span> <span class="n">Colormaps</span><span class="o">.</span><span class="n">VeraGrid</span><span class="p">,</span>
                  <span class="n">default_bus_voltage</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">10</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        MapDiagram</span>
 <span class="sd">        :param idtag: uuid</span>
 <span class="sd">        :param name: name of the diagram</span>
-<span class="sd">        :param tile_source: tiles&#39; source</span>
+<span class="sd">        :param tile_source: tiles' source</span>
 <span class="sd">        :param start_level: zoom level</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">BaseDiagram</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                              <span class="n">idtag</span><span class="o">=</span><span class="n">idtag</span><span class="p">,</span>
                              <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
@@ -174,10 +175,10 @@
 
 <div class="viewcode-block" id="MapDiagram.copy">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Diagrams.html#VeraGridEngine.Devices.Diagrams.map_diagram.MapDiagram.copy">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">ALL_DEV_TYPES</span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;MapDiagram&quot;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">ALL_DEV_TYPES</span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"MapDiagram"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Copy the map diagram layout while treating API objects as pointers.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">cpy</span><span class="p">:</span> <span class="n">MapDiagram</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">obj_dict</span><span class="o">=</span><span class="n">obj_dict</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
         <span class="n">cpy</span><span class="o">.</span><span class="n">tile_source</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tile_source</span>
         <span class="n">cpy</span><span class="o">.</span><span class="n">start_level</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">start_level</span>
@@ -189,25 +190,25 @@
 <div class="viewcode-block" id="MapDiagram.get_data_dict">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Diagrams.html#VeraGridEngine.Devices.Diagrams.map_diagram.MapDiagram.get_data_dict">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_data_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="n">GraphicLocation</span><span class="p">,</span> <span class="n">MapLocation</span><span class="p">]]]]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        get the properties dictionary to save</span>
 <span class="sd">        :return: dictionary to serialize</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">data</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_data_dict</span><span class="p">()</span>
-        <span class="n">data</span><span class="p">[</span><span class="s1">&#39;tile_source&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tile_source</span>
-        <span class="n">data</span><span class="p">[</span><span class="s1">&#39;start_level&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">start_level</span>
-        <span class="n">data</span><span class="p">[</span><span class="s1">&#39;longitude&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">longitude</span>
-        <span class="n">data</span><span class="p">[</span><span class="s1">&#39;latitude&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">latitude</span>
+        <span class="n">data</span><span class="p">[</span><span class="s1">'tile_source'</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tile_source</span>
+        <span class="n">data</span><span class="p">[</span><span class="s1">'start_level'</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">start_level</span>
+        <span class="n">data</span><span class="p">[</span><span class="s1">'longitude'</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">longitude</span>
+        <span class="n">data</span><span class="p">[</span><span class="s1">'latitude'</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">latitude</span>
         <span class="k">return</span> <span class="n">data</span></div>
 
 
 <div class="viewcode-block" id="MapDiagram.set_center">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Diagrams.html#VeraGridEngine.Devices.Diagrams.map_diagram.MapDiagram.set_center">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">set_center</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Set the middle coordinates as diagram origin</span>
 <span class="sd">        :return: Nothing</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">longitude</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">latitude</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_middle_coordinates</span><span class="p">()</span></div>
 
@@ -215,10 +216,10 @@
 <div class="viewcode-block" id="MapDiagram.get_middle_coordinates">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Diagrams.html#VeraGridEngine.Devices.Diagrams.map_diagram.MapDiagram.get_middle_coordinates">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_middle_coordinates</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Find the middle coordinates as diagram origin</span>
 <span class="sd">        :return: Longitude and Latitude</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">lon</span> <span class="o">=</span> <span class="mf">0.0</span>
         <span class="n">lat</span> <span class="o">=</span> <span class="mf">0.0</span>
         <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
@@ -241,18 +242,18 @@
                    <span class="n">data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]]],</span>
                    <span class="n">obj_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">ALL_DEV_TYPES</span><span class="p">]],</span>
                    <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Parse file data ito this class</span>
 <span class="sd">        :param data: json dictionary</span>
 <span class="sd">        :param obj_dict: dictionary of circuit objects by type to fincd the api objects back from file loading</span>
 <span class="sd">        :param logger: logger object</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">parse_data</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">obj_dict</span><span class="o">=</span><span class="n">obj_dict</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="n">logger</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">tile_source</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;tile_source&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">start_level</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;start_level&#39;</span><span class="p">,</span> <span class="mi">11</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">longitude</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;longitude&#39;</span><span class="p">,</span> <span class="o">-</span><span class="mf">15.41</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">latitude</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;latitude&#39;</span><span class="p">,</span> <span class="mf">40.11</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tile_source</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'tile_source'</span><span class="p">,</span> <span class="s1">''</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">start_level</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'start_level'</span><span class="p">,</span> <span class="mi">11</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">longitude</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'longitude'</span><span class="p">,</span> <span class="o">-</span><span class="mf">15.41</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">latitude</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'latitude'</span><span class="p">,</span> <span class="mf">40.11</span><span class="p">)</span></div>
 </div>
 
 </pre></div>

@@ -6,7 +6,9 @@ from __future__ import annotations
 
 from typing import Dict, TYPE_CHECKING
 
-from VeraGridEngine.Compilers.Gslv.activation import build_status_dict, pg
+from VeraGridEngine.Compilers.Gslv.activation import (
+    battery_dispatch_mode_dict, build_status_dict, generator_control_mode_dict, pg,
+)
 from VeraGridEngine.Compilers.Gslv.common import fill_profile, fill_profile_with_array, set_generator_associations
 from VeraGridEngine.Devices.Aggregation.facility import Facility
 from VeraGridEngine.Devices.Aggregation.market_unit import MarketUnit
@@ -19,16 +21,6 @@ from VeraGridEngine.basic_structures import IntVec
 
 if TYPE_CHECKING:
     from VeraGridEngine.Simulations.OPF.opf_results import OptimalPowerFlowResults
-
-
-def battery_control_mode(elm: Battery) -> "pg.GeneratorControlMode":
-    """
-    Convert one VeraGrid battery control mode to pygslv.
-
-    :param elm: VeraGrid battery.
-    :return: Equivalent pygslv control mode.
-    """
-    return pg.GeneratorControlMode.__members__[elm.control_mode.name]
 
 
 def convert_battery(k: int,
@@ -118,8 +110,10 @@ def convert_battery(k: int,
         opex=elm.opex,
         srap_enabled=elm.srap_enabled,
         build_status=build_status_dict[elm.build_status],
-        control_mode=battery_control_mode(elm=elm),
+        control_mode=generator_control_mode_dict[elm.control_mode],
+        dispatch_mode=battery_dispatch_mode_dict[elm.dispatch_mode],
     )
+    fill_profile(gen.dispatch_mode, elm.dispatch_mode_prof, use_time_series, time_indices, n_time, elm.dispatch_mode)
     gen.min_soc_charge = elm.min_soc_charge
     gen.startup_cost = elm.startup_cost
     gen.shutdown_cost = elm.shutdown_cost

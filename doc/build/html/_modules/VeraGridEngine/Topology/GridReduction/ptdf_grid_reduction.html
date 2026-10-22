@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Topology.GridReduction.ptdf_grid_reduction &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Topology.GridReduction.ptdf_grid_reduction &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/license.html">📜 License</a></li>
@@ -130,17 +131,17 @@
 
 <div class="viewcode-block" id="get_reduced_branch_flows">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Topology.GridReduction.html#VeraGridEngine.Topology.GridReduction.ptdf_grid_reduction.get_reduced_branch_flows">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">get_reduced_branch_flows</span><span class="p">(</span><span class="n">original_nc</span><span class="p">:</span> <span class="s2">&quot;NumericalCircuit&quot;</span><span class="p">,</span>
-                             <span class="n">reduced_nc</span><span class="p">:</span> <span class="s2">&quot;NumericalCircuit&quot;</span><span class="p">,</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_reduced_branch_flows</span><span class="p">(</span><span class="n">original_nc</span><span class="p">:</span> <span class="s2">"NumericalCircuit"</span><span class="p">,</span>
+                             <span class="n">reduced_nc</span><span class="p">:</span> <span class="s2">"NumericalCircuit"</span><span class="p">,</span>
                              <span class="n">original_flows</span><span class="p">:</span> <span class="n">Vec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Reorder original branch flows to match the reduced numerical circuit branch rows.</span>
 
 <span class="sd">    :param original_nc: Numerical circuit before removing buses.</span>
 <span class="sd">    :param reduced_nc: Numerical circuit after removing buses.</span>
 <span class="sd">    :param original_flows: Branch flows ordered as ``original_nc``.</span>
 <span class="sd">    :return: Branch flows ordered as ``reduced_nc``.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">original_flow_by_idtag</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
     <span class="n">reduced_flows</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">reduced_nc</span><span class="o">.</span><span class="n">nbr</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
 
@@ -163,17 +164,17 @@
 
 <div class="viewcode-block" id="get_reduced_branch_flows_ts">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Topology.GridReduction.html#VeraGridEngine.Topology.GridReduction.ptdf_grid_reduction.get_reduced_branch_flows_ts">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">get_reduced_branch_flows_ts</span><span class="p">(</span><span class="n">original_nc</span><span class="p">:</span> <span class="s2">&quot;NumericalCircuit&quot;</span><span class="p">,</span>
-                                <span class="n">reduced_nc</span><span class="p">:</span> <span class="s2">&quot;NumericalCircuit&quot;</span><span class="p">,</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_reduced_branch_flows_ts</span><span class="p">(</span><span class="n">original_nc</span><span class="p">:</span> <span class="s2">"NumericalCircuit"</span><span class="p">,</span>
+                                <span class="n">reduced_nc</span><span class="p">:</span> <span class="s2">"NumericalCircuit"</span><span class="p">,</span>
                                 <span class="n">original_flows_ts</span><span class="p">:</span> <span class="n">Mat</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Mat</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Reorder original time-series branch flows to match reduced numerical circuit branch rows.</span>
 
 <span class="sd">    :param original_nc: Numerical circuit before removing buses.</span>
 <span class="sd">    :param reduced_nc: Numerical circuit after removing buses.</span>
 <span class="sd">    :param original_flows_ts: Time-series branch flows ordered as ``original_nc``.</span>
 <span class="sd">    :return: Time-series branch flows ordered as ``reduced_nc``.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">original_index_by_idtag</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
     <span class="n">reduced_flows_ts</span><span class="p">:</span> <span class="n">Mat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">original_flows_ts</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">reduced_nc</span><span class="o">.</span><span class="n">nbr</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
 
@@ -197,10 +198,10 @@
 <div class="viewcode-block" id="get_Pgen">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Topology.GridReduction.html#VeraGridEngine.Topology.GridReduction.ptdf_grid_reduction.get_Pgen">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_Pgen</span><span class="p">(</span><span class="n">grid</span><span class="p">:</span> <span class="n">MultiCircuit</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Vec</span><span class="p">,</span> <span class="n">Vec</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Get the complex bus power Injections due to the generation with and without srap</span>
 <span class="sd">    :return: (nbus) [MW] no-srap generation, srap-generation</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">val</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">grid</span><span class="o">.</span><span class="n">get_bus_number</span><span class="p">(),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
     <span class="n">val_srap</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">grid</span><span class="o">.</span><span class="n">get_bus_number</span><span class="p">(),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
     <span class="n">bus_dict</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">get_bus_index_dict</span><span class="p">()</span>
@@ -220,10 +221,10 @@
 <div class="viewcode-block" id="get_Pgen_ts">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Topology.GridReduction.html#VeraGridEngine.Topology.GridReduction.ptdf_grid_reduction.get_Pgen_ts">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_Pgen_ts</span><span class="p">(</span><span class="n">grid</span><span class="p">:</span> <span class="n">MultiCircuit</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Mat</span><span class="p">,</span> <span class="n">Mat</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Get the complex bus power Injections due to the generation with and without srap</span>
 <span class="sd">    :return: (nbus) [MW] no-srap generation, srap-generation</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">n</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">get_bus_number</span><span class="p">()</span>
     <span class="n">nt</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">get_time_number</span><span class="p">()</span>
     <span class="n">val</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nt</span><span class="p">,</span> <span class="n">n</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
@@ -245,10 +246,10 @@
 <div class="viewcode-block" id="get_Pload">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Topology.GridReduction.html#VeraGridEngine.Topology.GridReduction.ptdf_grid_reduction.get_Pload">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_Pload</span><span class="p">(</span><span class="n">grid</span><span class="p">:</span> <span class="n">MultiCircuit</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Get the complex bus power Injections due to the load with sign</span>
 <span class="sd">    :return: (nbus) [MW ]</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">val</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">grid</span><span class="o">.</span><span class="n">get_bus_number</span><span class="p">(),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
     <span class="n">bus_dict</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">get_bus_index_dict</span><span class="p">()</span>
 
@@ -264,10 +265,10 @@
 <div class="viewcode-block" id="get_Pload_ts">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Topology.GridReduction.html#VeraGridEngine.Topology.GridReduction.ptdf_grid_reduction.get_Pload_ts">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_Pload_ts</span><span class="p">(</span><span class="n">grid</span><span class="p">:</span> <span class="n">MultiCircuit</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Mat</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Get the complex bus power Injections due to the load with sign</span>
 <span class="sd">    :return: (nbus) [MW ]</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">n</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">get_bus_number</span><span class="p">()</span>
     <span class="n">nt</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">get_time_number</span><span class="p">()</span>
     <span class="n">val</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nt</span><span class="p">,</span> <span class="n">n</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
@@ -286,12 +287,12 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Topology.GridReduction.html#VeraGridEngine.Topology.GridReduction.ptdf_grid_reduction.relocate_injections">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">relocate_injections</span><span class="p">(</span><span class="n">grid</span><span class="p">:</span> <span class="n">MultiCircuit</span><span class="p">,</span>
                         <span class="n">reduction_bus_indices</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Set</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Relocate injection devices (generators, loads, etc.) from external buses to internal buses</span>
 <span class="sd">    :param grid: MultiCircuit</span>
 <span class="sd">    :param reduction_bus_indices: array of bus indices to reduce (external set)</span>
 <span class="sd">    :return: Set of relocated device idtags</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">relocated_device_ids</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
     <span class="n">G</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">()</span>
     <span class="n">bus_idx_dict</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">get_bus_index_dict</span><span class="p">()</span>
@@ -301,12 +302,12 @@
     <span class="n">internal_set</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
 
     <span class="c1"># loop through all injection devices in the external set</span>
-    <span class="c1"># Note: we don&#39;t remove from external_set here because multiple devices can be at the same bus</span>
+    <span class="c1"># Note: we don't remove from external_set here because multiple devices can be at the same bus</span>
     <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">elm</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">grid</span><span class="o">.</span><span class="n">get_injection_devices_iter</span><span class="p">()):</span>
         <span class="n">i</span> <span class="o">=</span> <span class="n">bus_idx_dict</span><span class="p">[</span><span class="n">elm</span><span class="o">.</span><span class="n">bus</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">external_set</span><span class="p">:</span>
             <span class="n">external_gen_set</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
-            <span class="n">external_gen_data</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">k</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">elm</span><span class="p">,</span> <span class="s1">&#39;injection&#39;</span><span class="p">))</span>
+            <span class="n">external_gen_data</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">k</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">elm</span><span class="p">,</span> <span class="s1">'injection'</span><span class="p">))</span>
             <span class="n">G</span><span class="o">.</span><span class="n">add_node</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
 
     <span class="c1"># loop through the branches</span>
@@ -332,7 +333,7 @@
 
     <span class="n">purely_internal_set</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">internal_set</span> <span class="o">-</span> <span class="n">external_gen_set</span><span class="p">)</span>
 
-    <span class="c1"># now, for every generator, we need to find the shortest path in the &quot;purely internal set&quot;</span>
+    <span class="c1"># now, for every generator, we need to find the shortest path in the "purely internal set"</span>
     <span class="k">for</span> <span class="n">elm_idx</span><span class="p">,</span> <span class="n">bus_idx</span><span class="p">,</span> <span class="n">elm</span><span class="p">,</span> <span class="n">tpe</span> <span class="ow">in</span> <span class="n">external_gen_data</span><span class="p">:</span>
         <span class="c1"># Compute shortest path lengths from this source</span>
         <span class="n">lengths</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">single_source_shortest_path_length</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">bus_idx</span><span class="p">)</span>
@@ -345,7 +346,7 @@
             <span class="n">closest</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">target_distances</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">target_distances</span><span class="o">.</span><span class="n">get</span><span class="p">)</span>
 
             <span class="c1"># relocate</span>
-            <span class="k">if</span> <span class="n">tpe</span> <span class="o">==</span> <span class="s1">&#39;injection&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">tpe</span> <span class="o">==</span> <span class="s1">'injection'</span><span class="p">:</span>
                 <span class="n">elm</span><span class="o">.</span><span class="n">bus</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">buses</span><span class="p">[</span><span class="n">closest</span><span class="p">]</span>
                 <span class="n">relocated_device_ids</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">elm</span><span class="o">.</span><span class="n">idtag</span><span class="p">)</span>
 
@@ -353,8 +354,8 @@
 
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">_collapse_loads</span><span class="p">(</span><span class="n">loads</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Load</span><span class="p">],</span> <span class="n">bus</span><span class="p">:</span> <span class="s2">&quot;Bus&quot;</span><span class="p">,</span> <span class="n">has_ts</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">nt</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Load</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_collapse_loads</span><span class="p">(</span><span class="n">loads</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Load</span><span class="p">],</span> <span class="n">bus</span><span class="p">:</span> <span class="s2">"Bus"</span><span class="p">,</span> <span class="n">has_ts</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">nt</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Load</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Sum loads into a single collapsed load with time-series support.</span>
 
 <span class="sd">    :param loads: List of loads to collapse</span>
@@ -362,7 +363,7 @@
 <span class="sd">    :param has_ts: Whether the grid has time series</span>
 <span class="sd">    :param nt: Number of time steps</span>
 <span class="sd">    :return: Single collapsed Load object</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">total_P</span> <span class="o">=</span> <span class="mf">0.0</span>
     <span class="n">total_Q</span> <span class="o">=</span> <span class="mf">0.0</span>
 
@@ -373,7 +374,7 @@
             <span class="n">total_Q</span> <span class="o">+=</span> <span class="n">load</span><span class="o">.</span><span class="n">Q</span>
 
     <span class="c1"># Create the collapsed load</span>
-    <span class="n">collapsed_load</span> <span class="o">=</span> <span class="n">Load</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;collapsed load @ </span><span class="si">{</span><span class="n">bus</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">P</span><span class="o">=</span><span class="n">total_P</span><span class="p">,</span> <span class="n">Q</span><span class="o">=</span><span class="n">total_Q</span><span class="p">)</span>
+    <span class="n">collapsed_load</span> <span class="o">=</span> <span class="n">Load</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">"collapsed load @ </span><span class="si">{</span><span class="n">bus</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">P</span><span class="o">=</span><span class="n">total_P</span><span class="p">,</span> <span class="n">Q</span><span class="o">=</span><span class="n">total_Q</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">has_ts</span> <span class="ow">and</span> <span class="n">nt</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
         <span class="c1"># Sum time-series profiles (already weighted by active status)</span>
@@ -393,9 +394,9 @@
     <span class="k">return</span> <span class="n">collapsed_load</span>
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">_collapse_generators</span><span class="p">(</span><span class="n">generators</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Generator</span><span class="p">],</span> <span class="n">bus</span><span class="p">:</span> <span class="s2">&quot;Bus&quot;</span><span class="p">,</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_collapse_generators</span><span class="p">(</span><span class="n">generators</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Generator</span><span class="p">],</span> <span class="n">bus</span><span class="p">:</span> <span class="s2">"Bus"</span><span class="p">,</span>
                          <span class="n">has_ts</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">nt</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">srap_enabled</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Sum generators into a single collapsed generator with time-series support.</span>
 
 <span class="sd">    :param generators: List of generators to collapse</span>
@@ -404,7 +405,7 @@
 <span class="sd">    :param nt: Number of time steps</span>
 <span class="sd">    :param srap_enabled: Whether the collapsed generator should have SRAP enabled</span>
 <span class="sd">    :return: Single collapsed Generator object</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">total_P</span> <span class="o">=</span> <span class="mf">0.0</span>
     <span class="n">any_voltage_controlled</span> <span class="o">=</span> <span class="kc">False</span>
 
@@ -424,9 +425,9 @@
 
     <span class="c1"># Create the collapsed generator</span>
     <span class="k">if</span> <span class="n">srap_enabled</span><span class="p">:</span>
-        <span class="n">name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;collapsed SRAP gen @ </span><span class="si">{</span><span class="n">bus</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"collapsed SRAP gen @ </span><span class="si">{</span><span class="n">bus</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;collapsed non-SRAP gen @ </span><span class="si">{</span><span class="n">bus</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"collapsed non-SRAP gen @ </span><span class="si">{</span><span class="n">bus</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span>
     <span class="n">collapsed_gen</span> <span class="o">=</span> <span class="n">Generator</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">P</span><span class="o">=</span><span class="n">total_P</span><span class="p">,</span> <span class="n">srap_enabled</span><span class="o">=</span><span class="n">srap_enabled</span><span class="p">,</span> <span class="n">control_mode</span><span class="o">=</span><span class="n">control_mode</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">has_ts</span> <span class="ow">and</span> <span class="n">nt</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
@@ -449,9 +450,9 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">compact_devices_after_reduction</span><span class="p">(</span>
     <span class="n">grid</span><span class="p">:</span> <span class="n">MultiCircuit</span><span class="p">,</span>
     <span class="n">relocated_device_ids</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
-    <span class="n">compensation_prefix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;compensated&quot;</span>
+    <span class="n">compensation_prefix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"compensated"</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Logger</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compact devices on each bus after PTDF reduction.</span>
 
 <span class="sd">    Per bus, keeps original devices individual and collapses:</span>
@@ -463,7 +464,7 @@
 <span class="sd">    :param relocated_device_ids: Set of device idtags that were relocated from external buses</span>
 <span class="sd">    :param compensation_prefix: Prefix used to identify compensation devices</span>
 <span class="sd">    :return: Logger with info about collapsed devices</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">logger</span> <span class="o">=</span> <span class="n">Logger</span><span class="p">()</span>
 
     <span class="n">has_ts</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">has_time_series</span>
@@ -532,7 +533,7 @@
             <span class="n">grid</span><span class="o">.</span><span class="n">add_load</span><span class="p">(</span><span class="n">bus</span><span class="o">=</span><span class="n">bus</span><span class="p">,</span> <span class="n">api_obj</span><span class="o">=</span><span class="n">collapsed_load</span><span class="p">)</span>
 
             <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span>
-                <span class="n">msg</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Collapsed </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">loads_to_collapse</span><span class="p">)</span><span class="si">}</span><span class="s2"> loads into &#39;</span><span class="si">{</span><span class="n">collapsed_load</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">,</span>
+                <span class="n">msg</span><span class="o">=</span><span class="sa">f</span><span class="s2">"Collapsed </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">loads_to_collapse</span><span class="p">)</span><span class="si">}</span><span class="s2"> loads into '</span><span class="si">{</span><span class="n">collapsed_load</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">'"</span><span class="p">,</span>
                 <span class="n">device</span><span class="o">=</span><span class="n">bus</span><span class="o">.</span><span class="n">name</span>
             <span class="p">)</span>
 
@@ -550,7 +551,7 @@
             <span class="n">grid</span><span class="o">.</span><span class="n">add_generator</span><span class="p">(</span><span class="n">bus</span><span class="o">=</span><span class="n">bus</span><span class="p">,</span> <span class="n">api_obj</span><span class="o">=</span><span class="n">collapsed_gen</span><span class="p">)</span>
 
             <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span>
-                <span class="n">msg</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Collapsed </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">gens_to_collapse_non_srap</span><span class="p">)</span><span class="si">}</span><span class="s2"> non-SRAP gens into &#39;</span><span class="si">{</span><span class="n">collapsed_gen</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">,</span>
+                <span class="n">msg</span><span class="o">=</span><span class="sa">f</span><span class="s2">"Collapsed </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">gens_to_collapse_non_srap</span><span class="p">)</span><span class="si">}</span><span class="s2"> non-SRAP gens into '</span><span class="si">{</span><span class="n">collapsed_gen</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">'"</span><span class="p">,</span>
                 <span class="n">device</span><span class="o">=</span><span class="n">bus</span><span class="o">.</span><span class="n">name</span>
             <span class="p">)</span>
 
@@ -568,7 +569,7 @@
             <span class="n">grid</span><span class="o">.</span><span class="n">add_generator</span><span class="p">(</span><span class="n">bus</span><span class="o">=</span><span class="n">bus</span><span class="p">,</span> <span class="n">api_obj</span><span class="o">=</span><span class="n">collapsed_gen</span><span class="p">)</span>
 
             <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span>
-                <span class="n">msg</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Collapsed </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">gens_to_collapse_srap</span><span class="p">)</span><span class="si">}</span><span class="s2"> SRAP gens into &#39;</span><span class="si">{</span><span class="n">collapsed_gen</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">,</span>
+                <span class="n">msg</span><span class="o">=</span><span class="sa">f</span><span class="s2">"Collapsed </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">gens_to_collapse_srap</span><span class="p">)</span><span class="si">}</span><span class="s2"> SRAP gens into '</span><span class="si">{</span><span class="n">collapsed_gen</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">'"</span><span class="p">,</span>
                 <span class="n">device</span><span class="o">=</span><span class="n">bus</span><span class="o">.</span><span class="n">name</span>
             <span class="p">)</span>
 
@@ -580,7 +581,7 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Topology.GridReduction.html#VeraGridEngine.Topology.GridReduction.ptdf_grid_reduction.get_reduction_sets">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_reduction_sets</span><span class="p">(</span><span class="n">grid</span><span class="p">:</span> <span class="n">MultiCircuit</span><span class="p">,</span> <span class="n">reduction_bus_indices</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
                        <span class="n">add_vsc</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">add_hvdc</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">add_switch</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">IntVec</span><span class="p">,</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">IntVec</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Generate the set of bus indices for grid reduction</span>
 <span class="sd">    :param grid: MultiCircuit</span>
 <span class="sd">    :param reduction_bus_indices: array of bus indices to reduce (external set)</span>
@@ -588,7 +589,7 @@
 <span class="sd">    :param add_hvdc: Include the list of HvdcLine?</span>
 <span class="sd">    :param add_switch: Include the list of Switch?</span>
 <span class="sd">    :return: external, boundary, internal, boundary_branches</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">bus_idx_dict</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">get_bus_index_dict</span><span class="p">()</span>
     <span class="n">external_set</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">reduction_bus_indices</span><span class="p">)</span>
 
@@ -609,7 +610,7 @@
         <span class="n">changed</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="n">to_add</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_buses</span><span class="p">):</span>
-            <span class="c1"># Only consider buses that have at least one neighbor (if none, they&#39;re not connected to anything and</span>
+            <span class="c1"># Only consider buses that have at least one neighbor (if none, they're not connected to anything and</span>
             <span class="c1"># should not be removed unless explicitly requested)</span>
             <span class="k">if</span> <span class="n">i</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">external_set</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">neighbors</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">!=</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">neighbors</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">issubset</span><span class="p">(</span><span class="n">external_set</span><span class="p">):</span>
                 <span class="n">to_add</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
@@ -643,24 +644,24 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">ptdf_reduction</span><span class="p">(</span><span class="n">grid</span><span class="p">:</span> <span class="n">MultiCircuit</span><span class="p">,</span>
                    <span class="n">reduction_bus_indices</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span>
                    <span class="n">tol</span><span class="o">=</span><span class="mf">1e-8</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">MultiCircuit</span><span class="p">,</span> <span class="n">Logger</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    In-place Grid reduction using the PTDF injection mirroring</span>
 <span class="sd">    This is the same concept as the Di-Shi reduction but using the PTDF matrix instead.</span>
 <span class="sd">    :param grid: MultiCircuit</span>
 <span class="sd">    :param reduction_bus_indices: Bus indices of the buses to delete</span>
 <span class="sd">    :param tol: Tolerance, any equivalent power value under this is omitted</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">logger</span> <span class="o">=</span> <span class="n">Logger</span><span class="p">()</span>
 
     <span class="c1"># find the boundary set: buses from the internal set the join to the external set</span>
     <span class="n">e_buses</span><span class="p">,</span> <span class="n">i_buses</span><span class="p">,</span> <span class="n">i_branches</span> <span class="o">=</span> <span class="n">get_reduction_sets</span><span class="p">(</span><span class="n">grid</span><span class="o">=</span><span class="n">grid</span><span class="p">,</span> <span class="n">reduction_bus_indices</span><span class="o">=</span><span class="n">reduction_bus_indices</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">e_buses</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">&quot;Nothing to reduce&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">"Nothing to reduce"</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">grid</span><span class="p">,</span> <span class="n">logger</span>
 
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">i_buses</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">&quot;Nothing to keep (null grid as a result)&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">"Nothing to keep (null grid as a result)"</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">grid</span><span class="p">,</span> <span class="n">logger</span>
 
     <span class="n">nc</span> <span class="o">=</span> <span class="n">compile_numerical_circuit_at</span><span class="p">(</span><span class="n">circuit</span><span class="o">=</span><span class="n">grid</span><span class="p">,</span> <span class="n">t_idx</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
@@ -714,8 +715,8 @@
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n2</span><span class="p">):</span>
         <span class="n">bus</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">buses</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
         <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">dPbus</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">&gt;</span> <span class="n">tol</span><span class="p">:</span>
-            <span class="n">elm</span> <span class="o">=</span> <span class="n">Load</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;compensation load </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">P</span><span class="o">=</span><span class="n">dPbus</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
-            <span class="n">elm</span><span class="o">.</span><span class="n">comment</span> <span class="o">=</span> <span class="s2">&quot;Reduction compensation load&quot;</span>
+            <span class="n">elm</span> <span class="o">=</span> <span class="n">Load</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">"compensation load </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">P</span><span class="o">=</span><span class="n">dPbus</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+            <span class="n">elm</span><span class="o">.</span><span class="n">comment</span> <span class="o">=</span> <span class="s2">"Reduction compensation load"</span>
 
             <span class="k">if</span> <span class="n">dPbus_ts</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">elm</span><span class="o">.</span><span class="n">P_prof</span> <span class="o">=</span> <span class="n">dPbus_ts</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span>
@@ -736,24 +737,24 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">ptdf_reduction_ree_bad</span><span class="p">(</span><span class="n">grid</span><span class="p">:</span> <span class="n">MultiCircuit</span><span class="p">,</span>
                            <span class="n">reduction_bus_indices</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span>
                            <span class="n">tol</span><span class="o">=</span><span class="mf">1e-8</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">MultiCircuit</span><span class="p">,</span> <span class="n">Logger</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    In-place Grid reduction using the PTDF injection mirroring</span>
 <span class="sd">    No theory available</span>
 <span class="sd">    :param grid: MultiCircuit</span>
 <span class="sd">    :param reduction_bus_indices: Bus indices of the buses to delete</span>
 <span class="sd">    :param tol: Tolerance, any equivalent power value under this is omitted</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">logger</span> <span class="o">=</span> <span class="n">Logger</span><span class="p">()</span>
 
     <span class="c1"># find the boundary set: buses from the internal set the join to the external set</span>
     <span class="n">e_buses</span><span class="p">,</span> <span class="n">i_buses</span><span class="p">,</span> <span class="n">i_branches</span> <span class="o">=</span> <span class="n">get_reduction_sets</span><span class="p">(</span><span class="n">grid</span><span class="o">=</span><span class="n">grid</span><span class="p">,</span> <span class="n">reduction_bus_indices</span><span class="o">=</span><span class="n">reduction_bus_indices</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">e_buses</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">&quot;Nothing to reduce&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">"Nothing to reduce"</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">grid</span><span class="p">,</span> <span class="n">logger</span>
 
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">i_buses</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">&quot;Nothing to keep (null grid as a result)&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">"Nothing to keep (null grid as a result)"</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">grid</span><span class="p">,</span> <span class="n">logger</span>
 
     <span class="c1"># base flows</span>
@@ -803,15 +804,15 @@
 
         <span class="n">bus</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">buses</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
         <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">dPload</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">&gt;</span> <span class="n">tol</span><span class="p">:</span>
-            <span class="n">elm</span> <span class="o">=</span> <span class="n">Load</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;compensated load </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">P</span><span class="o">=-</span><span class="n">dPload</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+            <span class="n">elm</span> <span class="o">=</span> <span class="n">Load</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">"compensated load </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">P</span><span class="o">=-</span><span class="n">dPload</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
             <span class="n">grid</span><span class="o">.</span><span class="n">add_load</span><span class="p">(</span><span class="n">bus</span><span class="o">=</span><span class="n">bus</span><span class="p">,</span> <span class="n">api_obj</span><span class="o">=</span><span class="n">elm</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">dPgen</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">&gt;</span> <span class="n">tol</span><span class="p">:</span>
-            <span class="n">elm</span> <span class="o">=</span> <span class="n">Generator</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;compensated gen </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">P</span><span class="o">=-</span><span class="n">dPgen</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">srap_enabled</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="n">elm</span> <span class="o">=</span> <span class="n">Generator</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">"compensated gen </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">P</span><span class="o">=-</span><span class="n">dPgen</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">srap_enabled</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
             <span class="n">grid</span><span class="o">.</span><span class="n">add_generator</span><span class="p">(</span><span class="n">bus</span><span class="o">=</span><span class="n">bus</span><span class="p">,</span> <span class="n">api_obj</span><span class="o">=</span><span class="n">elm</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">dPgen_srap</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">&gt;</span> <span class="n">tol</span><span class="p">:</span>
-            <span class="n">elm</span> <span class="o">=</span> <span class="n">Generator</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;compensated gen </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">P</span><span class="o">=-</span><span class="n">dPgen_srap</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">srap_enabled</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">elm</span> <span class="o">=</span> <span class="n">Generator</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">"compensated gen </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">P</span><span class="o">=-</span><span class="n">dPgen_srap</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">srap_enabled</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
             <span class="n">grid</span><span class="o">.</span><span class="n">add_generator</span><span class="p">(</span><span class="n">bus</span><span class="o">=</span><span class="n">bus</span><span class="p">,</span> <span class="n">api_obj</span><span class="o">=</span><span class="n">elm</span><span class="p">)</span>
 
     <span class="c1"># proof that the flows are actually the same</span>
@@ -829,24 +830,24 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">ptdf_reduction_ree_less_bad</span><span class="p">(</span><span class="n">grid</span><span class="p">:</span> <span class="n">MultiCircuit</span><span class="p">,</span>
                                 <span class="n">reduction_bus_indices</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span>
                                 <span class="n">tol</span><span class="o">=</span><span class="mf">1e-8</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">MultiCircuit</span><span class="p">,</span> <span class="n">Logger</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    In-place Grid reduction using the PTDF injection mirroring</span>
 <span class="sd">    No theory available</span>
 <span class="sd">    :param grid: MultiCircuit</span>
 <span class="sd">    :param reduction_bus_indices: Bus indices of the buses to delete</span>
 <span class="sd">    :param tol: Tolerance, any equivalent power value under this is omitted</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">logger</span> <span class="o">=</span> <span class="n">Logger</span><span class="p">()</span>
 
     <span class="c1"># find the boundary set: buses from the internal set the join to the external set</span>
     <span class="n">e_buses</span><span class="p">,</span> <span class="n">i_buses</span><span class="p">,</span> <span class="n">i_branches</span> <span class="o">=</span> <span class="n">get_reduction_sets</span><span class="p">(</span><span class="n">grid</span><span class="o">=</span><span class="n">grid</span><span class="p">,</span> <span class="n">reduction_bus_indices</span><span class="o">=</span><span class="n">reduction_bus_indices</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">e_buses</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">&quot;Nothing to reduce&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">"Nothing to reduce"</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">grid</span><span class="p">,</span> <span class="n">logger</span>
 
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">i_buses</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">&quot;Nothing to keep (null grid as a result)&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">"Nothing to keep (null grid as a result)"</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">grid</span><span class="p">,</span> <span class="n">logger</span>
 
     <span class="c1"># base flows</span>
@@ -883,7 +884,7 @@
         <span class="n">bus</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">buses</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
 
         <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">dPbus</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">&gt;</span> <span class="n">tol</span><span class="p">:</span>
-            <span class="n">elm</span> <span class="o">=</span> <span class="n">Generator</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;compensated gen </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">P</span><span class="o">=-</span><span class="n">dPbus</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">srap_enabled</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">elm</span> <span class="o">=</span> <span class="n">Generator</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">"compensated gen </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">P</span><span class="o">=-</span><span class="n">dPbus</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">srap_enabled</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
             <span class="n">grid</span><span class="o">.</span><span class="n">add_generator</span><span class="p">(</span><span class="n">bus</span><span class="o">=</span><span class="n">bus</span><span class="p">,</span> <span class="n">api_obj</span><span class="o">=</span><span class="n">elm</span><span class="p">)</span>
 
     <span class="c1"># proof that the flows are actually the same</span>
@@ -903,7 +904,7 @@
                              <span class="n">tol</span><span class="o">=</span><span class="mf">1e-8</span><span class="p">,</span>
                              <span class="n">distribute_slack</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
                              <span class="n">compact_devices</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">MultiCircuit</span><span class="p">,</span> <span class="n">Logger</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    In-place Grid reduction using the PTDF injection by projecting</span>
 <span class="sd">    the generation and loads from the removed buses into the PTDF-sensitive buses</span>
 <span class="sd">    :param grid: MultiCircuit</span>
@@ -911,18 +912,18 @@
 <span class="sd">    :param tol: Tolerance, any equivalent power value under this is omitted</span>
 <span class="sd">    :param distribute_slack: Distribute the slack?</span>
 <span class="sd">    :param compact_devices: Collapse relocated and compensation devices after reduction</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">logger</span> <span class="o">=</span> <span class="n">Logger</span><span class="p">()</span>
 
     <span class="c1"># find the boundary set: buses from the internal set the join to the external set</span>
     <span class="n">e_buses</span><span class="p">,</span> <span class="n">i_buses</span><span class="p">,</span> <span class="n">i_branches</span> <span class="o">=</span> <span class="n">get_reduction_sets</span><span class="p">(</span><span class="n">grid</span><span class="o">=</span><span class="n">grid</span><span class="p">,</span> <span class="n">reduction_bus_indices</span><span class="o">=</span><span class="n">reduction_bus_indices</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">e_buses</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">&quot;Nothing to reduce&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">"Nothing to reduce"</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">grid</span><span class="p">,</span> <span class="n">logger</span>
 
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">i_buses</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">&quot;Nothing to keep (null grid as a result)&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">"Nothing to keep (null grid as a result)"</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">grid</span><span class="p">,</span> <span class="n">logger</span>
 
     <span class="c1"># Check if slack bus is being removed</span>
@@ -1326,7 +1327,7 @@
 
         <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">P_gen_no_srap_to_add</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">tol</span> <span class="ow">or</span> <span class="n">gen_ts_needed</span><span class="p">:</span>
             <span class="c1"># Q mode gen</span>
-            <span class="n">elm_gen</span> <span class="o">=</span> <span class="n">Generator</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;compensated gen </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="n">elm_gen</span> <span class="o">=</span> <span class="n">Generator</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">"compensated gen </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
                                 <span class="n">P</span><span class="o">=</span><span class="n">P_gen_no_srap_to_add</span><span class="p">,</span>
                                 <span class="n">srap_enabled</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                                 <span class="n">control_mode</span><span class="o">=</span><span class="n">GeneratorControlMode</span><span class="o">.</span><span class="n">Q</span><span class="p">)</span>
@@ -1340,7 +1341,7 @@
 
         <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">P_gen_yes_srap_to_add</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">tol</span> <span class="ow">or</span> <span class="n">gen_srap_ts_needed</span><span class="p">:</span>
             <span class="c1"># Q mode gen like we do with the SRAP ones</span>
-            <span class="n">elm_gen</span> <span class="o">=</span> <span class="n">Generator</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;compensated gen </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="n">elm_gen</span> <span class="o">=</span> <span class="n">Generator</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">"compensated gen </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
                                 <span class="n">P</span><span class="o">=</span><span class="n">P_gen_yes_srap_to_add</span><span class="p">,</span>
                                 <span class="n">srap_enabled</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                                 <span class="n">control_mode</span><span class="o">=</span><span class="n">GeneratorControlMode</span><span class="o">.</span><span class="n">Q</span><span class="p">)</span>
@@ -1352,7 +1353,7 @@
             <span class="n">grid</span><span class="o">.</span><span class="n">add_generator</span><span class="p">(</span><span class="n">bus</span><span class="o">=</span><span class="n">bus</span><span class="p">,</span> <span class="n">api_obj</span><span class="o">=</span><span class="n">elm_gen</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">P_load_to_add</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">tol</span> <span class="ow">or</span> <span class="n">load_ts_needed</span><span class="p">:</span>
-            <span class="n">elm_load</span> <span class="o">=</span> <span class="n">Load</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;compensated load </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="n">elm_load</span> <span class="o">=</span> <span class="n">Load</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">"compensated load </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
                             <span class="n">P</span><span class="o">=-</span><span class="n">P_load_to_add</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="n">load_prof</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -1366,7 +1367,7 @@
         <span class="n">compact_logger</span> <span class="o">=</span> <span class="n">compact_devices_after_reduction</span><span class="p">(</span>
             <span class="n">grid</span><span class="o">=</span><span class="n">grid</span><span class="p">,</span>
             <span class="n">relocated_device_ids</span><span class="o">=</span><span class="n">relocated_ids</span><span class="p">,</span>
-            <span class="n">compensation_prefix</span><span class="o">=</span><span class="s2">&quot;compensated&quot;</span>
+            <span class="n">compensation_prefix</span><span class="o">=</span><span class="s2">"compensated"</span>
         <span class="p">)</span>
         <span class="n">logger</span> <span class="o">+=</span> <span class="n">compact_logger</span>
 
@@ -1374,10 +1375,10 @@
 
 
 
-<span class="c1"># if __name__ == &quot;__main__&quot;:</span>
+<span class="c1"># if __name__ == "__main__":</span>
 <span class="c1">#     import VeraGridEngine as vg</span>
 <span class="c1">#</span>
-<span class="c1">#     circuit = vg.open_file(&quot;/trunk/equivalents/completo.veragrid&quot;)</span>
+<span class="c1">#     circuit = vg.open_file("/trunk/equivalents/completo.veragrid")</span>
 <span class="c1">#</span>
 <span class="c1">#     ptdf_reduction_projected(</span>
 <span class="c1">#         grid=circuit,</span>

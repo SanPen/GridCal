@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Simulations.ContingencyAnalysis.Methods.srap &mdash; VeraGrid 6.7.13 documentation</title>
+  <title>VeraGridEngine.Simulations.ContingencyAnalysis.Methods.srap &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../../_static/documentation_options.js?v=16fbabd8"></script>
+      <script src="../../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../../_static/js/theme.js"></script>
@@ -117,12 +117,12 @@
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.ContingencyAnalysis.Methods.html#VeraGridEngine.Simulations.ContingencyAnalysis.Methods.srap.get_valid_negatives">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_valid_negatives</span><span class="p">(</span><span class="n">sensitivities</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">p_available</span><span class="p">:</span> <span class="n">Vec</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 
 <span class="sd">    :param sensitivities:</span>
 <span class="sd">    :param p_available:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">sensitivities</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">p_available</span><span class="p">)</span>
     <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">sensitivities</span><span class="p">)</span>
     <span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">nb</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
@@ -144,12 +144,12 @@
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.ContingencyAnalysis.Methods.html#VeraGridEngine.Simulations.ContingencyAnalysis.Methods.srap.get_valid_positives">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_valid_positives</span><span class="p">(</span><span class="n">sensitivities</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">p_available</span><span class="p">:</span> <span class="n">Vec</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 
 <span class="sd">    :param sensitivities:</span>
 <span class="sd">    :param p_available:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">sensitivities</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">p_available</span><span class="p">)</span>
     <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">sensitivities</span><span class="p">)</span>
     <span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">nb</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
@@ -170,13 +170,13 @@
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.ContingencyAnalysis.Methods.html#VeraGridEngine.Simulations.ContingencyAnalysis.Methods.srap.vector_sum_used_power_srap">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">vector_sum_used_power_srap</span><span class="p">(</span><span class="n">p_available3</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">sensitivities3</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">max_srap_power</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 
 <span class="sd">    :param p_available3:</span>
 <span class="sd">    :param sensitivities3:</span>
 <span class="sd">    :param max_srap_power:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># inicializar la suma parcial</span>
     <span class="n">suma</span> <span class="o">=</span> <span class="mf">0.0</span>
     <span class="n">max_srap_power</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">max_srap_power</span><span class="p">)</span>
@@ -205,13 +205,13 @@
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.ContingencyAnalysis.Methods.html#VeraGridEngine.Simulations.ContingencyAnalysis.Methods.srap.vector_sum_srap">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">vector_sum_srap</span><span class="p">(</span><span class="n">p_available3</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">sensitivities3</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">srap_pmax_mw</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 
 <span class="sd">    :param p_available3:</span>
 <span class="sd">    :param sensitivities3:</span>
 <span class="sd">    :param srap_pmax_mw:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># inicializar la suma parcial</span>
     <span class="n">suma</span> <span class="o">=</span> <span class="mf">0.0</span>
     <span class="n">max_srap_power</span> <span class="o">=</span> <span class="mf">0.0</span>
@@ -252,22 +252,22 @@
 <div class="viewcode-block" id="BusesForSrap">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.ContingencyAnalysis.Methods.html#VeraGridEngine.Simulations.ContingencyAnalysis.Methods.srap.BusesForSrap">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">BusesForSrap</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Buses information for SRAP over a particular branch</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
-    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;branch_idx&quot;</span><span class="p">,</span> <span class="s2">&quot;bus_indices&quot;</span><span class="p">,</span> <span class="s2">&quot;sensitivities&quot;</span><span class="p">)</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"branch_idx"</span><span class="p">,</span> <span class="s2">"bus_indices"</span><span class="p">,</span> <span class="s2">"sensitivities"</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                  <span class="n">branch_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
                  <span class="n">bus_indices</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span>
                  <span class="n">sensitivities</span><span class="p">:</span> <span class="n">Vec</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :param branch_idx:</span>
 <span class="sd">        :param bus_indices:</span>
 <span class="sd">        :param sensitivities:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">branch_idx</span> <span class="o">=</span> <span class="n">branch_idx</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">bus_indices</span> <span class="o">=</span> <span class="n">bus_indices</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">sensitivities</span> <span class="o">=</span> <span class="n">sensitivities</span>
@@ -283,7 +283,7 @@
                     <span class="n">branch_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
                     <span class="n">top_n</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
 
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the maximum amount of power (MW) to dispatch using SRAP</span>
 <span class="sd">        :param c_flow: Contingency flow (MW)</span>
 <span class="sd">        :param rating: Branch rating (MVA)</span>
@@ -293,7 +293,7 @@
 <span class="sd">        :param branch_idx: overloaded branch index</span>
 <span class="sd">        :param top_n: maximum number of nodes affecting the overload</span>
 <span class="sd">        :return: min(srap_limit, sum(p_available))</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="n">p_available</span> <span class="o">=</span> <span class="n">available_power</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">bus_indices</span><span class="p">]</span>
         <span class="n">srap_gen_used</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bus_indices</span>
@@ -312,8 +312,8 @@
                 <span class="n">srap_gen_used2</span> <span class="o">=</span> <span class="n">srap_gen_used</span><span class="p">[</span><span class="n">positive_idx</span><span class="p">]</span>
 
                 <span class="c1"># sort greater to lower, more positive first.</span>
-                <span class="c1"># kind=&#39;stable&#39; keeps original bus order on equal PTDFs</span>
-                <span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="o">-</span><span class="n">sensitivities2</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s1">&#39;stable&#39;</span><span class="p">)</span>
+                <span class="c1"># kind='stable' keeps original bus order on equal PTDFs</span>
+                <span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="o">-</span><span class="n">sensitivities2</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s1">'stable'</span><span class="p">)</span>
                 <span class="n">idx2</span> <span class="o">=</span> <span class="n">idx</span><span class="p">[:</span><span class="n">top_n</span><span class="p">]</span>
                 <span class="n">p_available3</span> <span class="o">=</span> <span class="n">p_available2</span><span class="p">[</span><span class="n">idx2</span><span class="p">]</span>
                 <span class="n">sensitivities3</span> <span class="o">=</span> <span class="n">sensitivities2</span><span class="p">[</span><span class="n">idx2</span><span class="p">]</span>
@@ -347,9 +347,9 @@
                 <span class="n">srap_gen_used2</span> <span class="o">=</span> <span class="n">srap_gen_used</span><span class="p">[</span><span class="n">negative_idx</span><span class="p">]</span>
 
                 <span class="c1"># sort lower to greater, more negative first.</span>
-                <span class="c1"># kind=&#39;stable&#39; keeps original bus order on equal PTDFs, matching</span>
+                <span class="c1"># kind='stable' keeps original bus order on equal PTDFs, matching</span>
                 <span class="c1"># GSLV arma::sort_index / std::stable_sort.</span>
-                <span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">sensitivities2</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s1">&#39;stable&#39;</span><span class="p">)</span>
+                <span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">sensitivities2</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s1">'stable'</span><span class="p">)</span>
                 <span class="n">idx2</span> <span class="o">=</span> <span class="n">idx</span><span class="p">[:</span><span class="n">top_n</span><span class="p">]</span>
                 <span class="n">p_available3</span> <span class="o">=</span> <span class="n">p_available2</span><span class="p">[</span><span class="n">idx2</span><span class="p">]</span>
                 <span class="n">sensitivities3</span> <span class="o">=</span> <span class="n">sensitivities2</span><span class="p">[</span><span class="n">idx2</span><span class="p">]</span>

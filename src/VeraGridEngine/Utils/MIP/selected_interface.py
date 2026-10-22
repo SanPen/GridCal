@@ -7,6 +7,7 @@
 Uncomment the appropriate interface imports to use: Pulp or OrTools
 """
 from typing import List, Union, Tuple, TypeAlias, TYPE_CHECKING
+from VeraGridEngine.Utils.optional_dependencies import optional_dependency_failure
 import numpy as np
 from highspy import Highs, HighsModelStatus
 from pulp import HiGHS
@@ -29,6 +30,7 @@ if TYPE_CHECKING:
                                                             get_ortools_available_mip_solvers)
     ORTOOLS_AVAILABLE = True
 else:
+    # Older OR-Tools exports and incompatible native binaries must leave the PuLP path usable.
     try:
         from VeraGridEngine.Utils.MIP.ortools_interface import (LpExp as OrToolsLpExp,
                                                                 LpVar as OrToolsLpVar,
@@ -36,8 +38,10 @@ else:
                                                                 get_ortools_available_mip_solvers)
 
         ORTOOLS_AVAILABLE = True
-    except ImportError:
+        ORTOOLS_UNAVAILABLE_REASON: str = ""
+    except (ImportError, AttributeError, OSError, RuntimeError, ValueError, TypeError) as error:
         ORTOOLS_AVAILABLE = False
+        ORTOOLS_UNAVAILABLE_REASON = optional_dependency_failure("ortools", error)
         OrToolsLpModel = None
         OrToolsLpExp = None
         OrToolsLpVar = None

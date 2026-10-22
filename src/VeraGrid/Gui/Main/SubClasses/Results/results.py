@@ -1132,6 +1132,11 @@ class ResultsMain(SimulationsMain):
                     y_axis_title=table.y_label,
                 )
             if accepted:
+                # Retain the visible table captions before numeric plotting discards them.
+                row_indices: np.ndarray = (np.arange(len(table.index_c), dtype=np.int64)
+                                           if selected_rows is None else np.unique(selected_rows))
+                row_labels: list[str] = [str(table.index_c[int(index)]) for index in row_indices]
+                plot_dialogue.get_current_chart().set_row_labels(x_values, row_labels)
                 self.register_open_plot_dialog(plot_dialogue)
                 plot_dialogue.show()
             else:

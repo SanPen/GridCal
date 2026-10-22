@@ -15,10 +15,10 @@ from VeraGridEngine.enumerations import SparseSolver
 
 class SparseLinearFactorizationHandle:
     """
-    Abstract sparse factorization handle used by EMT sparse backends.
+    Abstract sparse factorization handle used by factorisation-reusing sparse backends.
 
     The factorization handle owns the solver-specific numeric factorization state
-    and exposes a uniform solve interface to the EMT sparse factorization manager.
+    and exposes a uniform solve interface to the solver's factorization manager.
     """
 
     __slots__ = []
@@ -57,10 +57,10 @@ class SparseLinearFactorizationHandle:
 
 class SparseLinearSolverBackend:
     """
-    Abstract sparse linear solver backend used by EMT solvers.
+    Abstract factorisation-reusing sparse LU backend (EMT today; any Newton-based solver).
 
     The backend owns solver-specific symbolic and numeric reuse state. VeraGrid
-    keeps the EMT policy for invalidation and event handling above this layer.
+    keeps the solver policy for invalidation and event handling above this layer.
     """
 
     __slots__ = []
@@ -183,7 +183,7 @@ class SparseLinearSolverBackend:
 
 class SparseLinearSolverBackendProvider:
     """
-    Factory object that creates EMT sparse solver backends.
+    Factory object that creates factorisation-reusing sparse LU backends.
     """
 
     __slots__ = []
@@ -214,6 +214,15 @@ class SparseLinearSolverBackendProvider:
         :rtype: bool
         """
         raise NotImplementedError()
+
+    def get_unavailable_reason(self) -> str:
+        """
+        Return why the provider is unavailable.
+
+        :return: Reason, or an empty string when available or when the provider gives none.
+        :rtype: str
+        """
+        return ""
 
     def create_backend(self, base_matrix: csc_matrix, base_data: Vec) -> SparseLinearSolverBackend:
         """

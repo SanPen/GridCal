@@ -16,7 +16,7 @@ from typing import Any
 
 import numpy as np
 import pytest
-from PySide6 import QtCore, QtGui, QtWidgets
+from PySide6 import QtCore, QtGui, QtTest, QtWidgets
 
 from VeraGrid.Gui.PlotDialogue.qt_chart_widget import (
     ChartContentType,
@@ -26,6 +26,110 @@ from VeraGrid.Gui.PlotDialogue.qt_chart_widget import (
     format_chart_value,
 )
 from VeraGrid.Gui.PlotDialogue.qt_rhi_line_chart_widget import RhiLineChartWidget
+
+
+@pytest.mark.parametrize("x_values", ((0.0, 10.0), (10.0, 0.0), (5.0, 5.0)))
+def test_line_hover_calculates_coordinates(qt_app: QtWidgets.QApplication,
+                                          x_values: tuple[float, float]) -> None:
+    """Calculate hover text between samples without storing point tooltips.
+
+    :param qt_app: Shared Qt application.
+    :param x_values: Ascending, descending, or vertical segment coordinates.
+    :return: None.
+    """
+    chart: GraphsWidget = GraphsWidget()
+    chart.resize(800, 600)
+    chart.add_line_series(name="Generator A", x_values=np.array(x_values),
+                          y_values=np.array((0.0, 10.0)))
+    rect: QtCore.QRectF = chart._get_plot_rect()
+    position: QtCore.QPointF = chart._map_xy_point(5.0, 5.0, rect)
+    assert chart.get_point_tooltip_at(position) == "Generator A\nx: 5\ny: 5"
+    assert not chart._series[0].has_point_tooltips()
+    assert chart.get_point_tooltip_at(QtCore.QPointF(-1.0, -1.0)) is None
+    if x_values[0] != x_values[1]:
+        assert chart.get_point_tooltip_at(chart._map_xy_point(5.0, 8.0, rect)) is None
+    else:
+        assert chart.get_point_tooltip_at(chart._map_xy_point(5.0, 8.0, rect)) is not None
+    chart.set_series_visible(0, False)
+    assert chart.get_point_tooltip_at(position) is None
+    chart.close()
+
+
+def test_line_hover_accepts_nearby_pointer(qt_app: QtWidgets.QApplication) -> None:
+    """Allow a five-pixel gap without selecting a more distant line.
+
+    :param qt_app: Shared Qt application.
+    :return: None.
+    """
+    chart: GraphsWidget = GraphsWidget()
+    chart.resize(800, 600)
+    chart.add_line_series(name="Power", x_values=np.array((0.0, 10.0)),
+                          y_values=np.array((5.0, 5.0)))
+    position: QtCore.QPointF = chart._map_xy_point(5.0, 5.0, chart._get_plot_rect())
+    assert chart.get_point_tooltip_at(position + QtCore.QPointF(0.0, 5.0)) == "Power\nx: 5\ny: 5"
+    assert chart.get_point_tooltip_at(position + QtCore.QPointF(0.0, 6.0)) is None
+    chart.close()
+
+
+def test_line_hover_formats_datetime_coordinates(qt_app: QtWidgets.QApplication) -> None:
+    """Format hovered time coordinates using the existing date formatter.
+
+    :param qt_app: Shared Qt application.
+    :return: None.
+    """
+    chart: GraphsWidget = GraphsWidget()
+    chart.resize(800, 600)
+    chart.add_line_series(name="Load", x_values=np.array(("2030-01-01", "2030-01-03"), dtype="datetime64[ms]"),
+                          y_values=np.array((0.0, 10.0)))
+    midpoint: float = float(np.datetime64("2030-01-02", "ms").astype(np.int64))
+    position: QtCore.QPointF = chart._map_xy_point(midpoint, 5.0, chart._get_plot_rect())
+    assert chart.get_point_tooltip_at(position) == "Load\nx: 02/01/2030\n00:00:00\ny: 5"
+    chart.close()
+
+
+@pytest.mark.parametrize("cleanup", ("hide", "dispose", "delete", "parent"))
+def test_visible_hover_tooltip_survives_chart_cleanup(qt_app: QtWidgets.QApplication,
+                                                     cleanup: str) -> None:
+    """Dismiss a live Qt tooltip when its chart is hidden or destroyed.
+
+    :param qt_app: Shared Qt application.
+    :param cleanup: Lifecycle transition to exercise.
+    :return: None.
+    """
+    owner: QtWidgets.QDialog = QtWidgets.QDialog()
+    chart: GraphsWidget = GraphsWidget(parent=owner)
+    chart.resize(800, 600)
+    chart.add_line_series(name="Power", x_values=np.array((0.0, 10.0)),
+                          y_values=np.array((5.0, 5.0)))
+    owner.show()
+    chart.show()
+    qt_app.processEvents()
+    position: QtCore.QPointF = chart._map_xy_point(5.0, 5.0, chart._get_plot_rect())
+    global_position: QtCore.QPointF = QtCore.QPointF(chart.mapToGlobal(position.toPoint()))
+    event: QtGui.QMouseEvent = QtGui.QMouseEvent(
+        QtCore.QEvent.Type.MouseMove, position, global_position,
+        QtCore.Qt.MouseButton.NoButton, QtCore.Qt.MouseButton.NoButton,
+        QtCore.Qt.KeyboardModifier.NoModifier,
+    )
+    chart.mouseMoveEvent(event)
+    assert QtWidgets.QToolTip.text() == "Power\nx: 5\ny: 5"
+    if cleanup == "hide":
+        chart.hide()
+    elif cleanup == "dispose":
+        chart.dispose()
+    elif cleanup == "delete":
+        chart.deleteLater()
+    else:
+        owner.deleteLater()
+    QtCore.QCoreApplication.sendPostedEvents(None, QtCore.QEvent.Type.DeferredDelete)
+    # Qt delays tooltip dismissal; allow its own timer and deferred deletion to run.
+    QtTest.QTest.qWait(400)
+    assert not QtWidgets.QToolTip.isVisible()
+    if cleanup != "parent":
+        owner.deleteLater()
+    else:
+        pass
+    QtCore.QCoreApplication.sendPostedEvents(None, QtCore.QEvent.Type.DeferredDelete)
 
 
 class ObjectDestructionProbe:

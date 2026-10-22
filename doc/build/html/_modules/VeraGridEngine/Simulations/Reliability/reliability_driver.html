@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Simulations.Reliability.reliability_driver &mdash; VeraGrid 6.7.13 documentation</title>
+  <title>VeraGridEngine.Simulations.Reliability.reliability_driver &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=16fbabd8"></script>
+      <script src="../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -126,7 +126,7 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.Reliability.html#VeraGridEngine.Simulations.Reliability.reliability_driver.get_gen_pmax">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">()</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_gen_pmax</span><span class="p">(</span><span class="n">nt</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">Snom</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">P_array</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">active_array</span><span class="p">:</span> <span class="n">BoolVec</span><span class="p">,</span> <span class="n">dispatchable_array</span><span class="p">:</span> <span class="n">BoolVec</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Get a generator array of Pmax given the active and dispatchable conditions</span>
 <span class="sd">    :param nt: Number of time steps</span>
 <span class="sd">    :param k: Generator index</span>
@@ -135,7 +135,7 @@
 <span class="sd">    :param active_array: array of active</span>
 <span class="sd">    :param dispatchable_array: array of dispatchable</span>
 <span class="sd">    :return: Array of possible Pmax</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">P_array</span><span class="p">)</span> <span class="o">==</span> <span class="n">nt</span>
     <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">active_array</span><span class="p">)</span> <span class="o">==</span> <span class="n">nt</span>
     <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">dispatchable_array</span><span class="p">)</span> <span class="o">==</span> <span class="n">nt</span>
@@ -154,7 +154,7 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.Reliability.html#VeraGridEngine.Simulations.Reliability.reliability_driver.count_device_incidences">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">count_device_incidences</span><span class="p">(</span><span class="n">active_states</span><span class="p">:</span> <span class="n">Mat</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Count device incidence starts in an active-state matrix.</span>
 
 <span class="sd">    An incidence is counted when one device changes from active to inactive.</span>
@@ -163,7 +163,7 @@
 
 <span class="sd">    :param active_states: Boolean matrix of shape (time, device)</span>
 <span class="sd">    :return: Number of incidences.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">nt</span><span class="p">,</span> <span class="n">n_devices</span> <span class="o">=</span> <span class="n">active_states</span><span class="o">.</span><span class="n">shape</span>
     <span class="n">n_incidences</span> <span class="o">=</span> <span class="mi">0</span>
 
@@ -187,15 +187,15 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.Reliability.html#VeraGridEngine.Simulations.Reliability.reliability_driver.ReliabilityStudyDriver">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">ReliabilityStudyDriver</span><span class="p">(</span><span class="n">DriverTemplate</span><span class="p">):</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;pf_options&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;reliability_mode&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;n_sim&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;time_indices&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;greedy_dispatch_inputs&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;__cancel__&quot;</span><span class="p">,</span>
+        <span class="s2">"pf_options"</span><span class="p">,</span>
+        <span class="s2">"reliability_mode"</span><span class="p">,</span>
+        <span class="s2">"n_sim"</span><span class="p">,</span>
+        <span class="s2">"time_indices"</span><span class="p">,</span>
+        <span class="s2">"greedy_dispatch_inputs"</span><span class="p">,</span>
+        <span class="s2">"__cancel__"</span><span class="p">,</span>
     <span class="p">)</span>
 
-    <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;Reliability analysis&#39;</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s1">'Reliability analysis'</span>
     <span class="n">tpe</span> <span class="o">=</span> <span class="n">SimulationTypes</span><span class="o">.</span><span class="n">Reliability_run</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
@@ -204,14 +204,14 @@
                  <span class="n">reliability_mode</span><span class="p">:</span> <span class="n">ReliabilityMode</span> <span class="o">=</span> <span class="n">ReliabilityMode</span><span class="o">.</span><span class="n">GenerationAdequacy</span><span class="p">,</span>
                  <span class="n">time_indices</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                  <span class="n">n_sim</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1000000</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        ContinuationPowerFlowDriver constructor</span>
 <span class="sd">        :param grid: NumericalCircuit instance</span>
 <span class="sd">        :param pf_options: power flow options instance</span>
 <span class="sd">        :param reliability_mode: ReliabilityMode</span>
 <span class="sd">        :param time_indices:</span>
 <span class="sd">        :param n_sim: Number of Monte-Carlo simulations</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">DriverTemplate</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">grid</span><span class="o">=</span><span class="n">grid</span><span class="p">)</span>
 
         <span class="c1"># voltage stability options</span>
@@ -237,23 +237,23 @@
 <div class="viewcode-block" id="ReliabilityStudyDriver.progress_callback">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.Reliability.html#VeraGridEngine.Simulations.Reliability.reliability_driver.ReliabilityStudyDriver.progress_callback">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">progress_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lmbda</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Send progress report</span>
 <span class="sd">        :param lmbda: lambda value</span>
 <span class="sd">        :return: None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s1">&#39;Running voltage collapse lambda:&#39;</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="si">{0:.2f}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">lmbda</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;...&#39;</span><span class="p">)</span></div>
+<span class="sd">        """</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s1">'Running voltage collapse lambda:'</span> <span class="o">+</span> <span class="s2">"</span><span class="si">{0:.2f}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">lmbda</span><span class="p">)</span> <span class="o">+</span> <span class="s1">'...'</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="ReliabilityStudyDriver.run">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.Reliability.html#VeraGridEngine.Simulations.Reliability.reliability_driver.ReliabilityStudyDriver.run">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Run reliability</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s2">&quot;Running reliability study...&quot;</span><span class="p">)</span>
+<span class="sd">        """</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s2">"Running reliability study..."</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">tic</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s2">&quot;Compiling and configuring...&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span><span class="s2">"Compiling and configuring..."</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">reliability_mode</span> <span class="o">==</span> <span class="n">ReliabilityMode</span><span class="o">.</span><span class="n">GenerationAdequacy</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">run_adequacy_reliability</span><span class="p">()</span>
@@ -268,10 +268,10 @@
 <div class="viewcode-block" id="ReliabilityStudyDriver.run_adequacy_reliability">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.Reliability.html#VeraGridEngine.Simulations.Reliability.reliability_driver.ReliabilityStudyDriver.run_adequacy_reliability">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">run_adequacy_reliability</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        run the voltage collapse simulation</span>
 <span class="sd">        @return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="n">horizon</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">get_time_number</span><span class="p">()</span>
 
@@ -320,16 +320,16 @@
         <span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">LOLE_evolution</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">lole</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">lole</span><span class="p">))</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;LOLE: </span><span class="si">{</span><span class="n">lole</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="si">}</span><span class="s2"> MWh/year&quot;</span><span class="p">)</span></div>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"LOLE: </span><span class="si">{</span><span class="n">lole</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="si">}</span><span class="s2"> MWh/year"</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="ReliabilityStudyDriver.run_grid_reliability">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.Reliability.html#VeraGridEngine.Simulations.Reliability.reliability_driver.ReliabilityStudyDriver.run_grid_reliability">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">run_grid_reliability</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        run the voltage collapse simulation</span>
 <span class="sd">        @return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="n">horizon</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">get_time_number</span><span class="p">()</span>
 

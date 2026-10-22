@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Simulations.EMT.JMARTI_Sim.jmarti_runtime &mdash; VeraGrid 6.7.13 documentation</title>
+  <title>VeraGridEngine.Simulations.EMT.JMARTI_Sim.jmarti_runtime &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../../_static/documentation_options.js?v=16fbabd8"></script>
+      <script src="../../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../../_static/js/theme.js"></script>
@@ -123,62 +123,62 @@
 <div class="viewcode-block" id="JMartiHistoryRuntime">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.JMARTI_Sim.html#VeraGridEngine.Simulations.EMT.JMARTI_Sim.jmarti_runtime.JMartiHistoryRuntime">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">JMartiHistoryRuntime</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Runtime companion for a JMARTI line in reduced active-phase space.</span>
 
 <span class="sd">    The first implementation uses a constant modal basis and one scalar fit per</span>
 <span class="sd">    mode. The runtime keeps all convolution-like states internally and exposes</span>
 <span class="sd">    only phase-domain Norton history current injections back to the EMT solver.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s1">&#39;line&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;block&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;h&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;runtime_data&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;ph_labels&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;ph_mask&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;phase_idx&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;active_ph&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;m&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;Ih_f&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;Ih_t&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;direct_yc_modal&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;direct_zc_modal&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;direct_yc_phase&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;max_delay_steps&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;buffer_size&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;buf_a_f&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;buf_a_t&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;yc_state_from&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;yc_state_to&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;hres_state_from&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;hres_state_to&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;yc_order_counts&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;hres_order_counts&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;v_f_vars&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;v_t_vars&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;idx_vf&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;idx_vt&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;idx_p_hf&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;idx_p_ht&#39;</span><span class="p">,</span>
+        <span class="s1">'line'</span><span class="p">,</span>
+        <span class="s1">'block'</span><span class="p">,</span>
+        <span class="s1">'h'</span><span class="p">,</span>
+        <span class="s1">'runtime_data'</span><span class="p">,</span>
+        <span class="s1">'ph_labels'</span><span class="p">,</span>
+        <span class="s1">'ph_mask'</span><span class="p">,</span>
+        <span class="s1">'phase_idx'</span><span class="p">,</span>
+        <span class="s1">'active_ph'</span><span class="p">,</span>
+        <span class="s1">'m'</span><span class="p">,</span>
+        <span class="s1">'Ih_f'</span><span class="p">,</span>
+        <span class="s1">'Ih_t'</span><span class="p">,</span>
+        <span class="s1">'direct_yc_modal'</span><span class="p">,</span>
+        <span class="s1">'direct_zc_modal'</span><span class="p">,</span>
+        <span class="s1">'direct_yc_phase'</span><span class="p">,</span>
+        <span class="s1">'max_delay_steps'</span><span class="p">,</span>
+        <span class="s1">'buffer_size'</span><span class="p">,</span>
+        <span class="s1">'buf_a_f'</span><span class="p">,</span>
+        <span class="s1">'buf_a_t'</span><span class="p">,</span>
+        <span class="s1">'yc_state_from'</span><span class="p">,</span>
+        <span class="s1">'yc_state_to'</span><span class="p">,</span>
+        <span class="s1">'hres_state_from'</span><span class="p">,</span>
+        <span class="s1">'hres_state_to'</span><span class="p">,</span>
+        <span class="s1">'yc_order_counts'</span><span class="p">,</span>
+        <span class="s1">'hres_order_counts'</span><span class="p">,</span>
+        <span class="s1">'v_f_vars'</span><span class="p">,</span>
+        <span class="s1">'v_t_vars'</span><span class="p">,</span>
+        <span class="s1">'idx_vf'</span><span class="p">,</span>
+        <span class="s1">'idx_vt'</span><span class="p">,</span>
+        <span class="s1">'idx_p_hf'</span><span class="p">,</span>
+        <span class="s1">'idx_p_ht'</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">line</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">line_block</span><span class="p">:</span> <span class="n">Block</span><span class="p">,</span> <span class="n">h</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Build one JMARTI runtime companion.</span>
 
 <span class="sd">        :param line: Line-like branch device carrying one fit bundle or runtime data.</span>
 <span class="sd">        :param line_block: Symbolic JMARTI line block.</span>
 <span class="sd">        :param h: EMT time step in seconds.</span>
 <span class="sd">        :return: None.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">line</span> <span class="o">=</span> <span class="n">line</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">block</span> <span class="o">=</span> <span class="n">line_block</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">h</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">h</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">runtime_data</span> <span class="o">=</span> <span class="n">_resolve_jmarti_runtime_data</span><span class="p">(</span><span class="n">line</span><span class="o">=</span><span class="n">line</span><span class="p">,</span> <span class="n">line_block</span><span class="o">=</span><span class="n">line_block</span><span class="p">,</span> <span class="n">time_step_s</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">h</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">ph_labels</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">([</span><span class="s2">&quot;N&quot;</span><span class="p">,</span> <span class="s2">&quot;A&quot;</span><span class="p">,</span> <span class="s2">&quot;B&quot;</span><span class="p">,</span> <span class="s2">&quot;C&quot;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ph_labels</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">([</span><span class="s2">"N"</span><span class="p">,</span> <span class="s2">"A"</span><span class="p">,</span> <span class="s2">"B"</span><span class="p">,</span> <span class="s2">"C"</span><span class="p">])</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ph_mask</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span>
             <span class="nb">bool</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">ys</span><span class="o">.</span><span class="n">phN</span><span class="p">),</span>
             <span class="nb">bool</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">ys</span><span class="o">.</span><span class="n">phA</span><span class="p">),</span>
@@ -189,8 +189,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">phase_idx</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">idx_global</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">active_ph</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ph_labels</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">phase_idx</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">active_ph</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">Ih_f</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Var</span><span class="p">]</span> <span class="o">=</span> <span class="n">_extract_jmarti_history_vars</span><span class="p">(</span><span class="n">line_block</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">block</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s2">&quot;Ih_f_&quot;</span><span class="p">,</span> <span class="n">active_ph</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">active_ph</span><span class="p">,</span> <span class="n">line_name</span><span class="o">=</span><span class="n">line</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">Ih_t</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Var</span><span class="p">]</span> <span class="o">=</span> <span class="n">_extract_jmarti_history_vars</span><span class="p">(</span><span class="n">line_block</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">block</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s2">&quot;Ih_t_&quot;</span><span class="p">,</span> <span class="n">active_ph</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">active_ph</span><span class="p">,</span> <span class="n">line_name</span><span class="o">=</span><span class="n">line</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Ih_f</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Var</span><span class="p">]</span> <span class="o">=</span> <span class="n">_extract_jmarti_history_vars</span><span class="p">(</span><span class="n">line_block</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">block</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s2">"Ih_f_"</span><span class="p">,</span> <span class="n">active_ph</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">active_ph</span><span class="p">,</span> <span class="n">line_name</span><span class="o">=</span><span class="n">line</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Ih_t</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Var</span><span class="p">]</span> <span class="o">=</span> <span class="n">_extract_jmarti_history_vars</span><span class="p">(</span><span class="n">line_block</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">block</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s2">"Ih_t_"</span><span class="p">,</span> <span class="n">active_ph</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">active_ph</span><span class="p">,</span> <span class="n">line_name</span><span class="o">=</span><span class="n">line</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">direct_yc_modal</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">complex128</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">direct_zc_modal</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">complex128</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">direct_yc_phase</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">complex128</span><span class="p">)</span>
@@ -216,13 +216,13 @@
 <div class="viewcode-block" id="JMartiHistoryRuntime.bind_terminals">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.JMARTI_Sim.html#VeraGridEngine.Simulations.EMT.JMARTI_Sim.jmarti_runtime.JMartiHistoryRuntime.bind_terminals">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">bind_terminals</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v_f_vars</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Any</span><span class="p">],</span> <span class="n">v_t_vars</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Bind the bus terminal voltage variables for the active phases only.</span>
 
 <span class="sd">        :param v_f_vars: Full from-side bus voltage variable list in NABC order.</span>
 <span class="sd">        :param v_t_vars: Full to-side bus voltage variable list in NABC order.</span>
 <span class="sd">        :return: None.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">v_f_vars</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">v_t_vars</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
         <span class="n">phase_list_index</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
@@ -249,16 +249,16 @@
 
             <span class="k">if</span> <span class="n">vf_var</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;JMARTI line &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">line</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; has active phase &#39;</span><span class="si">{</span><span class="n">phase_name</span><span class="si">}</span><span class="s2">&#39; &quot;</span>
-                    <span class="sa">f</span><span class="s2">&quot;but from-bus &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">line</span><span class="o">.</span><span class="n">bus_from</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; does not provide the corresponding EMT voltage variable.&quot;</span>
+                    <span class="sa">f</span><span class="s2">"JMARTI line '</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">line</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">' has active phase '</span><span class="si">{</span><span class="n">phase_name</span><span class="si">}</span><span class="s2">' "</span>
+                    <span class="sa">f</span><span class="s2">"but from-bus '</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">line</span><span class="o">.</span><span class="n">bus_from</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">' does not provide the corresponding EMT voltage variable."</span>
                 <span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">pass</span>
 
             <span class="k">if</span> <span class="n">vt_var</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;JMARTI line &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">line</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; has active phase &#39;</span><span class="si">{</span><span class="n">phase_name</span><span class="si">}</span><span class="s2">&#39; &quot;</span>
-                    <span class="sa">f</span><span class="s2">&quot;but to-bus &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">line</span><span class="o">.</span><span class="n">bus_to</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; does not provide the corresponding EMT voltage variable.&quot;</span>
+                    <span class="sa">f</span><span class="s2">"JMARTI line '</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">line</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">' has active phase '</span><span class="si">{</span><span class="n">phase_name</span><span class="si">}</span><span class="s2">' "</span>
+                    <span class="sa">f</span><span class="s2">"but to-bus '</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">line</span><span class="o">.</span><span class="n">bus_to</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">' does not provide the corresponding EMT voltage variable."</span>
                 <span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">pass</span>
@@ -271,13 +271,13 @@
 <div class="viewcode-block" id="JMartiHistoryRuntime.get_nodal_injections">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.JMARTI_Sim.html#VeraGridEngine.Simulations.EMT.JMARTI_Sim.jmarti_runtime.JMartiHistoryRuntime.get_nodal_injections">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_nodal_injections</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Any</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">Any</span><span class="p">]]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return the phase-domain Norton injections seen by the EMT nodal solver.</span>
 
 <span class="sd">        :return: Tuple ``(i_from_full, i_to_full)`` in fixed NABC order.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">v_f_vars</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">v_t_vars</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;bind_terminals(...) must be called before get_nodal_injections().&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">"bind_terminals(...) must be called before get_nodal_injections()."</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">pass</span>
 
@@ -318,14 +318,14 @@
 <div class="viewcode-block" id="JMartiHistoryRuntime.setup_indices">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.JMARTI_Sim.html#VeraGridEngine.Simulations.EMT.JMARTI_Sim.jmarti_runtime.JMartiHistoryRuntime.setup_indices">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">setup_indices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">uid2idx_vars</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">uid2idx_event_params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">params_offset</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Bind solver indices used during the history update.</span>
 
 <span class="sd">        :param uid2idx_vars: Variable index map.</span>
 <span class="sd">        :param uid2idx_event_params: Event-parameter index map.</span>
 <span class="sd">        :param params_offset: Runtime-parameter offset.</span>
 <span class="sd">        :return: None.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">idx_vf</span> <span class="o">=</span> <span class="p">[</span><span class="n">uid2idx_vars</span><span class="p">[</span><span class="n">v</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">v_f_vars</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">idx_vt</span> <span class="o">=</span> <span class="p">[</span><span class="n">uid2idx_vars</span><span class="p">[</span><span class="n">v</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">v_t_vars</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">idx_p_hf</span> <span class="o">=</span> <span class="p">[</span><span class="n">uid2idx_event_params</span><span class="p">[</span><span class="n">p</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span> <span class="o">+</span> <span class="n">params_offset</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">Ih_f</span><span class="p">]</span>
@@ -335,11 +335,11 @@
 <div class="viewcode-block" id="JMartiHistoryRuntime.get_mode_count">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.JMARTI_Sim.html#VeraGridEngine.Simulations.EMT.JMARTI_Sim.jmarti_runtime.JMartiHistoryRuntime.get_mode_count">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_mode_count</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return the number of modal channels carried by the runtime.</span>
 
 <span class="sd">        :return: Number of modal channels.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">m</span></div>
 
 
@@ -350,7 +350,7 @@
                                       <span class="n">v_t0_red</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
                                       <span class="n">i_f0_red</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
                                       <span class="n">i_t0_red</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Initialize buffers and history parameters from one steady-state point.</span>
 
 <span class="sd">        :param v_f0_red: From-side active-phase voltages in phase coordinates.</span>
@@ -358,7 +358,7 @@
 <span class="sd">        :param i_f0_red: From-side active-phase currents in phase coordinates.</span>
 <span class="sd">        :param i_t0_red: To-side active-phase currents in phase coordinates.</span>
 <span class="sd">        :return: Tuple ``(ih_f_phase, ih_t_phase)`` used to seed event parameters.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">v_f0_modal</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">runtime_data</span><span class="o">.</span><span class="n">get_modal_transform_inv</span><span class="p">()</span> <span class="o">@</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">v_f0_red</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">complex128</span><span class="p">)</span>
         <span class="n">v_t0_modal</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">runtime_data</span><span class="o">.</span><span class="n">get_modal_transform_inv</span><span class="p">()</span> <span class="o">@</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">v_t0_red</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">complex128</span><span class="p">)</span>
         <span class="n">i_f0_modal</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">runtime_data</span><span class="o">.</span><span class="n">get_modal_transform_inv</span><span class="p">()</span> <span class="o">@</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">i_f0_red</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">complex128</span><span class="p">)</span>
@@ -449,7 +449,7 @@
                                             <span class="n">i_f0_phasor_red</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
                                             <span class="n">i_t0_phasor_red</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
                                             <span class="n">system_frequency_hz</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Initialize one JMARTI runtime from one sinusoidal fundamental operating point.</span>
 
 <span class="sd">        The runtime states represent first-order discrete filters, so their</span>
@@ -464,7 +464,7 @@
 <span class="sd">        :param i_t0_phasor_red: To-side branch-current phasors in RMS complex form.</span>
 <span class="sd">        :param system_frequency_hz: Fundamental system frequency in Hz.</span>
 <span class="sd">        :return: Tuple ``(ih_f_phase, ih_t_phase)`` used to seed event parameters.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">omega</span> <span class="o">=</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="nb">float</span><span class="p">(</span><span class="n">system_frequency_hz</span><span class="p">)</span>
         <span class="n">inverse</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">runtime_data</span><span class="o">.</span><span class="n">get_modal_transform_inv</span><span class="p">()</span>
         <span class="n">vf_analytic</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">2.0</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">v_f0_phasor_red</span><span class="p">)</span>
@@ -516,14 +516,14 @@
 <div class="viewcode-block" id="JMartiHistoryRuntime.update_history">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.JMARTI_Sim.html#VeraGridEngine.Simulations.EMT.JMARTI_Sim.jmarti_runtime.JMartiHistoryRuntime.update_history">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">update_history</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step_counter</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">x_prev</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">full_params</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Prepare the target-step history from the previous accepted EMT state.</span>
 
 <span class="sd">        :param step_counter: Current accepted step counter.</span>
 <span class="sd">        :param x_prev: Previous accepted state vector.</span>
 <span class="sd">        :param full_params: Flat runtime parameter vector.</span>
 <span class="sd">        :return: None.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># The solver first calls at t=0, then at target t=(k+1)*h with</span>
         <span class="c1"># the accepted state at k*h. The startup call must not advance filters.</span>
         <span class="k">if</span> <span class="n">step_counter</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
@@ -588,20 +588,20 @@
 
 
 
-<span class="n">JMARTI_BLOCK_FIT_BUNDLE_ATTR</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;_jmarti_fit_bundle&quot;</span>
-<span class="n">JMARTI_BLOCK_RUNTIME_DATA_ATTR</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;_jmarti_runtime_data&quot;</span>
+<span class="n">JMARTI_BLOCK_FIT_BUNDLE_ATTR</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"_jmarti_fit_bundle"</span>
+<span class="n">JMARTI_BLOCK_RUNTIME_DATA_ATTR</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"_jmarti_runtime_data"</span>
 
 
 <div class="viewcode-block" id="set_jmarti_block_fit_bundle">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.JMARTI_Sim.html#VeraGridEngine.Simulations.EMT.JMARTI_Sim.jmarti_runtime.set_jmarti_block_fit_bundle">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">set_jmarti_block_fit_bundle</span><span class="p">(</span><span class="n">block</span><span class="p">:</span> <span class="n">Block</span><span class="p">,</span> <span class="n">fit_bundle</span><span class="p">:</span> <span class="n">JMartiFitBundle</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Attach one optional JMARTI fit bundle to one EMT block.</span>
 
 <span class="sd">    :param block: Target EMT block.</span>
 <span class="sd">    :param fit_bundle: Optional offline fit bundle.</span>
 <span class="sd">    :return: None.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">fit_bundle</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">block</span><span class="o">.</span><span class="n">jmarti_fit_bundle</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="k">else</span><span class="p">:</span>
@@ -612,12 +612,12 @@
 <div class="viewcode-block" id="get_jmarti_block_fit_bundle">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.JMARTI_Sim.html#VeraGridEngine.Simulations.EMT.JMARTI_Sim.jmarti_runtime.get_jmarti_block_fit_bundle">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_jmarti_block_fit_bundle</span><span class="p">(</span><span class="n">block</span><span class="p">:</span> <span class="n">Block</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">JMartiFitBundle</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Return the optional JMARTI fit bundle attached to one EMT block.</span>
 
 <span class="sd">    :param block: Candidate EMT block.</span>
 <span class="sd">    :return: Attached fit bundle or ``None``.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">block</span><span class="p">,</span> <span class="n">Block</span><span class="p">):</span>
         <span class="n">fit_bundle</span><span class="p">:</span> <span class="nb">object</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">block</span><span class="o">.</span><span class="n">jmarti_fit_bundle</span>
 
@@ -633,13 +633,13 @@
 <div class="viewcode-block" id="set_jmarti_block_runtime_data">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.JMARTI_Sim.html#VeraGridEngine.Simulations.EMT.JMARTI_Sim.jmarti_runtime.set_jmarti_block_runtime_data">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">set_jmarti_block_runtime_data</span><span class="p">(</span><span class="n">block</span><span class="p">:</span> <span class="n">Block</span><span class="p">,</span> <span class="n">runtime_data</span><span class="p">:</span> <span class="n">JMartiRuntimeData</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Attach one optional discretized JMARTI runtime data object to one EMT block.</span>
 
 <span class="sd">    :param block: Target EMT block.</span>
 <span class="sd">    :param runtime_data: Optional runtime data.</span>
 <span class="sd">    :return: None.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">runtime_data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">block</span><span class="o">.</span><span class="n">jmarti_runtime_data</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="k">else</span><span class="p">:</span>
@@ -650,12 +650,12 @@
 <div class="viewcode-block" id="get_jmarti_block_runtime_data">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.JMARTI_Sim.html#VeraGridEngine.Simulations.EMT.JMARTI_Sim.jmarti_runtime.get_jmarti_block_runtime_data">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_jmarti_block_runtime_data</span><span class="p">(</span><span class="n">block</span><span class="p">:</span> <span class="n">Block</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">JMartiRuntimeData</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Return the optional JMARTI runtime data attached to one EMT block.</span>
 
 <span class="sd">    :param block: Candidate EMT block.</span>
 <span class="sd">    :return: Attached runtime data or ``None``.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">block</span><span class="p">,</span> <span class="n">Block</span><span class="p">):</span>
         <span class="n">runtime_data</span><span class="p">:</span> <span class="nb">object</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">block</span><span class="o">.</span><span class="n">jmarti_runtime_data</span>
 
@@ -669,7 +669,7 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_resolve_jmarti_runtime_data</span><span class="p">(</span><span class="n">line</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">line_block</span><span class="p">:</span> <span class="n">Block</span><span class="p">,</span> <span class="n">time_step_s</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">JMartiRuntimeData</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Resolve one discrete JMARTI runtime dataset from the line object.</span>
 
 <span class="sd">    :param line: Line-like branch device.</span>
@@ -677,7 +677,7 @@
 <span class="sd">    :param time_step_s: EMT time step in seconds.</span>
 <span class="sd">    :return: Runtime-ready JMARTI dataset.</span>
 <span class="sd">    :raises ValueError: If no JMARTI fit information is attached to the line.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">line</span><span class="p">,</span> <span class="n">Line</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">line_block</span><span class="p">,</span> <span class="n">Block</span><span class="p">):</span>
         <span class="n">attached_runtime_data</span><span class="p">:</span> <span class="n">JMartiRuntimeData</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">get_jmarti_block_runtime_data</span><span class="p">(</span><span class="n">line_block</span><span class="p">)</span>
 
@@ -691,16 +691,16 @@
                 <span class="n">set_jmarti_block_runtime_data</span><span class="p">(</span><span class="n">line_block</span><span class="p">,</span> <span class="n">runtime_data</span><span class="p">)</span>
                 <span class="k">return</span> <span class="n">runtime_data</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;JMARTI line &#39;</span><span class="si">{</span><span class="n">line</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; requires one fit bundle or one runtime data object attached to its EMT block&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"JMARTI line '</span><span class="si">{</span><span class="n">line</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">' requires one fit bundle or one runtime data object attached to its EMT block"</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;JMARTI runtime expects a Line-compatible object&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"JMARTI runtime expects a Line-compatible object"</span><span class="p">)</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_extract_jmarti_history_vars</span><span class="p">(</span><span class="n">line_block</span><span class="p">:</span> <span class="n">Block</span><span class="p">,</span>
                                  <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
                                  <span class="n">active_ph</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
                                  <span class="n">line_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Var</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Extract one ordered list of history-current event variables.</span>
 
 <span class="sd">    :param line_block: JMARTI symbolic line block.</span>
@@ -708,7 +708,7 @@
 <span class="sd">    :param active_ph: Active phase labels.</span>
 <span class="sd">    :param line_name: Line name used in diagnostics.</span>
 <span class="sd">    :return: Ordered history-variable list.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">vars_by_name</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Var</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">((</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">var</span><span class="p">)</span> <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">line_block</span><span class="o">.</span><span class="n">event_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
     <span class="n">out</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Var</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
     <span class="n">phase_index</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
@@ -717,12 +717,12 @@
 
     <span class="k">while</span> <span class="n">phase_index</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">active_ph</span><span class="p">):</span>
         <span class="n">phase_label</span> <span class="o">=</span> <span class="n">active_ph</span><span class="p">[</span><span class="n">phase_index</span><span class="p">]</span>
-        <span class="n">key_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">prefix</span><span class="si">}{</span><span class="n">phase_label</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="n">key_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">prefix</span><span class="si">}{</span><span class="n">phase_label</span><span class="si">}</span><span class="s2">"</span>
 
         <span class="k">if</span> <span class="n">key_name</span> <span class="ow">in</span> <span class="n">vars_by_name</span><span class="p">:</span>
             <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">vars_by_name</span><span class="p">[</span><span class="n">key_name</span><span class="p">])</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Missing JMARTI history var &#39;</span><span class="si">{</span><span class="n">key_name</span><span class="si">}</span><span class="s2">&#39; for line &#39;</span><span class="si">{</span><span class="n">line_name</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Missing JMARTI history var '</span><span class="si">{</span><span class="n">key_name</span><span class="si">}</span><span class="s2">' for line '</span><span class="si">{</span><span class="n">line_name</span><span class="si">}</span><span class="s2">'"</span><span class="p">)</span>
 
         <span class="n">phase_index</span> <span class="o">+=</span> <span class="mi">1</span>
 
@@ -730,12 +730,12 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_initialize_jmarti_runtime_storage</span><span class="p">(</span><span class="n">runtime</span><span class="p">:</span> <span class="n">JMartiHistoryRuntime</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Allocate the numerical storage used by one JMARTI runtime.</span>
 
 <span class="sd">    :param runtime: Target JMARTI runtime.</span>
 <span class="sd">    :return: None.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">mode_index</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="n">max_yc_order</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="n">max_hres_order</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
@@ -775,7 +775,7 @@
                                <span class="n">step_counter</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
                                <span class="n">remote_incident_buffer</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
                                <span class="n">next_step</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">complex</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Return one delayed outgoing wave sample for the requested mode.</span>
 
 <span class="sd">    :param runtime: Owning JMARTI runtime.</span>
@@ -784,7 +784,7 @@
 <span class="sd">    :param remote_incident_buffer: Ring buffer of remote outgoing waves.</span>
 <span class="sd">    :param next_step: Whether to sample the delay for the next step.</span>
 <span class="sd">    :return: Delayed outgoing wave.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">mode_data</span><span class="p">:</span> <span class="n">JMartiModeRuntimeData</span> <span class="o">=</span> <span class="n">runtime</span><span class="o">.</span><span class="n">runtime_data</span><span class="o">.</span><span class="n">get_mode_data</span><span class="p">()[</span><span class="n">mode_index</span><span class="p">]</span>
     <span class="n">delay_step_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">mode_data</span><span class="o">.</span><span class="n">get_delay_step_count</span><span class="p">()</span>
     <span class="n">residual_delay_s</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">mode_data</span><span class="o">.</span><span class="n">get_residual_delay_s</span><span class="p">()</span>
@@ -819,14 +819,14 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_sum_state_row</span><span class="p">(</span><span class="n">state_matrix</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">mode_index</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">order_count</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">complex</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Return the sum of one active row segment in a padded state matrix.</span>
 
 <span class="sd">    :param state_matrix: Padded state matrix.</span>
 <span class="sd">    :param mode_index: Modal row index.</span>
 <span class="sd">    :param order_count: Active order in that row.</span>
 <span class="sd">    :return: Sum of the active row entries.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">order_count</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
         <span class="k">return</span> <span class="nb">complex</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">state_matrix</span><span class="p">[</span><span class="n">mode_index</span><span class="p">,</span> <span class="p">:</span><span class="n">order_count</span><span class="p">]))</span>
     <span class="k">else</span><span class="p">:</span>
@@ -839,7 +839,7 @@
                              <span class="n">alpha</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
                              <span class="n">beta</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
                              <span class="n">input_value</span><span class="p">:</span> <span class="nb">complex</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Update one padded row of first-order discrete states.</span>
 
 <span class="sd">    :param state_matrix: Padded state matrix.</span>
@@ -849,7 +849,7 @@
 <span class="sd">    :param beta: Active input gains.</span>
 <span class="sd">    :param input_value: Current scalar input.</span>
 <span class="sd">    :return: None.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">order_count</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
         <span class="n">state_matrix</span><span class="p">[</span><span class="n">mode_index</span><span class="p">,</span> <span class="p">:</span><span class="n">order_count</span><span class="p">]</span> <span class="o">=</span> <span class="n">alpha</span> <span class="o">*</span> <span class="n">state_matrix</span><span class="p">[</span><span class="n">mode_index</span><span class="p">,</span> <span class="p">:</span><span class="n">order_count</span><span class="p">]</span> <span class="o">+</span> <span class="n">beta</span> <span class="o">*</span> <span class="n">input_value</span>
     <span class="k">else</span><span class="p">:</span>
@@ -859,14 +859,14 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">_build_jmarti_steady_state_state_row</span><span class="p">(</span><span class="n">alpha</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
                                          <span class="n">beta</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
                                          <span class="n">input_value</span><span class="p">:</span> <span class="nb">complex</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Return the discrete steady-state of one first-order JMARTI state row.</span>
 
 <span class="sd">    :param alpha: Exact state-transition multipliers.</span>
 <span class="sd">    :param beta: Exact input gains.</span>
 <span class="sd">    :param input_value: Constant scalar input.</span>
 <span class="sd">    :return: Steady-state row values.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">denominator</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">alpha</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">complex128</span><span class="p">)</span>
     <span class="n">steady_state</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">beta</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">complex128</span><span class="p">))</span>
     <span class="n">non_zero_mask</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">denominator</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">1.0e-14</span>
@@ -878,7 +878,7 @@
                                      <span class="n">beta</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
                                      <span class="n">input_value</span><span class="p">:</span> <span class="nb">complex</span><span class="p">,</span>
                                      <span class="n">lambda_step</span><span class="p">:</span> <span class="nb">complex</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Return the discrete periodic state of one first-order JMARTI state row.</span>
 
 <span class="sd">    :param alpha: Exact state-transition multipliers.</span>
@@ -886,7 +886,7 @@
 <span class="sd">    :param input_value: Fundamental-frequency analytic input sample at ``n=0``.</span>
 <span class="sd">    :param lambda_step: One-step complex phase advance ``exp(j*w*h)``.</span>
 <span class="sd">    :return: Periodic steady-state row values.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">denominator</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="nb">complex</span><span class="p">(</span><span class="n">lambda_step</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">alpha</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">complex128</span><span class="p">)</span>
     <span class="n">periodic_state</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">beta</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">complex128</span><span class="p">))</span>
     <span class="n">non_zero_mask</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">denominator</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">1.0e-14</span>
@@ -901,7 +901,7 @@
                                 <span class="n">remote_incident_buffer</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
                                 <span class="n">yc_state</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
                                 <span class="n">hres_state</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">complex</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Advance one modal channel and return the next-step history current.</span>
 
 <span class="sd">    :param runtime: Owning JMARTI runtime.</span>
@@ -912,7 +912,7 @@
 <span class="sd">    :param yc_state: Padded local Yc state matrix.</span>
 <span class="sd">    :param hres_state: Padded propagation-filter state matrix.</span>
 <span class="sd">    :return: Next-step history current in modal coordinates.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">mode_data</span><span class="p">:</span> <span class="n">JMartiModeRuntimeData</span> <span class="o">=</span> <span class="n">runtime</span><span class="o">.</span><span class="n">runtime_data</span><span class="o">.</span><span class="n">get_mode_data</span><span class="p">()[</span><span class="n">mode_index</span><span class="p">]</span>
     <span class="n">yc_order_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">runtime</span><span class="o">.</span><span class="n">yc_order_counts</span><span class="p">[</span><span class="n">mode_index</span><span class="p">])</span>
     <span class="n">hres_order_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">runtime</span><span class="o">.</span><span class="n">hres_order_counts</span><span class="p">[</span><span class="n">mode_index</span><span class="p">])</span>

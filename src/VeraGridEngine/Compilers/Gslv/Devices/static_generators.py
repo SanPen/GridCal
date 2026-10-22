@@ -6,7 +6,7 @@ from __future__ import annotations
 
 from typing import Dict
 
-from VeraGridEngine.Compilers.Gslv.activation import pg
+from VeraGridEngine.Compilers.Gslv.activation import build_status_dict, pg
 from VeraGridEngine.Compilers.Gslv.common import fill_profile, set_injection_associations
 from VeraGridEngine.Devices.Aggregation.facility import Facility
 from VeraGridEngine.Devices.Associations.technology import Technology
@@ -41,8 +41,14 @@ def convert_static_generator(elm: StaticGenerator,
         bus=None if elm.bus is None else bus_dict[elm.bus.idtag],
         nt=n_time,
         P=elm.P,
-        power_factor=elm.Pf,
-        build_status=elm.build_status,
+        Q=elm.Q,
+        Cost=elm.Cost,
+        active=elm.active,
+        mttf=elm.mttf,
+        mttr=elm.mttr,
+        capex=elm.capex,
+        opex=elm.opex,
+        build_status=build_status_dict[elm.build_status],
     )
     set_injection_associations(
         gslv_elm=pe_inj,

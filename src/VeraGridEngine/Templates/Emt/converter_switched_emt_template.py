@@ -304,6 +304,7 @@ def _build_pseudo_emt_converter_vsc_block(vf: VarFactory, name: str) -> Block:
     )
     block.api_obj_mapping = dict([
         (ParamPowerFlowReferenceType.Sbase, sbase),
+        (ParamPowerFlowReferenceType.P0, P0_sched),
         # Use the same IEC 62751 loss coefficients as the VSC power-flow model.
         # In particular, alpha1 is the no-load loss that remains at zero power;
         # omitting it made the PF current seed exceed the EMT operating point by

@@ -5,11 +5,17 @@
 import hashlib
 import json
 import zipfile
+from VeraGridEngine.Utils.optional_dependencies import optional_dependency_failure
+
+# JSON acceleration is optional; stale exports or binary failures must retain the stdlib reader.
 try:
     import msgspec  # optional, faster alternative to read json files
+    from msgspec.json import decode
+    from msgspec import ValidationError
     _HAS_MSGSPEC = True
-except ImportError:
+except (ImportError, AttributeError, OSError, RuntimeError, ValueError, TypeError) as error:
     _HAS_MSGSPEC = False
+    optional_dependency_failure("msgspec", error)
 
 from io import StringIO, TextIOWrapper, BytesIO, BufferedReader
 import os
@@ -882,6 +888,11 @@ def get_frames_from_zip(file_name_zip: str,
                 if name.lower() == "config":
                     df = pd.read_csv(file_pointer, index_col=0)
                     data[name] = parse_config_df(df, data)
+                elif extension == '.json':
+                    # GUI preferences are saved at the archive root, outside the scenario tree.
+                    json_files[name] = load_json_from_file_pointer(file_pointer)
+                else:
+                    pass
 
         zip_file_pointer.close()
         return data, json_files, has_multiverse_data

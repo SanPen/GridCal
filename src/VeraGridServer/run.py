@@ -37,7 +37,7 @@ def resolve_server_runtime_file_path(file_name: str) -> str:
 
 
 def start_server(key_file_name: str = "key.pem", cert_file_name: str = "cert.pem",
-                 port: int = 8000, domain="localhost",
+                 port: int = 8000, domain: str = "localhost",
                  master_host: str = "", master_port: int = 0,
                  username: str = "", password: str = "", is_master: bool = True,
                  secure: bool = True,
@@ -49,7 +49,8 @@ def start_server(key_file_name: str = "key.pem", cert_file_name: str = "cert.pem
                  default_admin_org_name: str = "admin",
                  default_admin_user_idtag: str = "admin",
                  default_admin_user_name: str = "admin",
-                 default_admin_user_password: str = "veragrid is great"):
+                 default_admin_user_password: str = "veragrid is great",
+                 bind_host: str | None = None) -> None:
     """
     Start server function
     :param key_file_name: name of the key file that the server generates
@@ -78,10 +79,13 @@ def start_server(key_file_name: str = "key.pem", cert_file_name: str = "cert.pem
     :param default_admin_user_password: Bookkeeping password for the seeded user row
         (not used for authentication; the admin console and API only check the
         single instance-level password/API key).
+    :param bind_host: Listening address, or the discovered IP when omitted.
+    :return: None.
     """
 
     # find out my IP
-    host = get_my_ip()
+    host: str = get_my_ip()
+    listening_host: str = host if bind_host is None else bind_host
     resolved_key_file_name: str = resolve_server_runtime_file_path(file_name=key_file_name)
     resolved_cert_file_name: str = resolve_server_runtime_file_path(file_name=cert_file_name)
 
@@ -89,7 +93,7 @@ def start_server(key_file_name: str = "key.pem", cert_file_name: str = "cert.pem
 ┓┏      ┏┓  • ┓┏┓({__VeraGridServer_VERSION__} Alpha) 
 ┃┃┏┓┏┓┏┓┃┓┏┓┓┏┫┗┓┏┓┏┓┓┏┏┓┏┓
 ┗┛┗ ┛ ┗┻┗┛┛ ┗┗┻┗┛┗ ┛ ┗┛┗ ┛ 
-{host}:{port}  
+{listening_host}:{port}
     """)
 
     if secure:
@@ -123,10 +127,10 @@ def start_server(key_file_name: str = "key.pem", cert_file_name: str = "cert.pem
 
     if secure:
         uvicorn.run(app,
-                    host=host, port=port, ssl_keyfile=resolved_key_file_name, ssl_certfile=resolved_cert_file_name)
+                    host=listening_host, port=port, ssl_keyfile=resolved_key_file_name, ssl_certfile=resolved_cert_file_name)
     else:
         uvicorn.run(app,
-                    host=host, port=port)
+                    host=listening_host, port=port)
 
 def str2bool(value):
     if isinstance(value, bool):
@@ -190,6 +194,7 @@ if __name__ == "__main__":
     start_server(key_file_name=args.key_fname,
                  cert_file_name=args.cert_fname,
                  port=args.port,
+                 bind_host=args.host,
                  domain=args.host,
                  master_host=args.master_host,
                  master_port=args.master_port,

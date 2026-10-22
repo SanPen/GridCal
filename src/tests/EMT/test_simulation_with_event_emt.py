@@ -10,6 +10,7 @@ from pandas.testing import assert_frame_equal
 import os
 
 from VeraGridEngine.Utils.Symbolic.block import Block
+from VeraGridEngine.Utils.Symbolic.symbolic import Var
 from VeraGridEngine.Simulations.EMT.emt_options import EmtOptions
 from VeraGridEngine.Simulations.EMT.problems.emt_problem_dae import EmtProblemDae
 from VeraGridEngine.Simulations.PowerFlow3ph.power_flow_driver_3ph import PowerFlowDriver3Ph
@@ -37,11 +38,15 @@ def find_name_in_block(name: str, block: Block):
         if res is not None:
             return res
 
-def test_simulation_with_event_emt():
+def test_simulation_with_event_emt() -> None:
     """
-    This test creates a grid, adds rms models and events and rens simulation. Then it compares results with reference.
-    :return:
-    :rtype:
+    Compare the complete historical EMT resistance-event trajectory.
+
+    The reference starts with automatically sized phase resistances, followed
+    by events setting them to 3 pu and then 6 pu. Preserve the initial power
+    flow sizing so the complete trajectory remains comparable to the CSV.
+
+    :return: None; compare every state and derivative with the historical CSV.
     """
 
     #########

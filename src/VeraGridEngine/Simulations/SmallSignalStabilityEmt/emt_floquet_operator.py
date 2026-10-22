@@ -381,11 +381,10 @@ class AkStackBlockEmtFloquetOperator(spla.LinearOperator):
     Monodromy operator from an explicit stack of state-transition matrices A_k.
 
     This is the preferred path for EMT/Floquet benchmarking when the EMT engine can
-    expose the per-step linearized state map:
-        x_{k+1} = A_k x_k
-    for one limit-cycle period. The operator applies:
-        Phi = A_{M-1} * ... * A_1 * A_0
-    on vectors or blocks. When Numba is available and use_numba=True, the block
+    expose the per-step linearized state map ``x_{k+1} = A_k x_k`` for one
+    limit-cycle period. The operator applies
+    ``Phi = A_{M-1} * ... * A_1 * A_0`` on vectors or blocks. When Numba is
+    available and ``use_numba=True``, the block
     path is JIT-compiled to reduce Python overhead in repeated Arnoldi calls.
     """
     __slots__ = (

@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Simulations.PowerFlow.Formulations.pf_advanced_formulation &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Simulations.PowerFlow.Formulations.pf_advanced_formulation &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/license.html">📜 License</a></li>
@@ -162,7 +163,7 @@
                  <span class="n">yft</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span>
                  <span class="n">ytf</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span>
                  <span class="n">ytt</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CSC</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute the advanced jacobian</span>
 <span class="sd">    :param nbus:</span>
 <span class="sd">    :param nbr:</span>
@@ -193,7 +194,7 @@
 <span class="sd">    :param ytf:</span>
 <span class="sd">    :param ytt:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># bus-bus derivatives (always needed)</span>
     <span class="n">dS_dVm_x</span><span class="p">,</span> <span class="n">dS_dVa_x</span> <span class="o">=</span> <span class="n">deriv</span><span class="o">.</span><span class="n">dSbus_dV_numba_sparse_csc</span><span class="p">(</span><span class="n">Ybus_x</span><span class="p">,</span> <span class="n">Ybus_p</span><span class="p">,</span> <span class="n">Ybus_i</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">Vm</span><span class="p">)</span>
     <span class="n">dS_dVm</span> <span class="o">=</span> <span class="n">CxCSC</span><span class="p">(</span><span class="n">nbus</span><span class="p">,</span> <span class="n">nbus</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">dS_dVm_x</span><span class="p">),</span> <span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">Ybus_i</span><span class="p">,</span> <span class="n">Ybus_p</span><span class="p">,</span> <span class="n">dS_dVm_x</span><span class="p">)</span>
@@ -244,7 +245,7 @@
 <div class="viewcode-block" id="calc_autodiff_jacobian">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow.Formulations.html#VeraGridEngine.Simulations.PowerFlow.Formulations.pf_advanced_formulation.calc_autodiff_jacobian">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">calc_autodiff_jacobian</span><span class="p">(</span><span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Vec</span><span class="p">],</span> <span class="n">Vec</span><span class="p">],</span> <span class="n">x</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="mf">1e-8</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">csc_matrix</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute the Jacobian matrix of `func` at `x` using finite differences.</span>
 
 <span class="sd">    :param func: function accepting a vector x and args, and returning either a vector or a</span>
@@ -252,7 +253,7 @@
 <span class="sd">    :param x: Point at which to evaluate the Jacobian (numpy array).</span>
 <span class="sd">    :param h: Small step for finite difference.</span>
 <span class="sd">    :return: Jacobian matrix as a CSC matrix.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">nx</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
     <span class="n">f0</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
 
@@ -278,41 +279,41 @@
 <span class="k">class</span><span class="w"> </span><span class="nc">PfAdvancedFormulation</span><span class="p">(</span><span class="n">PfFormulationTemplate</span><span class="p">):</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;nc&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;logger&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;S0&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;I0&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Y0&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Qmin&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Qmax&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;bus_types&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;tap_module_control_mode&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;tap_phase_control_mode&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Cf&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Ct&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;pq&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;pv&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;pqv&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;p&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;idx_dVa&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;idx_dVm&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;idx_dP&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;idx_dQ&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;idx_dm&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;idx_dtau&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;idx_dPf&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;idx_dQf&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;idx_dPt&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;idx_dQt&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;vd&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;no_slack&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;m&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;tau&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Yshunt_bus&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Ys&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;adm&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;discrete_shunt_control&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;qv_droop_control&quot;</span><span class="p">,</span>
+        <span class="s2">"nc"</span><span class="p">,</span>
+        <span class="s2">"logger"</span><span class="p">,</span>
+        <span class="s2">"S0"</span><span class="p">,</span>
+        <span class="s2">"I0"</span><span class="p">,</span>
+        <span class="s2">"Y0"</span><span class="p">,</span>
+        <span class="s2">"Qmin"</span><span class="p">,</span>
+        <span class="s2">"Qmax"</span><span class="p">,</span>
+        <span class="s2">"bus_types"</span><span class="p">,</span>
+        <span class="s2">"tap_module_control_mode"</span><span class="p">,</span>
+        <span class="s2">"tap_phase_control_mode"</span><span class="p">,</span>
+        <span class="s2">"Cf"</span><span class="p">,</span>
+        <span class="s2">"Ct"</span><span class="p">,</span>
+        <span class="s2">"pq"</span><span class="p">,</span>
+        <span class="s2">"pv"</span><span class="p">,</span>
+        <span class="s2">"pqv"</span><span class="p">,</span>
+        <span class="s2">"p"</span><span class="p">,</span>
+        <span class="s2">"idx_dVa"</span><span class="p">,</span>
+        <span class="s2">"idx_dVm"</span><span class="p">,</span>
+        <span class="s2">"idx_dP"</span><span class="p">,</span>
+        <span class="s2">"idx_dQ"</span><span class="p">,</span>
+        <span class="s2">"idx_dm"</span><span class="p">,</span>
+        <span class="s2">"idx_dtau"</span><span class="p">,</span>
+        <span class="s2">"idx_dPf"</span><span class="p">,</span>
+        <span class="s2">"idx_dQf"</span><span class="p">,</span>
+        <span class="s2">"idx_dPt"</span><span class="p">,</span>
+        <span class="s2">"idx_dQt"</span><span class="p">,</span>
+        <span class="s2">"vd"</span><span class="p">,</span>
+        <span class="s2">"no_slack"</span><span class="p">,</span>
+        <span class="s2">"m"</span><span class="p">,</span>
+        <span class="s2">"tau"</span><span class="p">,</span>
+        <span class="s2">"Yshunt_bus"</span><span class="p">,</span>
+        <span class="s2">"Ys"</span><span class="p">,</span>
+        <span class="s2">"adm"</span><span class="p">,</span>
+        <span class="s2">"discrete_shunt_control"</span><span class="p">,</span>
+        <span class="s2">"qv_droop_control"</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">V0</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span> <span class="n">S0</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span> <span class="n">I0</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span> <span class="n">Y0</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span>
@@ -320,7 +321,7 @@
                  <span class="n">nc</span><span class="p">:</span> <span class="n">NumericalCircuit</span><span class="p">,</span>
                  <span class="n">options</span><span class="p">:</span> <span class="n">PowerFlowOptions</span><span class="p">,</span>
                  <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Constructor</span>
 <span class="sd">        :param V0: Initial voltage solution</span>
 <span class="sd">        :param S0: Set power injections</span>
@@ -331,7 +332,7 @@
 <span class="sd">        :param nc: NumericalCircuit</span>
 <span class="sd">        :param options: PowerFlowOptions</span>
 <span class="sd">        :param logger: Logger (modified in-place)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">PfFormulationTemplate</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">V0</span><span class="o">=</span><span class="n">V0</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">nc</span><span class="p">:</span> <span class="n">NumericalCircuit</span> <span class="o">=</span> <span class="n">nc</span>
@@ -408,18 +409,18 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">qv_droop_control</span> <span class="o">=</span> <span class="n">QvDroopControlState</span><span class="p">(</span><span class="n">S0</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">S0</span><span class="p">,</span> <span class="n">nc</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nc</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pqv</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">k_v_m</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;k_v_m indices must be the same size as pqv indices!&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"k_v_m indices must be the same size as pqv indices!"</span><span class="p">)</span>
 
 <div class="viewcode-block" id="PfAdvancedFormulation.update_bus_types">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow.Formulations.html#VeraGridEngine.Simulations.PowerFlow.Formulations.pf_advanced_formulation.PfAdvancedFormulation.update_bus_types">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">update_bus_types</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pq</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">pv</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">pqv</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">p</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Update the bus types</span>
 <span class="sd">        :param pq: Array of PQ indices</span>
 <span class="sd">        :param pv: Array of PV indices</span>
 <span class="sd">        :param pqv: Array of PQV indices</span>
 <span class="sd">        :param p: Array of P indices</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">pq</span> <span class="o">=</span> <span class="n">pq</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">pv</span> <span class="o">=</span> <span class="n">pv</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">pqv</span> <span class="o">=</span> <span class="n">pqv</span>
@@ -434,10 +435,10 @@
 <div class="viewcode-block" id="PfAdvancedFormulation.analyze_branch_controls">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow.Formulations.html#VeraGridEngine.Simulations.PowerFlow.Formulations.pf_advanced_formulation.PfAdvancedFormulation.analyze_branch_controls">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">analyze_branch_controls</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Analyze the control branches and compute the indices</span>
 <span class="sd">        :return: k_v_m for later comparison with pqv</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">k_pf_tau</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
         <span class="n">k_pt_tau</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
         <span class="n">k_qf_m</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
@@ -473,7 +474,7 @@
                 <span class="k">pass</span>
 
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown tap phase module mode </span><span class="si">{</span><span class="n">ctrl_m</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unknown tap phase module mode </span><span class="si">{</span><span class="n">ctrl_m</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
             <span class="c1"># analyze tap-phase controls</span>
             <span class="k">if</span> <span class="n">ctrl_tau</span> <span class="o">==</span> <span class="n">TapPhaseControl</span><span class="o">.</span><span class="n">Pf</span><span class="o">.</span><span class="n">idx</span><span class="p">():</span>
@@ -489,7 +490,7 @@
                 <span class="k">pass</span>
 
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown tap phase control mode </span><span class="si">{</span><span class="n">ctrl_tau</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unknown tap phase control mode </span><span class="si">{</span><span class="n">ctrl_tau</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
         <span class="c1"># turn the lists into the final arrays</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">idx_dm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span><span class="n">k_v_m</span><span class="p">,</span> <span class="n">k_qf_m</span><span class="p">,</span> <span class="n">k_qt_m</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
@@ -510,10 +511,10 @@
 <div class="viewcode-block" id="PfAdvancedFormulation.x2var">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow.Formulations.html#VeraGridEngine.Simulations.PowerFlow.Formulations.pf_advanced_formulation.PfAdvancedFormulation.x2var">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">x2var</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Vec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Convert X to decision variables</span>
 <span class="sd">        :param x: solution vector</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">a</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">idx_dVa</span><span class="p">)</span>
         <span class="n">b</span> <span class="o">=</span> <span class="n">a</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">idx_dVm</span><span class="p">)</span>
         <span class="n">c</span> <span class="o">=</span> <span class="n">b</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">idx_dm</span><span class="p">)</span>
@@ -529,10 +530,10 @@
 <div class="viewcode-block" id="PfAdvancedFormulation.var2x">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow.Formulations.html#VeraGridEngine.Simulations.PowerFlow.Formulations.pf_advanced_formulation.PfAdvancedFormulation.var2x">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">var2x</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Convert the internal decision variables into the vector</span>
 <span class="sd">        :return: Vector</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">Va</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">idx_dVa</span><span class="p">],</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">Vm</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">idx_dVm</span><span class="p">],</span>
@@ -544,10 +545,10 @@
 <div class="viewcode-block" id="PfAdvancedFormulation.size">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow.Formulations.html#VeraGridEngine.Simulations.PowerFlow.Formulations.pf_advanced_formulation.PfAdvancedFormulation.size">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">size</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Size of the jacobian matrix</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="p">(</span>
                 <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">idx_dVa</span><span class="p">)</span>
                 <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">idx_dVm</span><span class="p">)</span>
@@ -559,11 +560,11 @@
 <div class="viewcode-block" id="PfAdvancedFormulation.check_error">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow.Formulations.html#VeraGridEngine.Simulations.PowerFlow.Formulations.pf_advanced_formulation.PfAdvancedFormulation.check_error">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">check_error</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Vec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">Vec</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Check error of the solution without affecting the problem</span>
 <span class="sd">        :param x: Solution vector</span>
 <span class="sd">        :return: error</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">a</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">idx_dVa</span><span class="p">)</span>
         <span class="n">b</span> <span class="o">=</span> <span class="n">a</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">idx_dVm</span><span class="p">)</span>
         <span class="n">c</span> <span class="o">=</span> <span class="n">b</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">idx_dm</span><span class="p">)</span>
@@ -635,12 +636,12 @@
 <div class="viewcode-block" id="PfAdvancedFormulation.update">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow.Formulations.html#VeraGridEngine.Simulations.PowerFlow.Formulations.pf_advanced_formulation.PfAdvancedFormulation.update">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">update_controls</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">Vec</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Update step</span>
 <span class="sd">        :param x: Solution vector</span>
 <span class="sd">        :param update_controls:</span>
 <span class="sd">        :return: error, converged?, x, fx</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># set the problem state</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">x2var</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
 
@@ -699,12 +700,12 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_error</span> <span class="o">=</span> <span class="n">compute_fx_error</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_f</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">verbose</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Vm:&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Vm</span><span class="p">)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Va:&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Va</span><span class="p">)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;tau:&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tau</span><span class="p">)</span>
-            <span class="c1"># print(&quot;beq:&quot;, self.beq)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;m:&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="p">)</span>
-            <span class="c1"># print(&quot;Gsw:&quot;, self.Gsw)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">"Vm:"</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Vm</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">"Va:"</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Va</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">"tau:"</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tau</span><span class="p">)</span>
+            <span class="c1"># print("beq:", self.beq)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">"m:"</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="p">)</span>
+            <span class="c1"># print("Gsw:", self.Gsw)</span>
 
         <span class="c1"># Update controls only below a certain error</span>
         <span class="k">if</span> <span class="n">update_controls</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_error</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_controls_tol</span><span class="p">:</span>
@@ -763,7 +764,7 @@
                         <span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nc</span><span class="o">.</span><span class="n">active_branch_data</span><span class="o">.</span><span class="n">tap_module_min</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">tap_module_control_mode</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">TapModuleControl</span><span class="o">.</span><span class="n">fixed</span>
                         <span class="n">branch_ctrl_change</span> <span class="o">=</span> <span class="kc">True</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="s2">&quot;Min tap module reached&quot;</span><span class="p">,</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="s2">"Min tap module reached"</span><span class="p">,</span>
                                              <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nc</span><span class="o">.</span><span class="n">passive_branch_data</span><span class="o">.</span><span class="n">names</span><span class="p">[</span><span class="n">k</span><span class="p">],</span>
                                              <span class="n">value</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
 
@@ -771,7 +772,7 @@
                         <span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nc</span><span class="o">.</span><span class="n">active_branch_data</span><span class="o">.</span><span class="n">tap_module_max</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">tap_module_control_mode</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">TapModuleControl</span><span class="o">.</span><span class="n">fixed</span>
                         <span class="n">branch_ctrl_change</span> <span class="o">=</span> <span class="kc">True</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="s2">&quot;Max tap module reached&quot;</span><span class="p">,</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="s2">"Max tap module reached"</span><span class="p">,</span>
                                              <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nc</span><span class="o">.</span><span class="n">passive_branch_data</span><span class="o">.</span><span class="n">names</span><span class="p">[</span><span class="n">k</span><span class="p">],</span>
                                              <span class="n">value</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
 
@@ -789,7 +790,7 @@
                         <span class="bp">self</span><span class="o">.</span><span class="n">tau</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nc</span><span class="o">.</span><span class="n">active_branch_data</span><span class="o">.</span><span class="n">tap_angle_min</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">tap_phase_control_mode</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">TapPhaseControl</span><span class="o">.</span><span class="n">fixed</span><span class="o">.</span><span class="n">idx</span><span class="p">()</span>
                         <span class="n">branch_ctrl_change</span> <span class="o">=</span> <span class="kc">True</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="s2">&quot;Min tap phase reached&quot;</span><span class="p">,</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="s2">"Min tap phase reached"</span><span class="p">,</span>
                                              <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nc</span><span class="o">.</span><span class="n">passive_branch_data</span><span class="o">.</span><span class="n">names</span><span class="p">[</span><span class="n">k</span><span class="p">],</span>
                                              <span class="n">value</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tau</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
 
@@ -797,7 +798,7 @@
                         <span class="bp">self</span><span class="o">.</span><span class="n">tau</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nc</span><span class="o">.</span><span class="n">active_branch_data</span><span class="o">.</span><span class="n">tap_angle_max</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">tap_phase_control_mode</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">TapPhaseControl</span><span class="o">.</span><span class="n">fixed</span><span class="o">.</span><span class="n">idx</span><span class="p">()</span>
                         <span class="n">branch_ctrl_change</span> <span class="o">=</span> <span class="kc">True</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="s2">&quot;Max tap phase reached&quot;</span><span class="p">,</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="s2">"Max tap phase reached"</span><span class="p">,</span>
                                              <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nc</span><span class="o">.</span><span class="n">passive_branch_data</span><span class="o">.</span><span class="n">names</span><span class="p">[</span><span class="n">k</span><span class="p">],</span>
                                              <span class="n">value</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tau</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
 
@@ -822,10 +823,10 @@
 <div class="viewcode-block" id="PfAdvancedFormulation.fx">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow.Formulations.html#VeraGridEngine.Simulations.PowerFlow.Formulations.pf_advanced_formulation.PfAdvancedFormulation.fx">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">fx</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="c1"># Assumes the internal vars were updated already with self.x2var()</span>
         <span class="n">Sbus</span> <span class="o">=</span> <span class="n">compute_zip_power</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">S0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">I0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Y0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Vm</span><span class="p">)</span>
@@ -862,11 +863,11 @@
 <div class="viewcode-block" id="PfAdvancedFormulation.fx_diff">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow.Formulations.html#VeraGridEngine.Simulations.PowerFlow.Formulations.pf_advanced_formulation.PfAdvancedFormulation.fx_diff">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">fx_diff</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Vec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Fx for autodiff</span>
 <span class="sd">        :param x: solutions vector</span>
 <span class="sd">        :return: f(x)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">a</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">idx_dVa</span><span class="p">)</span>
         <span class="n">b</span> <span class="o">=</span> <span class="n">a</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">idx_dVm</span><span class="p">)</span>
         <span class="n">c</span> <span class="o">=</span> <span class="n">b</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">idx_dm</span><span class="p">)</span>
@@ -931,10 +932,10 @@
 <div class="viewcode-block" id="PfAdvancedFormulation.Jacobian">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow.Formulations.html#VeraGridEngine.Simulations.PowerFlow.Formulations.pf_advanced_formulation.PfAdvancedFormulation.Jacobian">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">Jacobian</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">autodiff</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CSC</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the Jacobian</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="n">autodiff</span><span class="p">:</span>
             <span class="n">J</span> <span class="o">=</span> <span class="n">calc_autodiff_jacobian</span><span class="p">(</span><span class="n">func</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">fx_diff</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">var2x</span><span class="p">(),</span> <span class="n">h</span><span class="o">=</span><span class="mf">1e-12</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">scipy_to_mat</span><span class="p">(</span><span class="n">J</span><span class="p">)</span>
@@ -953,7 +954,7 @@
                       <span class="p">)</span>
 
             <span class="k">if</span> <span class="n">n_cols</span> <span class="o">!=</span> <span class="n">n_rows</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Incorrect J indices!&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Incorrect J indices!"</span><span class="p">)</span>
 
             <span class="n">tap_modules</span> <span class="o">=</span> <span class="n">expand</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nc</span><span class="o">.</span><span class="n">nbr</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">idx_dm</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
             <span class="n">tap_angles</span> <span class="o">=</span> <span class="n">expand</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nc</span><span class="o">.</span><span class="n">nbr</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tau</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">idx_dtau</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
@@ -995,15 +996,15 @@
 <div class="viewcode-block" id="PfAdvancedFormulation.get_x_names">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow.Formulations.html#VeraGridEngine.Simulations.PowerFlow.Formulations.pf_advanced_formulation.PfAdvancedFormulation.get_x_names">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_x_names</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Names matching x</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">cols</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s1">&#39;dVa </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">idx_dVa</span><span class="p">]</span>
-        <span class="n">cols</span> <span class="o">+=</span> <span class="p">[</span><span class="sa">f</span><span class="s1">&#39;dVm </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">idx_dVm</span><span class="p">]</span>
-        <span class="n">cols</span> <span class="o">+=</span> <span class="p">[</span><span class="sa">f</span><span class="s1">&#39;dm </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">idx_dm</span><span class="p">]</span>
-        <span class="n">cols</span> <span class="o">+=</span> <span class="p">[</span><span class="sa">f</span><span class="s1">&#39;dtau </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">idx_dtau</span><span class="p">]</span>
-        <span class="c1"># cols += [f&#39;dBeq {i}&#39; for i in self.idx_dbeq]</span>
+<span class="sd">        """</span>
+        <span class="n">cols</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s1">'dVa </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">'</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">idx_dVa</span><span class="p">]</span>
+        <span class="n">cols</span> <span class="o">+=</span> <span class="p">[</span><span class="sa">f</span><span class="s1">'dVm </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">'</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">idx_dVm</span><span class="p">]</span>
+        <span class="n">cols</span> <span class="o">+=</span> <span class="p">[</span><span class="sa">f</span><span class="s1">'dm </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">'</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">idx_dm</span><span class="p">]</span>
+        <span class="n">cols</span> <span class="o">+=</span> <span class="p">[</span><span class="sa">f</span><span class="s1">'dtau </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">'</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">idx_dtau</span><span class="p">]</span>
+        <span class="c1"># cols += [f'dBeq {i}' for i in self.idx_dbeq]</span>
 
         <span class="k">return</span> <span class="n">cols</span></div>
 
@@ -1011,16 +1012,16 @@
 <div class="viewcode-block" id="PfAdvancedFormulation.get_fx_names">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow.Formulations.html#VeraGridEngine.Simulations.PowerFlow.Formulations.pf_advanced_formulation.PfAdvancedFormulation.get_fx_names">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_fx_names</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Names matching fx</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">rows</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s1">&#39;dP </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">idx_dP</span><span class="p">]</span>
-        <span class="n">rows</span> <span class="o">+=</span> <span class="p">[</span><span class="sa">f</span><span class="s1">&#39;dQ </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">idx_dQ</span><span class="p">]</span>
-        <span class="n">rows</span> <span class="o">+=</span> <span class="p">[</span><span class="sa">f</span><span class="s1">&#39;dPf </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">idx_dPf</span><span class="p">]</span>
-        <span class="n">rows</span> <span class="o">+=</span> <span class="p">[</span><span class="sa">f</span><span class="s1">&#39;dQf </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">idx_dQf</span><span class="p">]</span>
-        <span class="n">rows</span> <span class="o">+=</span> <span class="p">[</span><span class="sa">f</span><span class="s1">&#39;dPt </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">idx_dPt</span><span class="p">]</span>
-        <span class="n">rows</span> <span class="o">+=</span> <span class="p">[</span><span class="sa">f</span><span class="s1">&#39;dQt </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">idx_dQt</span><span class="p">]</span>
+<span class="sd">        """</span>
+        <span class="n">rows</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s1">'dP </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">'</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">idx_dP</span><span class="p">]</span>
+        <span class="n">rows</span> <span class="o">+=</span> <span class="p">[</span><span class="sa">f</span><span class="s1">'dQ </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">'</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">idx_dQ</span><span class="p">]</span>
+        <span class="n">rows</span> <span class="o">+=</span> <span class="p">[</span><span class="sa">f</span><span class="s1">'dPf </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">'</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">idx_dPf</span><span class="p">]</span>
+        <span class="n">rows</span> <span class="o">+=</span> <span class="p">[</span><span class="sa">f</span><span class="s1">'dQf </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">'</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">idx_dQf</span><span class="p">]</span>
+        <span class="n">rows</span> <span class="o">+=</span> <span class="p">[</span><span class="sa">f</span><span class="s1">'dPt </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">'</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">idx_dPt</span><span class="p">]</span>
+        <span class="n">rows</span> <span class="o">+=</span> <span class="p">[</span><span class="sa">f</span><span class="s1">'dQt </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">'</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">idx_dQt</span><span class="p">]</span>
 
         <span class="k">return</span> <span class="n">rows</span></div>
 
@@ -1028,12 +1029,12 @@
 <div class="viewcode-block" id="PfAdvancedFormulation.get_solution">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow.Formulations.html#VeraGridEngine.Simulations.PowerFlow.Formulations.pf_advanced_formulation.PfAdvancedFormulation.get_solution">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_solution</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">elapsed</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">iterations</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NumericPowerFlowResults</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the problem solution</span>
 <span class="sd">        :param elapsed: Elapsed seconds</span>
 <span class="sd">        :param iterations: Iteration number</span>
 <span class="sd">        :return: NumericPowerFlowResults</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># Compute the Branches power and the slack buses power</span>
         <span class="n">Sf</span><span class="p">,</span> <span class="n">St</span><span class="p">,</span> <span class="n">If</span><span class="p">,</span> <span class="n">It</span><span class="p">,</span> <span class="n">Vbranch</span><span class="p">,</span> <span class="n">loading</span><span class="p">,</span> <span class="n">losses</span><span class="p">,</span> <span class="n">Sbus</span> <span class="o">=</span> <span class="n">power_flow_post_process_nonlinear</span><span class="p">(</span>
             <span class="n">Sbus</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">Scalc</span><span class="p">,</span>

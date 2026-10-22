@@ -4,6 +4,7 @@ from pathlib import Path
 from types import SimpleNamespace
 
 import numpy as np
+import pytest
 
 from VeraGridEngine.Devices.Dynamic.fmu_template import FmuTemplate
 from VeraGridEngine.Devices.Dynamic.var_factory import VarFactory
@@ -32,6 +33,10 @@ from VeraGridEngine.IO.fmu.worker_host import (
     FmiThreeWorkerHostLimits,
 )
 from VeraGridEngine.IO.fmu.fmu_device_integration import configure_fmu_template
+from VeraGridEngine.IO.fmu.fmu_device_integration import _build_auto_input_bindings, _build_auto_output_bindings
+from VeraGridEngine.IO.fmu.Elements.bindings import FmuRefBinding
+from VeraGridEngine.IO.fmu.Elements.description import FmuModelDescription, FmuVariableDescription
+from VeraGridEngine.enumerations import FmuInterfaceMode, FmuVariableType
 
 
 def _artifact_path() -> Path:
@@ -42,6 +47,53 @@ def _artifact_path() -> Path:
     """
 
     return Path(__file__).resolve().parents[1] / "data" / "fmi" / "artifacts" / "FrequencyLoadPilot.fmu"
+
+
+@pytest.mark.parametrize("causality", ("input", "output"))
+def test_sizing_reference_is_not_inferred_for_fmu_signals(causality: str) -> None:
+    """Keep an initialization-only role outside actual FMU signal-name inference.
+
+    :param causality: Exercise both existing automatic binding directions.
+    :return: None; ordinary runtime references remain recognized alongside raw sizing names.
+    """
+    variables: tuple[FmuVariableDescription, ...] = (
+        FmuVariableDescription("VmSizing", 1, FmuVariableType.REAL, causality, "continuous", None, None, None),
+        FmuVariableDescription("Vm", 2, FmuVariableType.REAL, causality, "continuous", None, None, None),
+        FmuVariableDescription("v_A", 3, FmuVariableType.REAL, causality, "continuous", None, None, None),
+    )
+    metadata: FmuModelDescription = FmuModelDescription(
+        path=Path("signal_metadata.fmu"), fmi_version="2.0", model_name="SignalMetadata",
+        guid="signal-metadata-guid", variable_naming_convention="flat", number_of_event_indicators=0,
+        interface_modes=(FmuInterfaceMode.CO_SIMULATION,),
+        model_identifiers=dict(((FmuInterfaceMode.CO_SIMULATION, "SignalMetadata"),)),
+        platforms=tuple(), variables=variables,
+    )
+    bindings: tuple[FmuRefBinding, ...]
+    if causality == "input":
+        bindings = _build_auto_input_bindings(metadata)
+    else:
+        bindings = _build_auto_output_bindings(metadata)
+    # The source signal remains data, without acquiring component semantics from
+    # its name. Existing operating/terminal references retain their previous match.
+    binding: FmuRefBinding
+    assert tuple(binding.reference for binding in bindings) == (
+        VarPowerFlowReferenceType.Vm, VarPowerFlowReferenceType.v_A,
+    )
+
+
+def test_sizing_reference_is_rejected_for_fmu_runtime_binding() -> None:
+    """Reject the initialization-only role at the shared typed binding boundary.
+
+    :return: None; rejection occurs before any archive, device or live runtime exists.
+    """
+    with pytest.raises(ValueError, match="VmSizing is initialization-only"):
+        FmuRefBinding(reference=VarPowerFlowReferenceType.VmSizing, fmu_variable_name="ordinary_signal")
+    # Explicitly authored operating bindings use their declared role even when
+    # the unrelated source-format name resembles a sizing reference.
+    ordinary: FmuRefBinding = FmuRefBinding(
+        reference=VarPowerFlowReferenceType.Vm, fmu_variable_name="VmSizing",
+    )
+    assert ordinary.reference == VarPowerFlowReferenceType.Vm
 
 
 def test_configure_fmu_template_builds_visual_ports_and_auto_bindings() -> None:

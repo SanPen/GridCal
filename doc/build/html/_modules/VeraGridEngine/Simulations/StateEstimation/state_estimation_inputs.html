@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Simulations.StateEstimation.state_estimation_inputs &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Simulations.StateEstimation.state_estimation_inputs &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/license.html">📜 License</a></li>
@@ -124,13 +125,13 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">slice_pair</span><span class="p">(</span><span class="n">obj_measurements</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">MeasurementTemplate</span><span class="p">],</span>
                <span class="n">obj_indices</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
                <span class="n">index_map</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Slice obj_measurements and obj_indices using an index-&gt;island index map</span>
 <span class="sd">    :param obj_measurements: list of measurements</span>
 <span class="sd">    :param obj_indices: list of device indices where the measurement applies</span>
 <span class="sd">    :param index_map: main index -&gt; island index mapping</span>
 <span class="sd">    :return: new_obj_measurement, new_obj_index</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">new_obj_measurement</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
     <span class="n">new_obj_indices</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
@@ -148,42 +149,42 @@
 <div class="viewcode-block" id="StateEstimationInput">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.StateEstimation.html#VeraGridEngine.Simulations.StateEstimation.state_estimation_inputs.StateEstimationInput">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">StateEstimationInput</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    StateEstimationInput</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;p_inj&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;p_idx&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;q_inj&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;q_idx&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;pg_inj&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;pg_idx&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;qg_inj&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;qg_idx&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;pf_value&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;pf_idx&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;pt_value&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;pt_idx&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;qf_value&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;qf_idx&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;qt_value&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;qt_idx&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;if_value&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;if_idx&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;it_value&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;it_idx&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;vm_value&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;vm_idx&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;va_value&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;va_idx&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;flags&quot;</span><span class="p">,</span>
+        <span class="s2">"p_inj"</span><span class="p">,</span>
+        <span class="s2">"p_idx"</span><span class="p">,</span>
+        <span class="s2">"q_inj"</span><span class="p">,</span>
+        <span class="s2">"q_idx"</span><span class="p">,</span>
+        <span class="s2">"pg_inj"</span><span class="p">,</span>
+        <span class="s2">"pg_idx"</span><span class="p">,</span>
+        <span class="s2">"qg_inj"</span><span class="p">,</span>
+        <span class="s2">"qg_idx"</span><span class="p">,</span>
+        <span class="s2">"pf_value"</span><span class="p">,</span>
+        <span class="s2">"pf_idx"</span><span class="p">,</span>
+        <span class="s2">"pt_value"</span><span class="p">,</span>
+        <span class="s2">"pt_idx"</span><span class="p">,</span>
+        <span class="s2">"qf_value"</span><span class="p">,</span>
+        <span class="s2">"qf_idx"</span><span class="p">,</span>
+        <span class="s2">"qt_value"</span><span class="p">,</span>
+        <span class="s2">"qt_idx"</span><span class="p">,</span>
+        <span class="s2">"if_value"</span><span class="p">,</span>
+        <span class="s2">"if_idx"</span><span class="p">,</span>
+        <span class="s2">"it_value"</span><span class="p">,</span>
+        <span class="s2">"it_idx"</span><span class="p">,</span>
+        <span class="s2">"vm_value"</span><span class="p">,</span>
+        <span class="s2">"vm_idx"</span><span class="p">,</span>
+        <span class="s2">"va_value"</span><span class="p">,</span>
+        <span class="s2">"va_idx"</span><span class="p">,</span>
+        <span class="s2">"flags"</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        State estimation inputs constructor</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">p_inj</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">PiMeasurement</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>  <span class="c1"># Node active power measurements vector of pointers</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">p_idx</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>  <span class="c1"># nodes with power injection measurements</span>
 
@@ -242,13 +243,13 @@
 
 <div class="viewcode-block" id="StateEstimationInput.slice">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.StateEstimation.html#VeraGridEngine.Simulations.StateEstimation.state_estimation_inputs.StateEstimationInput.slice">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">slice</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bus_idx</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">branch_idx</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;StateEstimationInput&quot;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">slice</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bus_idx</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">branch_idx</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"StateEstimationInput"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Slice this object given the island branch and bus indices</span>
 <span class="sd">        :param bus_idx: array of bus indices of an island</span>
 <span class="sd">        :param branch_idx: array of branch indices of an island</span>
 <span class="sd">        :return: new sliced StateEstimationInput</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">se</span> <span class="o">=</span> <span class="n">StateEstimationInput</span><span class="p">()</span>
 
         <span class="c1"># Map old indices → new indices</span>
@@ -277,12 +278,12 @@
 
 <div class="viewcode-block" id="StateEstimationInput.slice_with_mask">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.StateEstimation.html#VeraGridEngine.Simulations.StateEstimation.state_estimation_inputs.StateEstimationInput.slice_with_mask">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">slice_with_mask</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mask</span><span class="p">:</span> <span class="n">BoolVec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;StateEstimationInput&quot;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">slice_with_mask</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mask</span><span class="p">:</span> <span class="n">BoolVec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"StateEstimationInput"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get a new StateEstimationInput without the measurements that fall in the mask marked with a 0</span>
 <span class="sd">        :param mask: mask of measurements to keep</span>
 <span class="sd">        :return: StateEstimationInput</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
 
         <span class="n">new_obj</span> <span class="o">=</span> <span class="n">StateEstimationInput</span><span class="p">()</span>

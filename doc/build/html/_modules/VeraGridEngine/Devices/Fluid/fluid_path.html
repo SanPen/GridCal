@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Devices.Fluid.fluid_path &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Devices.Fluid.fluid_path &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/license.html">📜 License</a></li>
@@ -124,72 +125,72 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Fluid.html#VeraGridEngine.Devices.Fluid.fluid_path.FluidPath">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">FluidPath</span><span class="p">(</span><span class="n">PhysicalDevice</span><span class="p">):</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s1">&#39;source&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;target&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_min_flow&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_max_flow&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;color&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_locations&#39;</span><span class="p">,</span>
+        <span class="s1">'source'</span><span class="p">,</span>
+        <span class="s1">'target'</span><span class="p">,</span>
+        <span class="s1">'_min_flow'</span><span class="p">,</span>
+        <span class="s1">'_max_flow'</span><span class="p">,</span>
+        <span class="s1">'color'</span><span class="p">,</span>
+        <span class="s1">'_locations'</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="n">LOCAL_PROPERTY_DECLARATIONS</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">GCProp</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;source&#39;</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'source'</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s2">""</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="n">DeviceType</span><span class="o">.</span><span class="n">FluidNodeDevice</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s2">&quot;Source node&quot;</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s2">"Source node"</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">TP</span><span class="p">],</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;target&#39;</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'target'</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s2">""</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="n">DeviceType</span><span class="o">.</span><span class="n">FluidNodeDevice</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s2">&quot;Target node&quot;</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s2">"Target node"</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">TP</span><span class="p">],</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;min_flow&#39;</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s2">&quot;m3/s&quot;</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'min_flow'</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s2">"m3/s"</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s2">&quot;Minimum flow&quot;</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s2">"Minimum flow"</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">TP</span><span class="p">],</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;max_flow&#39;</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s2">&quot;m3/s&quot;</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'max_flow'</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s2">"m3/s"</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s2">&quot;Maximum flow&quot;</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s2">"Maximum flow"</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">TP</span><span class="p">],</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;locations&#39;</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'locations'</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">''</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="n">SubObjectType</span><span class="o">.</span><span class="n">LineLocations</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Locations&#39;</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">'Locations'</span><span class="p">,</span>
             <span class="n">editable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">TP</span><span class="p">],</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;color&#39;</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'color'</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">''</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Color to paint the device in the map diagram&#39;</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">'Color to paint the device in the map diagram'</span><span class="p">,</span>
             <span class="n">is_color</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">TP</span><span class="p">],</span>
         <span class="p">),</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
-                 <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                 <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">''</span><span class="p">,</span>
                  <span class="n">idtag</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                 <span class="n">code</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                 <span class="n">code</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">''</span><span class="p">,</span>
                  <span class="n">source</span><span class="p">:</span> <span class="n">FluidNode</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">target</span><span class="p">:</span> <span class="n">FluidNode</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">min_flow</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
                  <span class="n">max_flow</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
                  <span class="n">color</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">build_status</span><span class="p">:</span> <span class="n">BuildStatus</span> <span class="o">=</span> <span class="n">BuildStatus</span><span class="o">.</span><span class="n">Commissioned</span> <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Fluid path</span>
 <span class="sd">        :param name:Name of the fluid transporter</span>
 <span class="sd">        :param idtag: UUID</span>
@@ -199,7 +200,7 @@
 <span class="sd">        :param min_flow: minimum flow (m3/s)</span>
 <span class="sd">        :param max_flow: maximum flow (m3/s)</span>
 <span class="sd">        :param color: color of the fluid</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">PhysicalDevice</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                                 <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
                                 <span class="n">idtag</span><span class="o">=</span><span class="n">idtag</span><span class="p">,</span>
@@ -212,7 +213,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">min_flow</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">min_flow</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">max_flow</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">max_flow</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">color</span> <span class="o">=</span> <span class="n">color</span> <span class="k">if</span> <span class="n">color</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s2">&quot;#00aad4&quot;</span>  <span class="c1"># nice blue color</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">color</span> <span class="o">=</span> <span class="n">color</span> <span class="k">if</span> <span class="n">color</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s2">"#00aad4"</span>  <span class="c1"># nice blue color</span>
 
         <span class="c1"># Line locations</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_locations</span><span class="p">:</span> <span class="n">LineLocations</span> <span class="o">=</span> <span class="n">LineLocations</span><span class="p">()</span>
@@ -221,10 +222,10 @@
 <div class="viewcode-block" id="FluidPath.copy">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Fluid.html#VeraGridEngine.Devices.Fluid.fluid_path.FluidPath.copy">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Make a deep copy of this object</span>
 <span class="sd">        :return: Copy of this object</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="c1"># make a new instance (separated object in memory)</span>
         <span class="n">fluid_path</span> <span class="o">=</span> <span class="n">FluidPath</span><span class="p">()</span>
@@ -239,10 +240,10 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">locations</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">LineLocations</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Cost profile</span>
 <span class="sd">        :return: Profile</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_locations</span>
 
     <span class="nd">@locations</span><span class="o">.</span><span class="n">setter</span>
@@ -252,15 +253,15 @@
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_locations</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">val</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">val</span><span class="p">))</span> <span class="o">+</span> <span class="s1">&#39;not supported to be set into a locations&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">val</span><span class="p">))</span> <span class="o">+</span> <span class="s1">'not supported to be set into a locations'</span><span class="p">)</span>
 
 <div class="viewcode-block" id="FluidPath.get_from_and_to_objects">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Fluid.html#VeraGridEngine.Devices.Fluid.fluid_path.FluidPath.get_from_and_to_objects">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_from_and_to_objects</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">CONNECTION_TYPE</span><span class="p">,</span> <span class="n">CONNECTION_TYPE</span><span class="p">,</span> <span class="nb">bool</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the from and to connection objects of the branch</span>
 <span class="sd">        :return: Object from, Object to, is it ok?</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="c1"># Pick the right bus</span>
         <span class="n">bus_from</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">source</span>
@@ -273,11 +274,11 @@
 <div class="viewcode-block" id="FluidPath.get_substation_from">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Fluid.html#VeraGridEngine.Devices.Fluid.fluid_path.FluidPath.get_substation_from">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_substation_from</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">Substation</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Try to get the substation at the source side.</span>
 
 <span class="sd">        :return: Source electrical bus substation, or ``None``.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">substation</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Substation</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 
         <span class="c1"># Fluid paths are connected through fluid nodes, which carry the electrical bus.</span>
@@ -295,11 +296,11 @@
 <div class="viewcode-block" id="FluidPath.get_substation_to">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Fluid.html#VeraGridEngine.Devices.Fluid.fluid_path.FluidPath.get_substation_to">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_substation_to</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">Substation</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Try to get the substation at the target side.</span>
 
 <span class="sd">        :return: Target electrical bus substation, or ``None``.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">substation</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Substation</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 
         <span class="c1"># Fluid paths are connected through fluid nodes, which carry the electrical bus.</span>
@@ -318,40 +319,40 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">min_flow</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get ``min_flow``.</span>
 
 <span class="sd">        :return: float</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_min_flow</span>
 
     <span class="nd">@min_flow</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">min_flow</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Set ``min_flow``.</span>
 
 <span class="sd">        :param val: Value to assign.</span>
 <span class="sd">        :return: None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_min_flow</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">max_flow</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get ``max_flow``.</span>
 
 <span class="sd">        :return: float</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_max_flow</span>
 
     <span class="nd">@max_flow</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">max_flow</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Set ``max_flow``.</span>
 
 <span class="sd">        :param val: Value to assign.</span>
 <span class="sd">        :return: None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_max_flow</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="p">)</span></div>
 
 </pre></div>

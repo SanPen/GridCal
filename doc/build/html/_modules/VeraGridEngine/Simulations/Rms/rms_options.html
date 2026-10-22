@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Simulations.Rms.rms_options &mdash; VeraGrid 6.7.13 documentation</title>
+  <title>VeraGridEngine.Simulations.Rms.rms_options &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=16fbabd8"></script>
+      <script src="../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -121,49 +121,49 @@
 <div class="viewcode-block" id="RmsOptions">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.Rms.html#VeraGridEngine.Simulations.Rms.rms_options.RmsOptions">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">RmsOptions</span><span class="p">(</span><span class="n">OptionsTemplate</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Rms simulation options</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;integration_method&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;initialization_method&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;problem_type&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;time_step&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;simulation_time&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;tolerance&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;use_init_values&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;max_iter&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;init_fix_pf_bus_voltages&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;fmi_state_event_time_tolerance&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;fmi_state_event_max_iterations&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;fmi_me_newton_absolute_tolerance&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;fmi_me_newton_relative_tolerance&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;fmi_me_newton_max_iterations&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;fmi_me_max_continuous_states&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;fmi_me_max_runtime_evaluations_per_step&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;verbose&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;rms_event_groups&quot;</span><span class="p">,</span>
+        <span class="s2">"integration_method"</span><span class="p">,</span>
+        <span class="s2">"initialization_method"</span><span class="p">,</span>
+        <span class="s2">"problem_type"</span><span class="p">,</span>
+        <span class="s2">"time_step"</span><span class="p">,</span>
+        <span class="s2">"simulation_time"</span><span class="p">,</span>
+        <span class="s2">"tolerance"</span><span class="p">,</span>
+        <span class="s2">"use_init_values"</span><span class="p">,</span>
+        <span class="s2">"max_iter"</span><span class="p">,</span>
+        <span class="s2">"init_fix_pf_bus_voltages"</span><span class="p">,</span>
+        <span class="s2">"fmi_state_event_time_tolerance"</span><span class="p">,</span>
+        <span class="s2">"fmi_state_event_max_iterations"</span><span class="p">,</span>
+        <span class="s2">"fmi_me_newton_absolute_tolerance"</span><span class="p">,</span>
+        <span class="s2">"fmi_me_newton_relative_tolerance"</span><span class="p">,</span>
+        <span class="s2">"fmi_me_newton_max_iterations"</span><span class="p">,</span>
+        <span class="s2">"fmi_me_max_continuous_states"</span><span class="p">,</span>
+        <span class="s2">"fmi_me_max_runtime_evaluations_per_step"</span><span class="p">,</span>
+        <span class="s2">"verbose"</span><span class="p">,</span>
+        <span class="s2">"rms_event_groups"</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="n">LOCAL_PROPERTY_DECLARATIONS</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">GCProp</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;integration_method&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">DynamicIntegrationMethod</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;initialization_method&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">RmsInitializationMethod</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;problem_type&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">RmsProblemTypes</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;time_step&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;simulation_time&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;tolerance&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;use_init_values&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">bool</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;max_iter&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;init_fix_pf_bus_voltages&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">bool</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;fmi_state_event_time_tolerance&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;fmi_state_event_max_iterations&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;fmi_me_newton_absolute_tolerance&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;fmi_me_newton_relative_tolerance&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;fmi_me_newton_max_iterations&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;fmi_me_max_continuous_states&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;fmi_me_max_runtime_evaluations_per_step&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;rms_event_groups&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">SubObjectType</span><span class="o">.</span><span class="n">ObjectsList</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"integration_method"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">DynamicIntegrationMethod</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"initialization_method"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">RmsInitializationMethod</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"problem_type"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">RmsProblemTypes</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"time_step"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"simulation_time"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"tolerance"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"use_init_values"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">bool</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"max_iter"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"init_fix_pf_bus_voltages"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">bool</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"fmi_state_event_time_tolerance"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"fmi_state_event_max_iterations"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"fmi_me_newton_absolute_tolerance"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"fmi_me_newton_relative_tolerance"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"fmi_me_newton_max_iterations"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"fmi_me_max_continuous_states"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"fmi_me_max_runtime_evaluations_per_step"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"rms_event_groups"</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">SubObjectType</span><span class="o">.</span><span class="n">ObjectsList</span><span class="p">),</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
@@ -184,7 +184,7 @@
                  <span class="n">fmi_me_newton_max_iterations</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">20</span><span class="p">,</span>
                  <span class="n">fmi_me_max_continuous_states</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">128</span><span class="p">,</span>
                  <span class="n">fmi_me_max_runtime_evaluations_per_step</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100000</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        RmsOptions</span>
 <span class="sd">        :param time_step: time step of the simulations (s)</span>
 <span class="sd">        :param simulation_time: simulation time (s)</span>
@@ -200,9 +200,9 @@
 <span class="sd">        :param fmi_me_max_continuous_states: Maximum dense FMI ME state dimension.</span>
 <span class="sd">        :param fmi_me_max_runtime_evaluations_per_step: Shared runtime-call limit for one FMI ME step.</span>
 <span class="sd">        :return: None.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
-        <span class="n">OptionsTemplate</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;RmsSimulationOptions&#39;</span><span class="p">)</span>
+        <span class="n">OptionsTemplate</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">'RmsSimulationOptions'</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">integration_method</span><span class="p">:</span> <span class="n">DynamicIntegrationMethod</span> <span class="o">=</span> <span class="n">integration_method</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">initialization_method</span><span class="p">:</span> <span class="n">RmsInitializationMethod</span> <span class="o">=</span> <span class="n">initialization_method</span>
@@ -222,7 +222,7 @@
             <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s2">&quot;RMS FMI state-event time tolerance must be finite and positive&quot;</span>
+                <span class="s2">"RMS FMI state-event time tolerance must be finite and positive"</span>
             <span class="p">)</span>
         <span class="k">if</span> <span class="p">(</span>
             <span class="nb">isinstance</span><span class="p">(</span><span class="n">fmi_state_event_max_iterations</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
@@ -234,7 +234,7 @@
             <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s2">&quot;RMS FMI state-event maximum iterations must be a positive integer&quot;</span>
+                <span class="s2">"RMS FMI state-event maximum iterations must be a positive integer"</span>
             <span class="p">)</span>
         <span class="k">if</span> <span class="p">(</span>
             <span class="n">math</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">fmi_me_newton_absolute_tolerance</span><span class="p">)</span>
@@ -245,7 +245,7 @@
             <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s2">&quot;RMS FMI ME Newton absolute tolerance must be finite and positive&quot;</span>
+                <span class="s2">"RMS FMI ME Newton absolute tolerance must be finite and positive"</span>
             <span class="p">)</span>
         <span class="k">if</span> <span class="p">(</span>
             <span class="n">math</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">fmi_me_newton_relative_tolerance</span><span class="p">)</span>
@@ -256,7 +256,7 @@
             <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s2">&quot;RMS FMI ME Newton relative tolerance must be finite and positive&quot;</span>
+                <span class="s2">"RMS FMI ME Newton relative tolerance must be finite and positive"</span>
             <span class="p">)</span>
         <span class="k">if</span> <span class="p">(</span>
             <span class="nb">isinstance</span><span class="p">(</span><span class="n">fmi_me_newton_max_iterations</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
@@ -266,7 +266,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">fmi_me_newton_max_iterations</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">fmi_me_newton_max_iterations</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s2">&quot;RMS FMI ME Newton iteration limit must be an integer between 1 and 100&quot;</span>
+                <span class="s2">"RMS FMI ME Newton iteration limit must be an integer between 1 and 100"</span>
             <span class="p">)</span>
         <span class="k">if</span> <span class="p">(</span>
             <span class="nb">isinstance</span><span class="p">(</span><span class="n">fmi_me_max_continuous_states</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
@@ -276,7 +276,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">fmi_me_max_continuous_states</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">fmi_me_max_continuous_states</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s2">&quot;RMS FMI ME state limit must be an integer between 1 and 128&quot;</span>
+                <span class="s2">"RMS FMI ME state limit must be an integer between 1 and 128"</span>
             <span class="p">)</span>
         <span class="k">if</span> <span class="p">(</span>
             <span class="nb">isinstance</span><span class="p">(</span><span class="n">fmi_me_max_runtime_evaluations_per_step</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
@@ -288,8 +288,8 @@
             <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s2">&quot;RMS FMI ME runtime evaluation limit must be an integer between &quot;</span>
-                <span class="s2">&quot;1 and 10000000&quot;</span>
+                <span class="s2">"RMS FMI ME runtime evaluation limit must be an integer between "</span>
+                <span class="s2">"1 and 10000000"</span>
             <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">verbose</span></div>
 

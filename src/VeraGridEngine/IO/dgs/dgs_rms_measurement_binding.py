@@ -1858,7 +1858,10 @@ def _connect_meter_aliases(
         prepared_meter_block: Block | None,
 ) -> int:
     """
-    Materialize one native meter block and connect it to controller inputs.
+    Finalize one native meter block and connect it to controller inputs.
+
+    Early import may already own the controller output variables. Finalize
+    that unique FID/UID-matched block instead of creating a second owner.
 
     :param host_model: Activated imported controller model.
     :param targets_by_name: Stable pre-connection control interfaces by name.
@@ -1897,7 +1900,78 @@ def _connect_meter_aliases(
     else:
         pass
 
-    if prepared_meter_block is None:
+    # Early measurements keep controller ports alive during activation. Their
+    # canonical name alone is insufficient: every selected alias must resolve
+    # to exactly one of that block's actual output UIDs before any mutation.
+    early_meter_blocks: List[Block] = list(
+        candidate for candidate in host_model.get_all_blocks()
+        if candidate.name == meter_name
+    )
+    early_meter_block: Block | None = None
+    early_parent: Block | None = None
+    early_child_index: int = -1
+    early_outputs: Dict[str, Var] = dict()
+    if len(early_meter_blocks) == 0:
+        pass
+    else:
+        if len(early_meter_blocks) != 1:
+            return 0
+        else:
+            early_meter_block = early_meter_blocks[0]
+        for alias_name in connected_expressions.keys():
+            target_vars = targets_by_name.get(alias_name, None)
+            target_uids: Set[int] = set(
+                target.uid for target in target_vars
+            ) if target_vars is not None else set()
+            matching_outputs: List[Var] = list(
+                output for output in early_meter_block.out_vars
+                if output.uid in target_uids
+            )
+            if len(matching_outputs) != 1:
+                return 0
+            else:
+                early_outputs[alias_name] = matching_outputs[0]
+        if set(output.uid for output in early_outputs.values()) != set(
+                output.uid for output in early_meter_block.out_vars
+        ):
+            return 0
+        else:
+            pass
+        candidate_parent: Block
+        candidate_child: Block
+        candidate_index: int
+        for candidate_parent in host_model.get_all_blocks():
+            for candidate_index, candidate_child in enumerate(candidate_parent.children):
+                if candidate_child is early_meter_block:
+                    if early_parent is None:
+                        early_parent = candidate_parent
+                        early_child_index = candidate_index
+                    else:
+                        return 0
+                else:
+                    pass
+        if early_parent is None:
+            return 0
+        else:
+            pass
+
+    if prepared_meter_block is None and early_meter_block is not None:
+        # Keep the exact consumer Var objects, replacing only early host-side
+        # placeholders with the established physical FID/side expressions.
+        meter_block = early_meter_block
+        output_by_alias_name = early_outputs
+        meter_block.in_vars = list()
+        meter_block.algebraic_vars = list(early_outputs.values())
+        meter_block.out_vars = list(early_outputs.values())
+        meter_block.algebraic_eqs = list(
+            early_outputs[alias_name] - source_expression
+            for alias_name, source_expression in connected_expressions.items()
+        )
+        meter_block.init_eqs = dict(
+            (early_outputs[alias_name], source_expression)
+            for alias_name, source_expression in connected_expressions.items()
+        )
+    elif prepared_meter_block is None:
         meter_block, output_by_alias_name = build_rms_physical_signal_meter_block(
             vf=var_factory,
             signal_expressions=connected_expressions,
@@ -1919,7 +1993,32 @@ def _connect_meter_aliases(
             else:
                 prepared_outputs_complete = False
         if prepared_outputs_complete:
-            pass
+            if early_meter_block is None:
+                pass
+            else:
+                # Alias spellings may share one prepared native output. A
+                # single solved UID cannot retain two different early owners;
+                # reject the entire mapping before changing any equations.
+                retained_uid_by_prepared_uid: Dict[int, int] = dict()
+                for alias_name in connected_expressions.keys():
+                    prepared_output: Var = output_by_alias_name[alias_name]
+                    retained_uid: int = early_outputs[alias_name].uid
+                    previous_uid: int | None = retained_uid_by_prepared_uid.get(
+                        prepared_output.uid, None,
+                    )
+                    if previous_uid is None or previous_uid == retained_uid:
+                        retained_uid_by_prepared_uid[prepared_output.uid] = retained_uid
+                    else:
+                        return 0
+                # Stateful PLL equations and startup belong to the prepared
+                # native block. Rebind its outputs before replacing the early
+                # child; preserve the existing editor identity and position.
+                for alias_name, source_expression in connected_expressions.items():
+                    output_var: Var = output_by_alias_name[alias_name]
+                    retained_output: Var = early_outputs[alias_name]
+                    meter_block.update_model(old=output_var, new=retained_output)
+                    output_by_alias_name[alias_name] = retained_output
+                meter_block.uid = early_meter_block.uid
         else:
             return 0
 
@@ -1940,23 +2039,26 @@ def _connect_meter_aliases(
     # Persist only the outputs that have exact controller endpoints. The block
     # owns their equations; this metadata exposes physical identity and signal
     # selection to local logic and global readout without duplicating variables.
-    if prepared_meter_block is None:
-        pass
-    else:
-        meter_block.dynamic_model_contract.rms_physical_measurement_point = (
-            RmsPhysicalMeasurementPoint(
-                source_fid=meter_source_fid,
-                target_fid=meter_target_fid,
-                terminal_side=meter_terminal_side,
-                meter_kind=meter_kind,
-                output_signal_names=tuple(selected_output_names),
-                output_var_uids=tuple(selected_output_uids),
-            )
+    meter_block.dynamic_model_contract.rms_physical_measurement_point = (
+        RmsPhysicalMeasurementPoint(
+            source_fid=meter_source_fid,
+            target_fid=meter_target_fid,
+            terminal_side=meter_terminal_side,
+            meter_kind=meter_kind,
+            output_signal_names=tuple(selected_output_names),
+            output_var_uids=tuple(selected_output_uids),
         )
+    )
 
     # The child is part of the one canonical RMS graph. The editor will expose
     # it as a separate node and infer each cable from the propagated Var UID.
-    host_model.add(meter_block)
+    if early_meter_block is None:
+        host_model.add(meter_block)
+    else:
+        if early_parent is not None:
+            early_parent.children[early_child_index] = meter_block
+        else:
+            return 0
     target_var: Var
     for alias_name, source_expression in connected_expressions.items():
         target_vars = targets_by_name.get(alias_name, None)
@@ -1964,18 +2066,39 @@ def _connect_meter_aliases(
             pass
         else:
             output_var = output_by_alias_name.get(alias_name, None)
-            for target_var in target_vars:
-                _remove_meter_target_fallback_ownership(
-                    host_model=host_model,
-                    target_var=target_var,
+            # Early outputs reuse controller Vars, which need not yet carry
+            # a cable reference. Reuse the factory's declared reference owner
+            # so editor connections expose the same identity as runtime UIDs.
+            if output_var is not None and output_var.shared_ref is None:
+                var_factory.add_shared_ref_to_var(
+                    v=output_var,
+                    shared_reference=f"{meter_name}:{alias_name}",
                 )
+            else:
+                pass
+            for target_var in target_vars:
                 if output_var is None:
                     pass
                 else:
+                    if target_var.uid == output_var.uid:
+                        # The early output already owns this exact consumer
+                        # UID. Removing fallback ownership here would delete
+                        # the newly finalized meter's solved variable.
+                        _promote_meter_dependent_startup_inputs(
+                            host_model=host_model,
+                            meter_output_var=output_var,
+                        )
+                        target_var.shared_ref = output_var.shared_ref
+                        connected_count += 1
+                    else:
+                        _remove_meter_target_fallback_ownership(
+                            host_model=host_model,
+                            target_var=target_var,
+                        )
                     # One physical meter output may feed several exact slot
                     # endpoints. The shared reference draws the editor cable;
                     # VarFactory propagates the same edge into runtime UIDs.
-                    if output_var.shared_ref is None:
+                    if target_var.uid == output_var.uid or output_var.shared_ref is None:
                         pass
                     else:
                         target_var.shared_ref = output_var.shared_ref

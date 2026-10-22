@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Utils.Symbolic.latex_printer &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Utils.Symbolic.latex_printer &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/license.html">📜 License</a></li>
@@ -107,7 +108,7 @@
 <span class="c1"># file, You can obtain one at https://mozilla.org/MPL/2.0/.</span>
 <span class="c1"># SPDX-License-Identifier: MPL-2.0</span>
 
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 <span class="sd">LaTeX printer for symbolic expressions.</span>
 
 <span class="sd">Converts an :class:`Expr` tree into a LaTeX string suitable for</span>
@@ -125,7 +126,7 @@
 <span class="sd">    5  power        (^{…})</span>
 <span class="sd">    6  unary minus  (−)</span>
 <span class="sd">    7  atom         (Var, Const, Func, Func2, parenthesised)</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
@@ -163,42 +164,42 @@
 <span class="c1"># ---------------------------------------------------------------------------</span>
 
 <span class="n">_FUNC_LATEX</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">&quot;sin&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\sin&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;cos&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\cos&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tan&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\tan&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;asin&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\arcsin&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;acos&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\arccos&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;atan&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\arctan&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;sinh&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\sinh&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;cosh&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\cosh&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tanh&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\tanh&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;exp&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\exp&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;log&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\ln&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;log10&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\log_</span><span class="si">{10}</span><span class="s2">&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;sqrt&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\sqrt&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;floor&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\lfloor&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;ceil&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\lceil&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;round&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\operatorname</span><span class="si">{round}</span><span class="s2">&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;abs&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\lvert&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;heaviside&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\Theta&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;real&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\operatorname</span><span class="si">{Re}</span><span class="s2">&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;imag&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\operatorname</span><span class="si">{Im}</span><span class="s2">&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;conj&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\operatorname</span><span class="si">{conj}</span><span class="s2">&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;angle&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\operatorname</span><span class="si">{angle}</span><span class="s2">&quot;</span><span class="p">,</span>
+    <span class="s2">"sin"</span><span class="p">:</span> <span class="sa">r</span><span class="s2">"\sin"</span><span class="p">,</span>
+    <span class="s2">"cos"</span><span class="p">:</span> <span class="sa">r</span><span class="s2">"\cos"</span><span class="p">,</span>
+    <span class="s2">"tan"</span><span class="p">:</span> <span class="sa">r</span><span class="s2">"\tan"</span><span class="p">,</span>
+    <span class="s2">"asin"</span><span class="p">:</span> <span class="sa">r</span><span class="s2">"\arcsin"</span><span class="p">,</span>
+    <span class="s2">"acos"</span><span class="p">:</span> <span class="sa">r</span><span class="s2">"\arccos"</span><span class="p">,</span>
+    <span class="s2">"atan"</span><span class="p">:</span> <span class="sa">r</span><span class="s2">"\arctan"</span><span class="p">,</span>
+    <span class="s2">"sinh"</span><span class="p">:</span> <span class="sa">r</span><span class="s2">"\sinh"</span><span class="p">,</span>
+    <span class="s2">"cosh"</span><span class="p">:</span> <span class="sa">r</span><span class="s2">"\cosh"</span><span class="p">,</span>
+    <span class="s2">"tanh"</span><span class="p">:</span> <span class="sa">r</span><span class="s2">"\tanh"</span><span class="p">,</span>
+    <span class="s2">"exp"</span><span class="p">:</span> <span class="sa">r</span><span class="s2">"\exp"</span><span class="p">,</span>
+    <span class="s2">"log"</span><span class="p">:</span> <span class="sa">r</span><span class="s2">"\ln"</span><span class="p">,</span>
+    <span class="s2">"log10"</span><span class="p">:</span> <span class="sa">r</span><span class="s2">"\log_</span><span class="si">{10}</span><span class="s2">"</span><span class="p">,</span>
+    <span class="s2">"sqrt"</span><span class="p">:</span> <span class="sa">r</span><span class="s2">"\sqrt"</span><span class="p">,</span>
+    <span class="s2">"floor"</span><span class="p">:</span> <span class="sa">r</span><span class="s2">"\lfloor"</span><span class="p">,</span>
+    <span class="s2">"ceil"</span><span class="p">:</span> <span class="sa">r</span><span class="s2">"\lceil"</span><span class="p">,</span>
+    <span class="s2">"round"</span><span class="p">:</span> <span class="sa">r</span><span class="s2">"\operatorname</span><span class="si">{round}</span><span class="s2">"</span><span class="p">,</span>
+    <span class="s2">"abs"</span><span class="p">:</span> <span class="sa">r</span><span class="s2">"\lvert"</span><span class="p">,</span>
+    <span class="s2">"heaviside"</span><span class="p">:</span> <span class="sa">r</span><span class="s2">"\Theta"</span><span class="p">,</span>
+    <span class="s2">"real"</span><span class="p">:</span> <span class="sa">r</span><span class="s2">"\operatorname</span><span class="si">{Re}</span><span class="s2">"</span><span class="p">,</span>
+    <span class="s2">"imag"</span><span class="p">:</span> <span class="sa">r</span><span class="s2">"\operatorname</span><span class="si">{Im}</span><span class="s2">"</span><span class="p">,</span>
+    <span class="s2">"conj"</span><span class="p">:</span> <span class="sa">r</span><span class="s2">"\operatorname</span><span class="si">{conj}</span><span class="s2">"</span><span class="p">,</span>
+    <span class="s2">"angle"</span><span class="p">:</span> <span class="sa">r</span><span class="s2">"\operatorname</span><span class="si">{angle}</span><span class="s2">"</span><span class="p">,</span>
 <span class="p">}</span>
 
 <span class="n">_CMP_LATEX</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="n">CmpOp</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="n">CmpOp</span><span class="o">.</span><span class="n">LE</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\leq&quot;</span><span class="p">,</span>
-    <span class="n">CmpOp</span><span class="o">.</span><span class="n">GE</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\geq&quot;</span><span class="p">,</span>
-    <span class="n">CmpOp</span><span class="o">.</span><span class="n">LT</span><span class="p">:</span> <span class="s2">&quot;&lt;&quot;</span><span class="p">,</span>
-    <span class="n">CmpOp</span><span class="o">.</span><span class="n">GT</span><span class="p">:</span> <span class="s2">&quot;&gt;&quot;</span><span class="p">,</span>
-    <span class="n">CmpOp</span><span class="o">.</span><span class="n">EQ</span><span class="p">:</span> <span class="s2">&quot;=&quot;</span><span class="p">,</span>
+    <span class="n">CmpOp</span><span class="o">.</span><span class="n">LE</span><span class="p">:</span> <span class="sa">r</span><span class="s2">"\leq"</span><span class="p">,</span>
+    <span class="n">CmpOp</span><span class="o">.</span><span class="n">GE</span><span class="p">:</span> <span class="sa">r</span><span class="s2">"\geq"</span><span class="p">,</span>
+    <span class="n">CmpOp</span><span class="o">.</span><span class="n">LT</span><span class="p">:</span> <span class="s2">"&lt;"</span><span class="p">,</span>
+    <span class="n">CmpOp</span><span class="o">.</span><span class="n">GT</span><span class="p">:</span> <span class="s2">"&gt;"</span><span class="p">,</span>
+    <span class="n">CmpOp</span><span class="o">.</span><span class="n">EQ</span><span class="p">:</span> <span class="s2">"="</span><span class="p">,</span>
 <span class="p">}</span>
 
 <span class="n">_FUNC2_LATEX</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">&quot;atan2&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\operatorname</span><span class="si">{atan2}</span><span class="s2">&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;min&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\min&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;max&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;\max&quot;</span><span class="p">,</span>
+    <span class="s2">"atan2"</span><span class="p">:</span> <span class="sa">r</span><span class="s2">"\operatorname</span><span class="si">{atan2}</span><span class="s2">"</span><span class="p">,</span>
+    <span class="s2">"min"</span><span class="p">:</span> <span class="sa">r</span><span class="s2">"\min"</span><span class="p">,</span>
+    <span class="s2">"max"</span><span class="p">:</span> <span class="sa">r</span><span class="s2">"\max"</span><span class="p">,</span>
 <span class="p">}</span>
 
 <span class="c1"># ---------------------------------------------------------------------------</span>
@@ -208,12 +209,12 @@
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_needs_parens</span><span class="p">(</span><span class="n">child</span><span class="p">:</span> <span class="n">Expr</span><span class="p">,</span> <span class="n">parent_prec</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">child_prec</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
                   <span class="n">right</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Decide whether *child* needs surrounding parentheses.</span>
 
-<span class="sd">    Parentheses are needed when the child&#39;s precedence is lower than</span>
-<span class="sd">    (or equal for the right side of non-commutative ops) the parent&#39;s.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    Parentheses are needed when the child's precedence is lower than</span>
+<span class="sd">    (or equal for the right side of non-commutative ops) the parent's.</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">child_prec</span> <span class="o">&lt;</span> <span class="n">parent_prec</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">True</span>
     <span class="k">if</span> <span class="n">child_prec</span> <span class="o">==</span> <span class="n">parent_prec</span> <span class="ow">and</span> <span class="n">right</span> <span class="ow">and</span> <span class="n">parent_prec</span> <span class="o">!=</span> <span class="n">_ADD</span><span class="p">:</span>
@@ -222,12 +223,12 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_wrap</span><span class="p">(</span><span class="n">latex</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">needs</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">big</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Wrap *latex* in parentheses if *needs* is True.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Wrap *latex* in parentheses if *needs* is True."""</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">needs</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">latex</span>
     <span class="k">if</span> <span class="n">big</span><span class="p">:</span>
-        <span class="k">return</span> <span class="sa">r</span><span class="s2">&quot;\left(&quot;</span> <span class="o">+</span> <span class="n">latex</span> <span class="o">+</span> <span class="sa">r</span><span class="s2">&quot;\right)&quot;</span>
-    <span class="k">return</span> <span class="s2">&quot;(&quot;</span> <span class="o">+</span> <span class="n">latex</span> <span class="o">+</span> <span class="s2">&quot;)&quot;</span>
+        <span class="k">return</span> <span class="sa">r</span><span class="s2">"\left("</span> <span class="o">+</span> <span class="n">latex</span> <span class="o">+</span> <span class="sa">r</span><span class="s2">"\right)"</span>
+    <span class="k">return</span> <span class="s2">"("</span> <span class="o">+</span> <span class="n">latex</span> <span class="o">+</span> <span class="s2">")"</span>
 
 
 <span class="c1"># ---------------------------------------------------------------------------</span>
@@ -236,31 +237,31 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_format_real_number_latex</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Format one real scalar as unambiguous mathematical LaTeX.</span>
+<span class="w">    </span><span class="sd">"""Format one real scalar as unambiguous mathematical LaTeX.</span>
 
 <span class="sd">    :param value: Real constant stored by the symbolic expression.</span>
 <span class="sd">    :return: Integer, decimal, or scientific notation suitable for MathText.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">math</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
         <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
     <span class="k">elif</span> <span class="n">value</span> <span class="o">==</span> <span class="nb">int</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">abs</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e15</span><span class="p">:</span>
         <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">value</span><span class="p">))</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">pass</span>
-    <span class="n">formatted</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">value</span><span class="si">:</span><span class="s2">.6g</span><span class="si">}</span><span class="s2">&quot;</span>
-    <span class="k">if</span> <span class="s2">&quot;e&quot;</span> <span class="ow">in</span> <span class="n">formatted</span><span class="p">:</span>
+    <span class="n">formatted</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">value</span><span class="si">:</span><span class="s2">.6g</span><span class="si">}</span><span class="s2">"</span>
+    <span class="k">if</span> <span class="s2">"e"</span> <span class="ow">in</span> <span class="n">formatted</span><span class="p">:</span>
         <span class="n">mantissa</span><span class="p">:</span> <span class="nb">str</span>
         <span class="n">exponent</span><span class="p">:</span> <span class="nb">str</span>
-        <span class="n">mantissa</span><span class="p">,</span> <span class="n">exponent</span> <span class="o">=</span> <span class="n">formatted</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;e&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-        <span class="k">return</span> <span class="sa">rf</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">mantissa</span><span class="si">}</span><span class="s2"> \times 10^</span><span class="se">{{</span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="n">exponent</span><span class="p">)</span><span class="si">}</span><span class="se">}}</span><span class="s2">&quot;</span>
+        <span class="n">mantissa</span><span class="p">,</span> <span class="n">exponent</span> <span class="o">=</span> <span class="n">formatted</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"e"</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="sa">rf</span><span class="s2">"</span><span class="si">{</span><span class="n">mantissa</span><span class="si">}</span><span class="s2"> \times 10^</span><span class="se">{{</span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="n">exponent</span><span class="p">)</span><span class="si">}</span><span class="se">}}</span><span class="s2">"</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">formatted</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_print_const</span><span class="p">(</span><span class="n">expr</span><span class="p">:</span> <span class="n">Const</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Render a constant as a plain number.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Render a constant as a plain number."""</span>
     <span class="k">if</span> <span class="n">expr</span><span class="o">.</span><span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">return</span> <span class="sa">r</span><span class="s2">&quot;\bot&quot;</span>
+        <span class="k">return</span> <span class="sa">r</span><span class="s2">"\bot"</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">pass</span>
     <span class="n">value</span><span class="p">:</span> <span class="nb">object</span> <span class="o">=</span> <span class="n">expr</span><span class="o">.</span><span class="n">value</span>
@@ -273,24 +274,24 @@
             <span class="k">pass</span>
         <span class="n">imaginary_magnitude</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">imaginary_component</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">imaginary_magnitude</span> <span class="o">==</span> <span class="mf">1.0</span><span class="p">:</span>
-            <span class="n">imaginary_term</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">&quot;\mathrm</span><span class="si">{j}</span><span class="s2">&quot;</span>
+            <span class="n">imaginary_term</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">"\mathrm</span><span class="si">{j}</span><span class="s2">"</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">imaginary_term</span> <span class="o">=</span> <span class="p">(</span>
-                <span class="n">_format_real_number_latex</span><span class="p">(</span><span class="n">imaginary_magnitude</span><span class="p">)</span> <span class="o">+</span> <span class="sa">r</span><span class="s2">&quot;\mathrm</span><span class="si">{j}</span><span class="s2">&quot;</span>
+                <span class="n">_format_real_number_latex</span><span class="p">(</span><span class="n">imaginary_magnitude</span><span class="p">)</span> <span class="o">+</span> <span class="sa">r</span><span class="s2">"\mathrm</span><span class="si">{j}</span><span class="s2">"</span>
             <span class="p">)</span>
         <span class="k">if</span> <span class="n">real_component</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">imaginary_component</span> <span class="o">&lt;</span> <span class="mf">0.0</span><span class="p">:</span>
-                <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;-</span><span class="si">{</span><span class="n">imaginary_term</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="k">return</span> <span class="sa">f</span><span class="s2">"-</span><span class="si">{</span><span class="n">imaginary_term</span><span class="si">}</span><span class="s2">"</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">return</span> <span class="n">imaginary_term</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">pass</span>
         <span class="k">if</span> <span class="n">imaginary_component</span> <span class="o">&lt;</span> <span class="mf">0.0</span><span class="p">:</span>
-            <span class="n">sign</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;-&quot;</span>
+            <span class="n">sign</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"-"</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">sign</span> <span class="o">=</span> <span class="s2">&quot;+&quot;</span>
+            <span class="n">sign</span> <span class="o">=</span> <span class="s2">"+"</span>
         <span class="n">real_term</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">_format_real_number_latex</span><span class="p">(</span><span class="n">real_component</span><span class="p">)</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;(</span><span class="si">{</span><span class="n">real_term</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">sign</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">imaginary_term</span><span class="si">}</span><span class="s2">)&quot;</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">"(</span><span class="si">{</span><span class="n">real_term</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">sign</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">imaginary_term</span><span class="si">}</span><span class="s2">)"</span>
     <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">_format_real_number_latex</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
@@ -298,12 +299,12 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_print_var</span><span class="p">(</span><span class="n">expr</span><span class="p">:</span> <span class="n">Var</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Render a variable, turning the first ``_`` into a subscript.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Render a variable, turning the first ``_`` into a subscript."""</span>
     <span class="n">name</span> <span class="o">=</span> <span class="n">expr</span><span class="o">.</span><span class="n">name</span>
-    <span class="k">if</span> <span class="s2">&quot;_&quot;</span> <span class="ow">in</span> <span class="n">name</span><span class="p">:</span>
-        <span class="n">base</span><span class="p">,</span> <span class="n">sub</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-        <span class="n">escaped_sub</span> <span class="o">=</span> <span class="n">sub</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">,</span> <span class="sa">r</span><span class="s2">&quot;\_&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">base</span><span class="si">}</span><span class="s2">_</span><span class="se">{{</span><span class="si">{</span><span class="n">escaped_sub</span><span class="si">}</span><span class="se">}}</span><span class="s2">&quot;</span>
+    <span class="k">if</span> <span class="s2">"_"</span> <span class="ow">in</span> <span class="n">name</span><span class="p">:</span>
+        <span class="n">base</span><span class="p">,</span> <span class="n">sub</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"_"</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">escaped_sub</span> <span class="o">=</span> <span class="n">sub</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"_"</span><span class="p">,</span> <span class="sa">r</span><span class="s2">"\_"</span><span class="p">)</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">base</span><span class="si">}</span><span class="s2">_</span><span class="se">{{</span><span class="si">{</span><span class="n">escaped_sub</span><span class="si">}</span><span class="se">}}</span><span class="s2">"</span>
     <span class="k">return</span> <span class="n">name</span>
 
 
@@ -313,13 +314,13 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_is_atom_like</span><span class="p">(</span><span class="n">expr</span><span class="p">:</span> <span class="n">Expr</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;True if the expression renders as a single compact token.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""True if the expression renders as a single compact token."""</span>
     <span class="k">return</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">expr</span><span class="p">,</span> <span class="p">(</span><span class="n">Const</span><span class="p">,</span> <span class="n">Var</span><span class="p">))</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_print_mul</span><span class="p">(</span><span class="n">left_latex</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">right_latex</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
                <span class="n">left</span><span class="p">:</span> <span class="n">Expr</span><span class="p">,</span> <span class="n">right</span><span class="p">:</span> <span class="n">Expr</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Render multiplication using implicit notation when possible.</span>
 
 <span class="sd">    Rules::</span>
@@ -331,28 +332,28 @@
 <span class="sd">        atom  × complex →  x\\sin(x)</span>
 <span class="sd">        complex × atom  →  (a+b)x</span>
 <span class="sd">        complex × complex →  (a+b) \\cdot \\sin(x)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">left_is_num</span> <span class="o">=</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">left</span><span class="p">,</span> <span class="n">Const</span><span class="p">)</span> <span class="ow">and</span> <span class="n">left</span><span class="o">.</span><span class="n">value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
     <span class="n">right_is_num</span> <span class="o">=</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">right</span><span class="p">,</span> <span class="n">Const</span><span class="p">)</span> <span class="ow">and</span> <span class="n">right</span><span class="o">.</span><span class="n">value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
 
     <span class="k">if</span> <span class="n">left_is_num</span> <span class="ow">and</span> <span class="n">right_is_num</span><span class="p">:</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">left_latex</span><span class="si">}</span><span class="s2"> </span><span class="se">\\</span><span class="s2">cdot </span><span class="si">{</span><span class="n">right_latex</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">left_latex</span><span class="si">}</span><span class="s2"> </span><span class="se">\\</span><span class="s2">cdot </span><span class="si">{</span><span class="n">right_latex</span><span class="si">}</span><span class="s2">"</span>
 
     <span class="k">if</span> <span class="n">left_is_num</span><span class="p">:</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">left_latex</span><span class="si">}{</span><span class="n">right_latex</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">left_latex</span><span class="si">}{</span><span class="n">right_latex</span><span class="si">}</span><span class="s2">"</span>
 
     <span class="k">if</span> <span class="n">right_is_num</span><span class="p">:</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">left_latex</span><span class="si">}</span><span class="s2"> </span><span class="se">\\</span><span class="s2">cdot </span><span class="si">{</span><span class="n">right_latex</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">left_latex</span><span class="si">}</span><span class="s2"> </span><span class="se">\\</span><span class="s2">cdot </span><span class="si">{</span><span class="n">right_latex</span><span class="si">}</span><span class="s2">"</span>
 
     <span class="k">if</span> <span class="n">_is_atom_like</span><span class="p">(</span><span class="n">left</span><span class="p">)</span> <span class="ow">and</span> <span class="n">_is_atom_like</span><span class="p">(</span><span class="n">right</span><span class="p">):</span>
         <span class="c1"># Explicit multiplication avoids rendering ``speed * RPM`` as</span>
         <span class="c1"># ``speed(RPM)`` when the right atom was previously parenthesized.</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">left_latex</span><span class="si">}</span><span class="s2"> </span><span class="se">\\</span><span class="s2">cdot </span><span class="si">{</span><span class="n">right_latex</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">left_latex</span><span class="si">}</span><span class="s2"> </span><span class="se">\\</span><span class="s2">cdot </span><span class="si">{</span><span class="n">right_latex</span><span class="si">}</span><span class="s2">"</span>
 
     <span class="k">if</span> <span class="n">_is_atom_like</span><span class="p">(</span><span class="n">right</span><span class="p">):</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">left_latex</span><span class="si">}</span><span class="s2"> </span><span class="se">\\</span><span class="s2">cdot </span><span class="si">{</span><span class="n">right_latex</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">left_latex</span><span class="si">}</span><span class="s2"> </span><span class="se">\\</span><span class="s2">cdot </span><span class="si">{</span><span class="n">right_latex</span><span class="si">}</span><span class="s2">"</span>
 
-    <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">left_latex</span><span class="si">}</span><span class="s2"> </span><span class="se">\\</span><span class="s2">cdot </span><span class="si">{</span><span class="n">right_latex</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="k">return</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">left_latex</span><span class="si">}</span><span class="s2"> </span><span class="se">\\</span><span class="s2">cdot </span><span class="si">{</span><span class="n">right_latex</span><span class="si">}</span><span class="s2">"</span>
 
 
 <span class="c1"># ---------------------------------------------------------------------------</span>
@@ -361,40 +362,40 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_print_unop</span><span class="p">(</span><span class="n">expr</span><span class="p">:</span> <span class="n">UnOp</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-    <span class="k">if</span> <span class="n">expr</span><span class="o">.</span><span class="n">op</span> <span class="o">==</span> <span class="s2">&quot;-&quot;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">expr</span><span class="o">.</span><span class="n">op</span> <span class="o">==</span> <span class="s2">"-"</span><span class="p">:</span>
         <span class="n">inner</span> <span class="o">=</span> <span class="n">_latex</span><span class="p">(</span><span class="n">expr</span><span class="o">.</span><span class="n">operand</span><span class="p">,</span> <span class="n">_UNARY</span><span class="p">)</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;-</span><span class="si">{</span><span class="n">inner</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">"-</span><span class="si">{</span><span class="n">inner</span><span class="si">}</span><span class="s2">"</span>
     <span class="n">inner</span> <span class="o">=</span> <span class="n">_latex</span><span class="p">(</span><span class="n">expr</span><span class="o">.</span><span class="n">operand</span><span class="p">,</span> <span class="n">_ATOM</span><span class="p">)</span>
-    <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">expr</span><span class="o">.</span><span class="n">op</span><span class="si">}</span><span class="se">{{</span><span class="si">{</span><span class="n">inner</span><span class="si">}</span><span class="se">}}</span><span class="s2">&quot;</span>
+    <span class="k">return</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">expr</span><span class="o">.</span><span class="n">op</span><span class="si">}</span><span class="se">{{</span><span class="si">{</span><span class="n">inner</span><span class="si">}</span><span class="se">}}</span><span class="s2">"</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_print_binop</span><span class="p">(</span><span class="n">expr</span><span class="p">:</span> <span class="n">BinOp</span><span class="p">,</span> <span class="n">parent_prec</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Render a binary expression while preserving operator precedence.</span>
+<span class="w">    </span><span class="sd">"""Render a binary expression while preserving operator precedence.</span>
 
 <span class="sd">    :param expr: Binary symbolic node to convert.</span>
 <span class="sd">    :param parent_prec: Precedence required by the parent expression.</span>
 <span class="sd">    :return: Semantically equivalent LaTeX.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">op</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">expr</span><span class="o">.</span><span class="n">op</span>
 
-    <span class="k">if</span> <span class="n">op</span> <span class="o">==</span> <span class="s2">&quot;+&quot;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">op</span> <span class="o">==</span> <span class="s2">"+"</span><span class="p">:</span>
         <span class="n">lp</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">_latex</span><span class="p">(</span><span class="n">expr</span><span class="o">.</span><span class="n">left</span><span class="p">,</span> <span class="n">_ADD</span><span class="p">)</span>
         <span class="n">rp</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">_latex</span><span class="p">(</span><span class="n">expr</span><span class="o">.</span><span class="n">right</span><span class="p">,</span> <span class="n">_ADD</span><span class="p">,</span> <span class="n">right</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">_wrap</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">lp</span><span class="si">}</span><span class="s2"> + </span><span class="si">{</span><span class="n">rp</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">_needs_parens</span><span class="p">(</span><span class="n">expr</span><span class="p">,</span> <span class="n">parent_prec</span><span class="p">,</span> <span class="n">_ADD</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">_wrap</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">lp</span><span class="si">}</span><span class="s2"> + </span><span class="si">{</span><span class="n">rp</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">_needs_parens</span><span class="p">(</span><span class="n">expr</span><span class="p">,</span> <span class="n">parent_prec</span><span class="p">,</span> <span class="n">_ADD</span><span class="p">))</span>
 
-    <span class="k">elif</span> <span class="n">op</span> <span class="o">==</span> <span class="s2">&quot;-&quot;</span><span class="p">:</span>
+    <span class="k">elif</span> <span class="n">op</span> <span class="o">==</span> <span class="s2">"-"</span><span class="p">:</span>
         <span class="n">lp</span> <span class="o">=</span> <span class="n">_latex</span><span class="p">(</span><span class="n">expr</span><span class="o">.</span><span class="n">left</span><span class="p">,</span> <span class="n">_ADD</span><span class="p">)</span>
         <span class="n">rp</span> <span class="o">=</span> <span class="n">_latex</span><span class="p">(</span><span class="n">expr</span><span class="o">.</span><span class="n">right</span><span class="p">,</span> <span class="n">_ADD</span><span class="p">,</span> <span class="n">right</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">expr</span><span class="o">.</span><span class="n">right</span><span class="p">,</span> <span class="n">BinOp</span><span class="p">)</span> <span class="ow">and</span> <span class="n">expr</span><span class="o">.</span><span class="n">right</span><span class="o">.</span><span class="n">op</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;+&quot;</span><span class="p">,</span> <span class="s2">&quot;-&quot;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">expr</span><span class="o">.</span><span class="n">right</span><span class="p">,</span> <span class="n">BinOp</span><span class="p">)</span> <span class="ow">and</span> <span class="n">expr</span><span class="o">.</span><span class="n">right</span><span class="o">.</span><span class="n">op</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"+"</span><span class="p">,</span> <span class="s2">"-"</span><span class="p">):</span>
             <span class="c1"># Subtraction is not associative. Retaining the right-hand group</span>
             <span class="c1"># is essential: a - (b + c) and a - (b - c) otherwise change</span>
             <span class="c1"># mathematical meaning when exported.</span>
             <span class="n">rp</span> <span class="o">=</span> <span class="n">_wrap</span><span class="p">(</span><span class="n">rp</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">pass</span>
-        <span class="k">return</span> <span class="n">_wrap</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">lp</span><span class="si">}</span><span class="s2"> - </span><span class="si">{</span><span class="n">rp</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">_needs_parens</span><span class="p">(</span><span class="n">expr</span><span class="p">,</span> <span class="n">parent_prec</span><span class="p">,</span> <span class="n">_ADD</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">_wrap</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">lp</span><span class="si">}</span><span class="s2"> - </span><span class="si">{</span><span class="n">rp</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">_needs_parens</span><span class="p">(</span><span class="n">expr</span><span class="p">,</span> <span class="n">parent_prec</span><span class="p">,</span> <span class="n">_ADD</span><span class="p">))</span>
 
-    <span class="k">elif</span> <span class="n">op</span> <span class="o">==</span> <span class="s2">&quot;*&quot;</span><span class="p">:</span>
+    <span class="k">elif</span> <span class="n">op</span> <span class="o">==</span> <span class="s2">"*"</span><span class="p">:</span>
         <span class="c1"># Each recursive child printer already compares its real precedence</span>
         <span class="c1"># with ``_MUL``. Applying ``_needs_parens`` with a hard-coded child</span>
         <span class="c1"># precedence of ``_MUL`` parenthesized every right-hand atom and made a</span>
@@ -404,63 +405,63 @@
         <span class="n">result</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">_print_mul</span><span class="p">(</span><span class="n">lp</span><span class="p">,</span> <span class="n">rp</span><span class="p">,</span> <span class="n">expr</span><span class="o">.</span><span class="n">left</span><span class="p">,</span> <span class="n">expr</span><span class="o">.</span><span class="n">right</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">_wrap</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">_needs_parens</span><span class="p">(</span><span class="n">expr</span><span class="p">,</span> <span class="n">parent_prec</span><span class="p">,</span> <span class="n">_MUL</span><span class="p">))</span>
 
-    <span class="k">elif</span> <span class="n">op</span> <span class="o">==</span> <span class="s2">&quot;/&quot;</span><span class="p">:</span>
+    <span class="k">elif</span> <span class="n">op</span> <span class="o">==</span> <span class="s2">"/"</span><span class="p">:</span>
         <span class="n">numerator</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">_latex</span><span class="p">(</span><span class="n">expr</span><span class="o">.</span><span class="n">left</span><span class="p">,</span> <span class="n">_CMP</span><span class="p">)</span>
         <span class="n">denominator</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">_latex</span><span class="p">(</span><span class="n">expr</span><span class="o">.</span><span class="n">right</span><span class="p">,</span> <span class="n">_CMP</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">_wrap</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\\</span><span class="s2">frac</span><span class="se">{{</span><span class="si">{</span><span class="n">numerator</span><span class="si">}</span><span class="se">}}{{</span><span class="si">{</span><span class="n">denominator</span><span class="si">}</span><span class="se">}}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="sa">f</span><span class="s2">"</span><span class="se">\\</span><span class="s2">frac</span><span class="se">{{</span><span class="si">{</span><span class="n">numerator</span><span class="si">}</span><span class="se">}}{{</span><span class="si">{</span><span class="n">denominator</span><span class="si">}</span><span class="se">}}</span><span class="s2">"</span><span class="p">,</span>
             <span class="n">_needs_parens</span><span class="p">(</span><span class="n">expr</span><span class="p">,</span> <span class="n">parent_prec</span><span class="p">,</span> <span class="n">_DIV</span><span class="p">),</span>
         <span class="p">)</span>
 
-    <span class="k">elif</span> <span class="n">op</span> <span class="o">==</span> <span class="s2">&quot;**&quot;</span><span class="p">:</span>
+    <span class="k">elif</span> <span class="n">op</span> <span class="o">==</span> <span class="s2">"**"</span><span class="p">:</span>
         <span class="n">base_needs</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">_needs_parens</span><span class="p">(</span><span class="n">expr</span><span class="o">.</span><span class="n">left</span><span class="p">,</span> <span class="n">_POW</span><span class="p">,</span> <span class="n">_POW</span><span class="p">)</span>
         <span class="n">base</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">_wrap</span><span class="p">(</span><span class="n">_latex</span><span class="p">(</span><span class="n">expr</span><span class="o">.</span><span class="n">left</span><span class="p">,</span> <span class="n">_POW</span><span class="p">),</span> <span class="n">base_needs</span><span class="p">,</span> <span class="n">big</span><span class="o">=</span><span class="n">base_needs</span><span class="p">)</span>
         <span class="n">exponent</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">_latex</span><span class="p">(</span><span class="n">expr</span><span class="o">.</span><span class="n">right</span><span class="p">,</span> <span class="n">_POW</span><span class="p">,</span> <span class="n">right</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">_wrap</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">base</span><span class="si">}</span><span class="s2">^</span><span class="se">{{</span><span class="si">{</span><span class="n">exponent</span><span class="si">}</span><span class="se">}}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">base</span><span class="si">}</span><span class="s2">^</span><span class="se">{{</span><span class="si">{</span><span class="n">exponent</span><span class="si">}</span><span class="se">}}</span><span class="s2">"</span><span class="p">,</span>
             <span class="n">_needs_parens</span><span class="p">(</span><span class="n">expr</span><span class="p">,</span> <span class="n">parent_prec</span><span class="p">,</span> <span class="n">_POW</span><span class="p">),</span>
         <span class="p">)</span>
 
     <span class="k">else</span><span class="p">:</span>
         <span class="n">lp</span> <span class="o">=</span> <span class="n">_latex</span><span class="p">(</span><span class="n">expr</span><span class="o">.</span><span class="n">left</span><span class="p">,</span> <span class="n">_ATOM</span><span class="p">)</span>
         <span class="n">rp</span> <span class="o">=</span> <span class="n">_latex</span><span class="p">(</span><span class="n">expr</span><span class="o">.</span><span class="n">right</span><span class="p">,</span> <span class="n">_ATOM</span><span class="p">)</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">lp</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">op</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">rp</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">lp</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">op</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">rp</span><span class="si">}</span><span class="s2">"</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_print_func</span><span class="p">(</span><span class="n">expr</span><span class="p">:</span> <span class="n">Func</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Render one unary symbolic function with valid MathText grouping.</span>
+<span class="w">    </span><span class="sd">"""Render one unary symbolic function with valid MathText grouping.</span>
 
 <span class="sd">    :param expr: Unary symbolic function to convert.</span>
 <span class="sd">    :return: MathText-compatible LaTeX.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">tex_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">_FUNC_LATEX</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">expr</span><span class="o">.</span><span class="n">op</span><span class="p">,</span> <span class="sa">r</span><span class="s2">&quot;\operatorname{&quot;</span> <span class="o">+</span> <span class="n">expr</span><span class="o">.</span><span class="n">op</span> <span class="o">+</span> <span class="s2">&quot;}&quot;</span><span class="p">)</span>
+<span class="sd">    """</span>
+    <span class="n">tex_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">_FUNC_LATEX</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">expr</span><span class="o">.</span><span class="n">op</span><span class="p">,</span> <span class="sa">r</span><span class="s2">"\operatorname{"</span> <span class="o">+</span> <span class="n">expr</span><span class="o">.</span><span class="n">op</span> <span class="o">+</span> <span class="s2">"}"</span><span class="p">)</span>
     <span class="n">inner</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">_latex</span><span class="p">(</span><span class="n">expr</span><span class="o">.</span><span class="n">arg</span><span class="p">,</span> <span class="n">_CMP</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="n">expr</span><span class="o">.</span><span class="n">op</span> <span class="o">==</span> <span class="s2">&quot;sqrt&quot;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">expr</span><span class="o">.</span><span class="n">op</span> <span class="o">==</span> <span class="s2">"sqrt"</span><span class="p">:</span>
         <span class="c1"># MathText requires a braced radicand. Supplying a scalable delimiter</span>
         <span class="c1"># as the next token made square roots fall back to visible source code.</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">tex_name</span><span class="si">}</span><span class="se">{{</span><span class="si">{</span><span class="n">inner</span><span class="si">}</span><span class="se">}}</span><span class="s2">&quot;</span>
-    <span class="k">elif</span> <span class="n">expr</span><span class="o">.</span><span class="n">op</span> <span class="o">==</span> <span class="s2">&quot;abs&quot;</span><span class="p">:</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">tex_name</span><span class="si">}{</span><span class="n">inner</span><span class="si">}</span><span class="se">\\</span><span class="s2">rvert&quot;</span>
-    <span class="k">elif</span> <span class="n">expr</span><span class="o">.</span><span class="n">op</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;floor&quot;</span><span class="p">,</span> <span class="s2">&quot;ceil&quot;</span><span class="p">):</span>
-        <span class="n">close</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">&quot;\rfloor&quot;</span> <span class="k">if</span> <span class="n">expr</span><span class="o">.</span><span class="n">op</span> <span class="o">==</span> <span class="s2">&quot;floor&quot;</span> <span class="k">else</span> <span class="sa">r</span><span class="s2">&quot;\rceil&quot;</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">tex_name</span><span class="si">}{</span><span class="n">inner</span><span class="si">}{</span><span class="n">close</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">tex_name</span><span class="si">}</span><span class="se">{{</span><span class="si">{</span><span class="n">inner</span><span class="si">}</span><span class="se">}}</span><span class="s2">"</span>
+    <span class="k">elif</span> <span class="n">expr</span><span class="o">.</span><span class="n">op</span> <span class="o">==</span> <span class="s2">"abs"</span><span class="p">:</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">tex_name</span><span class="si">}{</span><span class="n">inner</span><span class="si">}</span><span class="se">\\</span><span class="s2">rvert"</span>
+    <span class="k">elif</span> <span class="n">expr</span><span class="o">.</span><span class="n">op</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"floor"</span><span class="p">,</span> <span class="s2">"ceil"</span><span class="p">):</span>
+        <span class="n">close</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">"\rfloor"</span> <span class="k">if</span> <span class="n">expr</span><span class="o">.</span><span class="n">op</span> <span class="o">==</span> <span class="s2">"floor"</span> <span class="k">else</span> <span class="sa">r</span><span class="s2">"\rceil"</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">tex_name</span><span class="si">}{</span><span class="n">inner</span><span class="si">}{</span><span class="n">close</span><span class="si">}</span><span class="s2">"</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">tex_name</span><span class="si">}</span><span class="se">\\</span><span class="s2">left(</span><span class="si">{</span><span class="n">inner</span><span class="si">}</span><span class="se">\\</span><span class="s2">right)&quot;</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">tex_name</span><span class="si">}</span><span class="se">\\</span><span class="s2">left(</span><span class="si">{</span><span class="n">inner</span><span class="si">}</span><span class="se">\\</span><span class="s2">right)"</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_print_func2</span><span class="p">(</span><span class="n">expr</span><span class="p">:</span> <span class="n">Func2</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-    <span class="n">tex_name</span> <span class="o">=</span> <span class="n">_FUNC2_LATEX</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">expr</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="sa">r</span><span class="s2">&quot;\operatorname{&quot;</span> <span class="o">+</span> <span class="n">expr</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s2">&quot;}&quot;</span><span class="p">)</span>
+    <span class="n">tex_name</span> <span class="o">=</span> <span class="n">_FUNC2_LATEX</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">expr</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="sa">r</span><span class="s2">"\operatorname{"</span> <span class="o">+</span> <span class="n">expr</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s2">"}"</span><span class="p">)</span>
     <span class="n">a1</span> <span class="o">=</span> <span class="n">_latex</span><span class="p">(</span><span class="n">expr</span><span class="o">.</span><span class="n">arg1</span><span class="p">,</span> <span class="n">_CMP</span><span class="p">)</span>
     <span class="n">a2</span> <span class="o">=</span> <span class="n">_latex</span><span class="p">(</span><span class="n">expr</span><span class="o">.</span><span class="n">arg2</span><span class="p">,</span> <span class="n">_CMP</span><span class="p">)</span>
-    <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">tex_name</span><span class="si">}</span><span class="se">\\</span><span class="s2">left(</span><span class="si">{</span><span class="n">a1</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">a2</span><span class="si">}</span><span class="se">\\</span><span class="s2">right)&quot;</span>
+    <span class="k">return</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">tex_name</span><span class="si">}</span><span class="se">\\</span><span class="s2">left(</span><span class="si">{</span><span class="n">a1</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">a2</span><span class="si">}</span><span class="se">\\</span><span class="s2">right)"</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_print_comparison</span><span class="p">(</span><span class="n">expr</span><span class="p">:</span> <span class="n">Comparison</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
     <span class="n">left</span> <span class="o">=</span> <span class="n">_latex</span><span class="p">(</span><span class="n">expr</span><span class="o">.</span><span class="n">lhs</span><span class="p">,</span> <span class="n">_CMP</span><span class="p">)</span>
     <span class="n">right</span> <span class="o">=</span> <span class="n">_latex</span><span class="p">(</span><span class="n">expr</span><span class="o">.</span><span class="n">rhs</span><span class="p">,</span> <span class="n">_CMP</span><span class="p">,</span> <span class="n">right</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="n">op</span> <span class="o">=</span> <span class="n">_CMP_LATEX</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">expr</span><span class="o">.</span><span class="n">op</span><span class="p">,</span> <span class="s2">&quot;=&quot;</span><span class="p">)</span>
-    <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">left</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">op</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">right</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="n">op</span> <span class="o">=</span> <span class="n">_CMP_LATEX</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">expr</span><span class="o">.</span><span class="n">op</span><span class="p">,</span> <span class="s2">"="</span><span class="p">)</span>
+    <span class="k">return</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">left</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">op</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">right</span><span class="si">}</span><span class="s2">"</span>
 
 
 <span class="c1"># ---------------------------------------------------------------------------</span>
@@ -469,7 +470,7 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_latex</span><span class="p">(</span><span class="n">expr</span><span class="p">:</span> <span class="n">Expr</span><span class="p">,</span> <span class="n">prec</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">_ATOM</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">right</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Recursively convert *expr* to LaTeX.</span>
 
 <span class="sd">    :param expr:  Symbolic expression node.</span>
@@ -477,7 +478,7 @@
 <span class="sd">    :param right: True when *expr* is the right child of its parent</span>
 <span class="sd">                  (affects parentheses for equal-precedence cases).</span>
 <span class="sd">    :return: LaTeX math string.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">expr</span><span class="p">,</span> <span class="n">Const</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">_print_const</span><span class="p">(</span><span class="n">expr</span><span class="p">)</span>
 
@@ -514,7 +515,7 @@
 <div class="viewcode-block" id="symbolic_to_latex">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.latex_printer.symbolic_to_latex">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">symbolic_to_latex</span><span class="p">(</span><span class="n">expr</span><span class="p">:</span> <span class="n">Expr</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Convert a symbolic expression into a LaTeX math string.</span>
 
 <span class="sd">    The output is intended for a standard LaTeX math renderer (no</span>
@@ -522,7 +523,7 @@
 
 <span class="sd">    :param expr: Symbolic expression to convert.</span>
 <span class="sd">    :return: LaTeX math string.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="n">_latex</span><span class="p">(</span><span class="n">expr</span><span class="p">)</span></div>
 
 </pre></div>

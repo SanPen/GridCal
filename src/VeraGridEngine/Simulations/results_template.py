@@ -624,7 +624,12 @@ class ResultsTemplate(metaclass=ResultsTemplateMeta):
                 # it may be a single number...
                 if res_prop.tpe in [int, float, complex]:
                     if array.size == 1:
-                        array = array[0]
+                        # Parquet stores scalars as 1x1 tables; restore a Python scalar.
+                        array = array.item()
+                    else:
+                        pass
+                else:
+                    pass
 
                 if res_prop.tpe == DateVec:
                     array = pd.to_datetime(np.asarray(array).reshape(-1))

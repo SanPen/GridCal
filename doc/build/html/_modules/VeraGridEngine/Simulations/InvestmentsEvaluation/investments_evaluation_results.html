@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Simulations.InvestmentsEvaluation.investments_evaluation_results &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Simulations.InvestmentsEvaluation.investments_evaluation_results &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/license.html">📜 License</a></li>
@@ -120,41 +121,41 @@
 <span class="k">class</span><span class="w"> </span><span class="nc">InvestmentsEvaluationResults</span><span class="p">(</span><span class="n">ResultsTemplate</span><span class="p">):</span>
 
     <span class="n">LOCAL_RESULTS_DECLARATIONS</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;max_eval&#39;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
-        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;f_names&#39;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">StrVec</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
-        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;x_names&#39;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">StrVec</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
-        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;plot_x_idx&#39;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
-        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;plot_y_idx&#39;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
-        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">Mat</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
-        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;f&#39;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">Mat</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
-        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;f_best&#39;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">Vec</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
-        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;sorting_indices&#39;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">IntVec</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'max_eval'</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'f_names'</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">StrVec</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'x_names'</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">StrVec</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'plot_x_idx'</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'plot_y_idx'</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'x'</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">Mat</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'f'</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">Mat</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'f_best'</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">Vec</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+        <span class="n">ResultsProperty</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'sorting_indices'</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="n">IntVec</span><span class="p">,</span> <span class="n">old_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span> <span class="n">expandable</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
     <span class="p">)</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;_max_eval&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;f_names&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;x_names&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;plot_x_idx&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;plot_y_idx&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;_x&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;_f&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;_f_best&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;_sorting_indices&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;_InvestmentsEvaluationResults__eval_index&quot;</span><span class="p">,</span>
+        <span class="s2">"_max_eval"</span><span class="p">,</span>
+        <span class="s2">"f_names"</span><span class="p">,</span>
+        <span class="s2">"x_names"</span><span class="p">,</span>
+        <span class="s2">"plot_x_idx"</span><span class="p">,</span>
+        <span class="s2">"plot_y_idx"</span><span class="p">,</span>
+        <span class="s2">"_x"</span><span class="p">,</span>
+        <span class="s2">"_f"</span><span class="p">,</span>
+        <span class="s2">"_f_best"</span><span class="p">,</span>
+        <span class="s2">"_sorting_indices"</span><span class="p">,</span>
+        <span class="s2">"_InvestmentsEvaluationResults__eval_index"</span><span class="p">,</span>
     <span class="p">)</span>
 
-    <span class="n">tpe</span> <span class="o">=</span> <span class="s1">&#39;Investments Evaluation Results&#39;</span>
+    <span class="n">tpe</span> <span class="o">=</span> <span class="s1">'Investments Evaluation Results'</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f_names</span><span class="p">:</span> <span class="n">StrVec</span><span class="p">,</span> <span class="n">x_names</span><span class="p">:</span> <span class="n">StrVec</span><span class="p">,</span> <span class="n">max_eval</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">plot_x_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">plot_y_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Constructor</span>
 <span class="sd">        :param f_names: Names of the objectives</span>
 <span class="sd">        :param x_names: Names of the decision vars</span>
 <span class="sd">        :param max_eval: Maximum number of evaluations</span>
 <span class="sd">        :param plot_x_idx: index of f to use as x when plotting</span>
 <span class="sd">        :param plot_y_idx: index of f to use as y when plotting</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">available_results</span> <span class="o">=</span> <span class="p">{</span>
             <span class="n">ResultTypes</span><span class="o">.</span><span class="n">ReportsResults</span><span class="p">:</span> <span class="p">[</span><span class="n">ResultTypes</span><span class="o">.</span><span class="n">InvestmentsReportResults</span><span class="p">,</span>
                                          <span class="n">ResultTypes</span><span class="o">.</span><span class="n">InvestmentsCombinationsResults</span><span class="p">,</span>
@@ -172,7 +173,7 @@
         <span class="p">}</span>
 
         <span class="n">ResultsTemplate</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
-                                 <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Investments Evaluation&#39;</span><span class="p">,</span>
+                                 <span class="n">name</span><span class="o">=</span><span class="s1">'Investments Evaluation'</span><span class="p">,</span>
                                  <span class="n">available_results</span><span class="o">=</span><span class="n">available_results</span><span class="p">,</span>
                                  <span class="n">time_array</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                                  <span class="n">clustering_results</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -212,7 +213,7 @@
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_x</span> <span class="o">=</span> <span class="n">val</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;X must be a numpy array&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"X must be a numpy array"</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">f</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Mat</span><span class="p">:</span>
@@ -223,7 +224,7 @@
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_f</span> <span class="o">=</span> <span class="n">val</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;f must be a numpy array&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"f must be a numpy array"</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">f_best</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">IntVec</span><span class="p">:</span>
@@ -234,7 +235,7 @@
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_f_best</span> <span class="o">=</span> <span class="n">val</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;f_best must be a numpy array&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"f_best must be a numpy array"</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">current_evaluation</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
@@ -249,24 +250,24 @@
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_sorting_indices</span> <span class="o">=</span> <span class="n">val</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;sorting indices must be an array of integer&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"sorting indices must be an array of integer"</span><span class="p">)</span>
 
 <div class="viewcode-block" id="InvestmentsEvaluationResults.get_index">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.InvestmentsEvaluation.html#VeraGridEngine.Simulations.InvestmentsEvaluation.investments_evaluation_results.InvestmentsEvaluationResults.get_index">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_index</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StrVec</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="sa">f</span><span class="s2">&quot;Eval </span><span class="si">{</span><span class="n">i</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])])</span></div>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="sa">f</span><span class="s2">"Eval </span><span class="si">{</span><span class="n">i</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">"</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])])</span></div>
 
 
 <div class="viewcode-block" id="InvestmentsEvaluationResults.set_at">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.InvestmentsEvaluation.html#VeraGridEngine.Simulations.InvestmentsEvaluation.investments_evaluation_results.InvestmentsEvaluationResults.set_at">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">set_at</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">x_vec</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">f_vec</span><span class="p">:</span> <span class="n">Vec</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :param i:</span>
 <span class="sd">        :param x_vec:</span>
 <span class="sd">        :param f_vec:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_x</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">x_vec</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_f</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">f_vec</span></div>
 
@@ -274,32 +275,32 @@
 <div class="viewcode-block" id="InvestmentsEvaluationResults.add">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.InvestmentsEvaluation.html#VeraGridEngine.Simulations.InvestmentsEvaluation.investments_evaluation_results.InvestmentsEvaluationResults.add">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x_vec</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">f_vec</span><span class="p">:</span> <span class="n">Vec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :param x_vec:</span>
 <span class="sd">        :param f_vec:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__eval_index</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_eval</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">set_at</span><span class="p">(</span><span class="n">i</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">__eval_index</span><span class="p">,</span> <span class="n">x_vec</span><span class="o">=</span><span class="n">x_vec</span><span class="p">,</span> <span class="n">f_vec</span><span class="o">=</span><span class="n">f_vec</span><span class="p">)</span>
 
             <span class="bp">self</span><span class="o">.</span><span class="n">__eval_index</span> <span class="o">+=</span> <span class="mi">1</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Evaluation index out of range&#39;</span><span class="p">)</span></div>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">'Evaluation index out of range'</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="InvestmentsEvaluationResults.finalize">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.InvestmentsEvaluation.html#VeraGridEngine.Simulations.InvestmentsEvaluation.investments_evaluation_results.InvestmentsEvaluationResults.finalize">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">finalize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Finalize the results after simulation</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># crop the data to the latest call index</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__eval_index</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_f</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_f</span><span class="p">[:</span><span class="bp">self</span><span class="o">.</span><span class="n">__eval_index</span><span class="p">,</span> <span class="p">:]</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_x</span><span class="p">[:</span><span class="bp">self</span><span class="o">.</span><span class="n">__eval_index</span><span class="p">,</span> <span class="p">:]</span>
 
-            <span class="c1"># Dedup x rows before Pareto sorting: equal-x rows don&#39;t dominate each</span>
+            <span class="c1"># Dedup x rows before Pareto sorting: equal-x rows don't dominate each</span>
             <span class="c1"># other and would all land in the front. Raw _x/_f stay intact so the</span>
             <span class="c1"># iteration, frequency, and reports views still see every evaluation.</span>
             <span class="n">_</span><span class="p">,</span> <span class="n">unique_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_x</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">return_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -320,21 +321,21 @@
 <div class="viewcode-block" id="InvestmentsEvaluationResults.set_best_combination">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.InvestmentsEvaluation.html#VeraGridEngine.Simulations.InvestmentsEvaluation.investments_evaluation_results.InvestmentsEvaluationResults.set_best_combination">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">set_best_combination</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">combination</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Set the best combination of investment groups</span>
 <span class="sd">        :param combination: Vector of integers (0/1)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_f_best</span> <span class="o">=</span> <span class="n">combination</span></div>
 
 
 <div class="viewcode-block" id="InvestmentsEvaluationResults.mdl">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.InvestmentsEvaluation.html#VeraGridEngine.Simulations.InvestmentsEvaluation.investments_evaluation_results.InvestmentsEvaluationResults.mdl">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">mdl</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">result_type</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ResultsTable</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Plot the results</span>
 <span class="sd">        :param result_type: type of results (string)</span>
 <span class="sd">        :return: DataFrame of the results (or None if the result was not understood)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">n</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_index</span><span class="p">()</span>
 
@@ -355,9 +356,9 @@
                                 <span class="n">columns</span><span class="o">=</span><span class="n">columns</span><span class="p">,</span>
                                 <span class="n">cols_device_type</span><span class="o">=</span><span class="n">DeviceType</span><span class="o">.</span><span class="n">NoDevice</span><span class="o">.</span><span class="n">NoDevice</span><span class="p">,</span>
                                 <span class="n">title</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">result_type</span><span class="o">.</span><span class="n">value</span><span class="p">),</span>
-                                <span class="n">ylabel</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
-                                <span class="n">xlabel</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
-                                <span class="n">units</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+                                <span class="n">ylabel</span><span class="o">=</span><span class="s2">""</span><span class="p">,</span>
+                                <span class="n">xlabel</span><span class="o">=</span><span class="s1">''</span><span class="p">,</span>
+                                <span class="n">units</span><span class="o">=</span><span class="s2">""</span><span class="p">)</span>
 
         <span class="k">elif</span> <span class="n">result_type</span> <span class="o">==</span> <span class="n">ResultTypes</span><span class="o">.</span><span class="n">InvestmentsFrequencyResults</span><span class="p">:</span>
 
@@ -368,12 +369,12 @@
             <span class="k">return</span> <span class="n">ResultsTable</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span>
                                 <span class="n">index</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x_names</span><span class="p">),</span>
                                 <span class="n">idx_device_type</span><span class="o">=</span><span class="n">DeviceType</span><span class="o">.</span><span class="n">NoDevice</span><span class="p">,</span>
-                                <span class="n">columns</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="s2">&quot;Frequency&quot;</span><span class="p">,</span> <span class="s2">&quot;Relative frequency&quot;</span><span class="p">]),</span>
+                                <span class="n">columns</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="s2">"Frequency"</span><span class="p">,</span> <span class="s2">"Relative frequency"</span><span class="p">]),</span>
                                 <span class="n">cols_device_type</span><span class="o">=</span><span class="n">DeviceType</span><span class="o">.</span><span class="n">NoDevice</span><span class="o">.</span><span class="n">NoDevice</span><span class="p">,</span>
                                 <span class="n">title</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">result_type</span><span class="o">.</span><span class="n">value</span><span class="p">),</span>
-                                <span class="n">ylabel</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
-                                <span class="n">xlabel</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
-                                <span class="n">units</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+                                <span class="n">ylabel</span><span class="o">=</span><span class="s2">""</span><span class="p">,</span>
+                                <span class="n">xlabel</span><span class="o">=</span><span class="s2">""</span><span class="p">,</span>
+                                <span class="n">units</span><span class="o">=</span><span class="s2">""</span><span class="p">)</span>
 
         <span class="k">elif</span> <span class="n">result_type</span> <span class="ow">in</span> <span class="p">(</span><span class="n">ResultTypes</span><span class="o">.</span><span class="n">InvestmentsCombinationsResults</span><span class="p">,</span>
                              <span class="n">ResultTypes</span><span class="o">.</span><span class="n">InvestmentsParetoCombinationsResults</span><span class="p">):</span>
@@ -391,9 +392,9 @@
                                 <span class="n">columns</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">x_names</span><span class="p">,</span>
                                 <span class="n">cols_device_type</span><span class="o">=</span><span class="n">DeviceType</span><span class="o">.</span><span class="n">NoDevice</span><span class="o">.</span><span class="n">NoDevice</span><span class="p">,</span>
                                 <span class="n">title</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">result_type</span><span class="o">.</span><span class="n">value</span><span class="p">),</span>
-                                <span class="n">ylabel</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
-                                <span class="n">xlabel</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
-                                <span class="n">units</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+                                <span class="n">ylabel</span><span class="o">=</span><span class="s2">""</span><span class="p">,</span>
+                                <span class="n">xlabel</span><span class="o">=</span><span class="s2">""</span><span class="p">,</span>
+                                <span class="n">units</span><span class="o">=</span><span class="s2">""</span><span class="p">)</span>
 
         <span class="k">elif</span> <span class="n">result_type</span> <span class="ow">in</span> <span class="p">(</span><span class="n">ResultTypes</span><span class="o">.</span><span class="n">InvestmentsObjectivesResults</span><span class="p">,</span>
                              <span class="n">ResultTypes</span><span class="o">.</span><span class="n">InvestmentsParetoObjectivesResults</span><span class="p">):</span>
@@ -411,9 +412,9 @@
                                 <span class="n">columns</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">f_names</span><span class="p">,</span>
                                 <span class="n">cols_device_type</span><span class="o">=</span><span class="n">DeviceType</span><span class="o">.</span><span class="n">NoDevice</span><span class="o">.</span><span class="n">NoDevice</span><span class="p">,</span>
                                 <span class="n">title</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">result_type</span><span class="o">.</span><span class="n">value</span><span class="p">),</span>
-                                <span class="n">ylabel</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
-                                <span class="n">xlabel</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
-                                <span class="n">units</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+                                <span class="n">ylabel</span><span class="o">=</span><span class="s2">""</span><span class="p">,</span>
+                                <span class="n">xlabel</span><span class="o">=</span><span class="s2">""</span><span class="p">,</span>
+                                <span class="n">units</span><span class="o">=</span><span class="s2">""</span><span class="p">)</span>
 
         <span class="k">elif</span> <span class="n">result_type</span> <span class="o">==</span> <span class="n">ResultTypes</span><span class="o">.</span><span class="n">InvestmentsParetoPlot</span><span class="p">:</span>
 
@@ -427,15 +428,15 @@
                                 <span class="n">columns</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">f_names</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">plot_x_idx</span><span class="p">],</span>
                                                   <span class="bp">self</span><span class="o">.</span><span class="n">f_names</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">plot_y_idx</span><span class="p">]]),</span>
                                 <span class="n">cols_device_type</span><span class="o">=</span><span class="n">DeviceType</span><span class="o">.</span><span class="n">NoDevice</span><span class="o">.</span><span class="n">NoDevice</span><span class="p">,</span>
-                                <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Pareto plot&quot;</span><span class="p">,</span>
+                                <span class="n">title</span><span class="o">=</span><span class="s2">"Pareto plot"</span><span class="p">,</span>
                                 <span class="n">ylabel</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">f_names</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">plot_y_idx</span><span class="p">],</span>
                                 <span class="n">xlabel</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">f_names</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">plot_x_idx</span><span class="p">],</span>
-                                <span class="n">units</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+                                <span class="n">units</span><span class="o">=</span><span class="s2">""</span><span class="p">,</span>
                                 <span class="n">plot_type</span><span class="o">=</span><span class="n">ResultTablePlotType</span><span class="o">.</span><span class="n">XY</span><span class="p">)</span>
 
         <span class="k">elif</span> <span class="n">result_type</span> <span class="o">==</span> <span class="n">ResultTypes</span><span class="o">.</span><span class="n">InvestmentsIterationsPlot</span><span class="p">:</span>
 
-            <span class="n">columns</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Iteration&quot;</span><span class="p">,</span> <span class="s2">&quot;Objectives summation&quot;</span><span class="p">]</span>
+            <span class="n">columns</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"Iteration"</span><span class="p">,</span> <span class="s2">"Objectives summation"</span><span class="p">]</span>
             <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">max_eval</span><span class="p">)</span>
             <span class="n">y</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">f</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
             <span class="n">data</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">c_</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">]</span>
@@ -446,9 +447,9 @@
                                 <span class="n">columns</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">columns</span><span class="p">),</span>
                                 <span class="n">cols_device_type</span><span class="o">=</span><span class="n">DeviceType</span><span class="o">.</span><span class="n">NoDevice</span><span class="o">.</span><span class="n">NoDevice</span><span class="p">,</span>
                                 <span class="n">title</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">result_type</span><span class="o">.</span><span class="n">value</span><span class="p">),</span>
-                                <span class="n">ylabel</span><span class="o">=</span><span class="s2">&quot;Objectives summation&quot;</span><span class="p">,</span>
-                                <span class="n">xlabel</span><span class="o">=</span><span class="s2">&quot;Iteration&quot;</span><span class="p">,</span>
-                                <span class="n">units</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+                                <span class="n">ylabel</span><span class="o">=</span><span class="s2">"Objectives summation"</span><span class="p">,</span>
+                                <span class="n">xlabel</span><span class="o">=</span><span class="s2">"Iteration"</span><span class="p">,</span>
+                                <span class="n">units</span><span class="o">=</span><span class="s2">""</span><span class="p">)</span>
 
         <span class="k">elif</span> <span class="n">result_type</span> <span class="o">==</span> <span class="n">ResultTypes</span><span class="o">.</span><span class="n">InvestmentsWhenToMakePlot</span><span class="p">:</span>
 
@@ -476,11 +477,11 @@
                                 <span class="n">columns</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">year</span><span class="p">)</span> <span class="k">for</span> <span class="n">year</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">max_years</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)]),</span>
                                 <span class="n">cols_device_type</span><span class="o">=</span><span class="n">DeviceType</span><span class="o">.</span><span class="n">NoDevice</span><span class="o">.</span><span class="n">NoDevice</span><span class="p">,</span>
                                 <span class="n">title</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">result_type</span><span class="o">.</span><span class="n">value</span><span class="p">),</span>
-                                <span class="n">ylabel</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
-                                <span class="n">xlabel</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
-                                <span class="n">units</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+                                <span class="n">ylabel</span><span class="o">=</span><span class="s2">""</span><span class="p">,</span>
+                                <span class="n">xlabel</span><span class="o">=</span><span class="s2">""</span><span class="p">,</span>
+                                <span class="n">units</span><span class="o">=</span><span class="s2">""</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Result type not understood:&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">result_type</span><span class="p">))</span></div>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">'Result type not understood:'</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">result_type</span><span class="p">))</span></div>
 </div>
 
 </pre></div>

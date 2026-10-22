@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Utils.Filtering.objects_filtering &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Utils.Filtering.objects_filtering &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/license.html">📜 License</a></li>
@@ -119,18 +120,18 @@
 <div class="viewcode-block" id="object_extract">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Filtering.html#VeraGridEngine.Utils.Filtering.objects_filtering.object_extract">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">object_extract</span><span class="p">(</span><span class="n">elm</span><span class="p">:</span> <span class="n">ALL_DEV_TYPES</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Extract value from object&#39;s property chain</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Extract value from object's property chain</span>
 <span class="sd">    :param elm: Device</span>
-<span class="sd">    :param args: list of properties (i.e. bus.area.name as [&#39;bus&#39;, &#39;area&#39;, &#39;name&#39;])</span>
+<span class="sd">    :param args: list of properties (i.e. bus.area.name as ['bus', 'area', 'name'])</span>
 <span class="sd">    :return: value</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">p</span> <span class="o">=</span> <span class="n">elm</span>
     <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">args</span><span class="p">:</span>
         <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">arg</span><span class="p">):</span>
             <span class="n">p</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">arg</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">arg</span><span class="si">}</span><span class="s2"> cannot be found for the objects :(&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">arg</span><span class="si">}</span><span class="s2"> cannot be found for the objects :("</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">p</span></div>
 
 
@@ -138,12 +139,12 @@
 <div class="viewcode-block" id="compute_objects_masks">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Filtering.html#VeraGridEngine.Utils.Filtering.objects_filtering.compute_objects_masks">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">compute_objects_masks</span><span class="p">(</span><span class="n">objects</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">ALL_DEV_TYPES</span><span class="p">],</span> <span class="n">flt</span><span class="p">:</span> <span class="n">Filter</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">BoolVec</span><span class="p">,</span> <span class="n">BoolVec</span><span class="p">,</span> <span class="n">Mat</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Give a list of objects, apply the single filter and return the filtering mask</span>
 <span class="sd">    :param objects: List of VeraGrid objects</span>
 <span class="sd">    :param flt: Filter</span>
 <span class="sd">    :return: boolean array of the same length of objects</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">lst</span> <span class="o">=</span> <span class="n">flt</span><span class="o">.</span><span class="n">get_list_of_values</span><span class="p">()</span>
     <span class="n">is_neg</span> <span class="o">=</span> <span class="n">flt</span><span class="o">.</span><span class="n">is_negative</span><span class="p">()</span>
@@ -181,7 +182,7 @@
                         <span class="n">val_i</span> <span class="o">=</span> <span class="n">val_i</span><span class="o">.</span><span class="n">name</span>
                         <span class="n">val</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">value_to_compare_to</span><span class="p">)</span>
                     <span class="k">elif</span> <span class="n">val_i</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                        <span class="n">val_i</span> <span class="o">=</span> <span class="s2">&quot;None&quot;</span>
+                        <span class="n">val_i</span> <span class="o">=</span> <span class="s2">"None"</span>
                         <span class="n">val</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">value_to_compare_to</span><span class="p">)</span>
                     <span class="k">else</span><span class="p">:</span>
                         <span class="n">val</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">value_to_compare_to</span><span class="p">)</span>
@@ -195,7 +196,7 @@
                 <span class="n">idx_mask</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">flt</span><span class="o">.</span><span class="n">apply_filter_op</span><span class="p">(</span><span class="n">val_i</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span>
 
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid FilterSubject&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Invalid FilterSubject"</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">is_neg</span><span class="p">:</span>
             <span class="n">final_idx_mask</span> <span class="o">*=</span> <span class="n">idx_mask</span>
@@ -209,47 +210,47 @@
 <div class="viewcode-block" id="FilterObjects">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Filtering.html#VeraGridEngine.Utils.Filtering.objects_filtering.FilterObjects">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">FilterObjects</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    FilterResultsTable class</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;_objects&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;_filtered_indices&quot;</span><span class="p">,</span>
+        <span class="s2">"_objects"</span><span class="p">,</span>
+        <span class="s2">"_filtered_indices"</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">objects</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">ALL_DEV_TYPES</span><span class="p">]):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :param objects:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_objects</span> <span class="o">=</span> <span class="n">objects</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_filtered_indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_objects</span><span class="p">))</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">filtered_indices</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_filtered_indices</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">filtered_objects</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_objects</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_filtered_indices</span><span class="p">]</span>
 
 <div class="viewcode-block" id="FilterObjects.filter">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Filtering.html#VeraGridEngine.Utils.Filtering.objects_filtering.FilterObjects.filter">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">filter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">expression</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Parses the query expression</span>
 <span class="sd">        :param expression:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">master_filter</span><span class="p">:</span> <span class="n">MasterFilter</span> <span class="o">=</span> <span class="n">parse_expression</span><span class="p">(</span><span class="n">expression</span><span class="o">=</span><span class="n">expression</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">master_filter</span><span class="o">.</span><span class="n">stack</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
@@ -272,19 +273,19 @@
                         <span class="n">idx_mask</span> <span class="o">*=</span> <span class="n">idx_mask2</span>
 
                     <span class="k">else</span><span class="p">:</span>
-                        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Unsupported master filter operation&quot;</span><span class="p">)</span>
+                        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">"Unsupported master filter operation"</span><span class="p">)</span>
 
                 <span class="c1"># get the indices</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_filtered_indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">idx_mask</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
 
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Unsupported number of filters. Use and or concatenation&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Unsupported number of filters. Use and or concatenation"</span><span class="p">)</span>
 
         <span class="k">else</span><span class="p">:</span>
 
             <span class="c1"># try searching by name</span>
             <span class="n">to_search</span> <span class="o">=</span> <span class="n">expression</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
-            <span class="k">if</span> <span class="n">to_search</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">to_search</span> <span class="o">!=</span> <span class="s2">""</span><span class="p">:</span>
                 <span class="n">ls</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
                 <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">obj</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_objects</span><span class="p">):</span>
                     <span class="k">if</span> <span class="n">to_search</span> <span class="ow">in</span> <span class="n">obj</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>

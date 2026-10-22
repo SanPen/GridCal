@@ -47,6 +47,9 @@ In the main panel, you can find the schematics and map diagrams that represent t
 Map backgrounds offer OpenFreeMap Colour, Light and Dark palettes without API keys,
 plus the standard OpenStreetMap raster map. Older diagrams using CARTO Voyager,
 Positron or Dark Matter open with the corresponding OpenFreeMap palette.
+Light and Dark use neutral backgrounds, faint major roads and national land
+borders, and sparse place labels. Buildings, land-use detail and local roads are
+omitted to keep the electrical grid prominent; Colour retains the detailed map.
 OpenFreeMap vector data is decoded by a bundled Python decoder and
 painted with Qt, keeping selection, editing and image export in the existing Qt
 map widget. Downloaded vectors and rendered tiles are cached locally. These are

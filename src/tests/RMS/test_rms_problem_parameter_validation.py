@@ -16,9 +16,11 @@ from VeraGridEngine.Utils.Symbolic.symbolic import Const, Expr, Var
 from VeraGridEngine.enumerations import DynamicSimulationMode, ParamPowerFlowReferenceType
 
 
-def test_unresolved_constant_parameter_reports_device_block_and_mapping() -> None:
+@pytest.mark.parametrize("mapped", [False, True])
+def test_unresolved_constant_parameter_reports_device_block_and_mapping(mapped: bool) -> None:
     """Fail a null constant with its complete RMS model context.
 
+    :param mapped: Whether a nested UID-equivalent target declares the missing source.
     :return: None.
     """
     device: DcLine = DcLine(name="DC link")
@@ -27,7 +29,10 @@ def test_unresolved_constant_parameter_reports_device_block_and_mapping() -> Non
         name="R-L equations",
         parameters=dict(((parameter, Const(None)),)),
     )
-    root_block: Block = Block(name="DC line", children=list((owner_block,)))
+    mapped_parameter: Var = Var("r_dc", uid=parameter.uid)
+    owner_block.api_obj_mapping[ParamPowerFlowReferenceType.dc_line_r_pu] = mapped_parameter if mapped else None
+    root_block: Block = Block(name="DC line", children=list((owner_block,)),
+                              api_obj_mapping=dict(((ParamPowerFlowReferenceType.omega_base, None),)))
     static_parameter_values: Dict[Var, Const] = dict()
 
     with pytest.raises(ValueError) as exception_info:
@@ -45,7 +50,10 @@ def test_unresolved_constant_parameter_reports_device_block_and_mapping() -> Non
     assert "r_dc" in message
     assert "R-L equations" in message
     assert "DC link" in message
-    assert "not targeted by any api_obj_mapping" in message
+    if mapped:
+        assert "dc_line_r_pu" in message
+    else:
+        assert "not targeted by any api_obj_mapping" in message
 
 
 def test_resolved_static_parameter_accepts_uid_equivalent_mapping() -> None:

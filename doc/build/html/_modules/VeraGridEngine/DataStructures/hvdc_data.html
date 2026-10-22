@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.DataStructures.hvdc_data &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.DataStructures.hvdc_data &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/license.html">📜 License</a></li>
@@ -118,33 +119,33 @@
 <div class="viewcode-block" id="HvdcData">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.hvdc_data.HvdcData">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">HvdcData</span><span class="p">(</span><span class="n">BranchParentData</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    HvdcData</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;dispatchable&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;r&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Pset&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Pt&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Vset_f&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Vset_t&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Vnf&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Vnt&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;angle_droop&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;control_mode_int&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Qmin_f&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Qmax_f&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Qmin_t&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Qmax_t&quot;</span><span class="p">,</span>
+        <span class="s2">"dispatchable"</span><span class="p">,</span>
+        <span class="s2">"r"</span><span class="p">,</span>
+        <span class="s2">"Pset"</span><span class="p">,</span>
+        <span class="s2">"Pt"</span><span class="p">,</span>
+        <span class="s2">"Vset_f"</span><span class="p">,</span>
+        <span class="s2">"Vset_t"</span><span class="p">,</span>
+        <span class="s2">"Vnf"</span><span class="p">,</span>
+        <span class="s2">"Vnt"</span><span class="p">,</span>
+        <span class="s2">"angle_droop"</span><span class="p">,</span>
+        <span class="s2">"control_mode_int"</span><span class="p">,</span>
+        <span class="s2">"Qmin_f"</span><span class="p">,</span>
+        <span class="s2">"Qmax_f"</span><span class="p">,</span>
+        <span class="s2">"Qmin_t"</span><span class="p">,</span>
+        <span class="s2">"Qmax_t"</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nelm</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">nbus</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Hvdc data arrays</span>
 <span class="sd">        :param nelm: number of hvdcs</span>
 <span class="sd">        :param nbus: number of buses</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">BranchParentData</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nelm</span><span class="o">=</span><span class="n">nelm</span><span class="p">,</span> <span class="n">nbus</span><span class="o">=</span><span class="n">nbus</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">dispatchable</span><span class="p">:</span> <span class="n">IntVec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nelm</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
@@ -173,21 +174,21 @@
 <div class="viewcode-block" id="HvdcData.size">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.hvdc_data.HvdcData.size">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">size</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get size of the structure</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">nelm</span></div>
 
 
 <div class="viewcode-block" id="HvdcData.slice">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.hvdc_data.HvdcData.slice">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">slice</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">elm_idx</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">bus_idx</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">bus_map</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;HvdcData&quot;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">slice</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">elm_idx</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">bus_idx</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">bus_map</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"HvdcData"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Make a deep copy of this structure</span>
 <span class="sd">        :return: new HvdcData instance</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">data</span><span class="p">,</span> <span class="n">bus_map</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">slice</span><span class="p">(</span><span class="n">elm_idx</span><span class="p">,</span> <span class="n">bus_idx</span><span class="p">,</span> <span class="n">bus_map</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
         <span class="n">data</span><span class="p">:</span> <span class="n">HvdcData</span> <span class="o">=</span> <span class="n">data</span>
 
@@ -218,10 +219,10 @@
 <div class="viewcode-block" id="HvdcData.remap">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.hvdc_data.HvdcData.remap">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">remap</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bus_map_arr</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Remapping of the branch buses</span>
 <span class="sd">        :param bus_map_arr: array of old-to-new buses</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nelm</span><span class="p">):</span>
             <span class="n">f</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">F</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
             <span class="n">t</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">T</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
@@ -233,11 +234,11 @@
 
 <div class="viewcode-block" id="HvdcData.copy">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.hvdc_data.HvdcData.copy">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;HvdcData&quot;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"HvdcData"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Make a deep copy of this structure</span>
 <span class="sd">        :return: new HvdcData instance</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="n">data</span><span class="p">:</span> <span class="n">HvdcData</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 
@@ -268,30 +269,30 @@
 <div class="viewcode-block" id="HvdcData.get_bus_indices_f">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.hvdc_data.HvdcData.get_bus_indices_f">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_bus_indices_f</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">IntVec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Get bus indices &quot;from&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Get bus indices "from"</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">F</span></div>
 
 
 <div class="viewcode-block" id="HvdcData.get_bus_indices_t">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.hvdc_data.HvdcData.get_bus_indices_t">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_bus_indices_t</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">IntVec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Get bus indices &quot;to&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Get bus indices "to"</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">T</span></div>
 
 
 <div class="viewcode-block" id="HvdcData.get_qmax_from_per_bus">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.hvdc_data.HvdcData.get_qmax_from_per_bus">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_qmax_from_per_bus</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Max reactive power in the From Bus</span>
 <span class="sd">        :return: (nbus, nt) Qmax From</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">val</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nbus</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nelm</span><span class="p">):</span>
             <span class="n">i</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">F</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
@@ -302,10 +303,10 @@
 <div class="viewcode-block" id="HvdcData.get_qmin_from_per_bus">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.hvdc_data.HvdcData.get_qmin_from_per_bus">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_qmin_from_per_bus</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Min reactive power in the From Bus</span>
 <span class="sd">        :return: (nbus, nt) Qmin From</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">val</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nbus</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nelm</span><span class="p">):</span>
             <span class="n">i</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">F</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
@@ -316,10 +317,10 @@
 <div class="viewcode-block" id="HvdcData.get_qmax_to_per_bus">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.hvdc_data.HvdcData.get_qmax_to_per_bus">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_qmax_to_per_bus</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Max reactive power in the To Bus</span>
 <span class="sd">        :return: (nbus, nt) Qmax To</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">val</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nbus</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nelm</span><span class="p">):</span>
             <span class="n">i</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">T</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
@@ -330,10 +331,10 @@
 <div class="viewcode-block" id="HvdcData.get_qmin_to_per_bus">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.hvdc_data.HvdcData.get_qmin_to_per_bus">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_qmin_to_per_bus</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Min reactive power in the To Bus</span>
 <span class="sd">        :return: (nbus, nt) Qmin To</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">val</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nbus</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nelm</span><span class="p">):</span>
             <span class="n">i</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">T</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
@@ -344,11 +345,11 @@
 <div class="viewcode-block" id="HvdcData.get_angle_droop_in_pu_rad">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.hvdc_data.HvdcData.get_angle_droop_in_pu_rad">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_angle_droop_in_pu_rad</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Sbase</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the angle droop in pu/rad</span>
 <span class="sd">        :param Sbase: base power</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># convert MW/deg to pu/rad</span>
         <span class="c1"># MW    180 deg    1</span>
         <span class="c1"># --- x ------- x ------ = 360 * 180 / pi / 100 = 206.26 aprox</span>
@@ -359,12 +360,12 @@
 <div class="viewcode-block" id="HvdcData.get_angle_droop_in_pu_rad_at">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.hvdc_data.HvdcData.get_angle_droop_in_pu_rad_at">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_angle_droop_in_pu_rad_at</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">Sbase</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the angle droop in pu/rad</span>
 <span class="sd">        :param i: index</span>
 <span class="sd">        :param Sbase: base power</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># convert MW/deg to pu/rad</span>
         <span class="c1"># MW    180 deg    1</span>
         <span class="c1"># --- x ------- x ------ = 360 * 180 / pi / 100 = 206.26 aprox</span>
@@ -375,12 +376,12 @@
 <div class="viewcode-block" id="HvdcData.get_power">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.hvdc_data.HvdcData.get_power">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_power</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Sbase</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">theta</span><span class="p">:</span> <span class="n">Vec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Vec</span><span class="p">,</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">Vec</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get hvdc power</span>
 <span class="sd">        :param Sbase: base power</span>
 <span class="sd">        :param theta: bus angles array</span>
 <span class="sd">        :return: Pbus, Losses, Pf, Pt, loading, nfree</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">Pbus</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nbus</span><span class="p">)</span>
         <span class="n">Losses</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nelm</span><span class="p">)</span>
         <span class="n">loading</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nelm</span><span class="p">)</span>
@@ -444,12 +445,12 @@
 <div class="viewcode-block" id="HvdcData.get_inter_areas">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.hvdc_data.HvdcData.get_inter_areas">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_inter_areas</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bus_idx_from</span><span class="p">:</span> <span class="n">IntVec</span> <span class="o">|</span> <span class="n">Set</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">bus_idx_to</span><span class="p">:</span> <span class="n">IntVec</span> <span class="o">|</span> <span class="n">Set</span><span class="p">[</span><span class="nb">int</span><span class="p">]):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the hvdcs that join two areas</span>
 <span class="sd">        :param bus_idx_from: Area from</span>
 <span class="sd">        :param bus_idx_to: Area to</span>
 <span class="sd">        :return: List of (branch index, flow sense w.r.t the area exchange)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="n">lst</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nelm</span><span class="p">):</span>
@@ -461,10 +462,10 @@
 
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get hvdc count</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">nelm</span></div>
 
 </pre></div>

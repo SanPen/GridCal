@@ -2,9 +2,18 @@
 
 from __future__ import annotations
 
+import copy
+from pathlib import Path
+
 from PySide6 import QtWidgets
 
+import VeraGridEngine.api as vg
 from VeraGrid.Gui.CatalogueElementsDialogue.catalogue_actions import CatalogueAction
+from VeraGrid.Gui.DynamicModelEditor.Editor.dynamic_block_editor import DynamicBlockEditorGUI
+from VeraGrid.Gui.DynamicModelEditor.Editor.DynamicLibrary.dynamic_editor_utilities import (
+    create_default_template_builder,
+    initialize_template_builder_from_block,
+)
 from VeraGrid.Gui.CatalogueElementsDialogue.catalogue_elements_dialogue import (
     CatalogueElementsSelectionDialogue,
 )
@@ -13,7 +22,9 @@ from VeraGrid.Gui.DynamicModelEditor.Editor.DynamicLibrary.dynamic_editor_librar
     get_dynamic_library_device_specs,
 )
 from VeraGridEngine.Devices.multi_circuit import MultiCircuit
-from VeraGridEngine.enumerations import DynamicSimulationMode
+from VeraGridEngine.Templates.Rms.hvdc_vsc_gfl_rms_template_v2 import HvdcVscGflRmsTemplate
+from VeraGridEngine.Utils.Symbolic.block import Block
+from VeraGridEngine.enumerations import BlockType, ConverterControlType, DeviceType, DynamicSimulationMode
 
 
 def test_rms_catalogue_matches_library_devices(qt_app: QtWidgets.QApplication) -> None:
@@ -60,6 +71,102 @@ def test_rms_catalogue_matches_library_devices(qt_app: QtWidgets.QApplication) -
 
     dialog.close()
     application.processEvents()
+
+
+def test_catalogue_hvdc_controls_survive_save_reload_and_insertion(
+        qt_app: QtWidgets.QApplication,
+        tmp_path: Path,
+) -> None:
+    """Keep selected HVDC control modes visible through file and editor copies."""
+    circuit = MultiCircuit()
+    spec = next(
+        item for item in get_dynamic_library_device_specs(DynamicSimulationMode.RMS)
+        if item.source == BlockType.GFL_VSC_HVDC_RMS
+    )
+    builder = HvdcVscGflRmsTemplate(circuit.var_factory)
+    builder.params_dict["control1"].value = ConverterControlType.Pdc
+    builder.params_dict["control2"].value = ConverterControlType.Vm_ac
+    builder.params_dict["cdc"].value = 0.73
+    template = builder.eval()
+    template.code = spec.unique_key
+    circuit.add_rms_model(template)
+    expected_config = {"control1": "Pdc", "control2": "Vm_ac", "cdc": 0.73}
+
+    copied_block = copy.deepcopy(template.block)
+    assert copied_block.modal_template_config == expected_config
+    assert copied_block.modal_template_config is not template.block.modal_template_config
+    assert Block.parse(template.block.to_dict()).modal_template_config == expected_config
+    legacy_data = template.block.to_dict()
+    legacy_data.pop("modal_template_kind")
+    legacy_data.pop("modal_template_config")
+    legacy_block = Block.parse(legacy_data)
+    legacy_builder = create_default_template_builder(
+        circuit.var_factory,
+        BlockType.GFL_VSC_HVDC_RMS,
+        legacy_block.name,
+    )
+    assert legacy_builder is not None
+    initialize_template_builder_from_block(
+        legacy_builder,
+        legacy_block,
+        BlockType.GFL_VSC_HVDC_RMS,
+    )
+    assert legacy_builder.get_value("control1") is ConverterControlType.Pdc
+    assert legacy_builder.get_value("control2") is ConverterControlType.Vm_ac
+
+    path = tmp_path / "catalogue_hvdc.veragrid"
+    vg.save_file(circuit, str(path))
+    reopened = vg.open_file(str(path))
+    saved_template = reopened.rms_models[0]
+    assert saved_template.code == spec.unique_key
+    assert saved_template.block.modal_template_kind == template.block.modal_template_kind
+    assert saved_template.block.modal_template_config == expected_config
+    assert template.block.compare(saved_template.block)
+
+    class VscStub:
+        name = "VSC"
+        device_type = DeviceType.VscDevice
+        rms_template = None
+        emt_template = None
+
+    editor = DynamicBlockEditorGUI(
+        var_factory=reopened.var_factory,
+        current_block=Block(),
+        api_object=VscStub(),
+        current_theme="Light",
+        mode=DynamicSimulationMode.RMS,
+        templates_list=[],
+        circuit=reopened,
+        is_root_editor=False,
+        modal=False,
+    )
+    item = editor.create_materialized_template_block_item(
+        template=saved_template,
+        source_var_factory=reopened.var_factory,
+        x_pos=100,
+        y_pos=100,
+    )
+    # Keep assertion failures from opening an unsaved-changes prompt at teardown.
+    editor.has_unapplied_changes = False
+    assert item is not None
+    block = item.subsys
+    assert block.modal_template_config == expected_config
+    assert editor.diagram.node_data[block.uid].tpe == BlockType.GFL_VSC_HVDC_RMS.name
+
+    editor.request_open_block_properties(block)
+    dialogue = editor._block_properties_dialogue
+    assert dialogue is not None
+    settings = {
+        dialogue._general_structural_model.index(row, 0).data():
+        dialogue._general_structural_model.index(row, 1).data()
+        for row in range(dialogue._general_structural_model.rowCount())
+    }
+    assert settings["control1"] == "Pdc"
+    assert settings["control2"] == "Vm_ac"
+    dialogue.close()
+    editor.has_unapplied_changes = False
+    editor.close()
+    qt_app.processEvents()
 
 
 def test_emt_catalogue_matches_library_devices(qt_app: QtWidgets.QApplication) -> None:

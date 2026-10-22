@@ -8,11 +8,16 @@ import json
 import os
 from pathlib import Path
 import shutil
+import subprocess
 import sys
 import zipfile
 
 import numpy as np
 import pytest
+
+from VeraGridEngine.IO.fmu.config import ExportConfig
+from VeraGridEngine.IO.fmu.CosimulationInterface.build import _copy_template_tree
+from VeraGridEngine.enumerations import FmiVersion
 
 from examples.fmi.powerfactory_first_order.plot_powerfactory_first_order import main as plot_main
 from examples.fmi.powerfactory_first_order.run_powerfactory_first_order import (
@@ -82,24 +87,50 @@ def test_source_closure_manifest_exact(tmp_path: Path) -> None:
     :param tmp_path: Pytest-owned temporary directory.
     """
 
-    roots: list[Path] = list()
+    # Reuse the actual template owner rather than duplicating the provenance
+    # whitelist. The other four files are the existing emitter's generated inputs.
+    roots: tuple[Path, Path] = (tmp_path / "root0", tmp_path / "root1")
     interface_index: int
-    for interface_index in range(2):
-        source_root: Path = tmp_path / ("root" + str(interface_index))
-        (source_root / "src").mkdir(parents=True)
-        (source_root / "include").mkdir()
-        file_index: int
-        for file_index in range(14):
-            parent: Path = source_root / ("include" if file_index < 4 else "src")
-            (parent / ("material_" + str(file_index) + ".h")).write_text("same\n", encoding="utf-8")
+    source_root: Path
+    for interface_index, source_root in enumerate(roots):
+        config: ExportConfig = ExportConfig(model_name="SourceClosure", output_path=tmp_path / "unused.fmu", fmi_version=FmiVersion.FMI_3_0)
+        _copy_template_tree(config, source_root)
+        generated_name: str
+        for generated_name in ("generated_model.h", "generated_model.c", "generated_procedural.c"):
+            (source_root / "src" / generated_name).write_text("same\n", encoding="utf-8")
         uuid_text: str = "11111111-1111-4111-8111-111111111111" if interface_index == 0 else "22222222-2222-4222-8222-222222222222"
         (source_root / "src" / "generated_metadata.h").write_text('#define VG_MODEL_GUID "' + uuid_text + '"\n', encoding="utf-8")
-        roots.append(source_root)
     first: dict[str, object] = hash_source_closure((("fmi30_cs", roots[0]), ("fmi30_me", roots[1])))
     (roots[0] / "src" / "generated_metadata.h").write_text('#define VG_MODEL_GUID "33333333-3333-4333-8333-333333333333"\n', encoding="utf-8")
     second: dict[str, object] = hash_source_closure((("fmi30_cs", roots[0]), ("fmi30_me", roots[1])))
     assert first["normalized_closure_sha256"] == second["normalized_closure_sha256"]
     (roots[0] / "src" / "extra.h").write_text("extra\n", encoding="utf-8")
+    with pytest.raises(ValueError):
+        hash_source_closure((("fmi30_cs", roots[0]), ("fmi30_me", roots[1])))
+    (roots[0] / "src" / "extra.h").unlink()
+    # All canonical regular members may still be present beside an ignored
+    # directory link. Reject the link itself before treating it as a directory.
+    outside: Path = tmp_path / "outside"
+    outside.mkdir()
+    directory_link: Path = roots[1] / "extra-directory"
+    if os.name == "nt":
+        subprocess.run([r"C:\Windows\System32\cmd.exe", "/c", "mklink", "/J", str(directory_link), str(outside)], capture_output=True, check=True)
+    else:
+        directory_link.symlink_to(outside, target_is_directory=True)
+    try:
+        with pytest.raises(ValueError, match="symbolic link|reparse point"):
+            hash_source_closure((("fmi30_cs", roots[0]), ("fmi30_me", roots[1])))
+    finally:
+        if os.name == "nt":
+            directory_link.rmdir()
+        else:
+            directory_link.unlink()
+    # A substitution preserves the number of files; count-only validation
+    # would miss it. Missing and substituted members must both be rejected.
+    (roots[0] / "src" / "solver.c").unlink()
+    with pytest.raises(ValueError):
+        hash_source_closure((("fmi30_cs", roots[0]), ("fmi30_me", roots[1])))
+    (roots[0] / "src" / "substitute.c").write_text("unrelated\n", encoding="utf-8")
     with pytest.raises(ValueError):
         hash_source_closure((("fmi30_cs", roots[0]), ("fmi30_me", roots[1])))
 

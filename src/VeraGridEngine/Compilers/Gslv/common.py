@@ -16,13 +16,13 @@ from VeraGridEngine.Devices.Parents.shunt_parent import ShuntParent
 from typing import List, Dict, Union, TYPE_CHECKING
 
 
-from VeraGridEngine.Compilers.Gslv.activation import (pg, generator_control_mode_dict,
+from VeraGridEngine.Compilers.Gslv.activation import (pg, generator_control_mode_dict, battery_dispatch_mode_dict,
                                                            tap_module_control_mode_dict,
                                                            tap_phase_control_mode_dict, shunt_connection_type_dict,
                                                            GSLV_AVAILABLE)
 from VeraGridEngine.basic_structures import IntVec, Vec
 from VeraGridEngine.Devices.Profiles import AnyProfile
-from VeraGridEngine.enumerations import (GeneratorControlMode, TapModuleControl, TapPhaseControl)
+from VeraGridEngine.enumerations import (BatteryDispatchMode, GeneratorControlMode, TapModuleControl, TapPhaseControl)
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     pass
@@ -70,13 +70,13 @@ def convert_tap_phase_control_mode_lst(data: List[TapPhaseControl]) -> List["pg.
     """
     return [tap_phase_control_mode_dict[val] for val in data]
 
-def fill_profile(gslv_profile: "pg.Profiledouble|pg.Profilebool|pg.Profileint|pg.Profileuint",
+def fill_profile(gslv_profile: "pg.Profiledouble|pg.Profilebool|pg.Profileint|pg.Profileuint|pg.ProfileBatteryDispatchMode",
                  gc_profile: AnyProfile,
                  use_time_series: bool,
                  time_indices: Union[IntVec, None],
                  n_time: int = 1,
-                 default_val: int | float | bool | TapPhaseControl | TapModuleControl = 0
-                 ) -> "pg.Profiledouble|pg.Profilebool|pg.Profileint|pg.Profileuint":
+                 default_val: int | float | bool | TapPhaseControl | TapModuleControl | BatteryDispatchMode = 0
+                 ) -> "pg.Profiledouble|pg.Profilebool|pg.Profileint|pg.Profileuint|pg.ProfileBatteryDispatchMode":
     """
     Generates a default time series
     :param gslv_profile: Profile from gslv to fill in
@@ -108,6 +108,12 @@ def fill_profile(gslv_profile: "pg.Profiledouble|pg.Profilebool|pg.Profileint|pg
                     gslv_profile.init_sparse(default_value=tap_module_control_mode_dict[gc_profile.default_value],
                                              data=data)
 
+                elif isinstance(default_val, BatteryDispatchMode):
+                    data = {i: battery_dispatch_mode_dict[value]
+                            for i, value in gc_profile.sparse_array.get_map().items()}
+                    gslv_profile.init_sparse(
+                        default_value=battery_dispatch_mode_dict[gc_profile.default_value], data=data)
+
                 elif isinstance(default_val, GeneratorControlMode):
                     data = {i: generator_control_mode_dict[value]
                             for i, value in gc_profile.sparse_array.get_map().items()}
@@ -135,6 +141,11 @@ def fill_profile(gslv_profile: "pg.Profiledouble|pg.Profilebool|pg.Profileint|pg
                     gslv_profile.init_sparse(default_value=tap_module_control_mode_dict[gc_profile.default_value],
                                              data=data)
 
+                elif isinstance(default_val, BatteryDispatchMode):
+                    data = {i: battery_dispatch_mode_dict[value] for i, value in sp_arr2.get_map().items()}
+                    gslv_profile.init_sparse(
+                        default_value=battery_dispatch_mode_dict[gc_profile.default_value], data=data)
+
                 elif isinstance(default_val, GeneratorControlMode):
                     data = {i: generator_control_mode_dict[value] for i, value in sp_arr2.get_map().items()}
                     gslv_profile.init_sparse(default_value=generator_control_mode_dict[gc_profile.default_value],
@@ -153,6 +164,8 @@ def fill_profile(gslv_profile: "pg.Profiledouble|pg.Profilebool|pg.Profileint|pg
                     data = convert_tap_phase_control_mode_lst(data=gc_profile.dense_array)
                 elif isinstance(default_val, TapModuleControl):
                     data = convert_tap_module_control_mode_dict(data=gc_profile.dense_array)
+                elif isinstance(default_val, BatteryDispatchMode):
+                    data = [battery_dispatch_mode_dict[value] for value in gc_profile.dense_array]
                 elif isinstance(default_val, GeneratorControlMode):
                     data = [generator_control_mode_dict[value] for value in gc_profile.dense_array]
                 else:
@@ -167,6 +180,9 @@ def fill_profile(gslv_profile: "pg.Profiledouble|pg.Profilebool|pg.Profileint|pg
                     data = convert_tap_phase_control_mode_lst(data=gc_profile.dense_array[time_indices])
                 elif isinstance(default_val, TapModuleControl):
                     data = convert_tap_module_control_mode_dict(data=gc_profile.dense_array[time_indices])
+                elif isinstance(default_val, BatteryDispatchMode):
+                    data = [battery_dispatch_mode_dict[value]
+                            for value in gc_profile.dense_array[time_indices]]
                 elif isinstance(default_val, GeneratorControlMode):
                     data = [generator_control_mode_dict[value] for value in gc_profile.dense_array[time_indices]]
                 else:
@@ -180,6 +196,9 @@ def fill_profile(gslv_profile: "pg.Profiledouble|pg.Profilebool|pg.Profileint|pg
 
         elif isinstance(default_val, TapModuleControl):
             gslv_profile.fill(tap_module_control_mode_dict[default_val])
+
+        elif isinstance(default_val, BatteryDispatchMode):
+            gslv_profile.fill(battery_dispatch_mode_dict[default_val])
 
         elif isinstance(default_val, GeneratorControlMode):
             gslv_profile.fill(generator_control_mode_dict[default_val])

@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Simulations.CatalogueOptimization.Problems.catalogue_problem &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Simulations.CatalogueOptimization.Problems.catalogue_problem &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/license.html">📜 License</a></li>
@@ -141,28 +142,28 @@
 <div class="viewcode-block" id="CatalogueOptimizationProblem">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.CatalogueOptimization.Problems.html#VeraGridEngine.Simulations.CatalogueOptimization.Problems.catalogue_problem.CatalogueOptimizationProblem">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">CatalogueOptimizationProblem</span><span class="p">(</span><span class="n">BlackBoxProblemTemplate</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Multi-objective black-box problem that selects, for each user-pre-selected branch, a template</span>
-<span class="sd">    from the grid&#39;s catalogue so as to minimise the six techno-economic scores</span>
+<span class="sd">    from the grid's catalogue so as to minimise the six techno-economic scores</span>
 <span class="sd">    (losses, overload, voltage module, voltage angle, CAPEX, OPEX).</span>
 
 <span class="sd">    The decision vector `x` is integer-valued: `x[i]` is the index of the chosen template within the</span>
 <span class="sd">    pool associated with branch `branches[i]`.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;branches&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;pools&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;snapshots&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;pf_options&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;vm_cost&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;vm_max&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;vm_min&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;va_cost&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;va_max&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;va_min&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;branches_cost&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Sbase&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;fBase&quot;</span><span class="p">,</span>
+        <span class="s2">"branches"</span><span class="p">,</span>
+        <span class="s2">"pools"</span><span class="p">,</span>
+        <span class="s2">"snapshots"</span><span class="p">,</span>
+        <span class="s2">"pf_options"</span><span class="p">,</span>
+        <span class="s2">"vm_cost"</span><span class="p">,</span>
+        <span class="s2">"vm_max"</span><span class="p">,</span>
+        <span class="s2">"vm_min"</span><span class="p">,</span>
+        <span class="s2">"va_cost"</span><span class="p">,</span>
+        <span class="s2">"va_max"</span><span class="p">,</span>
+        <span class="s2">"va_min"</span><span class="p">,</span>
+        <span class="s2">"branches_cost"</span><span class="p">,</span>
+        <span class="s2">"Sbase"</span><span class="p">,</span>
+        <span class="s2">"fBase"</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
@@ -170,7 +171,7 @@
                  <span class="n">pf_options</span><span class="p">:</span> <span class="n">PowerFlowOptions</span><span class="p">,</span>
                  <span class="n">selected_branches</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Branch</span><span class="p">],</span>
                  <span class="n">voltage_tolerance</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Constructor.</span>
 
 <span class="sd">        :param grid: MultiCircuit to be optimized (also the source of the template catalogues).</span>
@@ -181,7 +182,7 @@
 <span class="sd">            (e.g. 0.1 for 10%).</span>
 <span class="sd">        :raises ValueError: if no branch survives the categorization filter (every selection ends up</span>
 <span class="sd">            with one or fewer compatible templates), in which case the problem has nothing to optimise.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># Build a private logger first so we can route the categorization warnings through it.</span>
         <span class="c1"># The base class would also create one, but we need it before super().__init__ runs.</span>
         <span class="n">local_logger</span><span class="p">:</span> <span class="n">Logger</span> <span class="o">=</span> <span class="n">Logger</span><span class="p">()</span>
@@ -195,8 +196,8 @@
         <span class="c1"># If nothing survives there is nothing to optimise: surface the problem to the caller</span>
         <span class="c1"># who is responsible for showing a dialog to the user.</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">kept_branches</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No branch in the selection has two or more compatible templates: &quot;</span>
-                             <span class="s2">&quot;the catalogue optimization has nothing to optimize.&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"No branch in the selection has two or more compatible templates: "</span>
+                             <span class="s2">"the catalogue optimization has nothing to optimize."</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">pass</span>
 
@@ -257,61 +258,61 @@
 <div class="viewcode-block" id="CatalogueOptimizationProblem.n_objectives">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.CatalogueOptimization.Problems.html#VeraGridEngine.Simulations.CatalogueOptimization.Problems.catalogue_problem.CatalogueOptimizationProblem.n_objectives">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">n_objectives</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Number of objectives in `f`.</span>
 
 <span class="sd">        :return: 6 (losses, overload, voltage module, voltage angle, CAPEX, OPEX).</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="mi">6</span></div>
 
 
 <div class="viewcode-block" id="CatalogueOptimizationProblem.n_vars">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.CatalogueOptimization.Problems.html#VeraGridEngine.Simulations.CatalogueOptimization.Problems.catalogue_problem.CatalogueOptimizationProblem.n_vars">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">n_vars</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Number of decision variables in `x`.</span>
 
 <span class="sd">        :return: number of optimisable branch slots.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_dim</span></div>
 
 
 <div class="viewcode-block" id="CatalogueOptimizationProblem.get_objectives_names">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.CatalogueOptimization.Problems.html#VeraGridEngine.Simulations.CatalogueOptimization.Problems.catalogue_problem.CatalogueOptimizationProblem.get_objectives_names">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_objectives_names</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StrVec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the human-readable names for the elements of `f`.</span>
 
-<span class="sd">        :return: array of objective names matching the order of `objective_function`&#39;s output.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        :return: array of objective names matching the order of `objective_function`'s output.</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>
-            <span class="s2">&quot;losses score&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;overload score&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;voltage module_score&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;voltage angle score&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;CAPEX&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;OPEX&quot;</span><span class="p">,</span>
+            <span class="s2">"losses score"</span><span class="p">,</span>
+            <span class="s2">"overload score"</span><span class="p">,</span>
+            <span class="s2">"voltage module_score"</span><span class="p">,</span>
+            <span class="s2">"voltage angle score"</span><span class="p">,</span>
+            <span class="s2">"CAPEX"</span><span class="p">,</span>
+            <span class="s2">"OPEX"</span><span class="p">,</span>
         <span class="p">])</span></div>
 
 
 <div class="viewcode-block" id="CatalogueOptimizationProblem.get_vars_names">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.CatalogueOptimization.Problems.html#VeraGridEngine.Simulations.CatalogueOptimization.Problems.catalogue_problem.CatalogueOptimizationProblem.get_vars_names">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_vars_names</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StrVec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the human-readable names for the elements of `x`.</span>
 
 <span class="sd">        :return: array of branch names; one entry per decision slot.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">branch</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">branch</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">branches</span><span class="p">])</span></div>
 
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_apply_combination</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Apply the chosen template to every branch of the problem and return the total capex.</span>
 
 <span class="sd">        :param x: integer decision vector with `x[i]` indexing the template within `pools[i]`.</span>
 <span class="sd">        :return: cumulative capex of all the applied templates (currency units).</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># Sum of capex across every applied template; this is the financial objective.</span>
         <span class="n">total_capex</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span>
 
@@ -343,7 +344,7 @@
                                       <span class="n">logger</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="c1"># Should never happen: `build_catalogue_pool` already filtered unsupported branches.</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">&quot;Unsupported branch type at evaluation time&quot;</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">"Unsupported branch type at evaluation time"</span><span class="p">,</span>
                                       <span class="n">device</span><span class="o">=</span><span class="n">branch</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
                                       <span class="n">device_class</span><span class="o">=</span><span class="nb">type</span><span class="p">(</span><span class="n">branch</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
 
@@ -353,20 +354,20 @@
         <span class="k">return</span> <span class="n">total_capex</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_restore_baseline</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Restore every branch to its baseline state captured at construction time.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># Iterate over the pre-computed snapshots and reapply the original values.</span>
         <span class="k">for</span> <span class="n">snapshot</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">snapshots</span><span class="p">:</span>
             <span class="n">snapshot</span><span class="o">.</span><span class="n">restore</span><span class="p">()</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_evaluate_power_flow</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TechnoEconomicScores</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Run a power flow on the current grid state and return a `TechnoEconomicScores` populated</span>
 <span class="sd">        with the four technical scores (capex/opex are filled in by the caller).</span>
 
 <span class="sd">        :return: techno-economic scores with the technical fields populated.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># Run a fresh PF driver each time; reusing one across evaluations would risk stale state.</span>
         <span class="n">driver</span> <span class="o">=</span> <span class="n">PowerFlowDriver</span><span class="p">(</span><span class="n">grid</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pf_options</span><span class="p">)</span>
         <span class="n">driver</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
@@ -397,7 +398,7 @@
 <div class="viewcode-block" id="CatalogueOptimizationProblem.objective_function">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.CatalogueOptimization.Problems.html#VeraGridEngine.Simulations.CatalogueOptimization.Problems.catalogue_problem.CatalogueOptimizationProblem.objective_function">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">objective_function</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">|</span> <span class="n">IntVec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Evaluate the objective function `f(x)`.</span>
 
 <span class="sd">        Strategy:</span>
@@ -408,7 +409,7 @@
 
 <span class="sd">        :param x: integer decision vector with `x[i]` indexing the template within `pools[i]`.</span>
 <span class="sd">        :return: array of six objective values.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="c1"># Step 1: apply templates and accumulate capex.</span>
             <span class="n">total_capex</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_apply_combination</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">x</span><span class="p">)</span>

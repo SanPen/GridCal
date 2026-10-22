@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Devices.Parents.editable_device &mdash; VeraGrid 6.7.13 documentation</title>
+  <title>VeraGridEngine.Devices.Parents.editable_device &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=16fbabd8"></script>
+      <script src="../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -200,22 +200,22 @@
 <div class="viewcode-block" id="uuid2idtag">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Parents.html#VeraGridEngine.Devices.Parents.editable_device.uuid2idtag">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">uuid2idtag</span><span class="p">(</span><span class="n">val</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Remove the useless characters and format as a proper 32-char UID</span>
 <span class="sd">    :param val: value that looks like a UUID</span>
 <span class="sd">    :return: proper UUID</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">val</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span></div>
+<span class="sd">    """</span>
+    <span class="k">return</span> <span class="n">val</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">'_'</span><span class="p">,</span> <span class="s1">''</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">'-'</span><span class="p">,</span> <span class="s1">''</span><span class="p">)</span></div>
 
 
 
 <div class="viewcode-block" id="parse_idtag">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Parents.html#VeraGridEngine.Devices.Parents.editable_device.parse_idtag">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">parse_idtag</span><span class="p">(</span><span class="n">val</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="kc">None</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    idtag setter</span>
 <span class="sd">    :param val: any string or None</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">val</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">()</span><span class="o">.</span><span class="n">hex</span>  <span class="c1"># generate a proper UUIDv4 string</span>
     <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
@@ -237,7 +237,7 @@
 <div class="viewcode-block" id="smart_compare">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Parents.html#VeraGridEngine.Devices.Parents.editable_device.smart_compare">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">smart_compare</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="mf">1.e-10</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compares two Python objects with tolerance for numerical values.</span>
 
 <span class="sd">    If both inputs are numeric (int, float, complex, or NumPy numbers),</span>
@@ -247,7 +247,7 @@
 <span class="sd">    a :First object to compare.</span>
 <span class="sd">    b :Second object to compare.</span>
 <span class="sd">    :return: bool</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="n">atol</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">a</span> <span class="o">==</span> <span class="n">b</span></div>
@@ -257,31 +257,31 @@
 <div class="viewcode-block" id="GCProp">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Parents.html#VeraGridEngine.Devices.Parents.editable_device.GCProp">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">GCProp</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    VeraGrid property, this class must remain immutable</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;_name&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;_units&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;_tpe&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;_definition&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;_profile_name&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;_display&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;_editable&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;_old_names&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;_is_color&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;_is_date&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;_category&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;_dyn_ref&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;_reflexive&quot;</span>
+        <span class="s2">"_name"</span><span class="p">,</span>
+        <span class="s2">"_units"</span><span class="p">,</span>
+        <span class="s2">"_tpe"</span><span class="p">,</span>
+        <span class="s2">"_definition"</span><span class="p">,</span>
+        <span class="s2">"_profile_name"</span><span class="p">,</span>
+        <span class="s2">"_display"</span><span class="p">,</span>
+        <span class="s2">"_editable"</span><span class="p">,</span>
+        <span class="s2">"_old_names"</span><span class="p">,</span>
+        <span class="s2">"_is_color"</span><span class="p">,</span>
+        <span class="s2">"_is_date"</span><span class="p">,</span>
+        <span class="s2">"_category"</span><span class="p">,</span>
+        <span class="s2">"_dyn_ref"</span><span class="p">,</span>
+        <span class="s2">"_reflexive"</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                  <span class="n">prop_name</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                 <span class="n">units</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+                 <span class="n">units</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">,</span>
                  <span class="n">tpe</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">GCPROP_TYPES</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                 <span class="n">definition</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-                 <span class="n">profile_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                 <span class="n">definition</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">,</span>
+                 <span class="n">profile_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">''</span><span class="p">,</span>
                  <span class="n">display</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
                  <span class="n">editable</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
                  <span class="n">old_names</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -291,7 +291,7 @@
                  <span class="n">cat</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">PrpCat</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">dyn_ref</span><span class="p">:</span> <span class="n">ParamPowerFlowReferenceType</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">reflexive</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        VeraGrid property</span>
 <span class="sd">        :param prop_name:</span>
 <span class="sd">        :param units: units of the property</span>
@@ -305,17 +305,17 @@
 <span class="sd">        :param key: Property key</span>
 <span class="sd">        :param cat: Property categories</span>
 <span class="sd">        :param dyn_ref: Property dynamic reference</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="k">if</span> <span class="n">prop_name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">key</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Either &#39;prop_name&#39; or &#39;key&#39; must be provided.&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Either 'prop_name' or 'key' must be provided."</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_name</span> <span class="o">=</span> <span class="n">key</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_name</span> <span class="o">=</span> <span class="n">prop_name</span>
         <span class="k">if</span> <span class="n">tpe</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The &#39;tpe&#39; argument must be provided.&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"The 'tpe' argument must be provided."</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">pass</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_units</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">units</span>
@@ -335,183 +335,183 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Property name.</span>
 <span class="sd">        :return: str</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_name</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">units</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Property units.</span>
 <span class="sd">        :return: str</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_units</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">tpe</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">GCPROP_TYPES</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Property type.</span>
 <span class="sd">        :return: GCPROP_TYPES</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tpe</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">definition</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Property definition.</span>
 <span class="sd">        :return: str</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_definition</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">profile_name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Linked profile name.</span>
 <span class="sd">        :return: str</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_profile_name</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">display</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Display flag.</span>
 <span class="sd">        :return: bool</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_display</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">editable</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Editable flag.</span>
 <span class="sd">        :return: bool</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_editable</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">old_names</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Compatibility aliases.</span>
 <span class="sd">        :return: Tuple[str, ...]</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_old_names</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">is_color</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Color flag.</span>
 <span class="sd">        :return: bool</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_color</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">is_date</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Date flag.</span>
 <span class="sd">        :return: bool</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_date</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">category</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">PrpCat</span><span class="p">]</span> <span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        List of categories</span>
 <span class="sd">        :return: List[PropertyCategory]</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_category</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">reflexive</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Is reflexive?</span>
 <span class="sd">        :return: Boolean</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reflexive</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">dyn_ref</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ParamPowerFlowReferenceType</span> <span class="o">|</span> <span class="kc">None</span> <span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        dyn_ref</span>
 <span class="sd">        :return: Boolean</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dyn_ref</span>
 
 <div class="viewcode-block" id="GCProp.has_profile">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Parents.html#VeraGridEngine.Devices.Parents.editable_device.GCProp.has_profile">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">has_profile</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Check if this property has an associated profile</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">profile_name</span> <span class="o">!=</span> <span class="s1">&#39;&#39;</span></div>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">profile_name</span> <span class="o">!=</span> <span class="s1">''</span></div>
 
 
 <div class="viewcode-block" id="GCProp.get_class_name">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Parents.html#VeraGridEngine.Devices.Parents.editable_device.GCProp.get_class_name">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_class_name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Convert the class name to a string</span>
 <span class="sd">        :return: str</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">tpe_name</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tpe</span><span class="p">)</span>
-        <span class="k">if</span> <span class="s1">&#39;.&#39;</span> <span class="ow">in</span> <span class="n">tpe_name</span><span class="p">:</span>
-            <span class="n">chunks</span> <span class="o">=</span> <span class="n">tpe_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s1">'.'</span> <span class="ow">in</span> <span class="n">tpe_name</span><span class="p">:</span>
+            <span class="n">chunks</span> <span class="o">=</span> <span class="n">tpe_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">'.'</span><span class="p">)</span>
             <span class="k">return</span> <span class="p">(</span><span class="n">chunks</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-                    <span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;&#39;&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
-                    <span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;&lt;&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
-                    <span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;&gt;&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+                    <span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"'"</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span>
+                    <span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"&lt;"</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span>
+                    <span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"&gt;"</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="p">(</span><span class="n">tpe_name</span>
-                    <span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;class&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
-                    <span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;&#39;&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
-                    <span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;&lt;&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
-                    <span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;&gt;&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span></div>
+                    <span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">'class'</span><span class="p">,</span> <span class="s1">''</span><span class="p">)</span>
+                    <span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"'"</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span>
+                    <span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"&lt;"</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span>
+                    <span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"&gt;"</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span></div>
 
 
 <div class="viewcode-block" id="GCProp.get_dict">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Parents.html#VeraGridEngine.Devices.Parents.editable_device.GCProp.get_dict">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">bool</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the values of this property as a dictionary</span>
 <span class="sd">        :return: Dict[name, value]</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
-                <span class="s1">&#39;class_type&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_class_name</span><span class="p">(),</span>
-                <span class="s1">&#39;unit&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">units</span><span class="p">,</span>
-                <span class="s1">&#39;mandatory&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
-                <span class="s1">&#39;max_chars&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
-                <span class="s2">&quot;descriptions&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">definition</span><span class="p">,</span>
-                <span class="s2">&quot;has_profile&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_profile</span><span class="p">(),</span>
-                <span class="s1">&#39;comment&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">}</span></div>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s1">'name'</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                <span class="s1">'class_type'</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_class_name</span><span class="p">(),</span>
+                <span class="s1">'unit'</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">units</span><span class="p">,</span>
+                <span class="s1">'mandatory'</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+                <span class="s1">'max_chars'</span><span class="p">:</span> <span class="s1">''</span><span class="p">,</span>
+                <span class="s2">"descriptions"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">definition</span><span class="p">,</span>
+                <span class="s2">"has_profile"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_profile</span><span class="p">(),</span>
+                <span class="s1">'comment'</span><span class="p">:</span> <span class="s1">''</span><span class="p">}</span></div>
 
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="s2">&quot;prop:&quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span></div>
+        <span class="k">return</span> <span class="s2">"prop:"</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span></div>
 
 
 
 <div class="viewcode-block" id="get_action_symbol">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Parents.html#VeraGridEngine.Devices.Parents.editable_device.get_action_symbol">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_action_symbol</span><span class="p">(</span><span class="n">action</span><span class="p">:</span> <span class="n">ActionType</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 
 <span class="sd">    :param action:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">action</span> <span class="o">==</span> <span class="n">ActionType</span><span class="o">.</span><span class="n">NoAction</span><span class="p">:</span>
-        <span class="k">return</span> <span class="s2">&quot;.&quot;</span>
+        <span class="k">return</span> <span class="s2">"."</span>
     <span class="k">elif</span> <span class="n">action</span> <span class="o">==</span> <span class="n">ActionType</span><span class="o">.</span><span class="n">Add</span><span class="p">:</span>
-        <span class="k">return</span> <span class="s2">&quot;+&quot;</span>
+        <span class="k">return</span> <span class="s2">"+"</span>
     <span class="k">elif</span> <span class="n">action</span> <span class="o">==</span> <span class="n">ActionType</span><span class="o">.</span><span class="n">Delete</span><span class="p">:</span>
-        <span class="k">return</span> <span class="s2">&quot;-&quot;</span>
+        <span class="k">return</span> <span class="s2">"-"</span>
     <span class="k">elif</span> <span class="n">action</span> <span class="o">==</span> <span class="n">ActionType</span><span class="o">.</span><span class="n">Modify</span><span class="p">:</span>
-        <span class="k">return</span> <span class="s2">&quot;~&quot;</span>
+        <span class="k">return</span> <span class="s2">"~"</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">return</span> <span class="s2">&quot;&quot;</span></div>
+        <span class="k">return</span> <span class="s2">""</span></div>
 
 
 
@@ -520,13 +520,13 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">get_at</span><span class="p">(</span><span class="n">snapshot_val</span><span class="p">:</span> <span class="n">GCPROP_TYPES</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">int</span><span class="p">,</span>
            <span class="n">profile</span><span class="p">:</span> <span class="n">AnyProfile</span><span class="p">,</span>
            <span class="n">t</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">GCPROP_TYPES</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Get a GCPROP_TYPES value from a snapshot or a profile</span>
 <span class="sd">    :param snapshot_val: snapshot value</span>
 <span class="sd">    :param profile: Associated profile</span>
 <span class="sd">    :param t: time index (None for snapshot)</span>
 <span class="sd">    :return: Value</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">t</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">snapshot_val</span>
     <span class="k">else</span><span class="p">:</span>
@@ -551,27 +551,27 @@
 <div class="viewcode-block" id="EditableDeviceMeta">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Parents.html#VeraGridEngine.Devices.Parents.editable_device.EditableDeviceMeta">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">EditableDeviceMeta</span><span class="p">(</span><span class="nb">type</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Metaclass that pre-builds inherited class schema declarations.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__new__</span><span class="p">(</span><span class="n">mcs</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">bases</span><span class="p">,</span> <span class="n">namespace</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Build a new class and aggregate property declarations from base to child.</span>
 <span class="sd">        :param name: Class name</span>
 <span class="sd">        :param bases: Base classes</span>
 <span class="sd">        :param namespace: Class namespace</span>
 <span class="sd">        :return: New class</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">cls</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__new__</span><span class="p">(</span><span class="n">mcs</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">bases</span><span class="p">,</span> <span class="n">namespace</span><span class="p">)</span>
 
         <span class="n">aggregated_declarations</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">GCProp</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">base</span> <span class="ow">in</span> <span class="n">bases</span><span class="p">:</span>
-            <span class="n">base_declarations</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">GCProp</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">base</span><span class="p">,</span> <span class="s2">&quot;CLASS_PROPERTY_DECLARATIONS&quot;</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">())</span>
+            <span class="n">base_declarations</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">GCProp</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">base</span><span class="p">,</span> <span class="s2">"CLASS_PROPERTY_DECLARATIONS"</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">())</span>
             <span class="k">for</span> <span class="n">declaration</span> <span class="ow">in</span> <span class="n">base_declarations</span><span class="p">:</span>
                 <span class="n">aggregated_declarations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">declaration</span><span class="p">)</span>
 
-        <span class="n">local_declarations</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">GCProp</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="n">namespace</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;LOCAL_PROPERTY_DECLARATIONS&quot;</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">())</span>
+        <span class="n">local_declarations</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">GCProp</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="n">namespace</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"LOCAL_PROPERTY_DECLARATIONS"</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">())</span>
         <span class="k">for</span> <span class="n">declaration</span> <span class="ow">in</span> <span class="n">local_declarations</span><span class="p">:</span>
             <span class="n">aggregated_declarations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">declaration</span><span class="p">)</span>
 
@@ -587,7 +587,7 @@
             <span class="n">class_registered_properties</span><span class="p">[</span><span class="n">prop</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">prop</span>
             <span class="n">class_property_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">prop</span><span class="p">)</span>
 
-            <span class="k">if</span> <span class="n">prop</span><span class="o">.</span><span class="n">profile_name</span> <span class="o">!=</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">prop</span><span class="o">.</span><span class="n">profile_name</span> <span class="o">!=</span> <span class="s1">''</span><span class="p">:</span>
                 <span class="n">class_properties_with_profile</span><span class="p">[</span><span class="n">prop</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">prop</span><span class="o">.</span><span class="n">profile_name</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">pass</span>
@@ -609,7 +609,7 @@
 <div class="viewcode-block" id="PropertyChanges">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Parents.html#VeraGridEngine.Devices.Parents.editable_device.PropertyChanges">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">PropertyChanges</span><span class="p">:</span>
-    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;__property_merge_selections&quot;</span><span class="p">,)</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"__property_merge_selections"</span><span class="p">,)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># This per-instance map stores merge toggles to avoid mutating shared schema objects.</span>
@@ -618,23 +618,23 @@
 <div class="viewcode-block" id="PropertyChanges.set">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Parents.html#VeraGridEngine.Devices.Parents.editable_device.PropertyChanges.set">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">property_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">selected</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Set merge-selection state for one property in this instance.</span>
 <span class="sd">        :param property_name: Property name</span>
 <span class="sd">        :param selected: Should this property be merged</span>
 <span class="sd">        :return: None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__property_merge_selections</span><span class="p">[</span><span class="n">property_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">selected</span></div>
 
 
 <div class="viewcode-block" id="PropertyChanges.get">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Parents.html#VeraGridEngine.Devices.Parents.editable_device.PropertyChanges.get">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">property_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Query merge-selection state for one property in this instance.</span>
 <span class="sd">        :param property_name: Property name</span>
 <span class="sd">        :return: True if selected for merge</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="c1"># If the property is not in the dictionary of properties to merge, it should not be modified.</span>
         <span class="c1"># Otherwise, check what should be the behaviour.</span>
@@ -671,78 +671,78 @@
 <div class="viewcode-block" id="EditableDevice">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Parents.html#VeraGridEngine.Devices.Parents.editable_device.EditableDevice">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">EditableDevice</span><span class="p">(</span><span class="n">metaclass</span><span class="o">=</span><span class="n">EditableDeviceMeta</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    This is the main device class from which all inherit</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s1">&#39;_idtag&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_name&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_code&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_rdfid&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;device_type&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;comment&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;action&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;selected_to_merge&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;diff_changes&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;__auto_update_enabled&#39;</span><span class="p">,</span>
+        <span class="s1">'_idtag'</span><span class="p">,</span>
+        <span class="s1">'_name'</span><span class="p">,</span>
+        <span class="s1">'_code'</span><span class="p">,</span>
+        <span class="s1">'_rdfid'</span><span class="p">,</span>
+        <span class="s1">'device_type'</span><span class="p">,</span>
+        <span class="s1">'comment'</span><span class="p">,</span>
+        <span class="s1">'action'</span><span class="p">,</span>
+        <span class="s1">'selected_to_merge'</span><span class="p">,</span>
+        <span class="s1">'diff_changes'</span><span class="p">,</span>
+        <span class="s1">'__auto_update_enabled'</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">LOCAL_PROPERTY_DECLARATIONS</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">GCProp</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;idtag&#39;</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'idtag'</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">''</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Unique ID&#39;</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">'Unique ID'</span><span class="p">,</span>
             <span class="n">editable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">MT</span><span class="p">],</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;name&#39;</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'name'</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">''</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Name of the device.&#39;</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">'Name of the device.'</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">TP</span><span class="p">],</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;code&#39;</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'code'</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">''</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Secondary ID&#39;</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">'Secondary ID'</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">MT</span><span class="p">],</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;rdfid&#39;</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'rdfid'</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">''</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;RDF ID for further compatibility&#39;</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">'RDF ID for further compatibility'</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">MT</span><span class="p">],</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;action&#39;</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'action'</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">''</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="n">ActionType</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Object action to perform.</span><span class="se">\n</span><span class="s1">Only used for model merging.&#39;</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">'Object action to perform.</span><span class="se">\n</span><span class="s1">Only used for model merging.'</span><span class="p">,</span>
             <span class="n">display</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">TP</span><span class="p">],</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;selected_to_merge&#39;</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'selected_to_merge'</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">''</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">bool</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Whether this object should be applied during diff merge.&#39;</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">'Whether this object should be applied during diff merge.'</span><span class="p">,</span>
             <span class="n">display</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
             <span class="n">editable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">MT</span><span class="p">],</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;comment&#39;</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'comment'</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">''</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;User comment&#39;</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">'User comment'</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">MT</span><span class="p">],</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;diff_changes&#39;</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'diff_changes'</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">''</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="n">SubObjectType</span><span class="o">.</span><span class="n">MergeInformation</span><span class="p">,</span>
             <span class="n">display</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
             <span class="n">editable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
@@ -760,23 +760,23 @@
                  <span class="n">idtag</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span>
                  <span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
                  <span class="n">device_type</span><span class="p">:</span> <span class="n">DeviceType</span><span class="p">,</span>
-                 <span class="n">comment</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-                 <span class="n">rdfid</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+                 <span class="n">comment</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">,</span>
+                 <span class="n">rdfid</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Class to generalize any editable device</span>
-<span class="sd">        :param name: Asset&#39;s name</span>
+<span class="sd">        :param name: Asset's name</span>
 <span class="sd">        :param idtag: unique ID, if not provided it is generated</span>
 <span class="sd">        :param code: alternative code to identify this object in other databases (i.e. psse number tec...)</span>
 <span class="sd">        :param device_type: DeviceType instance</span>
 <span class="sd">        :param rdfid: RDFID code optional</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_idtag</span> <span class="o">=</span> <span class="n">parse_idtag</span><span class="p">(</span><span class="n">val</span><span class="o">=</span><span class="n">idtag</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">name</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_code</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">code</span>
 
@@ -792,65 +792,65 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">diff_changes</span> <span class="o">=</span> <span class="n">PropertyChanges</span><span class="p">()</span>
 
         <span class="c1"># some devices have an auto update of a property when another property changes</span>
-        <span class="c1"># (i.e. Line&#39;s R, X, B when the length changes) this controls that behaviour and disables it during loading</span>
+        <span class="c1"># (i.e. Line's R, X, B when the length changes) this controls that behaviour and disables it during loading</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__auto_update_enabled</span> <span class="o">=</span> <span class="kc">True</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">property_list</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">GCProp</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Class-level property list exposed as read-only instance view.</span>
 <span class="sd">        :return: Tuple of GCProp</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">self_cls</span><span class="p">:</span> <span class="nb">type</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">self_cls</span><span class="o">.</span><span class="n">CLASS_PROPERTY_LIST</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">registered_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">GCProp</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Class-level registered properties exposed as read-only instance view.</span>
 <span class="sd">        :return: Dict[str, GCProp]</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">self_cls</span><span class="p">:</span> <span class="nb">type</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">self_cls</span><span class="o">.</span><span class="n">CLASS_REGISTERED_PROPERTIES</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">non_editable_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Class-level non-editable property names exposed as read-only instance view.</span>
 <span class="sd">        :return: Tuple[str, ...]</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">self_cls</span><span class="p">:</span> <span class="nb">type</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">self_cls</span><span class="o">.</span><span class="n">CLASS_NON_EDITABLE_PROPERTIES</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">properties_with_profile</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Class-level property/profile map exposed as read-only instance view.</span>
 <span class="sd">        :return: Dict[str, str]</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">self_cls</span><span class="p">:</span> <span class="nb">type</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">self_cls</span><span class="o">.</span><span class="n">CLASS_PROPERTIES_WITH_PROFILE</span>
 
 <div class="viewcode-block" id="EditableDevice.set_diff_change">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Parents.html#VeraGridEngine.Devices.Parents.editable_device.EditableDevice.set_diff_change">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">set_diff_change</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">property_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">selected</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Set merge-selection state for one property in this instance.</span>
 <span class="sd">        :param property_name: Property name</span>
 <span class="sd">        :param selected: Should this property be merged</span>
 <span class="sd">        :return: None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">diff_changes</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">property_name</span><span class="p">,</span> <span class="n">selected</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="EditableDevice.get_diff_change_selected">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Parents.html#VeraGridEngine.Devices.Parents.editable_device.EditableDevice.get_diff_change_selected">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_diff_change_selected</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">property_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Query merge-selection state for one property in this instance.</span>
 <span class="sd">        :param property_name: Property name</span>
 <span class="sd">        :return: True if selected for merge</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">diff_changes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">property_name</span><span class="p">)</span></div>
 
@@ -858,20 +858,20 @@
 <div class="viewcode-block" id="EditableDevice.get_all_diff_changes_dict">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Parents.html#VeraGridEngine.Devices.Parents.editable_device.EditableDevice.get_all_diff_changes_dict">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_all_diff_changes_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">bool</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the dictionary of all diff changes</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">diff_changes</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span></div>
 
 
 <div class="viewcode-block" id="EditableDevice.iter_properties_selected_to_merge">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Parents.html#VeraGridEngine.Devices.Parents.editable_device.EditableDevice.iter_properties_selected_to_merge">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">iter_properties_selected_to_merge</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Iterate over properties selected to be merged for this instance.</span>
 <span class="sd">        :return: Generator[GCProp, None, None]</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">for</span> <span class="n">prop</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">property_list</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_diff_change_selected</span><span class="p">(</span><span class="n">property_name</span><span class="o">=</span><span class="n">prop</span><span class="o">.</span><span class="n">name</span><span class="p">):</span>
                 <span class="k">yield</span> <span class="n">prop</span>
@@ -881,57 +881,57 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">auto_update_enabled</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__auto_update_enabled</span>
 
 <div class="viewcode-block" id="EditableDevice.enable_auto_updates">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Parents.html#VeraGridEngine.Devices.Parents.editable_device.EditableDevice.enable_auto_updates">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">enable_auto_updates</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__auto_update_enabled</span> <span class="o">=</span> <span class="kc">True</span></div>
 
 
 <div class="viewcode-block" id="EditableDevice.disable_auto_updates">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Parents.html#VeraGridEngine.Devices.Parents.editable_device.EditableDevice.disable_auto_updates">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">disable_auto_updates</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__auto_update_enabled</span> <span class="o">=</span> <span class="kc">False</span></div>
 
 
 <div class="viewcode-block" id="EditableDevice.get_uuid">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Parents.html#VeraGridEngine.Devices.Parents.editable_device.EditableDevice.get_uuid">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_uuid</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        If the idtag property looks like a UUID, it adds the dashes</span>
 <span class="sd">        :return: UUID with dashes</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_idtag</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">idtag</span><span class="p">)</span> <span class="o">==</span> <span class="mi">32</span><span class="p">:</span>
                 <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">uuid</span><span class="o">.</span><span class="n">UUID</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">idtag</span><span class="p">))</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;The idtag is not a proper UUID&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">"The idtag is not a proper UUID"</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;The idtag is not a proper UUID string&quot;</span><span class="p">)</span></div>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">"The idtag is not a proper UUID string"</span><span class="p">)</span></div>
 
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Name of the object</span>
 <span class="sd">        :return: string</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">get_action_symbol</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">action</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;::&quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">idtag</span> <span class="o">+</span> <span class="s1">&#39;::&#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span>
+        <span class="k">return</span> <span class="n">get_action_symbol</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">action</span><span class="p">)</span> <span class="o">+</span> <span class="s2">"::"</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">idtag</span> <span class="o">+</span> <span class="s1">'::'</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
         <span class="c1"># alternatively, return hash(repr(self))</span>
@@ -942,41 +942,41 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__hash__</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">other</span><span class="o">.</span><span class="fm">__hash__</span><span class="p">()</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="s1">&#39;idtag&#39;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="s1">'idtag'</span><span class="p">):</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">idtag</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">idtag</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">False</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">idtag</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        idtag getter</span>
 <span class="sd">        :return: string, hopefully an UUIDv4</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_idtag</span>
 
     <span class="nd">@idtag</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">idtag</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="kc">None</span><span class="p">]):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        idtag setter</span>
 <span class="sd">        :param val: any string or None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_idtag</span> <span class="o">=</span> <span class="n">parse_idtag</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">code</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        code getter</span>
 <span class="sd">        :return: string, hopefully an UUIDv4</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_code</span>
 
     <span class="nd">@code</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">code</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="kc">None</span><span class="p">]):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        code setter</span>
 <span class="sd">        :param val: any string or None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_code</span> <span class="o">=</span> <span class="n">val</span>
 
     <span class="nd">@property</span>
@@ -990,28 +990,28 @@
 <div class="viewcode-block" id="EditableDevice.flatten_idtag">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Parents.html#VeraGridEngine.Devices.Parents.editable_device.EditableDevice.flatten_idtag">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">flatten_idtag</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Remove useless underscore (_) and dash (-)</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_idtag</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_idtag</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span></div>
+<span class="sd">        """</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_idtag</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_idtag</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">'_'</span><span class="p">,</span> <span class="s1">''</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">'-'</span><span class="p">,</span> <span class="s1">''</span><span class="p">)</span></div>
 
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">type_name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Name of the device type</span>
 <span class="sd">        :return: name of the type (str)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">device_type</span><span class="o">.</span><span class="n">value</span>
 
 <div class="viewcode-block" id="EditableDevice.get_rdfid">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Parents.html#VeraGridEngine.Devices.Parents.editable_device.EditableDevice.get_rdfid">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_rdfid</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Convert the idtag to RDFID</span>
 <span class="sd">        :return: UUID converted to RDFID</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_rdfid</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">lenghts</span> <span class="o">=</span> <span class="p">[</span><span class="mi">8</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">12</span><span class="p">]</span>
             <span class="n">chunks</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
@@ -1020,7 +1020,7 @@
                 <span class="n">a</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">idtag</span><span class="p">[</span><span class="n">s</span><span class="p">:</span><span class="n">s</span> <span class="o">+</span> <span class="n">length_</span><span class="p">]</span>
                 <span class="n">chunks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
                 <span class="n">s</span> <span class="o">+=</span> <span class="n">length_</span>
-            <span class="k">return</span> <span class="s2">&quot;-&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">chunks</span><span class="p">)</span>
+            <span class="k">return</span> <span class="s2">"-"</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">chunks</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">rdfid</span></div>
 
@@ -1030,15 +1030,15 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">register</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                  <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
                  <span class="n">tpe</span><span class="p">:</span> <span class="n">GCPROP_TYPES</span><span class="p">,</span>
-                 <span class="n">units</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-                 <span class="n">definition</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-                 <span class="n">profile_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                 <span class="n">units</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">,</span>
+                 <span class="n">definition</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">,</span>
+                 <span class="n">profile_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">''</span><span class="p">,</span>
                  <span class="n">display</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
                  <span class="n">editable</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
                  <span class="n">old_names</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">is_color</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
                  <span class="n">is_date</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Runtime registration is intentionally disabled.</span>
 <span class="sd">        :param key: key (this is the displayed name)</span>
 <span class="sd">        :param units: string with the declared units</span>
@@ -1050,21 +1050,21 @@
 <span class="sd">        :param old_names: List of old names</span>
 <span class="sd">        :param is_color: is this a color property?</span>
 <span class="sd">        :param is_date: Is this a date property?</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-            <span class="s2">&quot;Runtime property registration is disabled. &quot;</span>
-            <span class="s2">&quot;Declare properties in LOCAL_PROPERTY_DECLARATIONS.&quot;</span>
+            <span class="s2">"Runtime property registration is disabled. "</span>
+            <span class="s2">"Declare properties in LOCAL_PROPERTY_DECLARATIONS."</span>
         <span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="EditableDevice.get_property_name_replacements_dict">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Parents.html#VeraGridEngine.Devices.Parents.editable_device.EditableDevice.get_property_name_replacements_dict">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_property_name_replacements_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get dictionary of old names related to their current name</span>
 <span class="sd">        This is useful for retro compatibility</span>
 <span class="sd">        :return: {old_name: new_name} dict</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">data</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">prop</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">registered_properties</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
 
@@ -1077,17 +1077,17 @@
 <div class="viewcode-block" id="EditableDevice.generate_uuid">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Parents.html#VeraGridEngine.Devices.Parents.editable_device.EditableDevice.generate_uuid">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">generate_uuid</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Generate new UUID for the idtag property</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">idtag</span> <span class="o">=</span> <span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">()</span><span class="o">.</span><span class="n">hex</span></div>
 
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Name of the object</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_name</span>
 
     <span class="nd">@name</span><span class="o">.</span><span class="n">setter</span>
@@ -1095,15 +1095,15 @@
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_name</span> <span class="o">=</span> <span class="n">val</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Trying </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">device_type</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2"> to set name with </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">val</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Trying </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">device_type</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2"> to set name with </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">val</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
 <div class="viewcode-block" id="EditableDevice.get_save_data">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Parents.html#VeraGridEngine.Devices.Parents.editable_device.EditableDevice.get_save_data">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_save_data</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">bool</span><span class="p">,</span> <span class="nb">object</span><span class="p">]]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return the data that matches the edit_headers</span>
 <span class="sd">        :return: list with data</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="n">data</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">properties</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">registered_properties</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
@@ -1115,7 +1115,7 @@
 
                 <span class="k">else</span><span class="p">:</span>
                     <span class="c1"># if the object is not of a primary type, get the idtag instead</span>
-                    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s1">&#39;idtag&#39;</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s1">'idtag'</span><span class="p">):</span>
                         <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">idtag</span><span class="p">)</span>
                     <span class="k">else</span><span class="p">:</span>
                         <span class="c1"># some data types might not have the idtag, ten just use the str method</span>
@@ -1129,30 +1129,30 @@
 <div class="viewcode-block" id="EditableDevice.get_headers">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Parents.html#VeraGridEngine.Devices.Parents.editable_device.EditableDevice.get_headers">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_headers</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">AnyStr</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return a list of headers</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">registered_properties</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span></div>
 
 
 <div class="viewcode-block" id="EditableDevice.get_number_of_properties">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Parents.html#VeraGridEngine.Devices.Parents.editable_device.EditableDevice.get_number_of_properties">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_number_of_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return the number of registered properties</span>
 <span class="sd">        :return: int</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">property_list</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="EditableDevice.get_properties_containing_object">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Parents.html#VeraGridEngine.Devices.Parents.editable_device.EditableDevice.get_properties_containing_object">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">get_properties_containing_object</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">:</span> <span class="s2">&quot;EditableDevice&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">GCProp</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_properties_containing_object</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">:</span> <span class="s2">"EditableDevice"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">GCProp</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return the list of properties that contain a certain object</span>
 <span class="sd">        :param obj:</span>
 <span class="sd">        :return: list of GCProp, list of indices</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">props</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
         <span class="n">indices</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">prop</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">property_list</span><span class="p">):</span>
@@ -1166,10 +1166,10 @@
 <div class="viewcode-block" id="EditableDevice.get_association_properties">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Parents.html#VeraGridEngine.Devices.Parents.editable_device.EditableDevice.get_association_properties">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_association_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">GCProp</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return the list of properties that contain associate another type</span>
 <span class="sd">        :return: list of GCProp, list of indices</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">props</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
         <span class="n">indices</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">prop</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">property_list</span><span class="p">):</span>
@@ -1183,22 +1183,22 @@
 <div class="viewcode-block" id="EditableDevice.get_snapshot_value">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Parents.html#VeraGridEngine.Devices.Parents.editable_device.EditableDevice.get_snapshot_value">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_snapshot_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prop</span><span class="p">:</span> <span class="n">GCProp</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return the stored object value from the property index</span>
 <span class="sd">        :param prop: GCProp</span>
 <span class="sd">        :return: Whatever value is there</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prop</span><span class="o">.</span><span class="n">name</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="EditableDevice.set_snapshot_value">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Parents.html#VeraGridEngine.Devices.Parents.editable_device.EditableDevice.set_snapshot_value">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">set_snapshot_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">property_name</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Set the value of a snapshot property</span>
 <span class="sd">        :param property_name: name of the property</span>
 <span class="sd">        :param value: Any</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># set the snapshot value whatever it is</span>
         <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">property_name</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span></div>
 
@@ -1206,23 +1206,23 @@
 <div class="viewcode-block" id="EditableDevice.get_snapshot_value_by_name">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Parents.html#VeraGridEngine.Devices.Parents.editable_device.EditableDevice.get_snapshot_value_by_name">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_snapshot_value_by_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return the stored object value from the property index</span>
 <span class="sd">        :param name: snapshot property name</span>
 <span class="sd">        :return: Whatever value is there</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="EditableDevice.get_property_value">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Parents.html#VeraGridEngine.Devices.Parents.editable_device.EditableDevice.get_property_value">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_property_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prop</span><span class="p">:</span> <span class="n">GCProp</span><span class="p">,</span> <span class="n">t_idx</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return the stored object value from the property index</span>
 <span class="sd">        :param prop: GCProp</span>
 <span class="sd">        :param t_idx: Time index, None for Snapshot values</span>
 <span class="sd">        :return: Whatever value is there</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="k">if</span> <span class="n">t_idx</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="c1"># pick the snapshot value whatever it is</span>
@@ -1242,34 +1242,34 @@
 <div class="viewcode-block" id="EditableDevice.get_property_by_idx">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Parents.html#VeraGridEngine.Devices.Parents.editable_device.EditableDevice.get_property_by_idx">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_property_by_idx</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">property_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">GCProp</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return the stored object value from the property index</span>
 <span class="sd">        :param property_idx: Property index</span>
 <span class="sd">        :return: GCProp</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">property_list</span><span class="p">[</span><span class="n">property_idx</span><span class="p">]</span></div>
 
 
 <div class="viewcode-block" id="EditableDevice.get_property_by_name">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Parents.html#VeraGridEngine.Devices.Parents.editable_device.EditableDevice.get_property_by_name">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_property_by_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prop_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">GCProp</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :param prop_name:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">registered_properties</span><span class="p">[</span><span class="n">prop_name</span><span class="p">]</span></div>
 
 
 <div class="viewcode-block" id="EditableDevice.get_property_value_by_idx">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Parents.html#VeraGridEngine.Devices.Parents.editable_device.EditableDevice.get_property_value_by_idx">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_property_value_by_idx</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">property_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">t_idx</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return the stored object value from the property index</span>
 <span class="sd">        :param property_idx: Property index</span>
 <span class="sd">        :param t_idx: Time index, None for Snapshot values</span>
 <span class="sd">        :return: Whatever value is there</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">prop</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">property_list</span><span class="p">[</span><span class="n">property_idx</span><span class="p">]</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_property_value</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="n">prop</span><span class="p">,</span> <span class="n">t_idx</span><span class="o">=</span><span class="n">t_idx</span><span class="p">)</span></div>
 
@@ -1277,46 +1277,46 @@
 <div class="viewcode-block" id="EditableDevice.set_profile">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Parents.html#VeraGridEngine.Devices.Parents.editable_device.EditableDevice.set_profile">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">set_profile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prop</span><span class="p">:</span> <span class="n">GCProp</span><span class="p">,</span> <span class="n">arr</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">AnyProfile</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Set the profile from eithr an array or an actual profile object</span>
 <span class="sd">        :param prop: GCProp instance</span>
 <span class="sd">        :param arr: Profile object or numpy array object</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
             <span class="n">profile</span><span class="p">:</span> <span class="n">AnyProfile</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prop</span><span class="o">.</span><span class="n">profile_name</span><span class="p">)</span>
             <span class="n">profile</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span>
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">PROFILE_INSTANCE_TYPES</span><span class="p">):</span>
             <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prop</span><span class="o">.</span><span class="n">profile_name</span><span class="p">,</span> <span class="n">arr</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;profile type not supported&quot;</span><span class="p">)</span></div>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">"profile type not supported"</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="EditableDevice.set_profile_array">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Parents.html#VeraGridEngine.Devices.Parents.editable_device.EditableDevice.set_profile_array">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">set_profile_array</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">magnitude</span><span class="p">,</span> <span class="n">arr</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">AnyProfile</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Set the profile from either an array or an actual profile object</span>
 <span class="sd">        :param magnitude: snapshot magnitude</span>
 <span class="sd">        :param arr: Profile object or numpy array object</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
             <span class="n">prof_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">properties_with_profile</span><span class="p">[</span><span class="n">magnitude</span><span class="p">]</span>
             <span class="n">profile</span><span class="p">:</span> <span class="n">AnyProfile</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prof_name</span><span class="p">)</span>
             <span class="n">profile</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;profile type not supported&quot;</span><span class="p">)</span></div>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">"profile type not supported"</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="EditableDevice.set_property_value">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Parents.html#VeraGridEngine.Devices.Parents.editable_device.EditableDevice.set_property_value">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">set_property_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prop</span><span class="p">:</span> <span class="n">GCProp</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">t_idx</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="nb">int</span><span class="p">]):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return the stored object value from the property index</span>
 <span class="sd">        :param prop: GCProp</span>
 <span class="sd">        :param value: any value is there</span>
 <span class="sd">        :param t_idx: Time index, None for Snapshot values</span>
 <span class="sd">        :return: Whatever value is there</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="k">if</span> <span class="n">t_idx</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="c1"># set the snapshot value whatever it is</span>
@@ -1333,12 +1333,12 @@
 <div class="viewcode-block" id="EditableDevice.get_value">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Parents.html#VeraGridEngine.Devices.Parents.editable_device.EditableDevice.get_value">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prop</span><span class="p">:</span> <span class="n">GCProp</span><span class="p">,</span> <span class="n">t_idx</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return value regardless of the property index</span>
 <span class="sd">        :param prop: GCProp</span>
 <span class="sd">        :param t_idx: time index</span>
 <span class="sd">        :return: Some value</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="n">t_idx</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="c1"># return the normal property</span>
             <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prop</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
@@ -1356,19 +1356,19 @@
 <div class="viewcode-block" id="EditableDevice.is_property_editable">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Parents.html#VeraGridEngine.Devices.Parents.editable_device.EditableDevice.is_property_editable">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">is_property_editable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prop</span><span class="p">:</span> <span class="n">GCProp</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return instance-specific GUI editability without mutating shared metadata.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Return instance-specific GUI editability without mutating shared metadata."""</span>
         <span class="k">return</span> <span class="n">prop</span><span class="o">.</span><span class="n">editable</span></div>
 
 
 <div class="viewcode-block" id="EditableDevice.set_value">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Parents.html#VeraGridEngine.Devices.Parents.editable_device.EditableDevice.set_value">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">set_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prop</span><span class="p">:</span> <span class="n">GCProp</span><span class="p">,</span> <span class="n">t_idx</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="n">value</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return value regardless of the property index</span>
 <span class="sd">        :param prop: GCProp</span>
 <span class="sd">        :param t_idx: time index</span>
 <span class="sd">        :param value: Some value</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="n">t_idx</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="c1"># return the normal property</span>
             <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prop</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
@@ -1385,11 +1385,11 @@
 <div class="viewcode-block" id="EditableDevice.create_profiles">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Parents.html#VeraGridEngine.Devices.Parents.editable_device.EditableDevice.create_profiles">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">create_profiles</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Create the load object default profiles</span>
 <span class="sd">        Args:</span>
 <span class="sd">        :param index: pandas time index</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">for</span> <span class="n">magnitude</span><span class="p">,</span> <span class="n">values</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">properties_with_profile</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">create_profile</span><span class="p">(</span><span class="n">magnitude</span><span class="o">=</span><span class="n">magnitude</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">index</span><span class="p">)</span></div>
 
@@ -1397,11 +1397,11 @@
 <div class="viewcode-block" id="EditableDevice.resize_profiles">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Parents.html#VeraGridEngine.Devices.Parents.editable_device.EditableDevice.resize_profiles">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">resize_profiles</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">time_frame</span><span class="p">:</span> <span class="n">TimeFrame</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Resize the profiles in this object</span>
 <span class="sd">        :param index: pandas time index</span>
 <span class="sd">        :param time_frame: Time frame to use (Short term, Long term)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">n1</span> <span class="o">=</span> <span class="n">index</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="k">for</span> <span class="n">magnitude</span><span class="p">,</span> <span class="n">values</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">properties_with_profile</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="k">if</span> <span class="n">values</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">time_frame</span><span class="p">:</span>
@@ -1424,11 +1424,11 @@
 <div class="viewcode-block" id="EditableDevice.create_profile">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Parents.html#VeraGridEngine.Devices.Parents.editable_device.EditableDevice.create_profile">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">create_profile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">magnitude</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DatetimeIndex</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Create power profile based on index</span>
 <span class="sd">        :param magnitude: name of the property</span>
 <span class="sd">        :param index: pandas time index</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># get the value of the magnitude</span>
         <span class="n">snapshot_value</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">magnitude</span><span class="p">)</span>
 
@@ -1436,7 +1436,7 @@
         <span class="n">prof</span><span class="p">:</span> <span class="n">AnyProfile</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_profile</span><span class="p">(</span><span class="n">magnitude</span><span class="o">=</span><span class="n">magnitude</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">prof</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;The profile is none, this is a bug!&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">"The profile is none, this is a bug!"</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">index</span> <span class="ow">is</span> <span class="n">pd</span><span class="o">.</span><span class="n">NaT</span><span class="p">:</span>
             <span class="k">pass</span>
         <span class="k">else</span><span class="p">:</span>
@@ -1449,14 +1449,14 @@
 <div class="viewcode-block" id="EditableDevice.ensure_profiles_exist">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Parents.html#VeraGridEngine.Devices.Parents.editable_device.EditableDevice.ensure_profiles_exist">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">ensure_profiles_exist</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DatetimeIndex</span><span class="p">,</span> <span class="n">set_profile_default_as_snapshot</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        It might be that when loading the VeraGrid Model has properties that the file has not.</span>
 <span class="sd">        Those properties must be initialized as well</span>
 <span class="sd">        :param index: Time series index (timestamps)</span>
 <span class="sd">        :param set_profile_default_as_snapshot: set the bool default profile value as the snapshot</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="n">index</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">index</span> <span class="ow">is</span> <span class="n">pd</span><span class="o">.</span><span class="n">NaT</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;ensure_profiles_exist: No index provided&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">"ensure_profiles_exist: No index provided"</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">magnitude</span><span class="p">,</span> <span class="n">prof_attr</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">properties_with_profile</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
 
@@ -1487,9 +1487,9 @@
 <div class="viewcode-block" id="EditableDevice.delete_profiles">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Parents.html#VeraGridEngine.Devices.Parents.editable_device.EditableDevice.delete_profiles">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">delete_profiles</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Delete the object profiles (set all to None)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">for</span> <span class="n">magnitude</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">properties_with_profile</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">get_profile</span><span class="p">(</span><span class="n">magnitude</span><span class="o">=</span><span class="n">magnitude</span><span class="p">)</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span></div>
 
@@ -1497,9 +1497,9 @@
 <div class="viewcode-block" id="EditableDevice.resample_profiles">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Parents.html#VeraGridEngine.Devices.Parents.editable_device.EditableDevice.resample_profiles">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">resample_profiles</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">indices</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        re-sample the object profiles (set all to None)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">for</span> <span class="n">magnitude</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">properties_with_profile</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
             <span class="n">prof</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_profile</span><span class="p">(</span><span class="n">magnitude</span><span class="o">=</span><span class="n">magnitude</span><span class="p">)</span>
             <span class="n">prof</span><span class="o">.</span><span class="n">resample</span><span class="p">(</span><span class="n">indices</span><span class="o">=</span><span class="n">indices</span><span class="p">)</span></div>
@@ -1508,10 +1508,10 @@
 <div class="viewcode-block" id="EditableDevice.set_profile_values">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Parents.html#VeraGridEngine.Devices.Parents.editable_device.EditableDevice.set_profile_values">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">set_profile_values</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Set the profile values at t</span>
 <span class="sd">        :param t: time index (integer)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">for</span> <span class="n">property_name</span><span class="p">,</span> <span class="n">profile_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">properties_with_profile</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="n">profile</span><span class="p">:</span> <span class="n">AnyProfile</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">profile_name</span><span class="p">)</span>
             <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">property_name</span><span class="p">,</span> <span class="n">profile</span><span class="p">[</span><span class="n">t</span><span class="p">])</span></div>
@@ -1520,11 +1520,11 @@
 <div class="viewcode-block" id="EditableDevice.get_profile">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Parents.html#VeraGridEngine.Devices.Parents.editable_device.EditableDevice.get_profile">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_profile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">magnitude</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">AnyProfile</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the profile of a property name</span>
 <span class="sd">        :param magnitude: name of the property</span>
 <span class="sd">        :return: Profile object</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="c1"># try to get the profile name</span>
         <span class="n">profile_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">properties_with_profile</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">magnitude</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
@@ -1538,20 +1538,20 @@
 <div class="viewcode-block" id="EditableDevice.get_profile_by_prop">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Parents.html#VeraGridEngine.Devices.Parents.editable_device.EditableDevice.get_profile_by_prop">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_profile_by_prop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prop</span><span class="p">:</span> <span class="n">GCProp</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">AnyProfile</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the profile of a property name</span>
 <span class="sd">        :param prop: GCProp</span>
 <span class="sd">        :return: Profile object</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prop</span><span class="o">.</span><span class="n">profile_name</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="EditableDevice.copy">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Parents.html#VeraGridEngine.Devices.Parents.editable_device.EditableDevice.copy">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">forced_new_idtag</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Create a deep copy of this object</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="c1"># Create a new instance of the object</span>
         <span class="n">tpe</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span>
@@ -1593,35 +1593,35 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Parents.html#VeraGridEngine.Devices.Parents.editable_device.EditableDevice.rgb2hex">[docs]</a>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">rgb2hex</span><span class="p">(</span><span class="n">r</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">g</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Convert R, G, B to hexadecimal tuple</span>
 <span class="sd">        :param r: Red amount (0, 255)</span>
 <span class="sd">        :param g: Green amount (0, 255)</span>
 <span class="sd">        :param b: Blue amount (0, 255)</span>
 <span class="sd">        :return: Hexadecimal string</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="s2">&quot;#</span><span class="si">{:02x}{:02x}{:02x}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span></div>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="s2">"#</span><span class="si">{:02x}{:02x}{:02x}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="EditableDevice.hex2rgb">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Parents.html#VeraGridEngine.Devices.Parents.editable_device.EditableDevice.hex2rgb">[docs]</a>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">hex2rgb</span><span class="p">(</span><span class="n">hexcode</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Convert hexadecimal string to rgb tuple</span>
 <span class="sd">        :param hexcode: hexadecimal string</span>
 <span class="sd">        :return: (R, G, B)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">ord</span><span class="p">,</span> <span class="n">hexcode</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;hex&#39;</span><span class="p">)))</span></div>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">ord</span><span class="p">,</span> <span class="n">hexcode</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">'hex'</span><span class="p">)))</span></div>
 
 
 <div class="viewcode-block" id="EditableDevice.rnd_color">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Parents.html#VeraGridEngine.Devices.Parents.editable_device.EditableDevice.rnd_color">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">rnd_color</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Generate random colour</span>
 <span class="sd">        :return: hex string</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">r</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">128</span><span class="p">)</span>
         <span class="n">g</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">128</span><span class="p">)</span>
         <span class="n">b</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">128</span><span class="p">)</span>
@@ -1631,29 +1631,29 @@
 <div class="viewcode-block" id="EditableDevice.new_idtag">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Parents.html#VeraGridEngine.Devices.Parents.editable_device.EditableDevice.new_idtag">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">new_idtag</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Generate a new IdTag</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_idtag</span> <span class="o">=</span> <span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">()</span><span class="o">.</span><span class="n">hex</span>  <span class="c1"># generate a proper UUIDv4 string</span></div>
 
 
 <div class="viewcode-block" id="EditableDevice.replace_objects">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Parents.html#VeraGridEngine.Devices.Parents.editable_device.EditableDevice.replace_objects">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">replace_objects</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">old_object</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">new_obj</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Replace object in this objects&#39; properties</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Replace object in this objects' properties</span>
 <span class="sd">        :param old_object: object to replace</span>
 <span class="sd">        :param new_obj: object used to replace the old one</span>
 <span class="sd">        :param logger: Logger to record what happened</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">prop</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">registered_properties</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
 
             <span class="n">obj</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prop</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="n">obj</span> <span class="o">==</span> <span class="n">old_object</span><span class="p">:</span>
                 <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prop</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">new_obj</span><span class="p">)</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">&quot;Replaced object&quot;</span><span class="p">,</span>
-                                <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">idtag</span> <span class="o">+</span> <span class="s2">&quot;:&quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">"Replaced object"</span><span class="p">,</span>
+                                <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">idtag</span> <span class="o">+</span> <span class="s2">":"</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
                                 <span class="n">device_property</span><span class="o">=</span><span class="n">prop</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
                                 <span class="n">value</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">new_obj</span><span class="p">))</span></div>
 
@@ -1663,7 +1663,7 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">rebind_device_references</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                                  <span class="n">objects_by_idtag</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
                                  <span class="n">props</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">GCProp</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Rebind direct device-pointer properties to equivalent objects from a target lookup.</span>
 
 <span class="sd">        This is useful when an object has been copied from another circuit and its pointer</span>
@@ -1672,14 +1672,14 @@
 <span class="sd">        :param objects_by_idtag: idtag -&gt; target object lookup</span>
 <span class="sd">        :param props: Optional subset of properties to process. If omitted, all registered</span>
 <span class="sd">                      properties are considered.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">selected_props</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">registered_properties</span><span class="o">.</span><span class="n">values</span><span class="p">()</span> <span class="k">if</span> <span class="n">props</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">props</span>
 
         <span class="k">for</span> <span class="n">prop</span> <span class="ow">in</span> <span class="n">selected_props</span><span class="p">:</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">prop</span><span class="o">.</span><span class="n">tpe</span><span class="p">,</span> <span class="n">DeviceType</span><span class="p">):</span>
                 <span class="n">val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_property_value</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="n">prop</span><span class="p">,</span> <span class="n">t_idx</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">val</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="s2">&quot;idtag&quot;</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="s2">"idtag"</span><span class="p">):</span>
                         <span class="n">pointed</span> <span class="o">=</span> <span class="n">objects_by_idtag</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">val</span><span class="o">.</span><span class="n">idtag</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
                     <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
                         <span class="n">pointed</span> <span class="o">=</span> <span class="n">objects_by_idtag</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
@@ -1690,13 +1690,13 @@
                         <span class="bp">self</span><span class="o">.</span><span class="n">set_property_value</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="n">prop</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">pointed</span><span class="p">,</span> <span class="n">t_idx</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_property_value</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="n">prop</span><span class="p">,</span> <span class="n">t_idx</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
-                <span class="n">rebind</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="s2">&quot;rebind_device_references&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+                <span class="n">rebind</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="s2">"rebind_device_references"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
                 <span class="k">if</span> <span class="nb">callable</span><span class="p">(</span><span class="n">rebind</span><span class="p">):</span>
                     <span class="n">rebind</span><span class="p">(</span><span class="n">objects_by_idtag</span><span class="o">=</span><span class="n">objects_by_idtag</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="n">prop</span><span class="o">.</span><span class="n">has_profile</span><span class="p">():</span>
                 <span class="n">profile</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_profile_by_prop</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="n">prop</span><span class="p">)</span>
-                <span class="n">rebind</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">profile</span><span class="p">,</span> <span class="s2">&quot;rebind_device_references&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+                <span class="n">rebind</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">profile</span><span class="p">,</span> <span class="s2">"rebind_device_references"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
                 <span class="k">if</span> <span class="nb">callable</span><span class="p">(</span><span class="n">rebind</span><span class="p">):</span>
                     <span class="n">rebind</span><span class="p">(</span><span class="n">objects_by_idtag</span><span class="o">=</span><span class="n">objects_by_idtag</span><span class="p">)</span></div>
 
@@ -1707,14 +1707,14 @@
                 <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span><span class="p">,</span>
                 <span class="n">detailed_profile_comparison</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                 <span class="n">nt</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">ActionType</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">GCProp</span><span class="p">]]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Compare two objects</span>
 <span class="sd">        :param other: other device</span>
 <span class="sd">        :param logger: Logger</span>
 <span class="sd">        :param detailed_profile_comparison: Compare profiles?</span>
 <span class="sd">        :param nt: number of time steps (get it from the circuit)</span>
 <span class="sd">        :return: ActionType</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">action</span> <span class="o">=</span> <span class="n">ActionType</span><span class="o">.</span><span class="n">NoAction</span>
         <span class="n">properties_changed</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">GCProp</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
 
@@ -1726,7 +1726,7 @@
             <span class="n">v2</span> <span class="o">=</span> <span class="n">other</span><span class="o">.</span><span class="n">get_property_value</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="n">prop</span><span class="p">,</span> <span class="n">t_idx</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="ow">not</span> <span class="n">smart_compare</span><span class="p">(</span><span class="n">v1</span><span class="p">,</span> <span class="n">v2</span><span class="p">):</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">&quot;Different snapshot values&quot;</span><span class="p">,</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">"Different snapshot values"</span><span class="p">,</span>
                                 <span class="n">device_class</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">device_type</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
                                 <span class="n">device_property</span><span class="o">=</span><span class="n">prop</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
                                 <span class="n">value</span><span class="o">=</span><span class="n">v2</span><span class="p">,</span>
@@ -1739,7 +1739,7 @@
                 <span class="n">p2</span> <span class="o">=</span> <span class="n">other</span><span class="o">.</span><span class="n">get_profile_by_prop</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="n">prop</span><span class="p">)</span>
 
                 <span class="k">if</span> <span class="n">p1</span> <span class="o">!=</span> <span class="n">p2</span><span class="p">:</span>
-                    <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">&quot;Different profile values&quot;</span><span class="p">,</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">"Different profile values"</span><span class="p">,</span>
                                     <span class="n">device_class</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">device_type</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
                                     <span class="n">device_property</span><span class="o">=</span><span class="n">prop</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
                                     <span class="n">object_value</span><span class="o">=</span><span class="n">p2</span><span class="p">,</span>
@@ -1755,7 +1755,7 @@
                         <span class="n">v2</span> <span class="o">=</span> <span class="n">p2</span><span class="p">[</span><span class="n">t_idx</span><span class="p">]</span>
 
                         <span class="k">if</span> <span class="ow">not</span> <span class="n">smart_compare</span><span class="p">(</span><span class="n">v1</span><span class="p">,</span> <span class="n">v2</span><span class="p">):</span>
-                            <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">&quot;Different time series values&quot;</span><span class="p">,</span>
+                            <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">"Different time series values"</span><span class="p">,</span>
                                             <span class="n">device_class</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">device_type</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
                                             <span class="n">device_property</span><span class="o">=</span><span class="n">prop</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
                                             <span class="n">device</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span>
@@ -1770,7 +1770,7 @@
 
                         <span class="k">if</span> <span class="ow">not</span> <span class="n">smart_compare</span><span class="p">(</span><span class="n">v1</span><span class="p">,</span> <span class="n">v1b</span><span class="p">):</span>
                             <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span>
-                                <span class="n">msg</span><span class="o">=</span><span class="s2">&quot;Profile values differ with different getter methods!&quot;</span><span class="p">,</span>
+                                <span class="n">msg</span><span class="o">=</span><span class="s2">"Profile values differ with different getter methods!"</span><span class="p">,</span>
                                 <span class="n">device_class</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">device_type</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
                                 <span class="n">device_property</span><span class="o">=</span><span class="n">prop</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
                                 <span class="n">device</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span>
@@ -1780,7 +1780,7 @@
 
                         <span class="k">if</span> <span class="ow">not</span> <span class="n">smart_compare</span><span class="p">(</span><span class="n">v2</span><span class="p">,</span> <span class="n">v2b</span><span class="p">):</span>
                             <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span>
-                                <span class="n">msg</span><span class="o">=</span><span class="s2">&quot;Profile getting values differ with different getter methods!&quot;</span><span class="p">,</span>
+                                <span class="n">msg</span><span class="o">=</span><span class="s2">"Profile getting values differ with different getter methods!"</span><span class="p">,</span>
                                 <span class="n">device_class</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">device_type</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
                                 <span class="n">device_property</span><span class="o">=</span><span class="n">prop</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
                                 <span class="n">device</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span>

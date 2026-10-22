@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Simulations.InvestmentsEvaluation.Problems.power_flow_problem &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Simulations.InvestmentsEvaluation.Problems.power_flow_problem &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/license.html">📜 License</a></li>
@@ -130,7 +131,7 @@
                         <span class="n">va_cost</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
                         <span class="n">va_max</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
                         <span class="n">va_min</span><span class="p">:</span> <span class="n">Vec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TechnoEconomicScores</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute the power flow of the grid given an investments group</span>
 <span class="sd">    :param inv_list: list of Investments</span>
 <span class="sd">    :param grid: MultiCircuit grid</span>
@@ -143,7 +144,7 @@
 <span class="sd">    :param va_max: Array with the Va max values</span>
 <span class="sd">    :param va_min: Array with the Va min values</span>
 <span class="sd">    :return: InvestmentScores</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">driver</span> <span class="o">=</span> <span class="n">PowerFlowDriver</span><span class="p">(</span><span class="n">grid</span><span class="o">=</span><span class="n">grid</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">pf_options</span><span class="p">)</span>
     <span class="n">driver</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
@@ -175,28 +176,28 @@
 <div class="viewcode-block" id="PowerFlowInvestmentProblem">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.InvestmentsEvaluation.Problems.html#VeraGridEngine.Simulations.InvestmentsEvaluation.Problems.power_flow_problem.PowerFlowInvestmentProblem">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">PowerFlowInvestmentProblem</span><span class="p">(</span><span class="n">BlackBoxProblemTemplate</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Power flow investment problem definition.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;pf_options&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;get_all_elements_dict&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;vm_cost&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;vm_max&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;vm_min&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;va_cost&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;va_max&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;va_min&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;branches_cost&quot;</span><span class="p">,</span>
+        <span class="s2">"pf_options"</span><span class="p">,</span>
+        <span class="s2">"get_all_elements_dict"</span><span class="p">,</span>
+        <span class="s2">"vm_cost"</span><span class="p">,</span>
+        <span class="s2">"vm_max"</span><span class="p">,</span>
+        <span class="s2">"vm_min"</span><span class="p">,</span>
+        <span class="s2">"va_cost"</span><span class="p">,</span>
+        <span class="s2">"va_max"</span><span class="p">,</span>
+        <span class="s2">"va_min"</span><span class="p">,</span>
+        <span class="s2">"branches_cost"</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">grid</span><span class="p">:</span> <span class="n">MultiCircuit</span><span class="p">,</span> <span class="n">pf_options</span><span class="p">:</span> <span class="n">PowerFlowOptions</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Constructor</span>
 
 <span class="sd">        :param grid: MultiCircuit</span>
 <span class="sd">        :param pf_options: PowerFlowOptions</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># The Pareto plot shows the CAPEX (objective 4) against the overload cost (objective 1).</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">grid</span><span class="o">=</span><span class="n">grid</span><span class="p">,</span>
                          <span class="n">x_dim</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">grid</span><span class="o">.</span><span class="n">investments_groups</span><span class="p">),</span>
@@ -224,42 +225,42 @@
 <div class="viewcode-block" id="PowerFlowInvestmentProblem.n_objectives">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.InvestmentsEvaluation.Problems.html#VeraGridEngine.Simulations.InvestmentsEvaluation.Problems.power_flow_problem.PowerFlowInvestmentProblem.n_objectives">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">n_objectives</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Number of objectives (size of f)</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="mi">6</span></div>
 
 
 <div class="viewcode-block" id="PowerFlowInvestmentProblem.n_vars">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.InvestmentsEvaluation.Problems.html#VeraGridEngine.Simulations.InvestmentsEvaluation.Problems.power_flow_problem.PowerFlowInvestmentProblem.n_vars">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">n_vars</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Number of variables (size of x)</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_dim</span></div>
 
 
 <div class="viewcode-block" id="PowerFlowInvestmentProblem.get_objectives_names">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.InvestmentsEvaluation.Problems.html#VeraGridEngine.Simulations.InvestmentsEvaluation.Problems.power_flow_problem.PowerFlowInvestmentProblem.get_objectives_names">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_objectives_names</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StrVec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get a list of names for the elements of f</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="s2">&quot;losses score&quot;</span><span class="p">,</span> <span class="s2">&quot;overload score&quot;</span><span class="p">,</span>
-                         <span class="s2">&quot;voltage module_score&quot;</span><span class="p">,</span> <span class="s2">&quot;voltage angle score&quot;</span><span class="p">,</span>
-                         <span class="s2">&quot;CAPEX&quot;</span><span class="p">,</span> <span class="s2">&quot;OPEX&quot;</span><span class="p">])</span></div>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="s2">"losses score"</span><span class="p">,</span> <span class="s2">"overload score"</span><span class="p">,</span>
+                         <span class="s2">"voltage module_score"</span><span class="p">,</span> <span class="s2">"voltage angle score"</span><span class="p">,</span>
+                         <span class="s2">"CAPEX"</span><span class="p">,</span> <span class="s2">"OPEX"</span><span class="p">])</span></div>
 
 
 <div class="viewcode-block" id="PowerFlowInvestmentProblem.get_vars_names">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.InvestmentsEvaluation.Problems.html#VeraGridEngine.Simulations.InvestmentsEvaluation.Problems.power_flow_problem.PowerFlowInvestmentProblem.get_vars_names">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_vars_names</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StrVec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get a list of names for the elements of x</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">e</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">investments_groups</span><span class="p">])</span></div>
 
 
@@ -267,11 +268,11 @@
 <div class="viewcode-block" id="PowerFlowInvestmentProblem.objective_function">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.InvestmentsEvaluation.Problems.html#VeraGridEngine.Simulations.InvestmentsEvaluation.Problems.power_flow_problem.PowerFlowInvestmentProblem.objective_function">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">objective_function</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">|</span> <span class="n">IntVec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Evaluate x and return f(x)</span>
 <span class="sd">        :param x: array of variable values</span>
 <span class="sd">        :return: array of objectives</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">inv_list</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Investment</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_investments_for_combination</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">x</span><span class="p">)</span>
 
         <span class="c1"># enable the investment</span>

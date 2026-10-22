@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import sys
+from types import SimpleNamespace
 
 from PySide6 import QtCore, QtWidgets
 
@@ -12,7 +13,7 @@ from VeraGrid.Gui.DynamicModelEditor.Events.dynamic_events_support import collec
 from VeraGridEngine.Devices.Dynamic.var_factory import VarFactory
 from VeraGridEngine.Utils.Symbolic.block import Block
 from VeraGridEngine.Utils.Symbolic.symbolic import Const, Var
-from VeraGridEngine.enumerations import DynamicSimulationMode
+from VeraGridEngine.enumerations import DynamicSimulationMode, VarPowerFlowReferenceType
 
 
 def get_qt_application() -> QtWidgets.QApplication:
@@ -205,3 +206,14 @@ def test_collect_block_runtime_event_parameters_includes_child_modes() -> None:
 
     assert parameters == list((mode_parameter,))
     assert mode_uids == set((mode_parameter.uid,))
+
+
+def test_switch_sequence_candidates_use_reference_instead_of_name() -> None:
+    factory = VarFactory()
+    renamed_mode = factory.add_var("contact_position", reference=VarPowerFlowReferenceType.switch_closed_mode)
+    unrelated_mode = factory.add_var("switch_closed_mode_unrelated")
+    switch = vge.Switch(name="SW")
+    mapped = DynamicEventParameterCandidate(switch, renamed_mode, True)
+    unrelated = DynamicEventParameterCandidate(switch, unrelated_mode, True)
+    page = SimpleNamespace(handler=SimpleNamespace(candidates=[mapped, unrelated]))
+    assert DynamicEventsPage._switch_candidates(page) == [mapped]

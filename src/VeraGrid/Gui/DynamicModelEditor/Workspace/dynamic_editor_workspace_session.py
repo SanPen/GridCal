@@ -11,6 +11,7 @@ from PySide6 import QtCore, QtWidgets
 
 from VeraGrid.Gui.DynamicModelEditor.Events.dynamic_events_page import DynamicEventsPage
 from VeraGrid.Gui.DynamicModelEditor.Editor.dynamic_block_editor import DynamicBlockEditorGUI
+from VeraGrid.Gui.DynamicModelEditor.Editor.dynamic_editor_models import initialize_connected_bus_models_for_editor_assignment
 from VeraGrid.Gui.DynamicModelEditor.Plots.dynamic_plots_page import DynamicPlotsPage
 from VeraGrid.Gui.DynamicModelEditor.ModelComparison.dynamic_model_comparison_page import DynamicModelComparisonPage
 from VeraGrid.Gui.DynamicModelEditor.Workspace.Tabs.dynamic_editor_tab import DynamicEditorTab
@@ -440,6 +441,11 @@ class DynamicEditorWorkspaceSession(QtCore.QObject):
         :param mode: Dynamic mode to open.
         :return: Newly created editor tab.
         """
+        # Reconcile persistent interfaces before the tab clones the model and factory.
+        initialize_connected_bus_models_for_editor_assignment(
+            api_object=entry.api_object, circuit=entry.circuit,
+            var_factory=entry.circuit.var_factory, mode=mode,
+        )
         page = DynamicEditorTab(
             var_factory=entry.circuit.var_factory,
             block=get_block_for_entry(entry, mode),

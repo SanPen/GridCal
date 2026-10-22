@@ -35,6 +35,8 @@ from VeraGridEngine.Devices.types import AREA_TYPES
 from VeraGridEngine.Utils.MIP.selected_interface import get_available_mip_solvers, get_available_mip_frameworks
 from VeraGridEngine.IO.veragrid.remote import RemoteInstruction
 from VeraGridEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
+from VeraGridEngine.Simulations.NTC.ntc_driver import get_ntc_operating_point_as_opf_results
+from VeraGridEngine.Simulations.NTC.ntc_ts_driver import NtcOperatingPoints
 from VeraGridEngine.Simulations.types import DRIVER_OBJECTS
 from VeraGridEngine.basic_structures import CxVec, IntVec, Vec
 from VeraGridEngine.enumerations import (DeviceType, AvailableTransferMode, SolverType, MIPSolvers, TimeGrouping,
@@ -1181,48 +1183,136 @@ class SimulationsMain(TimeEventsMain):
 
         return ops
 
-    def get_opf_results(self,
-                        use_opf: bool) -> sim.OptimalPowerFlowResults | None:
+    def select_optimization_results(self, computed: List[SimulationTypes]) -> SimulationTypes | None:
         """
-        Get the current OPF results
+        Select the optimization results the "OPF results to power flow" option sets into the power flow:
+        the only ones computed, or the ones the user picks in a modal dialog when there are several.
+        Without results, or if the user cancels, the option is unchecked and nothing is set.
+        :param computed: simulations whose results are available, in the order to offer them
+        :return: the selected simulation, or None
+        """
+        selected: SimulationTypes | None
+        if len(computed) == 0:
+            warning_msg(self.tr('There are no OPF or NTC results, '
+                                'therefore this operation will not use optimization information.'))
+            selected = None
+        elif len(computed) == 1:
+            selected = computed[0]
+        else:
+            names: List[str] = list()
+            tpe: SimulationTypes
+            for tpe in computed:
+                names.append(tpe.value)
+            name: str
+            accepted: bool
+            name, accepted = QtWidgets.QInputDialog.getItem(self,
+                                                            self.tr('OPF results to power flow'),
+                                                            self.tr('Results to set into the power flow:'),
+                                                            names, 0, False)
+            if accepted:
+                selected = computed[names.index(name)]
+            else:
+                selected = None
+
+        if selected is None:
+            self.ui.actionOpf_to_Power_flow.setChecked(False)
+        else:
+            pass  # keep the option checked
+
+        return selected
+
+    def get_opf_results(self, use_opf: bool) -> sim.OptimalPowerFlowResults | None:
+        """
+        Get the snapshot optimization results the power flow must reproduce: the OPF results, or the
+        NTC results expressed as OPF results
         :param use_opf: use OPF flag
-        :return: sim.OptimalPowerFlowResults | sim.OptimalNetTransferCapacityResults | None
+        :return: sim.OptimalPowerFlowResults | None
         """
+        opf_results: sim.OptimalPowerFlowResults | None
         if use_opf:
 
             drv, results = self.session.optimal_power_flow
+            ntc_drv: sim.OptimalNetTransferCapacityDriver | None
+            ntc_results: sim.OptimalNetTransferCapacityResults | None
+            ntc_drv, ntc_results = self.session.optimal_net_transfer_capacity
 
-            if drv is not None:
-                if results is not None:
-                    opf_results = results
-                else:
-                    warning_msg(self.tr('There are no OPF results, '
-                                        'therefore this operation will not use OPF information.'))
-                    self.ui.actionOpf_to_Power_flow.setChecked(False)
-                    opf_results = None
+            # the results computed so far, which the user chooses from when there are several
+            computed: List[SimulationTypes] = list()
+            if results is not None:
+                computed.append(SimulationTypes.OPF_run)
             else:
+                pass  # no OPF results
+            if ntc_results is not None:
+                computed.append(SimulationTypes.OPF_NTC_run)
+            else:
+                pass  # no NTC results
 
-                # # try the OPF-NTC...
-                # drv, results = self.session.optimal_net_transfer_capacity
-                #
-                # if drv is not None:
-                #     if results is not None:
-                #         opf_results = results
-                #     else:
-                #         warning_msg('There are no OPF-NTC results, '
-                #                     'therefore this operation will not use OPF information.')
-                #         self.ui.actionOpf_to_Power_flow.setChecked(False)
-                #         opf_results = None
-                # else:
-                #     warning_msg('There are no OPF results, '
-                #                 'therefore this operation will not use OPF information.')
-                #     self.ui.actionOpf_to_Power_flow.setChecked(False)
-                #     opf_results = None
+            selected: SimulationTypes | None = self.select_optimization_results(computed=computed)
+            if selected == SimulationTypes.OPF_run:
+                opf_results = results
+            elif selected == SimulationTypes.OPF_NTC_run:
+                # the NTC operating point, so the power flow shows the NTC flows
+                opf_results = get_ntc_operating_point_as_opf_results(
+                    grid=self.circuit,
+                    t_idx=None,
+                    bus_change=ntc_results.dSbus,
+                    phase_shift=ntc_results.phase_shift,
+                    hvdc_flow=ntc_results.hvdc_Pf,
+                    vsc_flow=ntc_results.vsc_Pf,
+                    transfer_method=ntc_drv.options.transfer_method
+                )
+            else:
                 opf_results = None
         else:
             opf_results = None
 
         return opf_results
+
+    def select_time_series_optimization_results(self, use_opf: bool) -> SimulationTypes | None:
+        """
+        Select the time series optimization results the power flow time series must reproduce
+        :param use_opf: use OPF flag
+        :return: OPFTimeSeries_run, OptimalNetTransferCapacityTimeSeries_run, or None
+        """
+        if use_opf:
+            opf_ts_results: sim.OptimalPowerFlowTimeSeriesResults | None
+            ntc_ts_results: sim.OptimalNetTransferCapacityTimeSeriesResults | None
+            _, opf_ts_results = self.session.optimal_power_flow_ts
+            _, ntc_ts_results = self.session.optimal_net_transfer_capacity_ts
+
+            # the results computed so far, which the user chooses from when there are several
+            computed: List[SimulationTypes] = list()
+            if opf_ts_results is not None:
+                computed.append(SimulationTypes.OPFTimeSeries_run)
+            else:
+                pass  # no OPF time series results
+            if ntc_ts_results is not None:
+                computed.append(SimulationTypes.OptimalNetTransferCapacityTimeSeries_run)
+            else:
+                pass  # no NTC time series results
+
+            return self.select_optimization_results(computed=computed)
+        else:
+            return None
+
+    def get_ntc_operating_points(self, use_ntc: bool) -> NtcOperatingPoints | None:
+        """
+        Get the NTC time series operating points the power flow time series must reproduce
+        :param use_ntc: use the NTC time series results
+        :return: NtcOperatingPoints, or None without NTC time series results
+        """
+        if use_ntc:
+            drv: sim.OptimalNetTransferCapacityTimeSeriesDriver | None
+            results: sim.OptimalNetTransferCapacityTimeSeriesResults | None
+            drv, results = self.session.optimal_net_transfer_capacity_ts
+            if drv is not None and results is not None:
+                return NtcOperatingPoints(grid=self.circuit,
+                                          results=results,
+                                          transfer_method=drv.options.transfer_method)
+            else:
+                return None
+        else:
+            return None
 
     def get_opf_ts_results(self, use_opf: bool) -> sim.OptimalPowerFlowTimeSeriesResults | None:
         """
@@ -2706,8 +2796,15 @@ class SimulationsMain(TimeEventsMain):
                     self.ui.progress_label.setText(
                         QtCore.QCoreApplication.translate("SimulationsMain", "Compiling the grid..."))
 
-                    opf_time_series_results = self.get_opf_ts_results(
+                    # the OPF or the NTC time series results, when the option is checked
+                    selected: SimulationTypes | None = self.select_time_series_optimization_results(
                         use_opf=self.ui.actionOpf_to_Power_flow.isChecked()
+                    )
+                    opf_time_series_results: sim.OptimalPowerFlowTimeSeriesResults | None = self.get_opf_ts_results(
+                        use_opf=selected == SimulationTypes.OPFTimeSeries_run
+                    )
+                    ntc_operating_points: NtcOperatingPoints | None = self.get_ntc_operating_points(
+                        use_ntc=selected == SimulationTypes.OptimalNetTransferCapacityTimeSeries_run
                     )
 
                     options = self.get_selected_power_flow_options()
@@ -2717,7 +2814,8 @@ class SimulationsMain(TimeEventsMain):
                                                         time_indices=self.get_time_indices(),
                                                         opf_time_series_results=opf_time_series_results,
                                                         clustering_results=self.get_clustering_results(),
-                                                        engine=self.get_preferred_engine())
+                                                        engine=self.get_preferred_engine(),
+                                                        ntc_operating_points=ntc_operating_points)
 
                     self.session.run(drv,
                                      post_func=self.post_power_flow_time_series,

@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Simulations.EMT.JMARTI_Sim.jmarti_modal_processing &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Simulations.EMT.JMARTI_Sim.jmarti_modal_processing &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/license.html">📜 License</a></li>
@@ -117,29 +118,29 @@
 <div class="viewcode-block" id="JMartiModalSamples">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.JMARTI_Sim.html#VeraGridEngine.Simulations.EMT.JMARTI_Sim.jmarti_modal_processing.JMartiModalSamples">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">JMartiModalSamples</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Modalized JMARTI frequency samples built from one constant modal transform.</span>
 
 <span class="sd">    The first JMARTI implementation in VeraGrid assumes an approximately</span>
 <span class="sd">    constant modal basis over the fitted band. The object stores that common</span>
 <span class="sd">    basis and all diagonal modal quantities derived from it.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s1">&#39;_frequency_hz&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_line_length_m&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_phase_labels&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_modal_transform&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_modal_transform_inv&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_z_modal&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_y_modal&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_z_modal_diag&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_y_modal_diag&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_gamma_modal&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_yc_modal&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_decoupling_error_z&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_decoupling_error_y&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_reference_frequency_hz&#39;</span><span class="p">,</span>
+        <span class="s1">'_frequency_hz'</span><span class="p">,</span>
+        <span class="s1">'_line_length_m'</span><span class="p">,</span>
+        <span class="s1">'_phase_labels'</span><span class="p">,</span>
+        <span class="s1">'_modal_transform'</span><span class="p">,</span>
+        <span class="s1">'_modal_transform_inv'</span><span class="p">,</span>
+        <span class="s1">'_z_modal'</span><span class="p">,</span>
+        <span class="s1">'_y_modal'</span><span class="p">,</span>
+        <span class="s1">'_z_modal_diag'</span><span class="p">,</span>
+        <span class="s1">'_y_modal_diag'</span><span class="p">,</span>
+        <span class="s1">'_gamma_modal'</span><span class="p">,</span>
+        <span class="s1">'_yc_modal'</span><span class="p">,</span>
+        <span class="s1">'_decoupling_error_z'</span><span class="p">,</span>
+        <span class="s1">'_decoupling_error_y'</span><span class="p">,</span>
+        <span class="s1">'_reference_frequency_hz'</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
@@ -157,7 +158,7 @@
                  <span class="n">decoupling_error_z</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
                  <span class="n">decoupling_error_y</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
                  <span class="n">reference_frequency_hz</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Store one modalized JMARTI sample set.</span>
 
 <span class="sd">        :param frequency_hz: Frequency grid in Hz.</span>
@@ -175,7 +176,7 @@
 <span class="sd">        :param decoupling_error_y: Off-diagonal Y decoupling errors.</span>
 <span class="sd">        :param reference_frequency_hz: Frequency used to freeze the modal basis.</span>
 <span class="sd">        :return: None.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_frequency_hz</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">frequency_hz</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_line_length_m</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">line_length_m</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_phase_labels</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="n">phase_labels</span>
@@ -194,176 +195,176 @@
 <div class="viewcode-block" id="JMartiModalSamples.get_frequency_hz">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.JMARTI_Sim.html#VeraGridEngine.Simulations.EMT.JMARTI_Sim.jmarti_modal_processing.JMartiModalSamples.get_frequency_hz">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_frequency_hz</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return the modal frequency grid.</span>
 
 <span class="sd">        :return: Frequency grid in Hz.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_frequency_hz</span></div>
 
 
 <div class="viewcode-block" id="JMartiModalSamples.get_angular_frequency_rad_per_s">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.JMARTI_Sim.html#VeraGridEngine.Simulations.EMT.JMARTI_Sim.jmarti_modal_processing.JMartiModalSamples.get_angular_frequency_rad_per_s">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_angular_frequency_rad_per_s</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return the modal angular-frequency grid.</span>
 
 <span class="sd">        :return: Angular-frequency grid in rad/s.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_frequency_hz</span></div>
 
 
 <div class="viewcode-block" id="JMartiModalSamples.get_line_length_m">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.JMARTI_Sim.html#VeraGridEngine.Simulations.EMT.JMARTI_Sim.jmarti_modal_processing.JMartiModalSamples.get_line_length_m">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_line_length_m</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return the line length in meters.</span>
 
 <span class="sd">        :return: Line length in meters.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_line_length_m</span></div>
 
 
 <div class="viewcode-block" id="JMartiModalSamples.get_phase_labels">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.JMARTI_Sim.html#VeraGridEngine.Simulations.EMT.JMARTI_Sim.jmarti_modal_processing.JMartiModalSamples.get_phase_labels">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_phase_labels</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return the ordered phase labels.</span>
 
 <span class="sd">        :return: Ordered phase-label tuple.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_phase_labels</span></div>
 
 
 <div class="viewcode-block" id="JMartiModalSamples.get_modal_transform">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.JMARTI_Sim.html#VeraGridEngine.Simulations.EMT.JMARTI_Sim.jmarti_modal_processing.JMartiModalSamples.get_modal_transform">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_modal_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return the common modal transform.</span>
 
 <span class="sd">        :return: Complex modal transform.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_modal_transform</span></div>
 
 
 <div class="viewcode-block" id="JMartiModalSamples.get_modal_transform_inv">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.JMARTI_Sim.html#VeraGridEngine.Simulations.EMT.JMARTI_Sim.jmarti_modal_processing.JMartiModalSamples.get_modal_transform_inv">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_modal_transform_inv</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return the inverse common modal transform.</span>
 
 <span class="sd">        :return: Inverse modal transform.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_modal_transform_inv</span></div>
 
 
 <div class="viewcode-block" id="JMartiModalSamples.get_z_modal">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.JMARTI_Sim.html#VeraGridEngine.Simulations.EMT.JMARTI_Sim.jmarti_modal_processing.JMartiModalSamples.get_z_modal">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_z_modal</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return projected modal series-impedance matrices.</span>
 
 <span class="sd">        :return: Complex modal impedance tensor.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_z_modal</span></div>
 
 
 <div class="viewcode-block" id="JMartiModalSamples.get_y_modal">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.JMARTI_Sim.html#VeraGridEngine.Simulations.EMT.JMARTI_Sim.jmarti_modal_processing.JMartiModalSamples.get_y_modal">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_y_modal</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return projected modal shunt-admittance matrices.</span>
 
 <span class="sd">        :return: Complex modal admittance tensor.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_y_modal</span></div>
 
 
 <div class="viewcode-block" id="JMartiModalSamples.get_z_modal_diag">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.JMARTI_Sim.html#VeraGridEngine.Simulations.EMT.JMARTI_Sim.jmarti_modal_processing.JMartiModalSamples.get_z_modal_diag">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_z_modal_diag</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return the diagonal modal impedance samples.</span>
 
 <span class="sd">        :return: Complex diagonal modal impedance array.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_z_modal_diag</span></div>
 
 
 <div class="viewcode-block" id="JMartiModalSamples.get_y_modal_diag">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.JMARTI_Sim.html#VeraGridEngine.Simulations.EMT.JMARTI_Sim.jmarti_modal_processing.JMartiModalSamples.get_y_modal_diag">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_y_modal_diag</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return the diagonal modal admittance samples.</span>
 
 <span class="sd">        :return: Complex diagonal modal admittance array.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_y_modal_diag</span></div>
 
 
 <div class="viewcode-block" id="JMartiModalSamples.get_gamma_modal">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.JMARTI_Sim.html#VeraGridEngine.Simulations.EMT.JMARTI_Sim.jmarti_modal_processing.JMartiModalSamples.get_gamma_modal">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_gamma_modal</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return the modal propagation constants per unit length.</span>
 
 <span class="sd">        :return: Complex modal propagation constants.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gamma_modal</span></div>
 
 
 <div class="viewcode-block" id="JMartiModalSamples.get_yc_modal">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.JMARTI_Sim.html#VeraGridEngine.Simulations.EMT.JMARTI_Sim.jmarti_modal_processing.JMartiModalSamples.get_yc_modal">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_yc_modal</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return the modal characteristic admittances.</span>
 
 <span class="sd">        :return: Complex modal characteristic-admittance array.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_yc_modal</span></div>
 
 
 <div class="viewcode-block" id="JMartiModalSamples.get_decoupling_error_z">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.JMARTI_Sim.html#VeraGridEngine.Simulations.EMT.JMARTI_Sim.jmarti_modal_processing.JMartiModalSamples.get_decoupling_error_z">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_decoupling_error_z</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return the off-diagonal Z decoupling errors.</span>
 
 <span class="sd">        :return: Real-valued error vector over frequency.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_decoupling_error_z</span></div>
 
 
 <div class="viewcode-block" id="JMartiModalSamples.get_decoupling_error_y">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.JMARTI_Sim.html#VeraGridEngine.Simulations.EMT.JMARTI_Sim.jmarti_modal_processing.JMartiModalSamples.get_decoupling_error_y">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_decoupling_error_y</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return the off-diagonal Y decoupling errors.</span>
 
 <span class="sd">        :return: Real-valued error vector over frequency.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_decoupling_error_y</span></div>
 
 
 <div class="viewcode-block" id="JMartiModalSamples.get_reference_frequency_hz">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.JMARTI_Sim.html#VeraGridEngine.Simulations.EMT.JMARTI_Sim.jmarti_modal_processing.JMartiModalSamples.get_reference_frequency_hz">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_reference_frequency_hz</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return the frequency used to freeze the modal basis.</span>
 
 <span class="sd">        :return: Reference frequency in Hz.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reference_frequency_hz</span></div>
 
 
 <div class="viewcode-block" id="JMartiModalSamples.get_mode_count">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.JMARTI_Sim.html#VeraGridEngine.Simulations.EMT.JMARTI_Sim.jmarti_modal_processing.JMartiModalSamples.get_mode_count">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_mode_count</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return the number of fitted modes.</span>
 
 <span class="sd">        :return: Mode count.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_modal_transform</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span></div>
 </div>
 
@@ -372,25 +373,25 @@
 <div class="viewcode-block" id="JMartiModeDelayEstimate">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.JMARTI_Sim.html#VeraGridEngine.Simulations.EMT.JMARTI_Sim.jmarti_modal_processing.JMartiModeDelayEstimate">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">JMartiModeDelayEstimate</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Delay estimate of one modal propagation channel.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s1">&#39;_mode_index&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_tau_s&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_rms_phase_error_rad&#39;</span><span class="p">,</span>
+        <span class="s1">'_mode_index'</span><span class="p">,</span>
+        <span class="s1">'_tau_s'</span><span class="p">,</span>
+        <span class="s1">'_rms_phase_error_rad'</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mode_index</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">tau_s</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">rms_phase_error_rad</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Store one modal delay estimate.</span>
 
 <span class="sd">        :param mode_index: Modal channel index.</span>
 <span class="sd">        :param tau_s: Estimated pure delay in seconds.</span>
 <span class="sd">        :param rms_phase_error_rad: RMS residual of the affine phase fit.</span>
 <span class="sd">        :return: None.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_mode_index</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">mode_index</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_tau_s</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">tau_s</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_rms_phase_error_rad</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">rms_phase_error_rad</span><span class="p">)</span>
@@ -398,46 +399,46 @@
 <div class="viewcode-block" id="JMartiModeDelayEstimate.get_mode_index">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.JMARTI_Sim.html#VeraGridEngine.Simulations.EMT.JMARTI_Sim.jmarti_modal_processing.JMartiModeDelayEstimate.get_mode_index">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_mode_index</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return the modal channel index.</span>
 
 <span class="sd">        :return: Modal channel index.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mode_index</span></div>
 
 
 <div class="viewcode-block" id="JMartiModeDelayEstimate.get_tau_s">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.JMARTI_Sim.html#VeraGridEngine.Simulations.EMT.JMARTI_Sim.jmarti_modal_processing.JMartiModeDelayEstimate.get_tau_s">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_tau_s</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return the estimated delay in seconds.</span>
 
 <span class="sd">        :return: Delay in seconds.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tau_s</span></div>
 
 
 <div class="viewcode-block" id="JMartiModeDelayEstimate.get_rms_phase_error_rad">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.JMARTI_Sim.html#VeraGridEngine.Simulations.EMT.JMARTI_Sim.jmarti_modal_processing.JMartiModeDelayEstimate.get_rms_phase_error_rad">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_rms_phase_error_rad</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return the RMS residual of the affine phase fit.</span>
 
 <span class="sd">        :return: RMS residual in radians.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rms_phase_error_rad</span></div>
 </div>
 
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_resolve_reference_frequency_hz</span><span class="p">(</span><span class="n">frequency_hz</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">options</span><span class="p">:</span> <span class="n">JMartiFitOptions</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Resolve the reference frequency used to freeze the modal basis.</span>
 
 <span class="sd">    :param frequency_hz: Available frequency grid in Hz.</span>
 <span class="sd">    :param options: User-configurable JMARTI fitting options.</span>
 <span class="sd">    :return: Reference frequency in Hz.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">requested_frequency_hz</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">get_reference_frequency_hz</span><span class="p">()</span>
 
     <span class="k">if</span> <span class="n">requested_frequency_hz</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">:</span>
@@ -447,27 +448,27 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_build_reference_frequency_index</span><span class="p">(</span><span class="n">frequency_hz</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">reference_frequency_hz</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Return the sample index used to freeze the modal basis.</span>
 
 <span class="sd">    :param frequency_hz: Frequency grid in Hz.</span>
 <span class="sd">    :param reference_frequency_hz: Requested reference frequency in Hz.</span>
 <span class="sd">    :return: Frequency-grid index.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">distance_vector</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">frequency_hz</span> <span class="o">-</span> <span class="nb">float</span><span class="p">(</span><span class="n">reference_frequency_hz</span><span class="p">))</span>
     <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">distance_vector</span><span class="p">))</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_build_reference_modal_transform</span><span class="p">(</span><span class="n">z_per_length_at_reference</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
                                      <span class="n">y_per_length_at_reference</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Build the constant modal transform used by the first JMARTI version.</span>
 
 <span class="sd">    :param z_per_length_at_reference: Series impedance matrix at the reference frequency.</span>
 <span class="sd">    :param y_per_length_at_reference: Shunt admittance matrix at the reference frequency.</span>
 <span class="sd">    :return: Tuple ``(T0, T0_inv)``.</span>
 <span class="sd">    :raises ValueError: If the modal transform is singular.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">product_matrix</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">z_per_length_at_reference</span> <span class="o">@</span> <span class="n">y_per_length_at_reference</span>
     <span class="n">eigenvalues</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
     <span class="n">eigenvectors</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
@@ -481,24 +482,24 @@
 
     <span class="c1"># Stage 2: impose a deterministic mode ordering so every later fitting stage</span>
     <span class="c1"># sees stable mode indices across runs and across test environments.</span>
-    <span class="n">order_index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="n">eigenvalues</span><span class="p">),</span> <span class="n">kind</span><span class="o">=</span><span class="s2">&quot;stable&quot;</span><span class="p">)</span>
+    <span class="n">order_index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="n">eigenvalues</span><span class="p">),</span> <span class="n">kind</span><span class="o">=</span><span class="s2">"stable"</span><span class="p">)</span>
     <span class="n">modal_transform</span> <span class="o">=</span> <span class="n">eigenvectors</span><span class="p">[:,</span> <span class="n">order_index</span><span class="p">]</span>
 
     <span class="k">try</span><span class="p">:</span>
         <span class="n">modal_transform_inv</span> <span class="o">=</span> <span class="n">la</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">modal_transform</span><span class="p">)</span>
     <span class="k">except</span> <span class="n">la</span><span class="o">.</span><span class="n">LinAlgError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;JMARTI modal transform is singular at the reference frequency&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"JMARTI modal transform is singular at the reference frequency"</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
 
     <span class="k">return</span> <span class="n">modal_transform</span><span class="p">,</span> <span class="n">modal_transform_inv</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_compute_modal_decoupling_errors</span><span class="p">(</span><span class="n">modal_tensor</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute one normalized off-diagonal error for every frequency sample.</span>
 
 <span class="sd">    :param modal_tensor: Complex modal matrix tensor with shape ``(nf, nm, nm)``.</span>
 <span class="sd">    :return: Vector of off-diagonal Frobenius ratios.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">total_energy</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">modal_tensor</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
     <span class="n">diagonal_energy</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diagonal</span><span class="p">(</span><span class="n">modal_tensor</span><span class="p">,</span> <span class="n">axis1</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">axis2</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
     <span class="n">off_diagonal_energy</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">total_energy</span> <span class="o">-</span> <span class="n">diagonal_energy</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
@@ -515,13 +516,13 @@
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_apply_jmarti_frequency_window</span><span class="p">(</span><span class="n">samples</span><span class="p">:</span> <span class="n">JMartiFrequencySamples</span><span class="p">,</span>
                                    <span class="n">options</span><span class="p">:</span> <span class="n">JMartiFitOptions</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">JMartiFrequencySamples</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Apply the optional user-selected frequency exploration window.</span>
 
 <span class="sd">    :param samples: Full JMARTI frequency sample set.</span>
 <span class="sd">    :param options: User-configurable JMARTI fitting options.</span>
 <span class="sd">    :return: Possibly windowed sample set.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">options</span><span class="o">.</span><span class="n">get_use_frequency_exploration_window</span><span class="p">():</span>
         <span class="k">return</span> <span class="n">build_jmarti_frequency_subset</span><span class="p">(</span>
             <span class="n">samples</span><span class="o">=</span><span class="n">samples</span><span class="p">,</span>
@@ -536,7 +537,7 @@
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.JMARTI_Sim.html#VeraGridEngine.Simulations.EMT.JMARTI_Sim.jmarti_modal_processing.build_jmarti_modal_samples">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">build_jmarti_modal_samples</span><span class="p">(</span><span class="n">samples</span><span class="p">:</span> <span class="n">JMartiFrequencySamples</span><span class="p">,</span>
                                <span class="n">options</span><span class="p">:</span> <span class="n">JMartiFitOptions</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">JMartiModalSamples</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Build modal JMARTI samples from one frequency-domain line dataset.</span>
 
 <span class="sd">    The first JMARTI implementation freezes one common modal basis at a single</span>
@@ -547,7 +548,7 @@
 <span class="sd">    :param samples: Frequency-domain line dataset.</span>
 <span class="sd">    :param options: Optional user-configurable JMARTI fitting options.</span>
 <span class="sd">    :return: Modalized sample set.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">resolved_options</span><span class="p">:</span> <span class="n">JMartiFitOptions</span> <span class="o">=</span> <span class="n">JMartiFitOptions</span><span class="p">()</span> <span class="k">if</span> <span class="n">options</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">options</span>
     <span class="n">working_samples</span><span class="p">:</span> <span class="n">JMartiFrequencySamples</span> <span class="o">=</span> <span class="n">_apply_jmarti_frequency_window</span><span class="p">(</span><span class="n">samples</span><span class="p">,</span> <span class="n">resolved_options</span><span class="p">)</span>
     <span class="n">frequency_hz</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">working_samples</span><span class="o">.</span><span class="n">get_frequency_hz</span><span class="p">()</span>
@@ -566,8 +567,8 @@
         <span class="k">pass</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="s2">&quot;JMARTI modal processing requires at least &quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">resolved_options</span><span class="o">.</span><span class="n">get_minimum_frequency_samples</span><span class="p">()</span><span class="si">}</span><span class="s2"> frequency samples&quot;</span>
+            <span class="s2">"JMARTI modal processing requires at least "</span>
+            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">resolved_options</span><span class="o">.</span><span class="n">get_minimum_frequency_samples</span><span class="p">()</span><span class="si">}</span><span class="s2"> frequency samples"</span>
         <span class="p">)</span>
 
     <span class="n">modal_transform</span><span class="p">,</span> <span class="n">modal_transform_inv</span> <span class="o">=</span> <span class="n">_build_reference_modal_transform</span><span class="p">(</span>
@@ -578,14 +579,14 @@
     <span class="c1"># Stage 1: project every frequency sample into the frozen modal basis using</span>
     <span class="c1"># tensor contractions so the whole band is transformed with one vectorized pass.</span>
     <span class="n">z_modal</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span>
-        <span class="s1">&#39;ij,fjk,kl-&gt;fil&#39;</span><span class="p">,</span>
+        <span class="s1">'ij,fjk,kl-&gt;fil'</span><span class="p">,</span>
         <span class="n">modal_transform_inv</span><span class="p">,</span>
         <span class="n">z_per_length</span><span class="p">,</span>
         <span class="n">modal_transform</span><span class="p">,</span>
         <span class="n">optimize</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">y_modal</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span>
-        <span class="s1">&#39;ij,fjk,kl-&gt;fil&#39;</span><span class="p">,</span>
+        <span class="s1">'ij,fjk,kl-&gt;fil'</span><span class="p">,</span>
         <span class="n">modal_transform_inv</span><span class="p">,</span>
         <span class="n">y_per_length</span><span class="p">,</span>
         <span class="n">modal_transform</span><span class="p">,</span>
@@ -626,7 +627,7 @@
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.JMARTI_Sim.html#VeraGridEngine.Simulations.EMT.JMARTI_Sim.jmarti_modal_processing.estimate_jmarti_mode_delays">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">estimate_jmarti_mode_delays</span><span class="p">(</span><span class="n">modal_samples</span><span class="p">:</span> <span class="n">JMartiModalSamples</span><span class="p">,</span>
                                 <span class="n">options</span><span class="p">:</span> <span class="n">JMartiFitOptions</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">JMartiModeDelayEstimate</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Estimate one pure propagation delay for each JMARTI mode.</span>
 
 <span class="sd">    The pure delay is extracted from the modal propagation phase</span>
@@ -637,7 +638,7 @@
 <span class="sd">    :param modal_samples: Modalized JMARTI sample set.</span>
 <span class="sd">    :param options: Optional user-configurable JMARTI fitting options.</span>
 <span class="sd">    :return: Delay estimates for every modal channel.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">resolved_options</span><span class="p">:</span> <span class="n">JMartiFitOptions</span> <span class="o">=</span> <span class="n">JMartiFitOptions</span><span class="p">()</span> <span class="k">if</span> <span class="n">options</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">options</span>
     <span class="n">frequency_hz</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">modal_samples</span><span class="o">.</span><span class="n">get_frequency_hz</span><span class="p">()</span>
     <span class="n">angular_frequency</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">modal_samples</span><span class="o">.</span><span class="n">get_angular_frequency_rad_per_s</span><span class="p">()</span>

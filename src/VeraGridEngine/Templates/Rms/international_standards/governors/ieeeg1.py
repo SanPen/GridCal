@@ -1,353 +1,145 @@
-# This Source Code Form is subject to the terms of the Mozilla Public
-# License, v. 2.0. If a copy of the MPL was not distributed with this
-# file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
-
-"""
-Maintainable international-standard module for 'IEEEG1'.
-
-This is the runtime implementation shipped by VeraGrid.
-It exposes the imported public interface, explicit symbolic equations, and
-"""
-
+"""Rate-limited steam-valve regulation with four cascaded turbine stages and two shaft outputs."""
 from __future__ import annotations
 
+import math
 from VeraGridEngine.Devices.Dynamic.rms_template import RmsModelTemplate
 from VeraGridEngine.Devices.Dynamic.var_factory import VarFactory
-from VeraGridEngine.Utils.Symbolic.block import Block
+from VeraGridEngine.Templates.Rms.control_realization import ControlRealization
+from VeraGridEngine.Utils.Symbolic.symbolic import Const, Expr, Var
 import VeraGridEngine.Utils.Symbolic.symbolic as sym
-from VeraGridEngine.enumerations import DeviceType
-from VeraGridEngine.Utils.Symbolic.symbolic import Var
-from VeraGridEngine.Utils.Symbolic.symbolic import Expr
-from VeraGridEngine.Utils.Symbolic.symbolic import Const
 
-def build_ieeeg1_template(vf: VarFactory, name: str | None = None) -> RmsModelTemplate:
-    """
-    Materialize the international-standard EMT template.
 
-    :param vf: Variable factory used to allocate the symbolic surface.
-    :param name: Optional explicit runtime template name.
-    :returns: Materialized EMT template.
+class MultiStageSteamGovernorParameters:
+    """Steam-valve and turbine coefficients on one declared power base."""
+
+    __slots__ = ('gain', 'speed_lag', 'speed_lead', 'servo_time', 'opening_rate', 'closing_rate',
+                 'maximum', 'minimum', 'turbine_times', 'fractions', 'deadband_high', 'deadband_low')
+
+    def __init__(self, gain: float = 20.0, speed_lag: float = .1, speed_lead: float = 0.0,
+                 servo_time: float = .2, opening_rate: float = .1, closing_rate: float = -.1,
+                 maximum: float = 1.2, minimum: float = 0.0,
+                 turbine_times: tuple[float, float, float, float] = (.3, 5.0, .5, .1),
+                 fractions: tuple[float, float, float, float, float, float, float, float] =
+                 (.3, 0.0, .3, 0.0, .2, 0.0, .2, 0.0),
+                 deadband_high: float = 0.0, deadband_low: float = 0.0) -> None:
+        """Store speed compensation, valve capabilities and both turbine-shaft fractions.
+
+        :param gain: Nonnegative reciprocal permanent droop on the governor power base.
+        :param speed_lag: Nonnegative speed-compensator denominator time, in seconds.
+        :param speed_lead: Nonnegative speed-compensator numerator time, in seconds.
+        :param servo_time: Positive valve-servomotor normalization time, in seconds.
+        :param opening_rate: Positive valve opening rate, in per-unit position per second.
+        :param closing_rate: Negative valve closing rate, in per-unit position per second.
+        :param maximum: Upper valve-position limit.
+        :param minimum: Lower valve-position limit.
+        :param turbine_times: Four nonnegative cascaded steam-volume times, in seconds.
+        :param fractions: Alternating first/second shaft weights at each of four stages.
+        :param deadband_high: Nonnegative overspeed deadband threshold.
+        :param deadband_low: Nonpositive underspeed deadband threshold.
+        """
+        self.gain: float = gain
+        self.speed_lag: float = speed_lag
+        self.speed_lead: float = speed_lead
+        self.servo_time: float = servo_time
+        self.opening_rate: float = opening_rate
+        self.closing_rate: float = closing_rate
+        self.maximum: float = maximum
+        self.minimum: float = minimum
+        self.turbine_times: tuple[float, float, float, float] = turbine_times
+        self.fractions: tuple[float, float, float, float, float, float, float, float] = fractions
+        self.deadband_high: float = deadband_high
+        self.deadband_low: float = deadband_low
+
+
+def build_ieeeg1_template(vf: VarFactory, name: str | None = None,
+                          parameters: MultiStageSteamGovernorParameters | None = None) -> RmsModelTemplate:
+    """Build steam-turbine speed regulation with separate valve and stage dynamics.
+
+    Shaft-speed deviation, optionally passed through a continuous asymmetric
+    deadband, enters ``K*(1+s*T2)/(1+s*T1)``. The compensated speed demand
+    subtracts from a valve reference. Valve velocity is clipped independently
+    between closing/opening rates before integration. Position stops suppress
+    outward motion and permit inward recovery. A clipped speed demand alone
+    would not reproduce these rate and position constraints.
+
+    Four cascaded lags represent steam volumes, reheating and crossover delays.
+    Alternating stage fractions feed two distinct shaft-power sums; their sum
+    is also exposed. Zero steam times are exact algebraic stages. The speed
+    compensator can be bypassed by setting both its times to zero. A negative
+    closing rate and positive opening rate retain direction-dependent travel.
+
+    Inputs preserve absolute shaft speed, speed reference and total mechanical
+    load-power reference. Outputs, in order, are first-shaft power, second-shaft
+    power and total power. At nominal speed, valve position and all turbine
+    memories initialize to the load-power reference divided by the sum of all
+    fractions; the speed-compensator memory is zero. The valve reference uses
+    that same normalization. Power and valve position use the declared turbine
+    power base; the connecting host owns any machine/network base conversion.
+    Time constants are seconds and travel rates are per second. There are up to
+    six states: speed compensation, valve position and four turbine memories.
+    Initial valve position must be inside its limits. Nonzero shaft fractions
+    remain separate outputs rather than being silently assigned to one shaft.
+
+    :param vf: Shared native symbolic factory.
+    :param name: Optional instance label.
+    :param parameters: Physical valve, stage, droop and optional deadband settings.
+    :return: Native steam governor preserving three public inputs and outputs.
+    :raises ValueError: Invalid domains, nonfinite settings or zero total turbine gain.
     """
-    template_name: str
-    if name is None:
-        template_name: str = 'IEEEG1'
+    p: MultiStageSteamGovernorParameters = MultiStageSteamGovernorParameters() if parameters is None else parameters
+    groups: tuple[tuple[float, ...], ...] = ((p.gain, p.speed_lag, p.speed_lead, p.servo_time,
+        p.opening_rate, p.closing_rate, p.maximum, p.minimum, p.deadband_high, p.deadband_low),
+        p.turbine_times, p.fractions)
+    if not all(math.isfinite(value) for group in groups for value in group):
+        raise ValueError('Steam governor coefficients must be finite')
+    elif min(p.gain, p.speed_lag, p.speed_lead, p.deadband_high) < 0 or p.deadband_low > 0 or min(p.turbine_times) < 0:
+        raise ValueError('Steam governor gains/times or deadband signs are invalid')
+    elif p.servo_time <= 0 or p.opening_rate <= 0 or p.closing_rate >= 0 or p.maximum <= p.minimum:
+        raise ValueError('Steam valve requires positive servo time, signed travel rates and ordered position limits')
+    elif min(p.fractions) < 0 or sum(p.fractions) <= 0:
+        raise ValueError('Turbine fractions must be nonnegative with positive total gain')
     else:
-        template_name: str = name
-
-    # Allocate the template container before building the symbolic surface.
-    template: RmsModelTemplate = RmsModelTemplate()
-    template.tpe = DeviceType.GeneratorDevice
-    template.name = template_name
-
-    # Declare every variable explicitly before the equations reference it.
-    # Declare the runtime parameter variables used by the template.
-    gov_K: Var = vf.add_var('gov.K_' + template_name)
-    gov_K1: Var = vf.add_var('gov.K1_' + template_name)
-    gov_K2: Var = vf.add_var('gov.K2_' + template_name)
-    gov_K3: Var = vf.add_var('gov.K3_' + template_name)
-    gov_K4: Var = vf.add_var('gov.K4_' + template_name)
-    gov_K5: Var = vf.add_var('gov.K5_' + template_name)
-    gov_K6: Var = vf.add_var('gov.K6_' + template_name)
-    gov_K7: Var = vf.add_var('gov.K7_' + template_name)
-    gov_K8: Var = vf.add_var('gov.K8_' + template_name)
-    gov_PMaxPu: Var = vf.add_var('gov.PMaxPu_' + template_name)
-    gov_PMinPu: Var = vf.add_var('gov.PMinPu_' + template_name)
-    gov_Pm0Pu: Var = vf.add_var('gov.Pm0Pu_' + template_name)
-    gov_PmRef0Pu: Var = vf.add_var('gov.PmRef0Pu_' + template_name)
-    gov_Uc: Var = vf.add_var('gov.Uc_' + template_name)
-    gov_Uo: Var = vf.add_var('gov.Uo_' + template_name)
-    gov_add_k1: Var = vf.add_var('gov.add.k1_' + template_name)
-    gov_add_k2: Var = vf.add_var('gov.add.k2_' + template_name)
-    gov_add1_k1: Var = vf.add_var('gov.add1.k1_' + template_name)
-    gov_add1_k2: Var = vf.add_var('gov.add1.k2_' + template_name)
-    gov_add3_k1: Var = vf.add_var('gov.add3.k1_' + template_name)
-    gov_add3_k2: Var = vf.add_var('gov.add3.k2_' + template_name)
-    gov_add3_k3: Var = vf.add_var('gov.add3.k3_' + template_name)
-    gov_firstOrder_T: Var = vf.add_var('gov.firstOrder.T_' + template_name)
-    gov_firstOrder_initType: Var = vf.add_var('gov.firstOrder.initType_' + template_name)
-    gov_firstOrder_k: Var = vf.add_var('gov.firstOrder.k_' + template_name)
-    gov_firstOrder_y_start: Var = vf.add_var('gov.firstOrder.y_start_' + template_name)
-    gov_firstOrder1_T: Var = vf.add_var('gov.firstOrder1.T_' + template_name)
-    gov_firstOrder1_initType: Var = vf.add_var('gov.firstOrder1.initType_' + template_name)
-    gov_firstOrder1_k: Var = vf.add_var('gov.firstOrder1.k_' + template_name)
-    gov_firstOrder1_y_start: Var = vf.add_var('gov.firstOrder1.y_start_' + template_name)
-    gov_firstOrder2_T: Var = vf.add_var('gov.firstOrder2.T_' + template_name)
-    gov_firstOrder2_initType: Var = vf.add_var('gov.firstOrder2.initType_' + template_name)
-    gov_firstOrder2_k: Var = vf.add_var('gov.firstOrder2.k_' + template_name)
-    gov_firstOrder2_y_start: Var = vf.add_var('gov.firstOrder2.y_start_' + template_name)
-    gov_firstOrder3_T: Var = vf.add_var('gov.firstOrder3.T_' + template_name)
-    gov_firstOrder3_initType: Var = vf.add_var('gov.firstOrder3.initType_' + template_name)
-    gov_firstOrder3_k: Var = vf.add_var('gov.firstOrder3.k_' + template_name)
-    gov_firstOrder3_y_start: Var = vf.add_var('gov.firstOrder3.y_start_' + template_name)
-    gov_gain_k: Var = vf.add_var('gov.gain.k_' + template_name)
-    gov_limitedIntegrator_initType: Var = vf.add_var('gov.limitedIntegrator.initType_' + template_name)
-    gov_limitedIntegrator_k: Var = vf.add_var('gov.limitedIntegrator.k_' + template_name)
-    gov_limitedIntegrator_limitsAtInit: Var = vf.add_var('gov.limitedIntegrator.limitsAtInit_' + template_name)
-    gov_limitedIntegrator_outMax: Var = vf.add_var('gov.limitedIntegrator.outMax_' + template_name)
-    gov_limitedIntegrator_outMin: Var = vf.add_var('gov.limitedIntegrator.outMin_' + template_name)
-    gov_limitedIntegrator_strict: Var = vf.add_var('gov.limitedIntegrator.strict_' + template_name)
-    gov_limitedIntegrator_use_reset: Var = vf.add_var('gov.limitedIntegrator.use_reset_' + template_name)
-    gov_limitedIntegrator_use_set: Var = vf.add_var('gov.limitedIntegrator.use_set_' + template_name)
-    gov_limitedIntegrator_y_start: Var = vf.add_var('gov.limitedIntegrator.y_start_' + template_name)
-    gov_limiter_homotopyType: Var = vf.add_var('gov.limiter.homotopyType_' + template_name)
-    gov_limiter_limitsAtInit: Var = vf.add_var('gov.limiter.limitsAtInit_' + template_name)
-    gov_limiter_strict: Var = vf.add_var('gov.limiter.strict_' + template_name)
-    gov_limiter_uMax: Var = vf.add_var('gov.limiter.uMax_' + template_name)
-    gov_limiter_uMin: Var = vf.add_var('gov.limiter.uMin_' + template_name)
-    gov_sum1_k_1: Var = vf.add_var('gov.sum1.k[1]_' + template_name)
-    gov_sum1_k_2: Var = vf.add_var('gov.sum1.k[2]_' + template_name)
-    gov_sum1_k_3: Var = vf.add_var('gov.sum1.k[3]_' + template_name)
-    gov_sum1_k_4: Var = vf.add_var('gov.sum1.k[4]_' + template_name)
-    gov_sum1_nin: Var = vf.add_var('gov.sum1.nin_' + template_name)
-    gov_sum2_k_1: Var = vf.add_var('gov.sum2.k[1]_' + template_name)
-    gov_sum2_k_2: Var = vf.add_var('gov.sum2.k[2]_' + template_name)
-    gov_sum2_k_3: Var = vf.add_var('gov.sum2.k[3]_' + template_name)
-    gov_sum2_k_4: Var = vf.add_var('gov.sum2.k[4]_' + template_name)
-    gov_sum2_nin: Var = vf.add_var('gov.sum2.nin_' + template_name)
-    gov_t1: Var = vf.add_var('gov.t1_' + template_name)
-    gov_t2: Var = vf.add_var('gov.t2_' + template_name)
-    gov_t3: Var = vf.add_var('gov.t3_' + template_name)
-    gov_t4: Var = vf.add_var('gov.t4_' + template_name)
-    gov_t5: Var = vf.add_var('gov.t5_' + template_name)
-    gov_t6: Var = vf.add_var('gov.t6_' + template_name)
-    gov_t7: Var = vf.add_var('gov.t7_' + template_name)
-    gov_transferFunction_a_1: Var = vf.add_var('gov.transferFunction.a[1]_' + template_name)
-    gov_transferFunction_a_2: Var = vf.add_var('gov.transferFunction.a[2]_' + template_name)
-    gov_transferFunction_a_end: Var = vf.add_var('gov.transferFunction.a_end_' + template_name)
-    gov_transferFunction_b_1: Var = vf.add_var('gov.transferFunction.b[1]_' + template_name)
-    gov_transferFunction_b_2: Var = vf.add_var('gov.transferFunction.b[2]_' + template_name)
-    gov_transferFunction_bb_1: Var = vf.add_var('gov.transferFunction.bb[1]_' + template_name)
-    gov_transferFunction_bb_2: Var = vf.add_var('gov.transferFunction.bb[2]_' + template_name)
-    gov_transferFunction_d: Var = vf.add_var('gov.transferFunction.d_' + template_name)
-    gov_transferFunction_na: Var = vf.add_var('gov.transferFunction.na_' + template_name)
-    gov_transferFunction_nb: Var = vf.add_var('gov.transferFunction.nb_' + template_name)
-    gov_transferFunction_nx: Var = vf.add_var('gov.transferFunction.nx_' + template_name)
-    gov_transferFunction_x_start_1: Var = vf.add_var('gov.transferFunction.x_start[1]_' + template_name)
-    gov_transferFunction_y_start: Var = vf.add_var('gov.transferFunction.y_start_' + template_name)
-    # Declare the state variables used by the template.
-    gov_firstOrder_y: Var = vf.add_var('gov.firstOrder.y_' + template_name)
-    gov_firstOrder1_y: Var = vf.add_var('gov.firstOrder1.y_' + template_name)
-    gov_firstOrder2_y: Var = vf.add_var('gov.firstOrder2.y_' + template_name)
-    gov_firstOrder3_y: Var = vf.add_var('gov.firstOrder3.y_' + template_name)
-    gov_limitedIntegrator_y: Var = vf.add_var('gov.limitedIntegrator.y_' + template_name)
-    gov_transferFunction_x_scaled_1: Var = vf.add_var('gov.transferFunction.x_scaled[1]_' + template_name)
-    # Declare the algebraic/shared variables used by the template.
-    START_gov_firstOrder_y: Var = vf.add_var('$START.gov.firstOrder.y_' + template_name)
-    START_gov_firstOrder1_y: Var = vf.add_var('$START.gov.firstOrder1.y_' + template_name)
-    START_gov_firstOrder2_y: Var = vf.add_var('$START.gov.firstOrder2.y_' + template_name)
-    START_gov_firstOrder3_y: Var = vf.add_var('$START.gov.firstOrder3.y_' + template_name)
-    START_gov_transferFunction_x_scaled_1: Var = vf.add_var('$START.gov.transferFunction.x_scaled[1]_' + template_name)
-    gov_Pm1Pu: Var = vf.add_var('gov.Pm1Pu_' + template_name)
-    gov_Pm2Pu: Var = vf.add_var('gov.Pm2Pu_' + template_name)
-    gov_PmPu: Var = vf.add_var('gov.PmPu_' + template_name)
-    gov_PmRefPu: Var = vf.add_var('gov.PmRefPu_' + template_name)
-    gov_add_y: Var = vf.add_var('gov.add.y_' + template_name)
-    gov_add3_y: Var = vf.add_var('gov.add3.y_' + template_name)
-    gov_gain_y: Var = vf.add_var('gov.gain.y_' + template_name)
-    gov_limitedIntegrator_local_reset: Var = vf.add_var('gov.limitedIntegrator.local_reset_' + template_name)
-    gov_limitedIntegrator_local_set: Var = vf.add_var('gov.limitedIntegrator.local_set_' + template_name)
-    gov_limiter_simplifiedExpr: Var = vf.add_var('gov.limiter.simplifiedExpr_' + template_name)
-    gov_limiter_y: Var = vf.add_var('gov.limiter.y_' + template_name)
-    gov_omegaPu: Var = vf.add_var('gov.omegaPu_' + template_name)
-    gov_omegaRefPu: Var = vf.add_var('gov.omegaRefPu_' + template_name)
-    gov_transferFunction_x_1: Var = vf.add_var('gov.transferFunction.x[1]_' + template_name)
-    gov_transferFunction_y: Var = vf.add_var('gov.transferFunction.y_' + template_name)
-    # Declare the differential variables used by the template.
-    d_gov_firstOrder_y: Var = vf.add_diff_var('d_gov.firstOrder.y_' + template_name, base_var=gov_firstOrder_y)
-    d_gov_firstOrder1_y: Var = vf.add_diff_var('d_gov.firstOrder1.y_' + template_name, base_var=gov_firstOrder1_y)
-    d_gov_firstOrder2_y: Var = vf.add_diff_var('d_gov.firstOrder2.y_' + template_name, base_var=gov_firstOrder2_y)
-    d_gov_firstOrder3_y: Var = vf.add_diff_var('d_gov.firstOrder3.y_' + template_name, base_var=gov_firstOrder3_y)
-    d_gov_limitedIntegrator_y: Var = vf.add_diff_var('d_gov.limitedIntegrator.y_' + template_name, base_var=gov_limitedIntegrator_y)
-    d_gov_transferFunction_x_scaled_1: Var = vf.add_diff_var('d_gov.transferFunction.x_scaled[1]_' + template_name, base_var=gov_transferFunction_x_scaled_1)
-
-    # Build explicit typed collections so the symbolic surface is easy to inspect.
-    state_equations: list[Expr] = list()
-    state_equations.append((((gov_firstOrder_k * gov_limitedIntegrator_y) - gov_firstOrder_y) / gov_firstOrder_T))
-    state_equations.append((((gov_firstOrder1_k * gov_firstOrder_y) - gov_firstOrder1_y) / gov_firstOrder1_T))
-    state_equations.append((((gov_firstOrder2_k * gov_firstOrder1_y) - gov_firstOrder2_y) / gov_firstOrder2_T))
-    state_equations.append((((gov_firstOrder3_k * gov_firstOrder2_y) - gov_firstOrder3_y) / gov_firstOrder3_T))
-    state_equations.append((((gov_transferFunction_a_end * gov_add_y) - (gov_transferFunction_a_2 * gov_transferFunction_x_scaled_1)) / gov_transferFunction_a_1))
-    state_equations.append((((sym.Const(1.0) - ((sym.Const(1.0) - ((sym.heaviside(((gov_limitedIntegrator_outMin - gov_limitedIntegrator_y) - sym.Const(1e-06))) * sym.heaviside(((gov_limitedIntegrator_outMin - gov_limitedIntegrator_y) - sym.Const(1e-06)))) * sym.heaviside(((sym.Const(0.0) - (gov_limitedIntegrator_k * gov_limiter_y)) - sym.Const(1e-06))))) * (sym.Const(1.0) - ((((((sym.heaviside(((gov_limitedIntegrator_outMin - gov_limitedIntegrator_y) - sym.Const(1e-06))) * sym.heaviside(((sym.Const(0.0) - (gov_limitedIntegrator_k * gov_limiter_y)) - sym.Const(1e-06)))) * sym.heaviside(((gov_limitedIntegrator_y - gov_limitedIntegrator_outMax) - sym.Const(1e-06)))) * sym.heaviside(((gov_limitedIntegrator_outMin - gov_limitedIntegrator_y) - sym.Const(1e-06)))) * sym.heaviside(((sym.Const(0.0) - (gov_limitedIntegrator_k * gov_limiter_y)) - sym.Const(1e-06)))) * sym.heaviside(((gov_limitedIntegrator_y - gov_limitedIntegrator_outMax) - sym.Const(1e-06)))) * sym.heaviside((((gov_limitedIntegrator_k * gov_limiter_y) - sym.Const(0.0)) - sym.Const(1e-06))))))) * sym.Const(0.0)) + ((sym.Const(1.0) - (sym.Const(1.0) - ((sym.Const(1.0) - ((sym.heaviside(((gov_limitedIntegrator_outMin - gov_limitedIntegrator_y) - sym.Const(1e-06))) * sym.heaviside(((gov_limitedIntegrator_outMin - gov_limitedIntegrator_y) - sym.Const(1e-06)))) * sym.heaviside(((sym.Const(0.0) - (gov_limitedIntegrator_k * gov_limiter_y)) - sym.Const(1e-06))))) * (sym.Const(1.0) - ((((((sym.heaviside(((gov_limitedIntegrator_outMin - gov_limitedIntegrator_y) - sym.Const(1e-06))) * sym.heaviside(((sym.Const(0.0) - (gov_limitedIntegrator_k * gov_limiter_y)) - sym.Const(1e-06)))) * sym.heaviside(((gov_limitedIntegrator_y - gov_limitedIntegrator_outMax) - sym.Const(1e-06)))) * sym.heaviside(((gov_limitedIntegrator_outMin - gov_limitedIntegrator_y) - sym.Const(1e-06)))) * sym.heaviside(((sym.Const(0.0) - (gov_limitedIntegrator_k * gov_limiter_y)) - sym.Const(1e-06)))) * sym.heaviside(((gov_limitedIntegrator_y - gov_limitedIntegrator_outMax) - sym.Const(1e-06)))) * sym.heaviside((((gov_limitedIntegrator_k * gov_limiter_y) - sym.Const(0.0)) - sym.Const(1e-06)))))))) * (gov_limitedIntegrator_k * gov_limiter_y))))
-    state_variables: list[Var] = list()
-    state_variables.append(gov_firstOrder_y)
-    state_variables.append(gov_firstOrder1_y)
-    state_variables.append(gov_firstOrder2_y)
-    state_variables.append(gov_firstOrder3_y)
-    state_variables.append(gov_transferFunction_x_scaled_1)
-    state_variables.append(gov_limitedIntegrator_y)
-    algebraic_equations: list[Expr] = list()
-    algebraic_equations.append((gov_transferFunction_x_1 - (gov_transferFunction_x_scaled_1 / gov_transferFunction_a_end)))
-    algebraic_equations.append((gov_transferFunction_y - (((gov_transferFunction_bb_2 - (gov_transferFunction_d * gov_transferFunction_a_2)) * gov_transferFunction_x_1) + (gov_transferFunction_d * gov_add_y))))
-    algebraic_equations.append((gov_Pm1Pu - ((gov_sum1_k_1 * gov_firstOrder_y) + ((gov_sum1_k_2 * gov_firstOrder1_y) + ((gov_sum1_k_3 * gov_firstOrder2_y) + (gov_sum1_k_4 * gov_firstOrder3_y))))))
-    algebraic_equations.append((gov_Pm2Pu - ((gov_sum2_k_1 * gov_firstOrder_y) + ((gov_sum2_k_2 * gov_firstOrder1_y) + ((gov_sum2_k_3 * gov_firstOrder2_y) + (gov_sum2_k_4 * gov_firstOrder3_y))))))
-    algebraic_equations.append((gov_PmPu - ((gov_add1_k1 * gov_Pm1Pu) + (gov_add1_k2 * gov_Pm2Pu))))
-    algebraic_equations.append((gov_add3_y - (((gov_add3_k1 * gov_PmRefPu) + (gov_add3_k2 * gov_transferFunction_y)) + (gov_add3_k3 * gov_limitedIntegrator_y))))
-    algebraic_equations.append((gov_gain_y - (gov_gain_k * gov_add3_y)))
-    algebraic_equations.append((gov_limiter_y - ((sym.heaviside(((gov_gain_y - gov_limiter_uMax) - sym.Const(1e-06))) * gov_limiter_uMax) + ((sym.Const(1.0) - sym.heaviside(((gov_gain_y - gov_limiter_uMax) - sym.Const(1e-06)))) * ((sym.heaviside(((gov_limiter_uMin - gov_gain_y) - sym.Const(1e-06))) * gov_limiter_uMin) + ((sym.Const(1.0) - sym.heaviside(((gov_limiter_uMin - gov_gain_y) - sym.Const(1e-06)))) * gov_gain_y))))))
-    algebraic_variables: list[Var] = list()
-    algebraic_variables.append(gov_transferFunction_x_1)
-    algebraic_variables.append(gov_transferFunction_y)
-    algebraic_variables.append(gov_Pm1Pu)
-    algebraic_variables.append(gov_Pm2Pu)
-    algebraic_variables.append(gov_PmPu)
-    algebraic_variables.append(gov_add3_y)
-    algebraic_variables.append(gov_gain_y)
-    algebraic_variables.append(gov_limiter_y)
-    algebraic_variables.append(gov_add_y)
-    algebraic_variables.append(gov_PmRefPu)
-    algebraic_variables.append(gov_omegaPu)
-    algebraic_variables.append(gov_omegaRefPu)
-    algebraic_variables.append(gov_limitedIntegrator_local_reset)
-    algebraic_variables.append(gov_limitedIntegrator_local_set)
-    algebraic_variables.append(gov_limiter_simplifiedExpr)
-    algebraic_variables.append(START_gov_firstOrder_y)
-    algebraic_variables.append(START_gov_firstOrder1_y)
-    algebraic_variables.append(START_gov_firstOrder2_y)
-    algebraic_variables.append(START_gov_firstOrder3_y)
-    algebraic_variables.append(START_gov_transferFunction_x_scaled_1)
-    differential_variables: list[Var] = list()
-    differential_variables.append(d_gov_firstOrder_y)
-    differential_variables.append(d_gov_firstOrder1_y)
-    differential_variables.append(d_gov_firstOrder2_y)
-    differential_variables.append(d_gov_firstOrder3_y)
-    differential_variables.append(d_gov_transferFunction_x_scaled_1)
-    differential_variables.append(d_gov_limitedIntegrator_y)
-    input_variables: list[Var] = list()
-    # Preserve the public connector surface declared by the source IEEEG1 model.
-    input_variables.append(gov_omegaPu)
-    input_variables.append(gov_omegaRefPu)
-    input_variables.append(gov_PmRefPu)
-    output_variables: list[Var] = list()
-    output_variables.append(gov_Pm1Pu)
-    output_variables.append(gov_Pm2Pu)
-    output_variables.append(gov_PmPu)
-    event_parameters: dict[Var, Expr | Const] = dict()
-    event_parameters[gov_K] = vf.add_const(25.0, name='')
-    event_parameters[gov_K1] = vf.add_const(0.2, name='')
-    event_parameters[gov_K2] = vf.add_const(0.0, name='')
-    event_parameters[gov_K3] = vf.add_const(0.3, name='')
-    event_parameters[gov_K4] = vf.add_const(0.0, name='')
-    event_parameters[gov_K5] = vf.add_const(0.5, name='')
-    event_parameters[gov_K6] = vf.add_const(0.0, name='')
-    event_parameters[gov_K7] = vf.add_const(0.0, name='')
-    event_parameters[gov_K8] = vf.add_const(0.0, name='')
-    event_parameters[gov_PMaxPu] = vf.add_const(1.0, name='')
-    event_parameters[gov_PMinPu] = vf.add_const(0.0, name='')
-    event_parameters[gov_Pm0Pu] = vf.add_const(0.8, name='')
-    event_parameters[gov_PmRef0Pu] = ((sym.heaviside((((((((((gov_K1 + gov_K2) + gov_K3) + gov_K4) + gov_K5) + gov_K6) + gov_K7) + gov_K8) - sym.Const(0.0)) - sym.Const(1e-06))) * (gov_Pm0Pu / (((((((gov_K1 + gov_K2) + gov_K3) + gov_K4) + gov_K5) + gov_K6) + gov_K7) + gov_K8))) + ((sym.Const(1.0) - sym.heaviside((((((((((gov_K1 + gov_K2) + gov_K3) + gov_K4) + gov_K5) + gov_K6) + gov_K7) + gov_K8) - sym.Const(0.0)) - sym.Const(1e-06)))) * sym.Const(0.0)))
-    event_parameters[gov_Uc] = vf.add_const(-10.0, name='')
-    event_parameters[gov_Uo] = vf.add_const(1.0, name='')
-    event_parameters[gov_add_k1] = vf.add_const(1.0, name='')
-    event_parameters[gov_add_k2] = vf.add_const(-1.0, name='')
-    event_parameters[gov_add1_k1] = vf.add_const(1.0, name='')
-    event_parameters[gov_add1_k2] = vf.add_const(1.0, name='')
-    event_parameters[gov_add3_k1] = vf.add_const(1.0, name='')
-    event_parameters[gov_add3_k2] = (-gov_K)
-    event_parameters[gov_add3_k3] = vf.add_const(-1.0, name='')
-    event_parameters[gov_firstOrder_T] = gov_t4
-    event_parameters[gov_firstOrder_k] = vf.add_const(1.0, name='')
-    event_parameters[gov_firstOrder_y_start] = gov_PmRef0Pu
-    event_parameters[gov_firstOrder1_T] = gov_t5
-    event_parameters[gov_firstOrder1_k] = vf.add_const(1.0, name='')
-    event_parameters[gov_firstOrder1_y_start] = gov_PmRef0Pu
-    event_parameters[gov_firstOrder2_T] = gov_t6
-    event_parameters[gov_firstOrder2_k] = vf.add_const(1.0, name='')
-    event_parameters[gov_firstOrder2_y_start] = gov_PmRef0Pu
-    event_parameters[gov_firstOrder3_T] = gov_t7
-    event_parameters[gov_firstOrder3_k] = vf.add_const(1.0, name='')
-    event_parameters[gov_firstOrder3_y_start] = gov_PmRef0Pu
-    event_parameters[gov_gain_k] = (sym.Const(1.0) / gov_t3)
-    event_parameters[gov_limitedIntegrator_k] = vf.add_const(1.0, name='')
-    event_parameters[gov_limitedIntegrator_outMax] = gov_PMaxPu
-    event_parameters[gov_limitedIntegrator_outMin] = gov_PMinPu
-    event_parameters[gov_limitedIntegrator_y_start] = gov_PmRef0Pu
-    event_parameters[gov_limiter_uMax] = gov_Uo
-    event_parameters[gov_limiter_uMin] = gov_Uc
-    event_parameters[gov_sum1_k_1] = gov_K1
-    event_parameters[gov_sum1_k_2] = gov_K3
-    event_parameters[gov_sum1_k_3] = gov_K5
-    event_parameters[gov_sum1_k_4] = gov_K7
-    event_parameters[gov_sum2_k_1] = gov_K2
-    event_parameters[gov_sum2_k_2] = gov_K4
-    event_parameters[gov_sum2_k_3] = gov_K6
-    event_parameters[gov_sum2_k_4] = gov_K8
-    event_parameters[gov_t1] = vf.add_const(1e-06, name='')
-    event_parameters[gov_t2] = vf.add_const(1e-06, name='')
-    event_parameters[gov_t3] = vf.add_const(0.1, name='')
-    event_parameters[gov_t4] = vf.add_const(0.3, name='')
-    event_parameters[gov_t5] = vf.add_const(5.0, name='')
-    event_parameters[gov_t6] = vf.add_const(0.5, name='')
-    event_parameters[gov_t7] = vf.add_const(1e-06, name='')
-    event_parameters[gov_transferFunction_a_1] = gov_t1
-    event_parameters[gov_transferFunction_a_2] = vf.add_const(1.0, name='')
-    event_parameters[gov_transferFunction_a_end] = ((sym.heaviside(((gov_transferFunction_a_2 - (sym.Const(2.220446049250313e-14) * sym.sqrt(((gov_transferFunction_a_1 ** sym.Const(2.0)) + (gov_transferFunction_a_2 ** sym.Const(2.0)))))) - sym.Const(1e-06))) * gov_transferFunction_a_2) + ((sym.Const(1.0) - sym.heaviside(((gov_transferFunction_a_2 - (sym.Const(2.220446049250313e-14) * sym.sqrt(((gov_transferFunction_a_1 ** sym.Const(2.0)) + (gov_transferFunction_a_2 ** sym.Const(2.0)))))) - sym.Const(1e-06)))) * sym.Const(1.0)))
-    event_parameters[gov_transferFunction_b_1] = gov_t2
-    event_parameters[gov_transferFunction_b_2] = vf.add_const(1.0, name='')
-    event_parameters[gov_transferFunction_bb_1] = gov_transferFunction_b_1
-    event_parameters[gov_transferFunction_bb_2] = gov_transferFunction_b_2
-    event_parameters[gov_transferFunction_d] = (gov_transferFunction_bb_1 / gov_transferFunction_a_1)
-    event_parameters[gov_transferFunction_x_start_1] = vf.add_const(0.0, name='')
-    event_parameters[gov_transferFunction_y_start] = vf.add_const(0.0, name='')
-    event_parameters[gov_firstOrder_initType] = vf.add_const(1.0, name='')
-    event_parameters[gov_firstOrder1_initType] = vf.add_const(1.0, name='')
-    event_parameters[gov_firstOrder2_initType] = vf.add_const(1.0, name='')
-    event_parameters[gov_firstOrder3_initType] = vf.add_const(1.0, name='')
-    event_parameters[gov_limitedIntegrator_initType] = vf.add_const(3.0, name='')
-    event_parameters[gov_limiter_homotopyType] = vf.add_const(1.0, name='')
-    event_parameters[gov_sum1_nin] = vf.add_const(4.0, name='')
-    event_parameters[gov_sum2_nin] = vf.add_const(4.0, name='')
-    event_parameters[gov_transferFunction_na] = vf.add_const(2.0, name='')
-    event_parameters[gov_transferFunction_nb] = vf.add_const(2.0, name='')
-    event_parameters[gov_transferFunction_nx] = vf.add_const(1.0, name='')
-    event_parameters[gov_limitedIntegrator_limitsAtInit] = vf.add_const(1.0, name='')
-    event_parameters[gov_limitedIntegrator_strict] = vf.add_const(0.0, name='')
-    event_parameters[gov_limitedIntegrator_use_reset] = vf.add_const(0.0, name='')
-    event_parameters[gov_limitedIntegrator_use_set] = vf.add_const(0.0, name='')
-    event_parameters[gov_limiter_limitsAtInit] = vf.add_const(1.0, name='')
-    event_parameters[gov_limiter_strict] = vf.add_const(0.0, name='')
-    mode_parameters: dict[Var, Expr | Const] = dict()
-    initial_equations: dict[Var, Expr | Const] = dict()
-    initial_equations[gov_firstOrder_y] = gov_firstOrder_y_start
-    initial_equations[gov_firstOrder1_y] = gov_firstOrder1_y_start
-    initial_equations[gov_firstOrder2_y] = gov_firstOrder2_y_start
-    initial_equations[gov_firstOrder3_y] = gov_firstOrder3_y_start
-    initial_equations[gov_limitedIntegrator_y] = gov_limitedIntegrator_y_start
-    initial_equations[gov_transferFunction_x_scaled_1] = (gov_transferFunction_a_end * gov_transferFunction_x_start_1)
-    initial_equations[gov_Pm1Pu] = vf.add_const(0.8, name='')
-    initial_equations[gov_Pm2Pu] = vf.add_const(0.0, name='')
-    initial_equations[gov_PmPu] = vf.add_const(0.8, name='')
-    initial_equations[gov_PmRefPu] = vf.add_const(0.8, name='')
-    initial_equations[gov_omegaPu] = vf.add_const(1.0, name='')
-    initial_equations[gov_omegaRefPu] = vf.add_const(1.0, name='')
-    initial_equations[gov_transferFunction_x_1] = gov_transferFunction_x_start_1
-    initial_equations[gov_transferFunction_y] = gov_transferFunction_y_start
-    initial_equations[gov_limitedIntegrator_local_reset] = vf.add_const(0.0, name='')
-    initial_equations[gov_limitedIntegrator_local_set] = vf.add_const(0.0, name='')
-    initial_equations[gov_limiter_simplifiedExpr] = vf.add_const(0.0, name='')
-    initial_equations[gov_add_y] = (gov_add_k1 + gov_add_k2)
-    initial_equations[gov_add3_y] = (((gov_add3_k1 * gov_PmRefPu) + (gov_add3_k2 * gov_transferFunction_y)) + (gov_add3_k3 * gov_limitedIntegrator_y))
-    differential_initial_equations: dict[Var, Expr | Const] = dict()
-    procedural_logic_entries: list[object] = list()
-
-    # Assemble the final block from the explicit typed collections above.
-    template.block = Block(
-        state_vars=state_variables,
-        state_eqs=state_equations,
-        algebraic_vars=algebraic_variables,
-        algebraic_eqs=algebraic_equations,
-        diff_vars=differential_variables,
-        init_eqs=initial_equations,
-        diff_init_eqs=differential_initial_equations,
-        in_vars=input_variables,
-        out_vars=output_variables,
-        event_dict=event_parameters,
-        mode_dict=mode_parameters,
-        procedural_logic=procedural_logic_entries,
-        name=template_name,
-    )
-
-    template.block.state_eqs[5] = ((sym.Const(1.0) - (sym.heaviside((gov_limitedIntegrator_y - gov_limitedIntegrator_outMax) + sym.Const(1e-06)) * sym.heaviside(((gov_limitedIntegrator_k * gov_limiter_y) - sym.Const(0.0)) - sym.Const(1e-06)))) * (sym.Const(1.0) - (sym.heaviside((gov_limitedIntegrator_outMin - gov_limitedIntegrator_y) + sym.Const(1e-06)) * sym.heaviside((sym.Const(0.0) - (gov_limitedIntegrator_k * gov_limiter_y)) - sym.Const(1e-06)))) * (gov_limitedIntegrator_k * gov_limiter_y))
-
-    template.comment = 'Generator governor IEEEG1'
-    return template
+        pass
+    control: ControlRealization = ControlRealization(vf, 'IEEEG1' if name is None else name)
+    gain: Var = control.parameter('K', p.gain)
+    lag: Var = control.parameter('T1', p.speed_lag)
+    lead: Var = control.parameter('T2', p.speed_lead)
+    servo: Var = control.parameter('T3', p.servo_time)
+    opening: Var = control.parameter('UO', p.opening_rate)
+    closing: Var = control.parameter('UC', p.closing_rate)
+    maximum: Var = control.parameter('PMAX', p.maximum)
+    minimum: Var = control.parameter('PMIN', p.minimum)
+    high: Var = control.parameter('DBH', p.deadband_high)
+    low: Var = control.parameter('DBL', p.deadband_low)
+    times: tuple[Var, ...] = tuple(control.parameter('T'+str(index+4), value) for index, value in enumerate(p.turbine_times))
+    weights: tuple[Var, ...] = tuple(control.parameter('K'+str(index+1), value) for index, value in enumerate(p.fractions))
+    omega: Var = control.input('OmegaPu', Const(1.0))
+    reference: Var = control.input('OmegaRefPu', Const(1.0))
+    load: Var = control.input('PmRefPu', Const(.5))
+    speed: Expr = omega-reference
+    if p.deadband_high != 0 or p.deadband_low != 0:
+        speed = sym.max(speed-high, Const(0.0))+sym.min(speed-low, Const(0.0))
+    else:
+        pass
+    speed_error: Var = control.algebraic('SpeedErrorPu', speed, Const(0.0))
+    compensated: Var = control.lead_lag('SpeedCompensatedPu', speed_error, lead, lag,
+                                      p.speed_lead, p.speed_lag, Const(0.0))
+    total_gain: Expr = sum(weights, Const(0.0))
+    initial_valve: Expr = load/total_gain
+    valve: Var = vf.add_var('ValvePu_'+control.name)
+    velocity: Var = control.algebraic('ValveVelocityPu',
+        sym.hard_sat((initial_valve-gain*compensated-valve)/servo, closing, opening), Const(0.0))
+    control.differential(valve, velocity, initial_valve, minimum, maximum)
+    stage: Var = valve
+    shaft1: Expr = Const(0.0)
+    shaft2: Expr = Const(0.0)
+    index: int
+    for index in range(4):
+        stage = control.lag('SteamStage'+str(index+1)+'Pu', stage, times[index], p.turbine_times[index], initial_valve)
+        shaft1 = shaft1+weights[2*index]*stage
+        shaft2 = shaft2+weights[2*index+1]*stage
+    first: Var = control.algebraic('Pm1Pu', shaft1, initial_valve*sum(weights[0::2], Const(0.0)))
+    second: Var = control.algebraic('Pm2Pu', shaft2, initial_valve*sum(weights[1::2], Const(0.0)))
+    total: Var = control.algebraic('PmPu', first+second, load)
+    return control.finish((first, second, total), 'Steam governor with rate-limited valve and four cascaded turbine stages')

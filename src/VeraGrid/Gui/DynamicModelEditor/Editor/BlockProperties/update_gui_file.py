@@ -25,3 +25,8 @@ if __name__ == '__main__':
         target_file_name='dynamic_block_properties_gui.py',
     )
     convert_ui_file(source='add_symbol_widget.ui', uic_cmd=uic_cmd)
+    convert_ui_file(
+        source='SpecialConfigTabs/lookup_1d_config_tab.ui',
+        uic_cmd=uic_cmd,
+        target_file_name='SpecialConfigTabs/lookup_1d_config_tab_gui.py',
+    )

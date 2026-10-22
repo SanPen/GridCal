@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Simulations.InvestmentsEvaluation.Problems.linear_opf_ts_problem &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Simulations.InvestmentsEvaluation.Problems.linear_opf_ts_problem &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/license.html">📜 License</a></li>
@@ -128,7 +129,7 @@
 <div class="viewcode-block" id="correct_x">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.InvestmentsEvaluation.Problems.html#VeraGridEngine.Simulations.InvestmentsEvaluation.Problems.linear_opf_ts_problem.correct_x">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">correct_x</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">lb</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">ub</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Correct the integer decision vector in place to the given bounds.</span>
 
 <span class="sd">    :param x: Decision vector.</span>
@@ -139,7 +140,7 @@
 <span class="sd">    :type ub: IntVec</span>
 <span class="sd">    :return: None</span>
 <span class="sd">    :rtype: None</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)):</span>
         <span class="k">if</span> <span class="n">x</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">lb</span><span class="p">[</span><span class="n">idx</span><span class="p">]:</span>
             <span class="n">x</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">lb</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
@@ -154,14 +155,14 @@
 <div class="viewcode-block" id="determine_starting_index_of_every_year">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.InvestmentsEvaluation.Problems.html#VeraGridEngine.Simulations.InvestmentsEvaluation.Problems.linear_opf_ts_problem.determine_starting_index_of_every_year">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">determine_starting_index_of_every_year</span><span class="p">(</span><span class="n">index</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">IntVec</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Find the first profile index of each year in the selected horizon.</span>
 
 <span class="sd">    :param index: Datetime-like index.</span>
 <span class="sd">    :type index: any</span>
 <span class="sd">    :return: Starting index of each year.</span>
 <span class="sd">    :rtype: IntVec</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">indices</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
     <span class="n">previous_year</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">index</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">year</span><span class="p">)</span>
 
@@ -183,14 +184,14 @@
 <div class="viewcode-block" id="clone_linear_opf_options">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.InvestmentsEvaluation.Problems.html#VeraGridEngine.Simulations.InvestmentsEvaluation.Problems.linear_opf_ts_problem.clone_linear_opf_options">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">clone_linear_opf_options</span><span class="p">(</span><span class="n">opf_options</span><span class="p">:</span> <span class="n">OptimalPowerFlowOptions</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OptimalPowerFlowOptions</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Clone the external OPF options and force the linear OPF solver.</span>
 
 <span class="sd">    :param opf_options: External OPF options.</span>
 <span class="sd">    :type opf_options: OptimalPowerFlowOptions | None</span>
 <span class="sd">    :return: OPF options configured for linear OPF.</span>
 <span class="sd">    :rtype: OptimalPowerFlowOptions</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">local_options</span><span class="p">:</span> <span class="n">OptimalPowerFlowOptions</span>
 
     <span class="k">if</span> <span class="n">opf_options</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -208,7 +209,7 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">collect_device_states</span><span class="p">(</span><span class="n">investments_by_group</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">Investment</span><span class="p">]],</span>
                           <span class="n">x</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span>
                           <span class="n">all_elements_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">EditableDevice</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">EditableDevice</span><span class="p">,</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">BoolVec</span><span class="p">]]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Store the original activation state of each device that may be modified.</span>
 
 <span class="sd">    :param investments_by_group: Investments grouped by decision-variable index.</span>
@@ -219,7 +220,7 @@
 <span class="sd">    :type all_elements_dict: Dict[str, EditableDevice]</span>
 <span class="sd">    :return: Original state of every touched device.</span>
 <span class="sd">    :rtype: Dict[str, Tuple[EditableDevice, bool, BoolVec]]</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">states</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">EditableDevice</span><span class="p">,</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">BoolVec</span><span class="p">]]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
 
     <span class="k">for</span> <span class="n">group_index</span><span class="p">,</span> <span class="n">entry_year_value</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
@@ -228,7 +229,7 @@
                 <span class="n">device</span> <span class="o">=</span> <span class="n">all_elements_dict</span><span class="p">[</span><span class="n">investment</span><span class="o">.</span><span class="n">device_idtag</span><span class="p">]</span>
 
                 <span class="k">if</span> <span class="n">investment</span><span class="o">.</span><span class="n">device_idtag</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">states</span><span class="p">:</span>
-                    <span class="n">active_profile</span> <span class="o">=</span> <span class="n">device</span><span class="o">.</span><span class="n">get_profile</span><span class="p">(</span><span class="s2">&quot;active&quot;</span><span class="p">)</span>
+                    <span class="n">active_profile</span> <span class="o">=</span> <span class="n">device</span><span class="o">.</span><span class="n">get_profile</span><span class="p">(</span><span class="s2">"active"</span><span class="p">)</span>
 
                     <span class="k">if</span> <span class="n">active_profile</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                         <span class="k">pass</span>
@@ -253,7 +254,7 @@
                               <span class="n">x</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span>
                               <span class="n">all_elements_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">EditableDevice</span><span class="p">],</span>
                               <span class="n">years_starts_indices</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Apply the selected investments to the devices active profiles.</span>
 
 <span class="sd">    :param investments_by_group: Investments grouped by decision-variable index.</span>
@@ -266,14 +267,14 @@
 <span class="sd">    :type years_starts_indices: IntVec</span>
 <span class="sd">    :return: None</span>
 <span class="sd">    :rtype: None</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">for</span> <span class="n">group_index</span><span class="p">,</span> <span class="n">entry_year_value</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">entry_year_value</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">start_index</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">years_starts_indices</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">entry_year_value</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">])</span>
 
             <span class="k">for</span> <span class="n">investment</span> <span class="ow">in</span> <span class="n">investments_by_group</span><span class="p">[</span><span class="n">group_index</span><span class="p">]:</span>
                 <span class="n">device</span> <span class="o">=</span> <span class="n">all_elements_dict</span><span class="p">[</span><span class="n">investment</span><span class="o">.</span><span class="n">device_idtag</span><span class="p">]</span>
-                <span class="n">active_profile</span> <span class="o">=</span> <span class="n">device</span><span class="o">.</span><span class="n">get_profile</span><span class="p">(</span><span class="s2">&quot;active&quot;</span><span class="p">)</span>
+                <span class="n">active_profile</span> <span class="o">=</span> <span class="n">device</span><span class="o">.</span><span class="n">get_profile</span><span class="p">(</span><span class="s2">"active"</span><span class="p">)</span>
 
                 <span class="k">if</span> <span class="n">active_profile</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                     <span class="k">pass</span>
@@ -295,19 +296,19 @@
 <div class="viewcode-block" id="restore_device_states">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.InvestmentsEvaluation.Problems.html#VeraGridEngine.Simulations.InvestmentsEvaluation.Problems.linear_opf_ts_problem.restore_device_states">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">restore_device_states</span><span class="p">(</span><span class="n">states</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">EditableDevice</span><span class="p">,</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">BoolVec</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Restore the original activation state of the devices after an evaluation.</span>
 
 <span class="sd">    :param states: Original device activation states.</span>
 <span class="sd">    :type states: Dict[str, Tuple[EditableDevice, bool, BoolVec]]</span>
 <span class="sd">    :return: None</span>
 <span class="sd">    :rtype: None</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">for</span> <span class="n">device_idtag</span><span class="p">,</span> <span class="n">values</span> <span class="ow">in</span> <span class="n">states</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
         <span class="n">device</span><span class="p">:</span> <span class="n">EditableDevice</span> <span class="o">=</span> <span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">active_value</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">values</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
         <span class="n">active_profile_array</span><span class="p">:</span> <span class="n">BoolVec</span> <span class="o">=</span> <span class="n">values</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
-        <span class="n">active_profile</span> <span class="o">=</span> <span class="n">device</span><span class="o">.</span><span class="n">get_profile</span><span class="p">(</span><span class="s2">&quot;active&quot;</span><span class="p">)</span>
+        <span class="n">active_profile</span> <span class="o">=</span> <span class="n">device</span><span class="o">.</span><span class="n">get_profile</span><span class="p">(</span><span class="s2">"active"</span><span class="p">)</span>
 
         <span class="n">device</span><span class="o">.</span><span class="n">active</span> <span class="o">=</span> <span class="n">active_value</span>
 
@@ -323,7 +324,7 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">force_investment_candidates_off</span><span class="p">(</span><span class="n">investments_by_group</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">Investment</span><span class="p">]],</span>
                                     <span class="n">all_elements_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">EditableDevice</span><span class="p">],</span>
                                     <span class="n">logger</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Force activation-type investment candidates to be off before the optimization starts.</span>
 
 <span class="sd">    :param investments_by_group: Investments grouped by decision-variable index.</span>
@@ -334,7 +335,7 @@
 <span class="sd">    :type logger: any</span>
 <span class="sd">    :return: None</span>
 <span class="sd">    :rtype: None</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">processed_devices</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
 
     <span class="k">for</span> <span class="n">group_index</span><span class="p">,</span> <span class="n">investments</span> <span class="ow">in</span> <span class="n">investments_by_group</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
@@ -344,21 +345,21 @@
                     <span class="n">device</span> <span class="o">=</span> <span class="n">all_elements_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">investment</span><span class="o">.</span><span class="n">device_idtag</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
 
                     <span class="k">if</span> <span class="n">device</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                        <span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s2">&quot;Investment device not found&quot;</span><span class="p">,</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s2">"Investment device not found"</span><span class="p">,</span>
                                            <span class="n">device</span><span class="o">=</span><span class="n">investment</span><span class="o">.</span><span class="n">device_idtag</span><span class="p">)</span>
                     <span class="k">else</span><span class="p">:</span>
-                        <span class="n">active_profile</span> <span class="o">=</span> <span class="n">device</span><span class="o">.</span><span class="n">get_profile</span><span class="p">(</span><span class="s2">&quot;active&quot;</span><span class="p">)</span>
+                        <span class="n">active_profile</span> <span class="o">=</span> <span class="n">device</span><span class="o">.</span><span class="n">get_profile</span><span class="p">(</span><span class="s2">"active"</span><span class="p">)</span>
                         <span class="n">device</span><span class="o">.</span><span class="n">active</span> <span class="o">=</span> <span class="kc">False</span>
 
                         <span class="k">if</span> <span class="n">active_profile</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                            <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">&quot;Forced investment candidate off&quot;</span><span class="p">,</span>
+                            <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">"Forced investment candidate off"</span><span class="p">,</span>
                                             <span class="n">device</span><span class="o">=</span><span class="n">investment</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
-                                            <span class="n">device_class</span><span class="o">=</span><span class="s2">&quot;Investment&quot;</span><span class="p">)</span>
+                                            <span class="n">device_class</span><span class="o">=</span><span class="s2">"Investment"</span><span class="p">)</span>
                         <span class="k">else</span><span class="p">:</span>
                             <span class="n">active_profile</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
-                            <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">&quot;Forced investment candidate off&quot;</span><span class="p">,</span>
+                            <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">"Forced investment candidate off"</span><span class="p">,</span>
                                             <span class="n">device</span><span class="o">=</span><span class="n">investment</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
-                                            <span class="n">device_class</span><span class="o">=</span><span class="s2">&quot;Investment&quot;</span><span class="p">)</span>
+                                            <span class="n">device_class</span><span class="o">=</span><span class="s2">"Investment"</span><span class="p">)</span>
 
                         <span class="n">processed_devices</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">investment</span><span class="o">.</span><span class="n">device_idtag</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
@@ -372,7 +373,7 @@
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.InvestmentsEvaluation.Problems.html#VeraGridEngine.Simulations.InvestmentsEvaluation.Problems.linear_opf_ts_problem.get_objective_vector">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_objective_vector</span><span class="p">(</span><span class="n">results</span><span class="p">:</span> <span class="n">OptimalPowerFlowTimeSeriesResults</span><span class="p">,</span>
                          <span class="n">capex</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Aggregate the linear OPF results into the investment objective vector.</span>
 
 <span class="sd">    :param results: Time-series OPF results.</span>
@@ -381,7 +382,7 @@
 <span class="sd">    :type capex: float</span>
 <span class="sd">    :return: Objective vector.</span>
 <span class="sd">    :rtype: Vec</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">nodal_price_per_time</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">results</span><span class="o">.</span><span class="n">bus_shadow_prices</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
     <span class="n">served_load_per_time</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">results</span><span class="o">.</span><span class="n">load_power</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
     <span class="n">shedding_mask</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">load_shedding</span> <span class="o">&gt;</span> <span class="mf">0.0</span>
@@ -418,18 +419,18 @@
 <div class="viewcode-block" id="TimeSeriesLinearOptimalPowerFlowInvestmentProblem">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.InvestmentsEvaluation.Problems.html#VeraGridEngine.Simulations.InvestmentsEvaluation.Problems.linear_opf_ts_problem.TimeSeriesLinearOptimalPowerFlowInvestmentProblem">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">TimeSeriesLinearOptimalPowerFlowInvestmentProblem</span><span class="p">(</span><span class="n">BlackBoxProblemTemplate</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Investment problem based on a time-series linear OPF evaluation.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;opf_options&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;time_indices&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;clustering_results&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;engine&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;years_starts_indices&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;inv_group_capex&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;all_elements_dict&quot;</span><span class="p">,</span>
+        <span class="s2">"opf_options"</span><span class="p">,</span>
+        <span class="s2">"time_indices"</span><span class="p">,</span>
+        <span class="s2">"clustering_results"</span><span class="p">,</span>
+        <span class="s2">"engine"</span><span class="p">,</span>
+        <span class="s2">"years_starts_indices"</span><span class="p">,</span>
+        <span class="s2">"inv_group_capex"</span><span class="p">,</span>
+        <span class="s2">"all_elements_dict"</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
@@ -438,7 +439,7 @@
                  <span class="n">time_indices</span><span class="p">:</span> <span class="n">IntVec</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">clustering_results</span><span class="p">:</span> <span class="n">ClusteringResults</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">engine</span><span class="p">:</span> <span class="n">EngineType</span> <span class="o">=</span> <span class="n">EngineType</span><span class="o">.</span><span class="n">VeraGrid</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Build the linear OPF investment problem.</span>
 
 <span class="sd">        :param grid: Grid to evaluate.</span>
@@ -451,7 +452,7 @@
 <span class="sd">        :type clustering_results: ClusteringResults | None</span>
 <span class="sd">        :param engine: Engine used by the OPF driver.</span>
 <span class="sd">        :type engine: EngineType</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">grid</span><span class="o">=</span><span class="n">grid</span><span class="p">,</span>
                          <span class="n">x_dim</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">grid</span><span class="o">.</span><span class="n">investments_groups</span><span class="p">),</span>
                          <span class="n">plot_x_idx</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
@@ -481,7 +482,7 @@
         <span class="k">if</span> <span class="n">dict_ok</span><span class="p">:</span>
             <span class="k">pass</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s2">&quot;Some investment devices are missing from the grid element dictionary&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s2">"Some investment devices are missing from the grid element dictionary"</span><span class="p">)</span>
 
         <span class="c1"># Candidate assets that are activated by the investments must start disabled in the baseline case.</span>
         <span class="n">force_investment_candidates_off</span><span class="p">(</span><span class="n">investments_by_group</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">investments_by_group</span><span class="p">,</span>
@@ -491,67 +492,67 @@
 <div class="viewcode-block" id="TimeSeriesLinearOptimalPowerFlowInvestmentProblem.n_objectives">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.InvestmentsEvaluation.Problems.html#VeraGridEngine.Simulations.InvestmentsEvaluation.Problems.linear_opf_ts_problem.TimeSeriesLinearOptimalPowerFlowInvestmentProblem.n_objectives">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">n_objectives</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Number of objectives.</span>
 
 <span class="sd">        :return: Objective vector length.</span>
 <span class="sd">        :rtype: int</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="mi">6</span></div>
 
 
 <div class="viewcode-block" id="TimeSeriesLinearOptimalPowerFlowInvestmentProblem.n_vars">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.InvestmentsEvaluation.Problems.html#VeraGridEngine.Simulations.InvestmentsEvaluation.Problems.linear_opf_ts_problem.TimeSeriesLinearOptimalPowerFlowInvestmentProblem.n_vars">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">n_vars</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Number of decision variables.</span>
 
 <span class="sd">        :return: Decision vector length.</span>
 <span class="sd">        :rtype: int</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_dim</span></div>
 
 
 <div class="viewcode-block" id="TimeSeriesLinearOptimalPowerFlowInvestmentProblem.get_objectives_names">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.InvestmentsEvaluation.Problems.html#VeraGridEngine.Simulations.InvestmentsEvaluation.Problems.linear_opf_ts_problem.TimeSeriesLinearOptimalPowerFlowInvestmentProblem.get_objectives_names">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_objectives_names</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StrVec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the objective names.</span>
 
 <span class="sd">        :return: Objective names.</span>
 <span class="sd">        :rtype: StrVec</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="s2">&quot;Average nodal price&quot;</span><span class="p">,</span>
-                         <span class="s2">&quot;CAPEX&quot;</span><span class="p">,</span>
-                         <span class="s2">&quot;OPEX&quot;</span><span class="p">,</span>
-                         <span class="s2">&quot;Load shedding&quot;</span><span class="p">,</span>
-                         <span class="s2">&quot;Generation shedding&quot;</span><span class="p">,</span>
-                         <span class="s2">&quot;Fuel usage&quot;</span><span class="p">])</span></div>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="s2">"Average nodal price"</span><span class="p">,</span>
+                         <span class="s2">"CAPEX"</span><span class="p">,</span>
+                         <span class="s2">"OPEX"</span><span class="p">,</span>
+                         <span class="s2">"Load shedding"</span><span class="p">,</span>
+                         <span class="s2">"Generation shedding"</span><span class="p">,</span>
+                         <span class="s2">"Fuel usage"</span><span class="p">])</span></div>
 
 
 <div class="viewcode-block" id="TimeSeriesLinearOptimalPowerFlowInvestmentProblem.get_vars_names">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.InvestmentsEvaluation.Problems.html#VeraGridEngine.Simulations.InvestmentsEvaluation.Problems.linear_opf_ts_problem.TimeSeriesLinearOptimalPowerFlowInvestmentProblem.get_vars_names">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_vars_names</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StrVec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the variable names.</span>
 
 <span class="sd">        :return: Variable names.</span>
 <span class="sd">        :rtype: StrVec</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">group</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">investments_groups</span><span class="p">])</span></div>
 
 
 <div class="viewcode-block" id="TimeSeriesLinearOptimalPowerFlowInvestmentProblem.objective_function">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.InvestmentsEvaluation.Problems.html#VeraGridEngine.Simulations.InvestmentsEvaluation.Problems.linear_opf_ts_problem.TimeSeriesLinearOptimalPowerFlowInvestmentProblem.objective_function">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">objective_function</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">|</span> <span class="n">IntVec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Evaluate one investment combination.</span>
 
 <span class="sd">        :param x: Decision vector encoded as year of entry.</span>
 <span class="sd">        :type x: Vec | IntVec</span>
 <span class="sd">        :return: Objective vector.</span>
 <span class="sd">        :rtype: Vec</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">x_int</span><span class="p">:</span> <span class="n">IntVec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
         <span class="n">x_min</span><span class="p">:</span> <span class="n">IntVec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x_min</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
         <span class="n">x_max</span><span class="p">:</span> <span class="n">IntVec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x_max</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
@@ -585,7 +586,7 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">return</span> <span class="n">penalty</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">&quot;Linear OPF investment evaluation failed&quot;</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">"Linear OPF investment evaluation failed"</span><span class="p">,</span>
                                   <span class="n">comment</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">err</span><span class="p">))</span>
             <span class="k">return</span> <span class="n">penalty</span>
         <span class="k">finally</span><span class="p">:</span>

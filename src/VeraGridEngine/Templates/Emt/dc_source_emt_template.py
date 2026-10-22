@@ -163,7 +163,8 @@ def get_dc_voltage_source_emt_template(vf: VarFactory,
     The source injects ``i = g * (Vsrc - Vdc)``.
 
     :param vf: EMT variable factory.
-    :param source_voltage_value: Fixed source voltage.
+    :param source_voltage_value: Fixed source voltage, or None to derive it
+        from the PF terminal voltage and current including the Norton drop.
     :param source_conductance_value: Norton conductance.
     :param name: Symbolic model name.
     :return: Configured EMT template.
@@ -177,13 +178,13 @@ def get_dc_voltage_source_emt_template(vf: VarFactory,
     i_dc: Var = vf.add_var(name=f"i_dc", reference=VarPowerFlowReferenceType.Idc)
     v_src: Var = vf.add_var(name=f"V_src")
     g_src: Var = vf.add_var(name=f"g_src")
+    templ.block.event_dict[g_src] = vf.add_const(float(source_conductance_value))
     if source_voltage_value is None:
         # A source voltage derived from the power-flow operating point is an
         # event-parameter expression, not a DAE initialization unknown.
         templ.block.event_dict[v_src] = v_dc + i_dc / g_src
     else:
         templ.block.event_dict[v_src] = vf.add_const(float(source_voltage_value))
-    templ.block.event_dict[g_src] = vf.add_const(float(source_conductance_value))
 
     templ.block.in_vars = [v_dc]
     templ.block.algebraic_vars = [i_dc]

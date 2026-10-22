@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Utils.Symbolic.bus_emt_template &mdash; VeraGrid 6.5.26 documentation</title>
+  <title>VeraGridEngine.Utils.Symbolic.bus_emt_template &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=c62e3d9e"></script>
+      <script src="../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/license.html">📜 License</a></li>
@@ -125,34 +126,34 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.bus_emt_template.BusEmtTemplate">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">BusEmtTemplate</span><span class="p">(</span><span class="n">EmtModelTemplate</span><span class="p">):</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;tpe&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;_block&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;v_DC&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;v_N&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;v_A&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;v_B&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;v_C&quot;</span><span class="p">,</span>
+        <span class="s2">"tpe"</span><span class="p">,</span>
+        <span class="s2">"_block"</span><span class="p">,</span>
+        <span class="s2">"v_DC"</span><span class="p">,</span>
+        <span class="s2">"v_N"</span><span class="p">,</span>
+        <span class="s2">"v_A"</span><span class="p">,</span>
+        <span class="s2">"v_B"</span><span class="p">,</span>
+        <span class="s2">"v_C"</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                  <span class="n">vf</span><span class="p">:</span> <span class="n">VarFactory</span><span class="p">,</span>
                  <span class="n">mask</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">bool</span><span class="p">],</span>
                  <span class="n">is_dc</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-                 <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;emt_bus_template&quot;</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+                 <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"emt_bus_template"</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Created the EMT Template of a Bus</span>
 <span class="sd">        :param vf: VarFactory</span>
-<span class="sd">        :param mask: list[bool] with true if the phase exist and false if it doesn&#39;t in the order [N,A,B,C]</span>
+<span class="sd">        :param mask: list[bool] with true if the phase exist and false if it doesn't in the order [N,A,B,C]</span>
 <span class="sd">        :param is_dc: True if it is a DC bus, else False</span>
 <span class="sd">        :param name: Name of the EMT Model</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">tpe</span><span class="p">:</span> <span class="n">DeviceType</span> <span class="o">=</span> <span class="n">DeviceType</span><span class="o">.</span><span class="n">BusDevice</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_block</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
         <span class="k">if</span> <span class="n">is_dc</span><span class="p">:</span>
             <span class="c1"># For a DC bus in EMT, we track the instantaneous DC voltage.</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">v_DC</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;v_DC&quot;</span><span class="p">,</span> <span class="n">reference</span><span class="o">=</span><span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">Vdc</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">v_DC</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">"v_DC"</span><span class="p">,</span> <span class="n">reference</span><span class="o">=</span><span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">Vdc</span><span class="p">)</span>
 
             <span class="bp">self</span><span class="o">.</span><span class="n">_block</span> <span class="o">=</span> <span class="n">Block</span><span class="p">(</span>
                 <span class="n">algebraic_vars</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">v_DC</span><span class="p">],</span>
@@ -174,14 +175,14 @@
             <span class="p">}</span>
 
         <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">v_N</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;v_N&quot;</span><span class="p">,</span> <span class="n">reference</span><span class="o">=</span><span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">v_N</span><span class="p">)</span> <span class="k">if</span> <span class="n">mask</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">else</span> <span class="kc">None</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">v_A</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;v_A&quot;</span><span class="p">,</span> <span class="n">reference</span><span class="o">=</span><span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">v_A</span><span class="p">)</span> <span class="k">if</span> <span class="n">mask</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">else</span> <span class="kc">None</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">v_B</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;v_B&quot;</span><span class="p">,</span> <span class="n">reference</span><span class="o">=</span><span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">v_B</span><span class="p">)</span> <span class="k">if</span> <span class="n">mask</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="k">else</span> <span class="kc">None</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">v_C</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;v_C&quot;</span><span class="p">,</span> <span class="n">reference</span><span class="o">=</span><span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">v_C</span><span class="p">)</span> <span class="k">if</span> <span class="n">mask</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="k">else</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">v_N</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">"v_N"</span><span class="p">,</span> <span class="n">reference</span><span class="o">=</span><span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">v_N</span><span class="p">)</span> <span class="k">if</span> <span class="n">mask</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">else</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">v_A</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">"v_A"</span><span class="p">,</span> <span class="n">reference</span><span class="o">=</span><span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">v_A</span><span class="p">)</span> <span class="k">if</span> <span class="n">mask</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">else</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">v_B</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">"v_B"</span><span class="p">,</span> <span class="n">reference</span><span class="o">=</span><span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">v_B</span><span class="p">)</span> <span class="k">if</span> <span class="n">mask</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="k">else</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">v_C</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">"v_C"</span><span class="p">,</span> <span class="n">reference</span><span class="o">=</span><span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">v_C</span><span class="p">)</span> <span class="k">if</span> <span class="n">mask</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="k">else</span> <span class="kc">None</span>
 
             <span class="n">v_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">v</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">v_N</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">v_A</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">v_B</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">v_C</span><span class="p">)</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">]</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">v_list</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Bus has no enabled phases&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Bus has no enabled phases"</span><span class="p">)</span>
 
             <span class="bp">self</span><span class="o">.</span><span class="n">_block</span> <span class="o">=</span> <span class="n">Block</span><span class="p">(</span>
                 <span class="n">algebraic_vars</span><span class="o">=</span><span class="n">v_list</span><span class="p">,</span>
@@ -200,10 +201,10 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">block</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Block</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        block</span>
 <span class="sd">        :return: Block</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_block</span></div>
 
 
@@ -212,13 +213,13 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">get_bus_mask</span><span class="p">(</span><span class="n">grid</span><span class="p">:</span> <span class="n">MultiCircuit</span><span class="p">,</span>
                  <span class="n">bus</span><span class="p">:</span> <span class="n">Bus</span><span class="p">,</span>
                  <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span><span class="o">|</span><span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Get de bus mask according to the branch phases that are connected to that bus.</span>
 <span class="sd">    :param grid: Multicircuit</span>
 <span class="sd">    :param bus: Bus</span>
 <span class="sd">    :param logger: logger</span>
 <span class="sd">    :return: mask [bool,bool,bool,bool]</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">mask</span> <span class="o">=</span> <span class="p">[</span><span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">]</span>  <span class="c1"># [N, A, B, C]</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">bus</span><span class="o">.</span><span class="n">is_dc</span><span class="p">:</span>
@@ -271,28 +272,28 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">get_bus_emt_template</span><span class="p">(</span><span class="n">grid</span><span class="p">:</span> <span class="n">MultiCircuit</span><span class="p">,</span>
                          <span class="n">bus</span><span class="p">:</span> <span class="n">Bus</span><span class="p">,</span>
                          <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span><span class="o">|</span><span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Initialize 3ph bus block</span>
 <span class="sd">    A bus will have the phases of the branches connected to it</span>
 <span class="sd">    :param grid: Multicircuit</span>
 <span class="sd">    :param bus: Bus</span>
 <span class="sd">    :param logger: logger</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">vf</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">var_factory</span>
     <span class="n">mask</span> <span class="o">=</span> <span class="n">get_bus_mask</span><span class="p">(</span><span class="n">grid</span><span class="o">=</span><span class="n">grid</span><span class="p">,</span>
                         <span class="n">bus</span><span class="o">=</span><span class="n">bus</span><span class="p">,</span>
                         <span class="n">logger</span><span class="o">=</span> <span class="n">logger</span><span class="p">)</span>
     <span class="c1"># choose template depending on the number of phases</span>
-    <span class="n">bus</span><span class="o">.</span><span class="n">emt_model</span> <span class="o">=</span> <span class="n">BusEmtTemplate</span><span class="p">(</span><span class="n">vf</span><span class="o">=</span><span class="n">vf</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">mask</span><span class="p">,</span> <span class="n">is_dc</span><span class="o">=</span><span class="n">bus</span><span class="o">.</span><span class="n">is_dc</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">bus</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">_emt&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">block</span></div>
+    <span class="n">bus</span><span class="o">.</span><span class="n">emt_model</span> <span class="o">=</span> <span class="n">BusEmtTemplate</span><span class="p">(</span><span class="n">vf</span><span class="o">=</span><span class="n">vf</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">mask</span><span class="p">,</span> <span class="n">is_dc</span><span class="o">=</span><span class="n">bus</span><span class="o">.</span><span class="n">is_dc</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">bus</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">_emt"</span><span class="p">)</span><span class="o">.</span><span class="n">block</span></div>
 
 
 <div class="viewcode-block" id="get_bus_emt_algebraic_vars">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.bus_emt_template.get_bus_emt_algebraic_vars">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_bus_emt_algebraic_vars</span><span class="p">(</span><span class="n">bus_emt_model</span><span class="p">:</span> <span class="n">Block</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span>
     <span class="n">Optional</span><span class="p">[</span><span class="n">Var</span><span class="p">],</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Var</span><span class="p">],</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Var</span><span class="p">],</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Var</span><span class="p">]]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Return the EMT bus algebraic voltage variables.</span>
 
 <span class="sd">    For AC buses:</span>
@@ -304,7 +305,7 @@
 
 <span class="sd">    :param bus_emt_model: EMT bus block</span>
 <span class="sd">    :return: Tuple with four positions to preserve a stable API</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">external_mapping</span> <span class="o">=</span> <span class="n">bus_emt_model</span><span class="o">.</span><span class="n">external_mapping</span>
 
     <span class="c1"># DC bus</span>
@@ -319,7 +320,7 @@
     <span class="n">v_c</span> <span class="o">=</span> <span class="n">external_mapping</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">v_C</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">v_n</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">v_a</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">v_b</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">v_c</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid EMT bus model: no voltage algebraic variables found&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Invalid EMT bus model: no voltage algebraic variables found"</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">v_n</span><span class="p">,</span> <span class="n">v_a</span><span class="p">,</span> <span class="n">v_b</span><span class="p">,</span> <span class="n">v_c</span></div>
 

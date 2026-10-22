@@ -22,7 +22,7 @@ from VeraGridEngine.Simulations.ContingencyAnalysis.Methods.nonlinear_contingenc
 from VeraGridEngine.Simulations.ContingencyAnalysis.Methods.linear_contingency_analysis import (
     linear_contingency_analysis)
 from VeraGridEngine.Simulations.ContingencyAnalysis.Methods.helm_contingency_analysis import helm_contingency_analysis
-from VeraGridEngine.Compilers.circuit_to_pgm import PGM_AVAILABLE
+from VeraGridEngine.Compilers.circuit_to_pgm import PGM_AVAILABLE, PGM_UNAVAILABLE_REASON
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from VeraGridEngine.Simulations.OPF.opf_results import OptimalPowerFlowResults
@@ -118,7 +118,7 @@ class ContingencyAnalysisDriver(DriverTemplate):
         """
         if self.engine == EngineType.PGM and not PGM_AVAILABLE:
             self.engine = EngineType.VeraGrid
-            self.logger.add_warning('Tried to use PGM, but failed back to VeraGrid')
+            self.logger.add_warning(f'PGM unavailable: {PGM_UNAVAILABLE_REASON}; falling back to VeraGrid')
 
         if self.results.Sbus.shape[0] == 0:
             return self.results

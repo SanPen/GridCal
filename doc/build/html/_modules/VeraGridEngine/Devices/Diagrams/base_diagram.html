@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Devices.Diagrams.base_diagram &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Devices.Diagrams.base_diagram &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/license.html">📜 License</a></li>
@@ -132,12 +133,12 @@
 <div class="viewcode-block" id="get_layout_anchor">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Diagrams.html#VeraGridEngine.Devices.Diagrams.base_diagram.get_layout_anchor">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_layout_anchor</span><span class="p">(</span><span class="n">api_object</span><span class="p">:</span> <span class="n">ALL_DEV_TYPES</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ALL_DEV_TYPES</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Return the electrical anchor used to infer schematic layout metadata.</span>
 
 <span class="sd">    :param api_object: Diagram node API object.</span>
 <span class="sd">    :return: Anchor object carrying the electrical metadata for layout purposes.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">anchor</span><span class="p">:</span> <span class="n">ALL_DEV_TYPES</span> <span class="o">=</span> <span class="n">api_object</span>
 
     <span class="c1"># Fluid nodes are placed using the electrical bus they are attached to.</span>
@@ -170,12 +171,12 @@
 <div class="viewcode-block" id="get_layout_voltage_kv">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Diagrams.html#VeraGridEngine.Devices.Diagrams.base_diagram.get_layout_voltage_kv">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_layout_voltage_kv</span><span class="p">(</span><span class="n">api_object</span><span class="p">:</span> <span class="n">ALL_DEV_TYPES</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Get the voltage used to assign schematic layers.</span>
 
 <span class="sd">    :param api_object: Diagram node API object.</span>
 <span class="sd">    :return: Voltage in kV used by the automatic layout.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">anchor</span><span class="p">:</span> <span class="n">ALL_DEV_TYPES</span> <span class="o">=</span> <span class="n">get_layout_anchor</span><span class="p">(</span><span class="n">api_object</span><span class="o">=</span><span class="n">api_object</span><span class="p">)</span>
     <span class="n">voltage_kv</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span>
 
@@ -201,12 +202,12 @@
 <div class="viewcode-block" id="get_layout_is_slack">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Diagrams.html#VeraGridEngine.Devices.Diagrams.base_diagram.get_layout_is_slack">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_layout_is_slack</span><span class="p">(</span><span class="n">api_object</span><span class="p">:</span> <span class="n">ALL_DEV_TYPES</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Determine whether one diagram node should be treated as the island root candidate.</span>
 
 <span class="sd">    :param api_object: Diagram node API object.</span>
 <span class="sd">    :return: ``True`` when the node is electrically slack.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">anchor</span><span class="p">:</span> <span class="n">ALL_DEV_TYPES</span> <span class="o">=</span> <span class="n">get_layout_anchor</span><span class="p">(</span><span class="n">api_object</span><span class="o">=</span><span class="n">api_object</span><span class="p">)</span>
     <span class="n">is_slack</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
 
@@ -222,12 +223,12 @@
 <div class="viewcode-block" id="get_layout_is_dc">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Diagrams.html#VeraGridEngine.Devices.Diagrams.base_diagram.get_layout_is_dc">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_layout_is_dc</span><span class="p">(</span><span class="n">api_object</span><span class="p">:</span> <span class="n">ALL_DEV_TYPES</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Determine whether one diagram node belongs to the DC side of the network.</span>
 
 <span class="sd">    :param api_object: Diagram node API object.</span>
 <span class="sd">    :return: ``True`` when the node is DC.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">anchor</span><span class="p">:</span> <span class="n">ALL_DEV_TYPES</span> <span class="o">=</span> <span class="n">get_layout_anchor</span><span class="p">(</span><span class="n">api_object</span><span class="o">=</span><span class="n">api_object</span><span class="p">)</span>
     <span class="n">is_dc</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
 
@@ -243,27 +244,27 @@
 <div class="viewcode-block" id="get_layout_substation_name">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Diagrams.html#VeraGridEngine.Devices.Diagrams.base_diagram.get_layout_substation_name">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_layout_substation_name</span><span class="p">(</span><span class="n">api_object</span><span class="p">:</span> <span class="n">ALL_DEV_TYPES</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Get the substation name used to stabilize the ordering inside one layer.</span>
 
 <span class="sd">    :param api_object: Diagram node API object.</span>
 <span class="sd">    :return: Substation name or an empty string.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">anchor</span><span class="p">:</span> <span class="n">ALL_DEV_TYPES</span> <span class="o">=</span> <span class="n">get_layout_anchor</span><span class="p">(</span><span class="n">api_object</span><span class="o">=</span><span class="n">api_object</span><span class="p">)</span>
-    <span class="n">substation_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="n">substation_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span>
 
     <span class="k">if</span> <span class="n">anchor</span><span class="o">.</span><span class="n">device_type</span> <span class="o">==</span> <span class="n">DeviceType</span><span class="o">.</span><span class="n">BusDevice</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">anchor</span><span class="o">.</span><span class="n">substation</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">substation_name</span> <span class="o">=</span> <span class="n">anchor</span><span class="o">.</span><span class="n">substation</span><span class="o">.</span><span class="n">name</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">substation_name</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+            <span class="n">substation_name</span> <span class="o">=</span> <span class="s2">""</span>
     <span class="k">elif</span> <span class="n">anchor</span><span class="o">.</span><span class="n">device_type</span> <span class="o">==</span> <span class="n">DeviceType</span><span class="o">.</span><span class="n">BusBarDevice</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">anchor</span><span class="o">.</span><span class="n">voltage_level</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">anchor</span><span class="o">.</span><span class="n">voltage_level</span><span class="o">.</span><span class="n">substation</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">substation_name</span> <span class="o">=</span> <span class="n">anchor</span><span class="o">.</span><span class="n">voltage_level</span><span class="o">.</span><span class="n">substation</span><span class="o">.</span><span class="n">name</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">substation_name</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+            <span class="n">substation_name</span> <span class="o">=</span> <span class="s2">""</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">substation_name</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="n">substation_name</span> <span class="o">=</span> <span class="s2">""</span>
 
     <span class="k">return</span> <span class="n">substation_name</span></div>
 
@@ -272,13 +273,13 @@
 <div class="viewcode-block" id="add_node_layout_data">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Diagrams.html#VeraGridEngine.Devices.Diagrams.base_diagram.add_node_layout_data">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">add_node_layout_data</span><span class="p">(</span><span class="n">graph</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">MultiDiGraph</span><span class="p">,</span> <span class="n">node_index</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">api_object</span><span class="p">:</span> <span class="n">ALL_DEV_TYPES</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Add one node together with the electrical metadata needed by the schematic layouts.</span>
 
 <span class="sd">    :param graph: Diagram graph under construction.</span>
 <span class="sd">    :param node_index: Integer node identifier.</span>
 <span class="sd">    :param api_object: Diagram node API object.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">device_tpe</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">api_object</span><span class="o">.</span><span class="n">device_type</span><span class="o">.</span><span class="n">value</span>
     <span class="n">voltage_kv</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">get_layout_voltage_kv</span><span class="p">(</span><span class="n">api_object</span><span class="o">=</span><span class="n">api_object</span><span class="p">)</span>
     <span class="n">is_slack</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">get_layout_is_slack</span><span class="p">(</span><span class="n">api_object</span><span class="o">=</span><span class="n">api_object</span><span class="p">)</span>
@@ -302,12 +303,12 @@
 <div class="viewcode-block" id="get_branch_endpoint_voltages">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Diagrams.html#VeraGridEngine.Devices.Diagrams.base_diagram.get_branch_endpoint_voltages">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_branch_endpoint_voltages</span><span class="p">(</span><span class="n">branch</span><span class="p">:</span> <span class="n">ALL_DEV_TYPES</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Get the endpoint voltages used to detect inter-level links.</span>
 
 <span class="sd">    :param branch: Branch API object.</span>
 <span class="sd">    :return: Pair of endpoint voltages in kV.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">source_voltage_kv</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span>
     <span class="n">target_voltage_kv</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span>
 
@@ -333,7 +334,7 @@
                            <span class="n">branch</span><span class="p">:</span> <span class="n">ALL_DEV_TYPES</span><span class="p">,</span>
                            <span class="n">dev_tpe</span><span class="p">:</span> <span class="n">DeviceType</span><span class="p">,</span>
                            <span class="n">raw_impedance</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Add one branch edge with both physical distance and spring attraction metadata.</span>
 
 <span class="sd">    :param graph: Diagram graph under construction.</span>
@@ -342,7 +343,7 @@
 <span class="sd">    :param branch: Branch API object.</span>
 <span class="sd">    :param dev_tpe: Branch device type.</span>
 <span class="sd">    :param raw_impedance: Physical distance surrogate for impedance-aware layouts.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">impedance</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">raw_impedance</span><span class="p">)),</span> <span class="mf">1e-6</span><span class="p">)</span>
     <span class="n">strength</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">/</span> <span class="n">impedance</span><span class="p">,</span> <span class="mf">50.0</span><span class="p">)</span>
     <span class="n">source_voltage_kv</span><span class="p">:</span> <span class="nb">float</span>
@@ -366,20 +367,20 @@
 <div class="viewcode-block" id="PointsGroup">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Diagrams.html#VeraGridEngine.Devices.Diagrams.base_diagram.PointsGroup">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">PointsGroup</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Diagram</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s1">&#39;name&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;locations&#39;</span><span class="p">,</span>
+        <span class="s1">'name'</span><span class="p">,</span>
+        <span class="s1">'locations'</span><span class="p">,</span>
     <span class="p">)</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">''</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :param name: Diagram name</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
 
         <span class="c1"># device_type: {device uuid: {x, y, h, w, r}}</span>
@@ -388,23 +389,23 @@
 <div class="viewcode-block" id="PointsGroup.set_point">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Diagrams.html#VeraGridEngine.Devices.Diagrams.base_diagram.PointsGroup.set_point">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">set_point</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device</span><span class="p">:</span> <span class="n">ALL_DEV_TYPES</span><span class="p">,</span> <span class="n">location</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">GraphicLocation</span><span class="p">,</span> <span class="n">MapLocation</span><span class="p">]):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :param device:</span>
 <span class="sd">        :param location:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">locations</span><span class="p">[</span><span class="n">device</span><span class="o">.</span><span class="n">idtag</span><span class="p">]</span> <span class="o">=</span> <span class="n">location</span></div>
 
 
 <div class="viewcode-block" id="PointsGroup.delete_device">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Diagrams.html#VeraGridEngine.Devices.Diagrams.base_diagram.PointsGroup.delete_device">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">delete_device</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device</span><span class="p">:</span> <span class="n">ALL_DEV_TYPES</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Delete location</span>
 <span class="sd">        :param device:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">loc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">query_point</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">loc</span><span class="p">:</span>
@@ -416,21 +417,21 @@
 <div class="viewcode-block" id="PointsGroup.query_point">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Diagrams.html#VeraGridEngine.Devices.Diagrams.base_diagram.PointsGroup.query_point">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">query_point</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device</span><span class="p">:</span> <span class="n">ALL_DEV_TYPES</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">GraphicLocation</span><span class="p">,</span> <span class="n">MapLocation</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :param device:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">locations</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">device</span><span class="o">.</span><span class="n">idtag</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="PointsGroup.get_dict">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Diagrams.html#VeraGridEngine.Devices.Diagrams.base_diagram.PointsGroup.get_dict">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="n">GraphicLocation</span><span class="p">,</span> <span class="n">MapLocation</span><span class="p">]]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">points</span> <span class="o">=</span> <span class="p">{</span><span class="n">idtag</span><span class="p">:</span> <span class="n">location</span><span class="o">.</span><span class="n">get_properties_dict</span><span class="p">()</span> <span class="k">for</span> <span class="n">idtag</span><span class="p">,</span> <span class="n">location</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">locations</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
 
         <span class="k">return</span> <span class="n">points</span></div>
@@ -438,14 +439,14 @@
 
 <div class="viewcode-block" id="PointsGroup.copy">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Diagrams.html#VeraGridEngine.Devices.Diagrams.base_diagram.PointsGroup.copy">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">ALL_DEV_TYPES</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;PointsGroup&quot;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">ALL_DEV_TYPES</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"PointsGroup"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Copy the locations while treating API objects as pointers.</span>
 
 <span class="sd">        If an object dictionary is supplied, locations are rebound to the matching</span>
 <span class="sd">        object in that dictionary by idtag. Otherwise, the current API object pointer</span>
 <span class="sd">        is preserved.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">cpy</span> <span class="o">=</span> <span class="n">PointsGroup</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
 
         <span class="k">for</span> <span class="n">idtag</span><span class="p">,</span> <span class="n">location</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">locations</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
@@ -458,10 +459,10 @@
         <span class="k">return</span> <span class="n">cpy</span></div>
 
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">__deepcopy__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">memo</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="s2">&quot;PointsGroup&quot;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">__deepcopy__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">memo</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="s2">"PointsGroup"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Deep-copy the group layout without deep-copying pointed API objects.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="nb">id</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="ow">in</span> <span class="n">memo</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">memo</span><span class="p">[</span><span class="nb">id</span><span class="p">(</span><span class="bp">self</span><span class="p">)]</span>
 
@@ -475,14 +476,14 @@
                    <span class="n">data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]],</span>
                    <span class="n">obj_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">ALL_DEV_TYPES</span><span class="p">],</span>
                    <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span><span class="p">,</span>
-                   <span class="n">category</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+                   <span class="n">category</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Parse file data ito this class</span>
 <span class="sd">        :param data: json dictionary</span>
 <span class="sd">        :param obj_dict: dictionary of relevant objects (idtag, object)</span>
 <span class="sd">        :param logger: Logger</span>
 <span class="sd">        :param category: category</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">locations</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
 
         <span class="k">for</span> <span class="n">idtag</span><span class="p">,</span> <span class="n">location</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
@@ -491,25 +492,25 @@
 
             <span class="k">if</span> <span class="n">api_object</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="c1"># locations with no API object are not created</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="s2">&quot;Diagram location could not find API object&quot;</span><span class="p">,</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="s2">"Diagram location could not find API object"</span><span class="p">,</span>
                                  <span class="n">device_class</span><span class="o">=</span><span class="n">category</span><span class="p">,</span>
                                  <span class="n">device</span><span class="o">=</span><span class="n">idtag</span><span class="p">,</span> <span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">if</span> <span class="s1">&#39;x&#39;</span> <span class="ow">in</span> <span class="n">location</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">locations</span><span class="p">[</span><span class="n">idtag</span><span class="p">]</span> <span class="o">=</span> <span class="n">GraphicLocation</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">location</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">],</span>
-                                                            <span class="n">y</span><span class="o">=</span><span class="n">location</span><span class="p">[</span><span class="s1">&#39;y&#39;</span><span class="p">],</span>
-                                                            <span class="n">w</span><span class="o">=</span><span class="n">location</span><span class="p">[</span><span class="s1">&#39;w&#39;</span><span class="p">],</span>
-                                                            <span class="n">h</span><span class="o">=</span><span class="n">location</span><span class="p">[</span><span class="s1">&#39;h&#39;</span><span class="p">],</span>
-                                                            <span class="n">r</span><span class="o">=</span><span class="n">location</span><span class="p">[</span><span class="s1">&#39;r&#39;</span><span class="p">],</span>
-                                                            <span class="n">poly_line</span><span class="o">=</span><span class="n">location</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;poly_line&#39;</span><span class="p">,</span> <span class="nb">list</span><span class="p">()),</span>
-                                                            <span class="n">layout_metadata</span><span class="o">=</span><span class="n">location</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;layout_metadata&#39;</span><span class="p">,</span> <span class="nb">dict</span><span class="p">()),</span>
-                                                            <span class="n">draw_labels</span><span class="o">=</span><span class="n">location</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;draw_labels&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">),</span>
+                <span class="k">if</span> <span class="s1">'x'</span> <span class="ow">in</span> <span class="n">location</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">locations</span><span class="p">[</span><span class="n">idtag</span><span class="p">]</span> <span class="o">=</span> <span class="n">GraphicLocation</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">location</span><span class="p">[</span><span class="s1">'x'</span><span class="p">],</span>
+                                                            <span class="n">y</span><span class="o">=</span><span class="n">location</span><span class="p">[</span><span class="s1">'y'</span><span class="p">],</span>
+                                                            <span class="n">w</span><span class="o">=</span><span class="n">location</span><span class="p">[</span><span class="s1">'w'</span><span class="p">],</span>
+                                                            <span class="n">h</span><span class="o">=</span><span class="n">location</span><span class="p">[</span><span class="s1">'h'</span><span class="p">],</span>
+                                                            <span class="n">r</span><span class="o">=</span><span class="n">location</span><span class="p">[</span><span class="s1">'r'</span><span class="p">],</span>
+                                                            <span class="n">poly_line</span><span class="o">=</span><span class="n">location</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'poly_line'</span><span class="p">,</span> <span class="nb">list</span><span class="p">()),</span>
+                                                            <span class="n">layout_metadata</span><span class="o">=</span><span class="n">location</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'layout_metadata'</span><span class="p">,</span> <span class="nb">dict</span><span class="p">()),</span>
+                                                            <span class="n">draw_labels</span><span class="o">=</span><span class="n">location</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'draw_labels'</span><span class="p">,</span> <span class="kc">True</span><span class="p">),</span>
                                                             <span class="n">api_object</span><span class="o">=</span><span class="n">api_object</span><span class="p">)</span>
-                <span class="k">if</span> <span class="s1">&#39;latitude&#39;</span> <span class="ow">in</span> <span class="n">location</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">locations</span><span class="p">[</span><span class="n">idtag</span><span class="p">]</span> <span class="o">=</span> <span class="n">MapLocation</span><span class="p">(</span><span class="n">latitude</span><span class="o">=</span><span class="n">location</span><span class="p">[</span><span class="s1">&#39;latitude&#39;</span><span class="p">],</span>
-                                                        <span class="n">longitude</span><span class="o">=</span><span class="n">location</span><span class="p">[</span><span class="s1">&#39;longitude&#39;</span><span class="p">],</span>
-                                                        <span class="n">altitude</span><span class="o">=</span><span class="n">location</span><span class="p">[</span><span class="s1">&#39;altitude&#39;</span><span class="p">],</span>
-                                                        <span class="n">draw_labels</span><span class="o">=</span><span class="n">location</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;draw_labels&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">),</span>
+                <span class="k">if</span> <span class="s1">'latitude'</span> <span class="ow">in</span> <span class="n">location</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">locations</span><span class="p">[</span><span class="n">idtag</span><span class="p">]</span> <span class="o">=</span> <span class="n">MapLocation</span><span class="p">(</span><span class="n">latitude</span><span class="o">=</span><span class="n">location</span><span class="p">[</span><span class="s1">'latitude'</span><span class="p">],</span>
+                                                        <span class="n">longitude</span><span class="o">=</span><span class="n">location</span><span class="p">[</span><span class="s1">'longitude'</span><span class="p">],</span>
+                                                        <span class="n">altitude</span><span class="o">=</span><span class="n">location</span><span class="p">[</span><span class="s1">'altitude'</span><span class="p">],</span>
+                                                        <span class="n">draw_labels</span><span class="o">=</span><span class="n">location</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'draw_labels'</span><span class="p">,</span> <span class="kc">True</span><span class="p">),</span>
                                                         <span class="n">api_object</span><span class="o">=</span><span class="n">api_object</span><span class="p">)</span></div>
 </div>
 
@@ -518,26 +519,26 @@
 <div class="viewcode-block" id="BaseDiagram">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Diagrams.html#VeraGridEngine.Devices.Diagrams.base_diagram.BaseDiagram">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">BaseDiagram</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Diagram</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s1">&#39;idtag&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;name&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;data&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;diagram_type&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_use_flow_based_width&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_min_branch_width&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_max_branch_width&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_min_bus_width&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_max_bus_width&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_arrow_size&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_use_api_colors&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_palette&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_default_bus_voltage&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_group&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_group_idtag&#39;</span><span class="p">,</span>
+        <span class="s1">'idtag'</span><span class="p">,</span>
+        <span class="s1">'name'</span><span class="p">,</span>
+        <span class="s1">'data'</span><span class="p">,</span>
+        <span class="s1">'diagram_type'</span><span class="p">,</span>
+        <span class="s1">'_use_flow_based_width'</span><span class="p">,</span>
+        <span class="s1">'_min_branch_width'</span><span class="p">,</span>
+        <span class="s1">'_max_branch_width'</span><span class="p">,</span>
+        <span class="s1">'_min_bus_width'</span><span class="p">,</span>
+        <span class="s1">'_max_bus_width'</span><span class="p">,</span>
+        <span class="s1">'_arrow_size'</span><span class="p">,</span>
+        <span class="s1">'_use_api_colors'</span><span class="p">,</span>
+        <span class="s1">'_palette'</span><span class="p">,</span>
+        <span class="s1">'_default_bus_voltage'</span><span class="p">,</span>
+        <span class="s1">'_group'</span><span class="p">,</span>
+        <span class="s1">'_group_idtag'</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
@@ -552,7 +553,7 @@
                  <span class="n">arrow_size</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
                  <span class="n">palette</span><span class="p">:</span> <span class="n">Colormaps</span> <span class="o">=</span> <span class="n">Colormaps</span><span class="o">.</span><span class="n">VeraGrid</span><span class="p">,</span>
                  <span class="n">default_bus_voltage</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">10</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :param idtag:</span>
 <span class="sd">        :param name:</span>
@@ -565,11 +566,11 @@
 <span class="sd">        :param arrow_size:</span>
 <span class="sd">        :param palette:</span>
 <span class="sd">        :param default_bus_voltage:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="n">idtag</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">idtag</span> <span class="o">=</span> <span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">()</span><span class="o">.</span><span class="n">hex</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">idtag</span> <span class="o">=</span> <span class="n">idtag</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">idtag</span> <span class="o">=</span> <span class="n">idtag</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">'_'</span><span class="p">,</span> <span class="s1">''</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">'-'</span><span class="p">,</span> <span class="s1">''</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
 
@@ -595,14 +596,14 @@
 
 <div class="viewcode-block" id="BaseDiagram.copy">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Diagrams.html#VeraGridEngine.Devices.Diagrams.base_diagram.BaseDiagram.copy">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">ALL_DEV_TYPES</span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;BaseDiagram&quot;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">ALL_DEV_TYPES</span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"BaseDiagram"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Copy the diagram layout while treating API objects as pointers.</span>
 
 <span class="sd">        :param obj_dict: Optional dictionary by device type and idtag used to rebind</span>
 <span class="sd">                         locations to objects in a target circuit.</span>
 <span class="sd">        :return: A copied diagram with detached layout containers.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">cpy</span><span class="p">:</span> <span class="n">BaseDiagram</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="fm">__new__</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">)</span>
         <span class="n">cpy</span><span class="o">.</span><span class="n">idtag</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">idtag</span>
         <span class="n">cpy</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span>
@@ -626,10 +627,10 @@
         <span class="k">return</span> <span class="n">cpy</span></div>
 
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">__deepcopy__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">memo</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="s2">&quot;BaseDiagram&quot;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">__deepcopy__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">memo</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="s2">"BaseDiagram"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Make generic deepcopy safe for diagrams by preserving API object pointers.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="nb">id</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="ow">in</span> <span class="n">memo</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">memo</span><span class="p">[</span><span class="nb">id</span><span class="p">(</span><span class="bp">self</span><span class="p">)]</span>
 
@@ -639,10 +640,10 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">use_flow_based_width</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_use_flow_based_width</span>
 
     <span class="nd">@use_flow_based_width</span><span class="o">.</span><span class="n">setter</span>
@@ -652,10 +653,10 @@
     <span class="c1"># min_branch_width property</span>
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">min_branch_width</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_min_branch_width</span>
 
     <span class="nd">@min_branch_width</span><span class="o">.</span><span class="n">setter</span>
@@ -665,10 +666,10 @@
     <span class="c1"># max_branch_width property</span>
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">max_branch_width</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_max_branch_width</span>
 
     <span class="nd">@max_branch_width</span><span class="o">.</span><span class="n">setter</span>
@@ -678,10 +679,10 @@
     <span class="c1"># min_bus_width property</span>
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">min_bus_width</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_min_bus_width</span>
 
     <span class="nd">@min_bus_width</span><span class="o">.</span><span class="n">setter</span>
@@ -690,10 +691,10 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">max_bus_width</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_max_bus_width</span>
 
     <span class="nd">@max_bus_width</span><span class="o">.</span><span class="n">setter</span>
@@ -702,10 +703,10 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">arrow_size</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_arrow_size</span>
 
     <span class="nd">@arrow_size</span><span class="o">.</span><span class="n">setter</span>
@@ -715,10 +716,10 @@
     <span class="c1"># palette property</span>
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">palette</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Colormaps</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_palette</span>
 
     <span class="nd">@palette</span><span class="o">.</span><span class="n">setter</span>
@@ -728,24 +729,24 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">group</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Any</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Parent folder/group of this diagram.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_group</span>
 
     <span class="nd">@group</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">group</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_group</span> <span class="o">=</span> <span class="n">value</span>
-        <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s1">&#39;idtag&#39;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s1">'idtag'</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_group_idtag</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">idtag</span>
 
     <span class="c1"># default_bus_voltage property</span>
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">default_bus_voltage</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_default_bus_voltage</span>
 
     <span class="nd">@default_bus_voltage</span><span class="o">.</span><span class="n">setter</span>
@@ -763,12 +764,12 @@
 <div class="viewcode-block" id="BaseDiagram.set_point">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Diagrams.html#VeraGridEngine.Devices.Diagrams.base_diagram.BaseDiagram.set_point">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">set_point</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device</span><span class="p">:</span> <span class="n">ALL_DEV_TYPES</span><span class="p">,</span> <span class="n">location</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">GraphicLocation</span><span class="p">,</span> <span class="n">MapLocation</span><span class="p">]):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :param device:</span>
 <span class="sd">        :param location:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># check if the category exists ...</span>
         <span class="n">d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">device</span><span class="o">.</span><span class="n">device_type</span><span class="o">.</span><span class="n">value</span><span class="p">),</span> <span class="kc">None</span><span class="p">)</span>
 
@@ -788,11 +789,11 @@
 <div class="viewcode-block" id="BaseDiagram.delete_device">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Diagrams.html#VeraGridEngine.Devices.Diagrams.base_diagram.BaseDiagram.delete_device">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">delete_device</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device</span><span class="p">:</span> <span class="n">ALL_DEV_TYPES</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">object</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :param device:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="n">device</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="c1"># check if the category exists ...</span>
             <span class="n">d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">device</span><span class="o">.</span><span class="n">device_type</span><span class="o">.</span><span class="n">value</span><span class="p">),</span> <span class="kc">None</span><span class="p">)</span>
@@ -801,7 +802,7 @@
                 <span class="c1"># the category does exist, delete_with_dialogue from it</span>
                 <span class="k">return</span> <span class="n">d</span><span class="o">.</span><span class="n">delete_device</span><span class="p">(</span><span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="c1"># not found so we&#39;re ok</span>
+                <span class="c1"># not found so we're ok</span>
                 <span class="k">return</span> <span class="kc">None</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">None</span></div>
@@ -810,11 +811,11 @@
 <div class="viewcode-block" id="BaseDiagram.query_point">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Diagrams.html#VeraGridEngine.Devices.Diagrams.base_diagram.BaseDiagram.query_point">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">query_point</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device</span><span class="p">:</span> <span class="n">ALL_DEV_TYPES</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">GraphicLocation</span><span class="p">,</span> <span class="n">MapLocation</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :param device:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># check if the category exists ...</span>
         <span class="n">group</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">device</span><span class="o">.</span><span class="n">device_type</span><span class="o">.</span><span class="n">value</span><span class="p">),</span> <span class="kc">None</span><span class="p">)</span>
 
@@ -828,11 +829,11 @@
 <div class="viewcode-block" id="BaseDiagram.query_by_type">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Diagrams.html#VeraGridEngine.Devices.Diagrams.base_diagram.BaseDiagram.query_by_type">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">query_by_type</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device_type</span><span class="p">:</span> <span class="n">DeviceType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">PointsGroup</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Query diagram by device type</span>
 <span class="sd">        :param device_type: DeviceType</span>
 <span class="sd">        :return: PointsGroup</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># check if the category exists ...</span>
         <span class="n">group</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">device_type</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
 
@@ -842,26 +843,26 @@
 <div class="viewcode-block" id="BaseDiagram.get_data_dict">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Diagrams.html#VeraGridEngine.Devices.Diagrams.base_diagram.BaseDiagram.get_data_dict">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_data_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="n">GraphicLocation</span><span class="p">,</span> <span class="n">MapLocation</span><span class="p">]]]]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        get the properties dictionary to save</span>
 <span class="sd">        :return: dictionary to serialize</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="n">category</span><span class="p">:</span> <span class="n">group</span><span class="o">.</span><span class="n">get_dict</span><span class="p">()</span> <span class="k">for</span> <span class="n">category</span><span class="p">,</span> <span class="n">group</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
 
         <span class="k">return</span> <span class="p">{</span>
-            <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">diagram_type</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
-            <span class="s1">&#39;idtag&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">idtag</span><span class="p">,</span>
-            <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
-            <span class="s2">&quot;use_flow_based_width&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_flow_based_width</span><span class="p">,</span>
-            <span class="s2">&quot;min_branch_width&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_branch_width</span><span class="p">,</span>
-            <span class="s2">&quot;max_branch_width&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_branch_width</span><span class="p">,</span>
-            <span class="s2">&quot;min_bus_width&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_bus_width</span><span class="p">,</span>
-            <span class="s2">&quot;max_bus_width&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_bus_width</span><span class="p">,</span>
-            <span class="s2">&quot;arrow_size&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">arrow_size</span><span class="p">,</span>
-            <span class="s2">&quot;use_api_colors&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_api_colors</span><span class="p">,</span>
-            <span class="s2">&quot;palette&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">palette</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
-            <span class="s2">&quot;default_bus_voltage&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_bus_voltage</span><span class="p">,</span>
-            <span class="s1">&#39;data&#39;</span><span class="p">:</span> <span class="n">data</span>
+            <span class="s1">'type'</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">diagram_type</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+            <span class="s1">'idtag'</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">idtag</span><span class="p">,</span>
+            <span class="s1">'name'</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+            <span class="s2">"use_flow_based_width"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_flow_based_width</span><span class="p">,</span>
+            <span class="s2">"min_branch_width"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_branch_width</span><span class="p">,</span>
+            <span class="s2">"max_branch_width"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_branch_width</span><span class="p">,</span>
+            <span class="s2">"min_bus_width"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_bus_width</span><span class="p">,</span>
+            <span class="s2">"max_bus_width"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_bus_width</span><span class="p">,</span>
+            <span class="s2">"arrow_size"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">arrow_size</span><span class="p">,</span>
+            <span class="s2">"use_api_colors"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_api_colors</span><span class="p">,</span>
+            <span class="s2">"palette"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">palette</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+            <span class="s2">"default_bus_voltage"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_bus_voltage</span><span class="p">,</span>
+            <span class="s1">'data'</span><span class="p">:</span> <span class="n">data</span>
         <span class="p">}</span></div>
 
 
@@ -871,41 +872,41 @@
                    <span class="n">data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]]]]],</span>
                    <span class="n">obj_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">ALL_DEV_TYPES</span><span class="p">]],</span>
                    <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Parse file data ito this class</span>
 <span class="sd">        :param data: json dictionary</span>
 <span class="sd">        :param obj_dict: dictionary of circuit objects by type to fincd the api objects back from file loading</span>
 <span class="sd">        :param logger: logger</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
 
-        <span class="k">if</span> <span class="s1">&#39;idtag&#39;</span> <span class="ow">in</span> <span class="n">data</span> <span class="ow">and</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;idtag&#39;</span><span class="p">]:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">idtag</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;idtag&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s1">'idtag'</span> <span class="ow">in</span> <span class="n">data</span> <span class="ow">and</span> <span class="n">data</span><span class="p">[</span><span class="s1">'idtag'</span><span class="p">]:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">idtag</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">'idtag'</span><span class="p">])</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">'_'</span><span class="p">,</span> <span class="s1">''</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">'-'</span><span class="p">,</span> <span class="s1">''</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">'name'</span><span class="p">]</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">use_flow_based_width</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;use_flow_based_width&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">min_branch_width</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;min_branch_width&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">max_branch_width</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;max_branch_width&quot;</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">min_bus_width</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;min_bus_width&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">max_bus_width</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;max_bus_width&quot;</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">arrow_size</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;arrow_size&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">use_flow_based_width</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"use_flow_based_width"</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">min_branch_width</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"min_branch_width"</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_branch_width</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"max_branch_width"</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">min_bus_width</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"min_bus_width"</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_bus_width</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"max_bus_width"</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">arrow_size</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"arrow_size"</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 
-        <span class="n">palette_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;palette&quot;</span><span class="p">,</span> <span class="s1">&#39;VeraGrid&#39;</span><span class="p">)</span>
+        <span class="n">palette_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"palette"</span><span class="p">,</span> <span class="s1">'VeraGrid'</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">palette_name</span> <span class="ow">in</span> <span class="p">[</span><span class="n">a</span><span class="o">.</span><span class="n">value</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">Colormaps</span><span class="p">]:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">palette</span> <span class="o">=</span> <span class="n">Colormaps</span><span class="p">(</span><span class="n">palette_name</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">palette</span> <span class="o">=</span> <span class="n">Colormaps</span><span class="o">.</span><span class="n">VeraGrid</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">default_bus_voltage</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;default_bus_voltage&quot;</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">use_api_colors</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;use_api_colors&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">default_bus_voltage</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"default_bus_voltage"</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">use_api_colors</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"use_api_colors"</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;bus-branch&#39;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="s1">'type'</span><span class="p">]</span> <span class="o">==</span> <span class="s1">'bus-branch'</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">diagram_type</span> <span class="o">=</span> <span class="n">DiagramType</span><span class="o">.</span><span class="n">Schematic</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">diagram_type</span> <span class="o">=</span> <span class="n">DiagramType</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">diagram_type</span> <span class="o">=</span> <span class="n">DiagramType</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">'type'</span><span class="p">])</span>
 
-        <span class="k">for</span> <span class="n">category</span><span class="p">,</span> <span class="n">loc_dict</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">category</span><span class="p">,</span> <span class="n">loc_dict</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="s1">'data'</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="n">points_group</span> <span class="o">=</span> <span class="n">PointsGroup</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">category</span><span class="p">)</span>
             <span class="n">points_group</span><span class="o">.</span><span class="n">parse_data</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">loc_dict</span><span class="p">,</span>
                                     <span class="n">obj_dict</span><span class="o">=</span><span class="n">obj_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">category</span><span class="p">,</span> <span class="nb">dict</span><span class="p">()),</span>
@@ -917,10 +918,10 @@
 <div class="viewcode-block" id="BaseDiagram.build_graph">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Diagrams.html#VeraGridEngine.Devices.Diagrams.base_diagram.BaseDiagram.build_graph">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">build_graph</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">nx</span><span class="o">.</span><span class="n">MultiDiGraph</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">Bus</span> <span class="o">|</span> <span class="n">FluidNode</span> <span class="o">|</span> <span class="n">Transformer3W</span> <span class="o">|</span> <span class="n">TransformerNW</span><span class="p">]]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Returns a networkx MultiDiGraph object of the grid.</span>
 <span class="sd">        return MultiDiGraph, List[BusGraphicObject</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">graph</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">MultiDiGraph</span><span class="p">()</span>
 
         <span class="n">node_devices</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>  <span class="c1"># visible node-like diagram anchors</span>
@@ -1027,7 +1028,7 @@
                         <span class="k">else</span><span class="p">:</span>
                             <span class="k">pass</span>
                     <span class="k">else</span><span class="p">:</span>
-                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Location has no API object :(&quot;</span><span class="p">)</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s2">"Location has no API object :("</span><span class="p">)</span>
 
         <span class="k">for</span> <span class="n">dev_type</span> <span class="ow">in</span> <span class="p">[</span><span class="n">DeviceType</span><span class="o">.</span><span class="n">DCLineDevice</span><span class="p">]:</span>
 
@@ -1126,10 +1127,10 @@
 <div class="viewcode-block" id="BaseDiagram.get_boundaries">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Diagrams.html#VeraGridEngine.Devices.Diagrams.base_diagram.BaseDiagram.get_boundaries">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_boundaries</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the graphic representation boundaries</span>
 <span class="sd">        :return: min_x, max_x, min_y, max_y</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">min_x</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">maxsize</span>
         <span class="n">min_y</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">maxsize</span>
         <span class="n">max_x</span> <span class="o">=</span> <span class="o">-</span><span class="n">sys</span><span class="o">.</span><span class="n">maxsize</span>
@@ -1157,7 +1158,7 @@
                              <span class="n">min_bus_width</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
                              <span class="n">max_bus_width</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
                              <span class="n">arrow_size</span><span class="o">=</span><span class="mi">20</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Set the size constraints</span>
 <span class="sd">        :param use_flow_based_width:</span>
 <span class="sd">        :param min_branch_width:</span>
@@ -1165,7 +1166,7 @@
 <span class="sd">        :param min_bus_width:</span>
 <span class="sd">        :param max_bus_width:</span>
 <span class="sd">        :param arrow_size:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">use_flow_based_width</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">use_flow_based_width</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">min_branch_width</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">min_branch_width</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">max_branch_width</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">max_branch_width</span>
@@ -1180,14 +1181,14 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Diagrams.html#VeraGridEngine.Devices.Diagrams.base_diagram.copy_diagrams">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">copy_diagrams</span><span class="p">(</span><span class="n">diagrams</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
                   <span class="n">obj_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">ALL_DEV_TYPES</span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Copy diagrams while treating API objects as pointers.</span>
 
 <span class="sd">    :param diagrams: Diagrams list or DiagramTree to copy.</span>
 <span class="sd">    :param obj_dict: Optional target circuit object dictionary used to rebind pointers.</span>
 <span class="sd">    :return: Copied diagrams or DiagramTree.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">diagrams</span><span class="p">,</span> <span class="s2">&quot;copy&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">callable</span><span class="p">(</span><span class="n">diagrams</span><span class="o">.</span><span class="n">copy</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">diagrams</span><span class="p">,</span> <span class="s2">&quot;folders&quot;</span><span class="p">):</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">diagrams</span><span class="p">,</span> <span class="s2">"copy"</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">callable</span><span class="p">(</span><span class="n">diagrams</span><span class="o">.</span><span class="n">copy</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">diagrams</span><span class="p">,</span> <span class="s2">"folders"</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">diagrams</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">obj_dict</span><span class="o">=</span><span class="n">obj_dict</span><span class="p">)</span>
     <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">diagrams</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
         <span class="k">return</span> <span class="p">[</span><span class="n">diagram</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">obj_dict</span><span class="o">=</span><span class="n">obj_dict</span><span class="p">)</span> <span class="k">for</span> <span class="n">diagram</span> <span class="ow">in</span> <span class="n">diagrams</span><span class="p">]</span>

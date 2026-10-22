@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 import scipy.sparse as sp
 
-from VeraGridEngine.enumerations import ParamPowerFlowReferenceType
+from VeraGridEngine.enumerations import DynamicEventTransitionType, ParamPowerFlowReferenceType
 from VeraGridEngine.Devices import MultiCircuit
 from VeraGridEngine.Utils.Symbolic.symbolic import (Var, Const, Expr, piecewise)
 from VeraGridEngine.Utils.Symbolic.compiled_functions import SymbolicJacobian
@@ -19,21 +19,35 @@ from VeraGridEngine.enumerations import VarPowerFlowReferenceType, RmsInitializa
 from VeraGridEngine.basic_structures import Vec, ObjVec, BoolVec, Logger
 from VeraGridEngine.Simulations.PowerFlow.power_flow_driver import PowerFlowResults
 from VeraGridEngine.Simulations.Rms.rms_options import RmsOptions
-from VeraGridEngine.Simulations.Rms.initialization import init_pseudo_transient
+from VeraGridEngine.Simulations.Rms.initialization import init_pseudo_transient, _select_rms_initialization_method
+from VeraGridEngine.Simulations.Rms.initialization_rms import (
+    project_initial_algebraic_state, run_rms_consistent_initialization,
+)
 from VeraGridEngine.Utils.Symbolic.explicit_initialization_symbolic import (
     build_rms_single_equation_compiler,
     init_explicit_common,
 )
 from VeraGridEngine.Simulations.Rms.problems.rms_problem_template import RmsProblemTemplate
+from VeraGridEngine.Simulations.Rms.problems.rms_problem_dae import (
+    _build_runtime_expression_from_single_rms_event,
+    _evaluate_rms_runtime_parameter_value_from_events,
+)
 from VeraGridEngine.Simulations.Rms.problems.rms_terminal_power_assembly import (
     assemble_rms_mapped_power_references,
     convert_rms_ac_power_balance_to_current_balance,
 )
 from VeraGridEngine.Devices.Events.rms_events_group import RmsEventsGroup
+from VeraGridEngine.Devices.Events.rms_event import RmsEvent
 from VeraGridEngine.Devices.types import ALL_DEV_TYPES
 from VeraGridEngine.Devices.Substation.bus import Bus
 from VeraGridEngine.Utils.Symbolic.jit_compiler import RMSCompiler
+from VeraGridEngine.Devices.Branches.line import Line
 from VeraGridEngine.Devices.Branches.transformer import Transformer2W
+from VeraGridEngine.Devices.Injections.load import Load
+from VeraGridEngine.Devices.Dynamic.static_parameter_mapping_unified import (
+    assign_static_api_object_mapping_for_device,
+    get_api_parameter_initial_value_by_uid,
+)
 from VeraGridEngine.Simulations.driver_template import DummySignal
 from VeraGridEngine.IO.fmu.co_simulation import (
     advance_rms_fmu_cs_devices,
@@ -131,6 +145,7 @@ class RmsProblemPhasor(RmsProblemTemplate):
         "sys_block",
         "sys_vars",
         "init_guess",
+        "_static_parameters_values_mapping",
         "Sf",
         "St",
         "_state_vars",
@@ -143,6 +158,8 @@ class RmsProblemPhasor(RmsProblemTemplate):
         "_algebraic_eqs",
         "_event_parameters_eqs",
         "_event_parameters_eqs0",
+        "event_params_init_dict",
+        "_continuous_runtime_events",
         "_uid2idx_vars",
         "_uid2idx_diff",
         "_uid2idx_params",
@@ -182,16 +199,22 @@ class RmsProblemPhasor(RmsProblemTemplate):
                  grid: MultiCircuit,
                  options: RmsOptions,
                  pf_results: PowerFlowResults | None,
-                 progress_signal: DummySignal | None = None):
-        """
+                 progress_signal: DummySignal | None = None,
+                 logger: Logger | None = None) -> None:
+        """Assemble the phasor RMS problem and retain the caller's diagnostics.
 
-        :param grid:
-        :param options:
-        :param pf_results:
+        :param grid: Physical network whose assigned RMS Blocks are assembled.
+        :param options: RMS formulation and initialization configuration.
+        :param pf_results: Existing power-flow initialization data; the current
+            assembly requires a populated result despite its legacy optional type.
+        :param progress_signal: Optional caller-owned numeric progress signal.
+        :param logger: Caller-owned diagnostics; when absent, create a local Logger.
+        :return: None; initialize the existing phasor problem instance.
         """
         super().__init__()
 
-        self.logger = Logger()
+        # Keep constructor diagnostics in the logger already owned by the driver.
+        self.logger: Logger = logger if logger is not None else Logger()
         self.progress_signal = progress_signal
         self.grid: MultiCircuit = grid
         self.power_flow_results: PowerFlowResults = pf_results
@@ -201,6 +224,7 @@ class RmsProblemPhasor(RmsProblemTemplate):
 
         # this is the general init guess that will contain all the variables init value
         self.init_guess: Dict[int, float] = dict()
+        self._static_parameters_values_mapping: Dict[Var, Const] = dict()
         self.sys_block: Block = Block(children=[], in_vars=[])
 
         self._algebraic_vars: List[Var] = list()
@@ -270,42 +294,8 @@ class RmsProblemPhasor(RmsProblemTemplate):
         self._n_event_params = 0
         self._n_diff = 0
 
-        event_params_init_dict: Dict[int, float | int | complex | None] = dict()
+        self.event_params_init_dict: Dict[int, float | int | complex | None] = dict()
         diff_init_guess: Dict[int, float | int | complex | None] = dict()
-
-        def run_explicit_initialization(mdl: Block) -> None:
-            """Initialize one phasor model through the shared symbolic core."""
-            nonlocal diff_init_guess
-            sys_diff_vars: Dict[int, Var] = {
-                diff_var.uid: diff_var for diff_var in self._diff_vars
-            }
-            rms_compiler_init = RMSCompiler(
-                variables=list(self.sys_vars.values()),
-                diff_vars=list(sys_diff_vars.values()),
-                v_params=self._variable_parameters,
-                c_params=self._constant_parameters,
-                compiler_names_dict=self._compiler_names_dict,
-            )
-            self.init_guess, diff_init_guess = init_explicit_common(
-                mdl=mdl,
-                sys_vars=self.sys_vars,
-                sys_diff_vars=sys_diff_vars,
-                variable_parameters=self._variable_parameters,
-                event_parameters_eqs=self._event_parameters_eqs,
-                constant_parameters=self._constant_parameters,
-                init_guess=self.init_guess,
-                event_param_init_dict=event_params_init_dict,
-                diff_init_guess=diff_init_guess,
-                uid2idx_vars=self._uid2idx_vars,
-                uid2idx_diff=self._uid2idx_diff,
-                uid2idx_params=self._uid2idx_params,
-                uid2idx_event_params=self._uid2idx_event_params,
-                params_array=self._parameters_values,
-                compile_single_equation=build_rms_single_equation_compiler(
-                    rms_compiler=rms_compiler_init,
-                ),
-                verbose=bool(self.options.verbose > 0),
-            )
 
         ######################################## Initialize devices ########################################
 
@@ -359,6 +349,17 @@ class RmsProblemPhasor(RmsProblemTemplate):
                 elm.rms_model.api_obj_mapping[ParamPowerFlowReferenceType.b]] = Const(b_val)
                 elm.rms_model.parameters[
                 elm.rms_model.api_obj_mapping[ParamPowerFlowReferenceType.bsh]] = Const(bsh_val)
+
+                # Line.G is already total system-pu shunt conductance. Supply
+                # its declared slot with the same inactive gate as R/X/B so the
+                # unchanged half-shunt law remains consistent with power flow.
+                if isinstance(elm, Line) and ParamPowerFlowReferenceType.shunt_g_pu in elm.rms_model.api_obj_mapping:
+                    shunt_g_value: float = active_factor * float(elm.G)
+                    elm.rms_model.parameters[
+                        elm.rms_model.api_obj_mapping[ParamPowerFlowReferenceType.shunt_g_pu]
+                    ] = Const(shunt_g_value)
+                else:
+                    pass
 
                 if isinstance(elm, Transformer2W) and ParamPowerFlowReferenceType.gFe in elm.rms_model.api_obj_mapping:
                     g_fe_val = active_factor * float(elm.G)
@@ -445,8 +446,33 @@ class RmsProblemPhasor(RmsProblemTemplate):
                 # Run explicit initialization for branches to solve algebraic equations
                 if isinstance(elm, Transformer2W):
 
-                    if self.options.initialization_method == RmsInitializationMethod.Explicit:
-                        run_explicit_initialization(mdl=elm.rms_model)
+                    initialization_method: RmsInitializationMethod = _select_rms_initialization_method(
+                        configured_method=self.options.initialization_method, mdl=elm.rms_model,
+                        init_guess=self.init_guess, uid2idx_vars=self._uid2idx_vars)
+                    if initialization_method in (RmsInitializationMethod.Explicit, RmsInitializationMethod.ConsistentNewton):
+                        diff_init_guess = self._run_explicit_initialization(mdl=elm.rms_model, derivative_guess=diff_init_guess)
+
+                    elif initialization_method == RmsInitializationMethod.PseudoTransient:
+                        self.init_guess = init_pseudo_transient(
+                            mdl=elm.rms_model,
+                            sys_vars=self.sys_vars,
+                            variable_parameters=self._variable_parameters,
+                            event_parameters_eqs=self._event_parameters_eqs,
+                            constant_parameters=self._constant_parameters,
+                            init_guess=self.init_guess,
+                            uid2idx_vars=self._uid2idx_vars,
+                            uid2idx_params=self._uid2idx_params,
+                            uid2idx_event_params=self._uid2idx_event_params,
+                            compiler_names_dict=self._compiler_names_dict,
+                            alias_names_dict=self._alias_names_dict,
+                            VARIABLE_PARAMS_NAME=self.VARIABLE_PARAMS_NAME,
+                            TIME_NAME=self.TIME_NAME,
+                            VARS_NAME=self.VARS_NAME,
+                            DIFF_NAME=self.DIFF_NAME,
+                            CONSTANT_PARAMS_NAME=self.CONSTANT_PARAMS_NAME,
+                        )
+                    else:
+                        raise ValueError("Not implemented initialization method")
 
                 # add model to system block
                 self.sys_block.add(elm.rms_model)
@@ -572,12 +598,35 @@ class RmsProblemPhasor(RmsProblemTemplate):
                 elm.rms_model.unify_blocks()
 
                 # find init values for the variables of this model
-                if self.options.initialization_method == RmsInitializationMethod.Explicit:
-                    run_explicit_initialization(mdl=elm.rms_model)
+                initialization_method: RmsInitializationMethod = _select_rms_initialization_method(
+                    configured_method=self.options.initialization_method, mdl=elm.rms_model,
+                    init_guess=self.init_guess, uid2idx_vars=self._uid2idx_vars)
+                if initialization_method in (RmsInitializationMethod.Explicit, RmsInitializationMethod.ConsistentNewton):
+                    diff_init_guess = self._run_explicit_initialization(mdl=elm.rms_model, derivative_guess=diff_init_guess)
+                elif initialization_method == RmsInitializationMethod.PseudoTransient:
+                    self.init_guess = init_pseudo_transient(
+                        mdl=elm.rms_model,
+                        sys_vars=self.sys_vars,
+                        variable_parameters=self._variable_parameters,
+                        event_parameters_eqs=self._event_parameters_eqs,
+                        constant_parameters=self._constant_parameters,
+                        init_guess=self.init_guess,
+                        uid2idx_vars=self._uid2idx_vars,
+                        uid2idx_params=self._uid2idx_params,
+                        uid2idx_event_params=self._uid2idx_event_params,
+                        compiler_names_dict=self._compiler_names_dict,
+                        alias_names_dict=self._alias_names_dict,
+                        VARIABLE_PARAMS_NAME=self.VARIABLE_PARAMS_NAME,
+                        TIME_NAME=self.TIME_NAME,
+                        VARS_NAME=self.VARS_NAME,
+                        DIFF_NAME=self.DIFF_NAME,
+                        CONSTANT_PARAMS_NAME=self.CONSTANT_PARAMS_NAME,
+                    )
+
                 else:
                     raise ValueError("Not implemented initialization method")
-                # add model to system block
-                self.sys_block.add(elm.rms_model)
+                # PF seeding already registered this canonical VSC model.
+                # Initialization must not add a second procedural owner.
 
         injection_init_data = self.get_injection_init_data(bus_dict=bus_dict)
 
@@ -646,23 +695,49 @@ class RmsProblemPhasor(RmsProblemTemplate):
                 if elm.device_type == DeviceType.ShuntDevice:
                     elm.rms_model.parameters[elm.rms_model.api_obj_mapping[ParamPowerFlowReferenceType.g]] = Const(float(elm.G) / grid.Sbase)
                     elm.rms_model.parameters[elm.rms_model.api_obj_mapping[ParamPowerFlowReferenceType.b]] = Const(float(elm.B) / grid.Sbase)
+                # Capture owner-local power targets before flattening merges API
+                # enum keys from children. The shared provider owns balanced
+                # AC source-unit conversion and initial activity semantics.
+                if isinstance(elm, Load) and not elm.bus.is_dc:
+                    mapped_load_values: Dict[Var, Const] = dict()
+                    assign_static_api_object_mapping_for_device(
+                        grid=grid, device=elm, mdl=elm.rms_model,
+                        problem_mapping=mapped_load_values, logger=self.logger)
+                    owner_block: Block
+                    for owner_block in elm.rms_model.get_all_blocks():
+                        power_reference: ParamPowerFlowReferenceType
+                        for power_reference in (ParamPowerFlowReferenceType.Pl0, ParamPowerFlowReferenceType.Ql0):
+                            power_parameter: Var | None = owner_block.api_obj_mapping.get(power_reference, None)
+                            if power_parameter is not None:
+                                mapped_power_value: Const | None = get_api_parameter_initial_value_by_uid(
+                                    parameter=power_parameter, problem_mapping=mapped_load_values)
+                                if mapped_power_value is not None:
+                                    self._static_parameters_values_mapping[power_parameter] = mapped_power_value
+                                    # Explicit initialization reads declarations
+                                    # again; supply its existing UID seed channel
+                                    # so it preserves the selected runtime value.
+                                    self.event_params_init_dict[power_parameter.uid] = mapped_power_value.value
+                                else:
+                                    pass
+                            else:
+                                pass
+                    # Retain only P/Q constants for runtime registration, never
+                    # the broader temporary device mapping or source model.
+                    del mapped_load_values
+                else:
+                    pass
                 elm.rms_model.unify_blocks()
                 self.add_variables_to_compilation_dicts(elm, elm.rms_model)
                 register_rms_fmu_cs_device(self, elm, elm.rms_model)
                 register_rms_fmu_me_device(self, elm, elm.rms_model)
 
                 if elm.bus.is_dc:
-                    # DC models use the individual PF allocation. The aggregate
-                    # Sbus value would be repeated by every injection at the bus.
+                    # DC buses: use power directly if supported, otherwise skip
                     if VarPowerFlowReferenceType.P in elm.rms_model.external_mapping:
                         self.set_init_guess(elm.rms_model, VarPowerFlowReferenceType.P, Sdev.real)
-                    else:
-                        pass
                     if VarPowerFlowReferenceType.Ir in elm.rms_model.external_mapping:
                         # Approximate: I = P/V (assuming V ≈ 1)
                         self.set_init_guess(elm.rms_model, VarPowerFlowReferenceType.Ir, Sdev.real)
-                    else:
-                        pass
                 else:
                     # Phasor formulation: convert per-device power injection to current
                     Vbus = self.power_flow_results.voltage[bus_index]
@@ -700,9 +775,7 @@ class RmsProblemPhasor(RmsProblemTemplate):
                             Vbus.imag * Ir_val - Vbus.real * Ii_val
                         )
                     else:
-                        # Non-adjustable AC injections preserve the same
-                        # per-device operating point used by the other variants.
-                        pass
+                        Sdev = injection_init_data[elm.idtag]
 
                     Ir_val, Ii_val = _s_to_i(Sdev, Vbus)
                     if VarPowerFlowReferenceType.Ir in elm.rms_model.external_mapping:
@@ -736,11 +809,14 @@ class RmsProblemPhasor(RmsProblemTemplate):
                 else:
                     pass
 
-                if self.options.initialization_method == RmsInitializationMethod.Explicit:
-                    run_explicit_initialization(mdl=elm.rms_model)
+                initialization_method: RmsInitializationMethod = _select_rms_initialization_method(
+                    configured_method=self.options.initialization_method, mdl=elm.rms_model,
+                    init_guess=self.init_guess, uid2idx_vars=self._uid2idx_vars)
+                if initialization_method in (RmsInitializationMethod.Explicit, RmsInitializationMethod.ConsistentNewton):
+                    diff_init_guess = self._run_explicit_initialization(mdl=elm.rms_model, derivative_guess=diff_init_guess)
 
-                elif self.options.initialization_method == RmsInitializationMethod.PseudoTransient:
-                    init_pseudo_transient(
+                elif initialization_method == RmsInitializationMethod.PseudoTransient:
+                    self.init_guess = init_pseudo_transient(
                         mdl=elm.rms_model,
                         sys_vars=self.sys_vars,
                         variable_parameters=self._variable_parameters,
@@ -889,26 +965,8 @@ class RmsProblemPhasor(RmsProblemTemplate):
 
         # Store a copy of the original event parameters equations for later use with set_events_group
         self._event_parameters_eqs0 = self._event_parameters_eqs.copy()
-
-        # add events modifying values of event_parameters equations
-
-        collect_events = {
-            param: {"times": [], "values": []}
-            for param in self._variable_parameters
-        }
-
-        for rms_evt in self.grid.rms_events:
-            collect_events[rms_evt.parameter]["times"].append(rms_evt.time)
-            collect_events[rms_evt.parameter]["values"].append(rms_evt.value)
-            # TODO: implement the function in block: apply_event
-        for param, events_info in collect_events.items():
-            default_value = self._event_parameters_eqs[self._variable_parameters.index(param)]
-            self._event_parameters_eqs[self._variable_parameters.index(param)] = piecewise(
-                time_var=self._glob_time,
-                t_events=np.array(events_info["times"]),
-                new_values=np.array(events_info["values"]),
-                default_value=default_value
-            )
+        self._continuous_runtime_events: dict[int, list[RmsEvent]] = dict()
+        self._configure_event_parameters(self.grid.rms_events)
 
         # --------------------------------------------------------------------------------------------------------------
         # Compile RHS and Jacobian using JIT Compiler adaptation
@@ -976,27 +1034,69 @@ class RmsProblemPhasor(RmsProblemTemplate):
                 print(f"  {k:30s}: {v:8.4f} s")
             print(f"\nTotal JIT compile time: {sum(timings.values()):.4f} s")
 
-        variable_parameters_init = np.ones(self.get_variable_parameter_number())
-
-        # TODO: think about this thing of calling twice here
-        self._variable_parameters_values = self._event_params_fn(variable_parameters_init, 0.0)
-        self._variable_parameters_values = self._event_params_fn(self._variable_parameters_values, 0.0)
+        # Replay numeric histories at the initial time, while preserving the
+        # existing two evaluations used to initialize retained Expr baselines.
+        self.reset_boundary_update_state()
 
         self._constant_params = np.array([const.value for const in self._parameters_values])
+
+        # Replay and its complete UID snapshot precede global consistency.
+        if self.options.initialization_method in (
+                RmsInitializationMethod.ConsistentNewton, RmsInitializationMethod.Auto):
+            consistency_converged: bool = run_rms_consistent_initialization(problem=self, options=self.options, logger=self.logger)
+            if consistency_converged:
+                pass
+            else:
+                raise RuntimeError("RMS Auto consistent initialization did not converge")
+        elif self.options.initialization_method == RmsInitializationMethod.PseudoTransient:
+            # Consume the prepared snapshot; another event replay changes its provenance.
+            ptc_values: np.ndarray = self.get_x0()
+            ptc_derivatives: np.ndarray = self.get_dx0()
+            if np.all(np.isfinite(ptc_values)) and np.all(np.isfinite(ptc_derivatives)):
+                projected_values: np.ndarray
+                projection_converged: bool
+                projection_residual: float
+                projected_values, projection_converged, projection_residual = project_initial_algebraic_state(
+                    problem=self, initial_values=ptc_values, differential_values=ptc_derivatives,
+                    tolerance=self.options.tolerance, max_iter=self.options.max_iter,
+                )
+                # Accept only the original full network rows before installing guesses.
+                final_residual: np.ndarray = self.rhs_algebraic(projected_values, ptc_derivatives)
+                final_residual_norm: float
+                if final_residual.size > 0:
+                    final_residual_norm = float(np.linalg.norm(final_residual, np.inf))
+                else:
+                    final_residual_norm = 0.0
+                if (projection_converged and np.isfinite(projection_residual)
+                        and np.all(np.isfinite(projected_values))
+                        and np.isfinite(final_residual_norm)
+                        and final_residual_norm <= self.options.tolerance):
+                    projected_collection: List[Var]
+                    projected_variable: Var
+                    for projected_collection in (self.state_vars, self.algebraic_vars):
+                        for projected_variable in projected_collection:
+                            self.init_guess[projected_variable.uid] = float(
+                                projected_values[self.uid2idx_vars[projected_variable.uid]])
+                else:
+                    raise RuntimeError("RMS PTC algebraic projection did not converge")
+            else:
+                raise RuntimeError("RMS PTC algebraic projection requires finite initial values")
+        else:
+            pass
 
         if options.verbose > 0:
             print(f"\nTotal compile time: {sum(timings.values()):.4f} s")
 
-    def add_variables_to_compilation_dicts(self, elm: ALL_DEV_TYPES, mdl: Block):
-        """
-        add variables and parameters info to the system block
+    def add_variables_to_compilation_dicts(self, elm: ALL_DEV_TYPES, mdl: Block) -> None:
+        """Register a device's symbols and runtime parameter expressions.
 
-        :param elm:
-        :type elm: Union[VeraGridEngine.Devices.Substation.bus.Bus, VeraGridEngine.Devices.Injections.load.Load]
-        :param mdl:
-        :type mdl: VeraGridEngine.Utils.Symbolic.block.Block
-        :return:
-        :rtype: None
+        Load P/Q initial values captured before flattening are selected by UID.
+        Unmapped event expressions retain their declaration, and selecting a
+        runtime expression never rewrites the device's canonical Block.
+
+        :param elm: Physical device owning the registered symbols.
+        :param mdl: Assigned model whose blocks supply equations and parameters.
+        :return: None; extend the problem's existing compilation containers.
         """
 
         block_item: Block
@@ -1051,7 +1151,14 @@ class RmsProblemPhasor(RmsProblemTemplate):
                 self._alias_names_dict[ep.uid] = f"{self.VARIABLE_PARAMS_NAME}_{k}"
                 self._uid2idx_event_params[ep.uid] = k
                 self._variable_parameters.append(ep)
-                self._event_parameters_eqs.append(eq)
+                # The problem owns initial event values; the original equation
+                # remains available to persistence and later model inspection.
+                mapped_initial_value: Const | None = get_api_parameter_initial_value_by_uid(
+                    parameter=ep, problem_mapping=self._static_parameters_values_mapping)
+                if mapped_initial_value is None:
+                    self._event_parameters_eqs.append(eq)
+                else:
+                    self._event_parameters_eqs.append(mapped_initial_value)
                 self._n_event_params += 1
 
             # l is for differential vars
@@ -1247,6 +1354,93 @@ class RmsProblemPhasor(RmsProblemTemplate):
                 x[i] = val
         return x
 
+    def get_dx0(self) -> Vec:
+        """Use the existing RMS zero-derivative initialization convention.
+
+        :return: Derivative vector in the problem's compiled derivative order.
+        """
+        return np.zeros(len(self._diff_vars), dtype=np.float64)
+
+    def get_eventparams0(self) -> Vec:
+        """Reconstruct the complete snapshot recorded by the t=0 replay.
+
+        :return: Initial event values in the compiled global event UID order.
+        """
+        values: Vec = np.zeros(len(self._variable_parameters), dtype=np.float64)
+        parameter: Var
+        for parameter in self._variable_parameters:
+            values[self._uid2idx_event_params[parameter.uid]] = self.event_params_init_dict[parameter.uid]
+        return values
+
+    def get_parameters_values(self) -> List[Const]:
+        """Expose constants in their established compiled array order.
+
+        :return: Problem-owned ordered constant expressions.
+        """
+        return self._parameters_values
+
+    def get_compiler_names_dict(self) -> Dict[int, str]:
+        """Expose the assembled UID bindings to the reduced initializer.
+
+        :return: Problem-owned compiler array bindings by UID.
+        """
+        return self._compiler_names_dict
+
+    def get_alias_names_dict(self) -> Dict[int, str]:
+        """Expose existing expression aliases to the reduced initializer.
+
+        :return: Problem-owned readable compiler aliases by UID.
+        """
+        return self._alias_names_dict
+
+    @property
+    def state_eqs(self) -> List[Expr]:
+        """Expose ordered state equations for missing-state consistency.
+
+        :return: Problem-owned state residual expressions.
+        """
+        return self._state_eqs
+
+    @property
+    def algebraic_eqs(self) -> List[Expr]:
+        """Expose all device and nodal algebraic rows exactly once.
+
+        :return: Complete assembled algebraic residual expressions.
+        """
+        return self._algebraic_eqs
+
+    @property
+    def variable_parameters(self) -> List[Var]:
+        """Expose event identities in their numerical array order.
+
+        :return: Problem-owned ordered variable parameters.
+        """
+        return self._variable_parameters
+
+    @property
+    def event_parameters_eqs(self) -> List[Expr | Const]:
+        """Expose runtime event equations with the existing selection applied.
+
+        :return: Problem-owned selected runtime parameter expressions.
+        """
+        return self._event_parameters_eqs
+
+    @property
+    def event_parameters_eqs0(self) -> List[Expr | Const]:
+        """Expose original problem-local baselines before event selection.
+
+        :return: Problem-owned baseline parameter expressions.
+        """
+        return self._event_parameters_eqs0
+
+    @property
+    def uid2idx_event_params(self) -> Dict[int, int]:
+        """Expose the numerical ordering shared by replay and initialization.
+
+        :return: Problem-owned event parameter indices by UID.
+        """
+        return self._uid2idx_event_params
+
     def get_next_forced_event_time(
         self,
         t_prev: float,
@@ -1265,18 +1459,167 @@ class RmsProblemPhasor(RmsProblemTemplate):
             t_target=t_target,
         )
 
+    def _run_explicit_initialization(
+            self, mdl: Block, derivative_guess: Dict[int, float | int | complex | None],
+    ) -> Dict[int, float | int | complex | None]:
+        """Seed one phasor model through the shared symbolic initializer.
+
+        :param mdl: Model whose explicit initialization equations are evaluated.
+        :param derivative_guess: Derivative values accumulated from earlier models.
+        :return: Updated derivative values in their existing UID ordering.
+        """
+        sys_diff_vars: Dict[int, Var] = {
+            diff_var.uid: diff_var for diff_var in self._diff_vars
+        }
+        rms_compiler_init: RMSCompiler = RMSCompiler(
+            variables=list(self.sys_vars.values()),
+            diff_vars=list(sys_diff_vars.values()),
+            v_params=self._variable_parameters,
+            c_params=self._constant_parameters,
+            compiler_names_dict=self._compiler_names_dict,
+        )
+        self.init_guess, derivative_guess = init_explicit_common(
+            mdl=mdl,
+            sys_vars=self.sys_vars,
+            sys_diff_vars=sys_diff_vars,
+            variable_parameters=self._variable_parameters,
+            event_parameters_eqs=self._event_parameters_eqs,
+            constant_parameters=self._constant_parameters,
+            init_guess=self.init_guess,
+            event_param_init_dict=self.event_params_init_dict,
+            diff_init_guess=derivative_guess,
+            uid2idx_vars=self._uid2idx_vars,
+            uid2idx_diff=self._uid2idx_diff,
+            uid2idx_params=self._uid2idx_params,
+            uid2idx_event_params=self._uid2idx_event_params,
+            params_array=self._parameters_values,
+            compile_single_equation=build_rms_single_equation_compiler(
+                rms_compiler=rms_compiler_init,
+            ),
+            verbose=bool(self.options.verbose > 0),
+        )
+
+        return derivative_guess
+
+    def _configure_event_parameters(self, events: list[RmsEvent]) -> None:
+        """Prepare selected events using the established RMS transition owners.
+
+        Eligibility uses the problem-local baseline after initialization, never
+        a previously evaluated runtime value or canonical source syntax. Only
+        real numeric Const baselines gain Ramp interpolation. Retained Expr
+        baselines keep legacy piecewise dependence with an explicit warning.
+
+        :param events: Source event references in their stored selection order.
+        :return: None; rebuild equations and the numeric multi-event lookup.
+        """
+        # Reconfiguration must discard the previous group's replay history.
+        self._event_parameters_eqs = self._event_parameters_eqs0.copy()
+        self._continuous_runtime_events.clear()
+        parameter_count: int = len(self._variable_parameters)
+        event_counts: np.ndarray = np.zeros(parameter_count, dtype=np.int64)
+        event: RmsEvent
+        for event in events:
+            event_counts[self._uid2idx_event_params[event.parameter.uid]] += 1
+        # Count first so grouping never grows per-target containers. These
+        # temporary arrays retain references/positions only, not model copies.
+        count: np.int64
+        event_positions: list[np.ndarray] = list(
+            np.empty(int(count), dtype=np.int64) for count in event_counts)
+        offsets: np.ndarray = np.zeros(parameter_count, dtype=np.int64)
+        source_events: ObjVec = np.asarray(events, dtype=object)
+        position: int
+        parameter_index: int
+        for position, event in enumerate(events):
+            parameter_index = self._uid2idx_event_params[event.parameter.uid]
+            event_positions[parameter_index][offsets[parameter_index]] = position
+            offsets[parameter_index] += 1
+        positions: np.ndarray
+        for parameter_index, positions in enumerate(event_positions):
+            event_count: int = len(positions)
+            if event_count > 0:
+                baseline: Expr | Const = self._event_parameters_eqs0[parameter_index]
+                times: np.ndarray = np.empty(event_count, dtype=np.float64)
+                ends: np.ndarray = np.empty(event_count, dtype=np.float64)
+                values: np.ndarray = np.empty(event_count, dtype=np.float64)
+                has_ramp: bool = False
+                event_index: int
+                for event_index, position in enumerate(positions):
+                    event = events[int(position)]
+                    times[event_index] = event.time
+                    ends[event_index] = event.time if event.end_time is None else event.end_time
+                    values[event_index] = event.value
+                    if event.transition_type == DynamicEventTransitionType.Ramp:
+                        has_ramp = True
+                    else:
+                        pass
+                eligible: bool = isinstance(baseline, Const) and isinstance(baseline.value, (int, float))
+                if has_ramp and eligible:
+                    if event_count == 1:
+                        self._event_parameters_eqs[parameter_index] = _build_runtime_expression_from_single_rms_event(
+                            time_var=self._glob_time, base_expression=baseline,
+                            event_item=events[int(positions[0])])
+                    else:
+                        # Lexsort is stable for equal keys; use the scalar owner's
+                        # start/end order without changing source event ordering.
+                        order: np.ndarray = np.lexsort((ends, times))
+                        self._continuous_runtime_events[parameter_index] = source_events[positions[order]].tolist()
+                else:
+                    if has_ramp:
+                        self.logger.add_warning(
+                            "RMS Ramp with a nonconstant or non-real baseline retains legacy Step behavior.",
+                            device=self._variable_parameters[parameter_index].name,
+                            expected_value="Resolved real numeric Const baseline for Ramp interpolation")
+                    else:
+                        pass
+                    # Step-only and ineligible histories keep the legacy stored
+                    # order and strict symbolic boundary, including dependencies.
+                    self._event_parameters_eqs[parameter_index] = piecewise(
+                        time_var=self._glob_time, t_events=times,
+                        new_values=values, default_value=baseline)
+            else:
+                pass
+
     def update_variable_params(self,
                                t: float,
                                x_snapshot: Vec | None = None,
-                               scheduled_t: float | None = None):
-        """Update the variable parameters."""
+                               scheduled_t: float | None = None) -> None:
+        """Evaluate symbolic parameters, then replay numeric mixed histories.
+
+        :param t: Continuous simulation time used for all Ramp evaluations.
+        :param x_snapshot: Existing interface state snapshot, unused by this owner.
+        :param scheduled_t: Existing scheduled boundary time, unused for continuous ramps.
+        :return: None; update the problem-owned runtime parameter vector.
+        """
+        # Mixed-history equations remain their original Const, so compilation
+        # restores the numeric baseline before every procedural replay.
         self._variable_parameters_values[:self._n_event_params] = self._event_params_fn(self._variable_parameters_values, t)
+        parameter_index: int
+        events: list[RmsEvent]
+        for parameter_index, events in self._continuous_runtime_events.items():
+            self._variable_parameters_values[parameter_index] = _evaluate_rms_runtime_parameter_value_from_events(
+                base_value=float(self._variable_parameters_values[parameter_index]),
+                event_list=events, t_curr=t)
 
     def reset_boundary_update_state(self, t0: float = 0.0) -> None:
-        """Reset runtime event-parameter state to the initial simulation time."""
-        variable_parameters_init = np.ones(self.get_variable_parameter_number())
-        self._variable_parameters_values = self._event_params_fn(variable_parameters_init, float(t0))
-        self._variable_parameters_values = self._event_params_fn(self._variable_parameters_values, float(t0))
+        """Reinitialize symbolic dependence and numeric replay at the requested time.
+
+        :param t0: Simulation time, including an interior Ramp time on restart.
+        :return: None; replace runtime values using the selected original baselines.
+        """
+        # Preserve the established two evaluations for dependent expressions;
+        # the same path also applies procedural histories on initialization.
+        self._variable_parameters_values = np.ones(self.get_variable_parameter_number())
+        self.update_variable_params(float(t0))
+        self.update_variable_params(float(t0))
+        # Preserve the complete startup snapshot, including retained Expr
+        # baselines and events before zero, without modifying source models.
+        if t0 == 0.0:
+            parameter: Var
+            for parameter in self._variable_parameters:
+                self.event_params_init_dict[parameter.uid] = float(
+                    self._variable_parameters_values[self._uid2idx_event_params[parameter.uid]])
+        else:
+            pass
 
     def update(self, t: float, x: Vec, params: Vec) -> None:
         """Store runtime event parameters for the current Newton step."""
@@ -1431,41 +1774,22 @@ class RmsProblemPhasor(RmsProblemTemplate):
     def get_dt_value(self):
         return self.options.time_step
 
-    def set_events_group(self, rms_events_group: RmsEventsGroup):
+    def set_events_group(self, rms_events_group: RmsEventsGroup) -> None:
         """
         Set the events group to use for this simulation.
         This filters events by group and recompiles the event parameters function.
 
         :param rms_events_group: The RmsEventsGroup to use
+        :return: None; recompile the selection and restore its initial runtime values.
         """
-        # Restore original event parameters equations
-        self._event_parameters_eqs = self._event_parameters_eqs0.copy()
-
-        # Collect events for this group only
-        collect_events = {
-            param: {"times": [], "values": []}
-            for param in self._variable_parameters
-        }
-
-        # Filter events by group
-        rms_evts = [evt for evt in self.grid.rms_events if evt.group.idtag == rms_events_group.idtag]
-        for rms_evt in rms_evts:
-            collect_events[rms_evt.parameter]["times"].append(rms_evt.time)
-            collect_events[rms_evt.parameter]["values"].append(rms_evt.value)
-
-        # Apply piecewise functions for events
-        for param, events_info in collect_events.items():
-            if events_info["times"]:  # Only if there are events for this parameter
-                default_value = self._event_parameters_eqs[self._variable_parameters.index(param)]
-                self._event_parameters_eqs[self._variable_parameters.index(param)] = piecewise(
-                    time_var=self._glob_time,
-                    t_events=np.array(events_info["times"]),
-                    new_values=np.array(events_info["values"]),
-                    default_value=default_value
-                )
+        # Retain the existing concrete-group policy; A05 is a separate case.
+        # A failed new group cannot retain an earlier ready certificate.
+        self._is_initialized: bool = False
+        rms_evts: list[RmsEvent] = [evt for evt in self.grid.rms_events if evt.group.idtag == rms_events_group.idtag]
+        self._configure_event_parameters(rms_evts)
 
         # Recompile the event parameters function
-        rms_compiler = RMSCompiler(
+        rms_compiler: RMSCompiler = RMSCompiler(
             variables=self._state_algeb_vars,
             diff_vars=self._diff_vars,
             v_params=self._variable_parameters,
@@ -1479,7 +1803,53 @@ class RmsProblemPhasor(RmsProblemTemplate):
             TIME_NAME=self.TIME_NAME,
         )
 
-        # Reinitialize variable parameters values
-        variable_parameters_init = np.ones(self.get_variable_parameter_number())
-        self._variable_parameters_values = self._event_params_fn(variable_parameters_init, 0.0)
-        self._variable_parameters_values = self._event_params_fn(self._variable_parameters_values, 0.0)
+        # Constructor, group changes and restarts share identical runtime replay.
+        self.reset_boundary_update_state()
+
+        # A selected PTC group can change the network operating point. Close
+        # its compiled algebraic rows against this exact prepared snapshot.
+        if self.options.initialization_method in (
+                RmsInitializationMethod.ConsistentNewton, RmsInitializationMethod.Auto):
+            consistency_converged: bool = run_rms_consistent_initialization(problem=self, options=self.options, logger=self.logger)
+            if consistency_converged:
+                pass
+            else:
+                raise RuntimeError("RMS Auto consistent initialization did not converge")
+        elif self.options.initialization_method == RmsInitializationMethod.PseudoTransient:
+            # Consume the prepared snapshot; another event replay changes its provenance.
+            ptc_values: np.ndarray = self.get_x0()
+            ptc_derivatives: np.ndarray = self.get_dx0()
+            if np.all(np.isfinite(ptc_values)) and np.all(np.isfinite(ptc_derivatives)):
+                projected_values: np.ndarray
+                projection_converged: bool
+                projection_residual: float
+                projected_values, projection_converged, projection_residual = project_initial_algebraic_state(
+                    problem=self, initial_values=ptc_values, differential_values=ptc_derivatives,
+                    tolerance=self.options.tolerance, max_iter=self.options.max_iter,
+                )
+                # Accept only the original full network rows before installing guesses.
+                final_residual: np.ndarray = self.rhs_algebraic(projected_values, ptc_derivatives)
+                final_residual_norm: float
+                if final_residual.size > 0:
+                    final_residual_norm = float(np.linalg.norm(final_residual, np.inf))
+                else:
+                    final_residual_norm = 0.0
+                if (projection_converged and np.isfinite(projection_residual)
+                        and np.all(np.isfinite(projected_values))
+                        and np.isfinite(final_residual_norm)
+                        and final_residual_norm <= self.options.tolerance):
+                    projected_collection: List[Var]
+                    projected_variable: Var
+                    for projected_collection in (self.state_vars, self.algebraic_vars):
+                        for projected_variable in projected_collection:
+                            self.init_guess[projected_variable.uid] = float(
+                                projected_values[self.uid2idx_vars[projected_variable.uid]])
+                else:
+                    raise RuntimeError("RMS PTC algebraic projection did not converge")
+            else:
+                raise RuntimeError("RMS PTC algebraic projection requires finite initial values")
+        else:
+            pass
+
+        # Ready applies only after this group's finite original-g certificate.
+        self.set_initialize_flag()

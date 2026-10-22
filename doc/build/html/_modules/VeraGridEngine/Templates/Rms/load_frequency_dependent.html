@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Templates.Rms.load_frequency_dependent &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Templates.Rms.load_frequency_dependent &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/license.html">📜 License</a></li>
@@ -122,61 +123,61 @@
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vf</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">vf</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="p">[</span>
-            <span class="n">TemplateProp</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Pl0&quot;</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;pu&quot;</span><span class="p">,</span> <span class="n">descr</span><span class="o">=</span><span class="s2">&quot;Initial active power at nominal voltage (pu).&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
-            <span class="n">TemplateProp</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Ql0&quot;</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;pu&quot;</span><span class="p">,</span> <span class="n">descr</span><span class="o">=</span><span class="s2">&quot;Initial reactive power at nominal voltage (pu).&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
-            <span class="n">TemplateProp</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">descr</span><span class="o">=</span><span class="s2">&quot;Name of the rms model.&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">str</span><span class="p">),</span>
+            <span class="n">TemplateProp</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">"Pl0"</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">"pu"</span><span class="p">,</span> <span class="n">descr</span><span class="o">=</span><span class="s2">"Initial active power at nominal voltage (pu)."</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
+            <span class="n">TemplateProp</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">"Ql0"</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">"pu"</span><span class="p">,</span> <span class="n">descr</span><span class="o">=</span><span class="s2">"Initial reactive power at nominal voltage (pu)."</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
+            <span class="n">TemplateProp</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">"name"</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">""</span><span class="p">,</span> <span class="n">descr</span><span class="o">=</span><span class="s2">"Name of the rms model."</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">str</span><span class="p">),</span>
         <span class="p">])</span>
 
 <div class="viewcode-block" id="FrequencyLoadRmsTemplate.eval">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Templates.Rms.html#VeraGridEngine.Templates.Rms.load_frequency_dependent.FrequencyLoadRmsTemplate.eval">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">eval</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RmsModelTemplate</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">FrequencyLoadBuild</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vf</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span><span class="s2">&quot;Pl0&quot;</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span><span class="s2">&quot;Ql0&quot;</span><span class="p">))</span></div>
+        <span class="k">return</span> <span class="n">FrequencyLoadBuild</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vf</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span><span class="s2">"name"</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span><span class="s2">"Pl0"</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span><span class="s2">"Ql0"</span><span class="p">))</span></div>
 </div>
 
 
 
 <div class="viewcode-block" id="FrequencyLoadBuild">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Templates.Rms.html#VeraGridEngine.Templates.Rms.load_frequency_dependent.FrequencyLoadBuild">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">FrequencyLoadBuild</span><span class="p">(</span><span class="n">vfactory</span><span class="p">:</span> <span class="n">VarFactory</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;Frequency-dependent load RMS template&quot;</span><span class="p">,</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">FrequencyLoadBuild</span><span class="p">(</span><span class="n">vfactory</span><span class="p">:</span> <span class="n">VarFactory</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"Frequency-dependent load RMS template"</span><span class="p">,</span>
                        <span class="n">Pl0</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">Ql0</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RmsModelTemplate</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Build a voltage- and frequency-dependent RMS load model.</span>
+<span class="w">    </span><span class="sd">"""Build a voltage- and frequency-dependent RMS load model.</span>
 
-<span class="sd">    :param vfactory: Factory that owns the model&#39;s symbolic variables.</span>
+<span class="sd">    :param vfactory: Factory that owns the model's symbolic variables.</span>
 <span class="sd">    :param name: Name assigned to the generated RMS model template.</span>
 <span class="sd">    :param Pl0: Initial active power at nominal voltage in per unit.</span>
 <span class="sd">    :param Ql0: Initial reactive power at nominal voltage in per unit.</span>
 <span class="sd">    :return: Configured frequency-dependent load RMS model template.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">templ</span> <span class="o">=</span> <span class="n">RmsModelTemplate</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
     <span class="n">templ</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
     <span class="n">templ</span><span class="o">.</span><span class="n">tpe</span> <span class="o">=</span> <span class="n">DeviceType</span><span class="o">.</span><span class="n">LoadDevice</span>
-    <span class="n">inputs</span> <span class="o">=</span> <span class="p">[</span><span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;Vm&quot;</span><span class="p">),</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;Va&#39;</span><span class="p">)]</span>
+    <span class="n">inputs</span> <span class="o">=</span> <span class="p">[</span><span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"Vm"</span><span class="p">),</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'Va'</span><span class="p">)]</span>
 
     <span class="c1"># Vars:</span>
-    <span class="n">m</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;m&#39;</span><span class="p">)</span>
-    <span class="n">P</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;P&#39;</span><span class="p">)</span>
-    <span class="n">Q</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;Q&#39;</span><span class="p">)</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'m'</span><span class="p">)</span>
+    <span class="n">P</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'P'</span><span class="p">)</span>
+    <span class="n">Q</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'Q'</span><span class="p">)</span>
     <span class="n">Va</span> <span class="o">=</span> <span class="n">inputs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
 
     <span class="c1"># Parameters:</span>
-    <span class="n">P0</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;Pl0&#39;</span><span class="p">)</span>
-    <span class="n">Q0</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;Ql0&#39;</span><span class="p">)</span>
-    <span class="n">V0</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;V0&#39;</span><span class="p">)</span>
-    <span class="n">Kd</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;Kd&#39;</span><span class="p">)</span>
-    <span class="n">Ki</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;Ki&#39;</span><span class="p">)</span>
-    <span class="n">alpha_p</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;alpha_p&#39;</span><span class="p">)</span>
-    <span class="n">alpha_q</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;alpha_q&#39;</span><span class="p">)</span>
-    <span class="n">beta_p</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;beta_p&#39;</span><span class="p">)</span>
-    <span class="n">beta_q</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;beta_q&#39;</span><span class="p">)</span>
-    <span class="n">Tf</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;Tf&#39;</span><span class="p">)</span>
-    <span class="n">theta0</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;theta0&#39;</span><span class="p">)</span>
+    <span class="n">P0</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'Pl0'</span><span class="p">)</span>
+    <span class="n">Q0</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'Ql0'</span><span class="p">)</span>
+    <span class="n">V0</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'V0'</span><span class="p">)</span>
+    <span class="n">Kd</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'Kd'</span><span class="p">)</span>
+    <span class="n">Ki</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'Ki'</span><span class="p">)</span>
+    <span class="n">alpha_p</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'alpha_p'</span><span class="p">)</span>
+    <span class="n">alpha_q</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'alpha_q'</span><span class="p">)</span>
+    <span class="n">beta_p</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'beta_p'</span><span class="p">)</span>
+    <span class="n">beta_q</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'beta_q'</span><span class="p">)</span>
+    <span class="n">Tf</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'Tf'</span><span class="p">)</span>
+    <span class="n">theta0</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'theta0'</span><span class="p">)</span>
 
     <span class="n">block1</span><span class="p">,</span> <span class="n">d_omega</span> <span class="o">=</span> <span class="n">tf_to_block</span><span class="p">(</span>
         <span class="n">vfactory</span><span class="p">,</span>
         <span class="n">num</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_const</span><span class="p">(</span><span class="mi">1</span><span class="p">)],</span>
         <span class="n">den</span><span class="o">=</span><span class="p">[</span><span class="n">vfactory</span><span class="o">.</span><span class="n">add_const</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">Tf</span><span class="p">],</span>
         <span class="n">x</span><span class="o">=</span><span class="p">(</span><span class="n">Va</span> <span class="o">-</span> <span class="n">theta0</span><span class="p">),</span>
-        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;frequency_measure&quot;</span>
+        <span class="n">name</span><span class="o">=</span><span class="s2">"frequency_measure"</span>
 
     <span class="p">)</span>
     <span class="c1"># ZIP coefficients (classic formulation)</span>
@@ -218,7 +219,7 @@
 
     <span class="n">templ</span><span class="o">.</span><span class="n">block</span><span class="o">.</span><span class="n">in_vars</span> <span class="o">=</span> <span class="n">inputs</span>
 
-    <span class="n">templ</span><span class="o">.</span><span class="n">comment</span> <span class="o">=</span> <span class="s1">&#39;Load RMS frequency-dependent model&#39;</span>
+    <span class="n">templ</span><span class="o">.</span><span class="n">comment</span> <span class="o">=</span> <span class="s1">'Load RMS frequency-dependent model'</span>
     <span class="k">return</span> <span class="n">templ</span></div>
 
 </pre></div>

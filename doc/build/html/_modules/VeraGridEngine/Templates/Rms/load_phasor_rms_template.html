@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Templates.Rms.load_phasor_rms_template &mdash; VeraGrid 6.7.13 documentation</title>
+  <title>VeraGridEngine.Templates.Rms.load_phasor_rms_template &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=16fbabd8"></script>
+      <script src="../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -115,26 +115,26 @@
 
 <div class="viewcode-block" id="get_load_phasor_rms_template">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Templates.Rms.html#VeraGridEngine.Templates.Rms.load_phasor_rms_template.get_load_phasor_rms_template">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">get_load_phasor_rms_template</span><span class="p">(</span><span class="n">vfactory</span><span class="p">:</span> <span class="n">VarFactory</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Load phasor rms template&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RmsModelTemplate</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_load_phasor_rms_template</span><span class="p">(</span><span class="n">vfactory</span><span class="p">:</span> <span class="n">VarFactory</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"Load phasor rms template"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RmsModelTemplate</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Get the RMS template model of the Load using phasor coordinates (Vr, Vi)</span>
 <span class="sd">    :return: RmsModelTemplate</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">templ</span> <span class="o">=</span> <span class="n">RmsModelTemplate</span><span class="p">()</span>
     <span class="n">templ</span><span class="o">.</span><span class="n">tpe</span> <span class="o">=</span> <span class="n">DeviceType</span><span class="o">.</span><span class="n">LoadDevice</span>
     <span class="n">templ</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
 
     <span class="c1"># Phasor inputs: Vr, Vi</span>
     <span class="n">inputs</span> <span class="o">=</span> <span class="p">[</span>
-        <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;Vr&quot;</span><span class="p">),</span>
-        <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;Vi&quot;</span><span class="p">)</span>
+        <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"Vr"</span><span class="p">),</span>
+        <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"Vi"</span><span class="p">)</span>
     <span class="p">]</span>
 
-    <span class="n">Pl0</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;Pl0&quot;</span><span class="p">)</span>
-    <span class="n">Ql0</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;Ql0&quot;</span><span class="p">)</span>
+    <span class="n">Pl0</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"Pl0"</span><span class="p">)</span>
+    <span class="n">Ql0</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"Ql0"</span><span class="p">)</span>
 
-    <span class="n">Ql</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;Ql&quot;</span><span class="p">)</span>
-    <span class="n">Pl</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;Pl&quot;</span><span class="p">)</span>
+    <span class="n">Ql</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"Ql"</span><span class="p">)</span>
+    <span class="n">Pl</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"Pl"</span><span class="p">)</span>
 
     <span class="c1"># The load device supplies the baseline through api_obj_mapping, while the</span>
     <span class="c1"># event declaration keeps both set-points mutable during the simulation.</span>
@@ -144,7 +144,7 @@
     <span class="n">templ</span><span class="o">.</span><span class="n">block</span><span class="o">.</span><span class="n">algebraic_vars</span> <span class="o">=</span> <span class="p">[</span><span class="n">Pl</span><span class="p">,</span> <span class="n">Ql</span><span class="p">]</span>
 
     <span class="c1"># Constant power load: Pl = Pl0, Ql = Ql0</span>
-    <span class="c1"># The load doesn&#39;t depend on voltage in this simple model</span>
+    <span class="c1"># The load doesn't depend on voltage in this simple model</span>
     <span class="n">templ</span><span class="o">.</span><span class="n">block</span><span class="o">.</span><span class="n">algebraic_eqs</span> <span class="o">=</span> <span class="p">[</span><span class="n">Pl</span> <span class="o">-</span> <span class="n">Pl0</span><span class="p">,</span> <span class="n">Ql</span> <span class="o">-</span> <span class="n">Ql0</span><span class="p">]</span>
 
     <span class="n">templ</span><span class="o">.</span><span class="n">block</span><span class="o">.</span><span class="n">external_mapping</span> <span class="o">=</span> <span class="p">{</span>
@@ -161,7 +161,7 @@
 
     <span class="n">templ</span><span class="o">.</span><span class="n">block</span><span class="o">.</span><span class="n">in_vars</span> <span class="o">=</span> <span class="n">inputs</span>
 
-    <span class="n">templ</span><span class="o">.</span><span class="n">comment</span> <span class="o">=</span> <span class="s1">&#39;Load RMS phasor model&#39;</span>
+    <span class="n">templ</span><span class="o">.</span><span class="n">comment</span> <span class="o">=</span> <span class="s1">'Load RMS phasor model'</span>
     <span class="k">return</span> <span class="n">templ</span></div>
 
 </pre></div>

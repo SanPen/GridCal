@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Simulations.results_template &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Simulations.results_template &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/license.html">📜 License</a></li>
@@ -126,26 +127,26 @@
 <div class="viewcode-block" id="ResultsProperty">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Simulations.html#VeraGridEngine.Simulations.results_template.ResultsProperty">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">ResultsProperty</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    ResultsProperty</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;name&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;tpe&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;old_names&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;expandable&quot;</span>
+        <span class="s2">"name"</span><span class="p">,</span>
+        <span class="s2">"tpe"</span><span class="p">,</span>
+        <span class="s2">"old_names"</span><span class="p">,</span>
+        <span class="s2">"expandable"</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
                  <span class="n">tpe</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
                  <span class="n">old_names</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]],</span>
                  <span class="n">expandable</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        ResultsProperty</span>
 <span class="sd">        :param name: name of the property</span>
 <span class="sd">        :param tpe: type of the property (Vec, Mat, double, ...)</span>
 <span class="sd">        :param old_names: list of previous names. Use in case of renaming a registered property</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">name</span>
 
@@ -160,30 +161,30 @@
 <div class="viewcode-block" id="ResultsTemplateMeta">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Simulations.html#VeraGridEngine.Simulations.results_template.ResultsTemplateMeta">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">ResultsTemplateMeta</span><span class="p">(</span><span class="nb">type</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Metaclass that pre-builds inherited results schema declarations.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__new__</span><span class="p">(</span><span class="n">mcs</span><span class="p">:</span> <span class="nb">type</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">bases</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">type</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="n">namespace</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">type</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Build a new class and aggregate result declarations from base to child.</span>
 <span class="sd">        :param name: Class name</span>
 <span class="sd">        :param bases: Base classes</span>
 <span class="sd">        :param namespace: Class namespace</span>
 <span class="sd">        :return: New class</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">cls</span><span class="p">:</span> <span class="nb">type</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__new__</span><span class="p">(</span><span class="n">mcs</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">bases</span><span class="p">,</span> <span class="n">namespace</span><span class="p">)</span>
 
         <span class="n">aggregated_declarations</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">ResultsProperty</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">base</span> <span class="ow">in</span> <span class="n">bases</span><span class="p">:</span>
             <span class="n">base_declarations</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">ResultsProperty</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="nb">vars</span><span class="p">(</span><span class="n">base</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
-                <span class="s2">&quot;CLASS_RESULTS_DECLARATIONS&quot;</span><span class="p">,</span>
+                <span class="s2">"CLASS_RESULTS_DECLARATIONS"</span><span class="p">,</span>
                 <span class="nb">tuple</span><span class="p">(),</span>
             <span class="p">)</span>
             <span class="k">for</span> <span class="n">declaration</span> <span class="ow">in</span> <span class="n">base_declarations</span><span class="p">:</span>
                 <span class="n">aggregated_declarations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">declaration</span><span class="p">)</span>
 
-        <span class="n">local_declarations</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">ResultsProperty</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="n">namespace</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;LOCAL_RESULTS_DECLARATIONS&quot;</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">())</span>
+        <span class="n">local_declarations</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">ResultsProperty</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="n">namespace</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"LOCAL_RESULTS_DECLARATIONS"</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">())</span>
         <span class="k">for</span> <span class="n">declaration</span> <span class="ow">in</span> <span class="n">local_declarations</span><span class="p">:</span>
             <span class="n">aggregated_declarations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">declaration</span><span class="p">)</span>
 
@@ -203,29 +204,29 @@
 <div class="viewcode-block" id="ResultsTemplate">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Simulations.html#VeraGridEngine.Simulations.results_template.ResultsTemplate">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">ResultsTemplate</span><span class="p">(</span><span class="n">metaclass</span><span class="o">=</span><span class="n">ResultsTemplateMeta</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    ResultsTemplate</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;name&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;report_text&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;study_results_type&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;available_results&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;_data_variables&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;_time_array&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;_is_3ph&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;clustering_results&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;using_clusters&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;time_indices&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;sampled_probabilities&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;original_sample_idx&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;F&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;T&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;hvdc_F&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;hvdc_T&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;bus_area_indices&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;area_names&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;_ResultsTemplate__show_plot&quot;</span><span class="p">,</span>
+        <span class="s2">"name"</span><span class="p">,</span>
+        <span class="s2">"report_text"</span><span class="p">,</span>
+        <span class="s2">"study_results_type"</span><span class="p">,</span>
+        <span class="s2">"available_results"</span><span class="p">,</span>
+        <span class="s2">"_data_variables"</span><span class="p">,</span>
+        <span class="s2">"_time_array"</span><span class="p">,</span>
+        <span class="s2">"_is_3ph"</span><span class="p">,</span>
+        <span class="s2">"clustering_results"</span><span class="p">,</span>
+        <span class="s2">"using_clusters"</span><span class="p">,</span>
+        <span class="s2">"time_indices"</span><span class="p">,</span>
+        <span class="s2">"sampled_probabilities"</span><span class="p">,</span>
+        <span class="s2">"original_sample_idx"</span><span class="p">,</span>
+        <span class="s2">"F"</span><span class="p">,</span>
+        <span class="s2">"T"</span><span class="p">,</span>
+        <span class="s2">"hvdc_F"</span><span class="p">,</span>
+        <span class="s2">"hvdc_T"</span><span class="p">,</span>
+        <span class="s2">"bus_area_indices"</span><span class="p">,</span>
+        <span class="s2">"area_names"</span><span class="p">,</span>
+        <span class="s2">"_ResultsTemplate__show_plot"</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
@@ -237,17 +238,17 @@
             <span class="n">clustering_results</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">ClusteringResults</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span>
             <span class="n">study_results_type</span><span class="p">:</span> <span class="n">StudyResultsType</span><span class="p">,</span>
             <span class="n">is_3ph</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Results template class</span>
 <span class="sd">        :param name: Name of the class</span>
 <span class="sd">        :param available_results: list of stuff to represent the results</span>
 <span class="sd">        :param clustering_results: ClusteringResults object (optional)</span>
 <span class="sd">        :param study_results_type: StudyResultsType Instance</span>
 <span class="sd">        :param is_3ph: is this a 3-phase result?</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">name</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">study_results_type</span><span class="p">:</span> <span class="n">StudyResultsType</span> <span class="o">=</span> <span class="n">study_results_type</span>
 
@@ -284,18 +285,18 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">data_variables</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">ResultsProperty</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">CLASS_DATA_VARIABLES</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">time_array</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DateVec</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Array of time steps</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_time_array</span>
 
     <span class="nd">@time_array</span><span class="o">.</span><span class="n">setter</span>
@@ -309,76 +310,76 @@
 <div class="viewcode-block" id="ResultsTemplate.plotting_allowed">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Simulations.html#VeraGridEngine.Simulations.results_template.ResultsTemplate.plotting_allowed">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">plotting_allowed</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__show_plot</span></div>
 
 
 <div class="viewcode-block" id="ResultsTemplate.activate_plotting">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Simulations.html#VeraGridEngine.Simulations.results_template.ResultsTemplate.activate_plotting">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">activate_plotting</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__show_plot</span> <span class="o">=</span> <span class="kc">True</span></div>
 
 
 <div class="viewcode-block" id="ResultsTemplate.deactivate_plotting">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Simulations.html#VeraGridEngine.Simulations.results_template.ResultsTemplate.deactivate_plotting">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">deactivate_plotting</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__show_plot</span> <span class="o">=</span> <span class="kc">False</span></div>
 
 
 <div class="viewcode-block" id="ResultsTemplate.register">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Simulations.html#VeraGridEngine.Simulations.results_template.ResultsTemplate.register">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">register</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">tpe</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Vec</span><span class="p">,</span> <span class="n">Mat</span><span class="p">,</span> <span class="n">CxVec</span><span class="p">,</span> <span class="n">CxMat</span><span class="p">],</span> <span class="n">old_names</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Runtime registration is intentionally disabled.</span>
 <span class="sd">        :param name: name of the variable to register (is checked)</span>
 <span class="sd">        :param tpe: type of the variable</span>
 <span class="sd">        :param old_names: list of old names for retro compatibility (optional)</span>
 <span class="sd">        :return: None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-            <span class="s2">&quot;Runtime results registration is disabled. &quot;</span>
-            <span class="s2">&quot;Declare results in LOCAL_RESULTS_DECLARATIONS.&quot;</span>
+            <span class="s2">"Runtime results registration is disabled. "</span>
+            <span class="s2">"Declare results in LOCAL_RESULTS_DECLARATIONS."</span>
         <span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="ResultsTemplate.consolidate_after_loading">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Simulations.html#VeraGridEngine.Simulations.results_template.ResultsTemplate.consolidate_after_loading">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">consolidate_after_loading</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Consolidate</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">pass</span></div>
 
 
 <div class="viewcode-block" id="ResultsTemplate.prepare_for_saving">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Simulations.html#VeraGridEngine.Simulations.results_template.ResultsTemplate.prepare_for_saving">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">prepare_for_saving</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Refresh any derived payload that must be serialized with the results.</span>
 
 <span class="sd">        :return: None.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">pass</span></div>
 
 
 <div class="viewcode-block" id="ResultsTemplate.get_dict">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Simulations.html#VeraGridEngine.Simulations.results_template.ResultsTemplate.get_dict">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get data to pass via json</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">data</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
 
         <span class="c1"># traverse the registered results</span>
@@ -391,8 +392,8 @@
                 <span class="n">r</span> <span class="o">=</span> <span class="n">arr</span><span class="o">.</span><span class="n">real</span>
                 <span class="n">i</span> <span class="o">=</span> <span class="n">arr</span><span class="o">.</span><span class="n">imag</span>
                 <span class="n">data</span><span class="p">[</span><span class="n">arr_name</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
-                    <span class="s2">&quot;real&quot;</span><span class="p">:</span> <span class="n">r</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
-                    <span class="s2">&quot;imag&quot;</span><span class="p">:</span> <span class="n">i</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
+                    <span class="s2">"real"</span><span class="p">:</span> <span class="n">r</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
+                    <span class="s2">"imag"</span><span class="p">:</span> <span class="n">i</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
                 <span class="p">}</span>
             <span class="k">elif</span> <span class="n">arr_prop</span><span class="o">.</span><span class="n">tpe</span> <span class="ow">in</span> <span class="p">(</span><span class="n">Vec</span><span class="p">,</span> <span class="n">Mat</span><span class="p">,</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">IntMat</span><span class="p">,</span> <span class="n">StrVec</span><span class="p">,</span> <span class="n">StrMat</span><span class="p">,</span> <span class="n">BoolVec</span><span class="p">):</span>
                 <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
@@ -417,19 +418,19 @@
 <div class="viewcode-block" id="ResultsTemplate.parse_data">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Simulations.html#VeraGridEngine.Simulations.results_template.ResultsTemplate.parse_data">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">parse_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span> <span class="o">|</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        The function to parse the data created with get_dict</span>
 <span class="sd">        :param data:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="k">for</span> <span class="n">arr_name</span><span class="p">,</span> <span class="n">arr_prop</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_variables</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
 
             <span class="n">arr_data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">arr_name</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="n">arr_prop</span><span class="o">.</span><span class="n">tpe</span> <span class="ow">in</span> <span class="p">(</span><span class="n">CxVec</span><span class="p">,</span> <span class="n">CxMat</span><span class="p">):</span>
-                <span class="n">r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">arr_data</span><span class="p">[</span><span class="s2">&quot;real&quot;</span><span class="p">])</span>
-                <span class="n">i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">arr_data</span><span class="p">[</span><span class="s2">&quot;imag&quot;</span><span class="p">])</span>
+                <span class="n">r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">arr_data</span><span class="p">[</span><span class="s2">"real"</span><span class="p">])</span>
+                <span class="n">i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">arr_data</span><span class="p">[</span><span class="s2">"imag"</span><span class="p">])</span>
                 <span class="n">arr</span> <span class="o">=</span> <span class="n">r</span> <span class="o">+</span> <span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="n">i</span>
                 <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arr_name</span><span class="p">,</span> <span class="n">arr</span><span class="p">)</span>
 
@@ -439,7 +440,7 @@
 
             <span class="k">elif</span> <span class="n">arr_prop</span><span class="o">.</span><span class="n">tpe</span> <span class="o">==</span> <span class="n">DateVec</span><span class="p">:</span>
 
-                <span class="n">arr</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">arr_data</span><span class="p">),</span> <span class="n">unit</span><span class="o">=</span><span class="s1">&#39;ns&#39;</span><span class="p">)</span>  <span class="c1"># pass the unix nano-seconds</span>
+                <span class="n">arr</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">arr_data</span><span class="p">),</span> <span class="n">unit</span><span class="o">=</span><span class="s1">'ns'</span><span class="p">)</span>  <span class="c1"># pass the unix nano-seconds</span>
                 <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arr_name</span><span class="p">,</span> <span class="n">arr</span><span class="p">)</span>
 
             <span class="k">else</span><span class="p">:</span>
@@ -449,10 +450,10 @@
 <div class="viewcode-block" id="ResultsTemplate.get_name_to_results_type_dict">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Simulations.html#VeraGridEngine.Simulations.results_template.ResultsTemplate.get_name_to_results_type_dict">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_name_to_results_type_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">d</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">available_results</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
             <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">values</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">available_results</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
@@ -469,11 +470,11 @@
 <div class="viewcode-block" id="ResultsTemplate.get_results_type_dict">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Simulations.html#VeraGridEngine.Simulations.results_template.ResultsTemplate.get_results_type_dict">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_results_type_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="n">ResultTypes</span><span class="p">,</span> <span class="n">ResultTypes</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get result types keyed by their enum identity.</span>
 
 <span class="sd">        :return: Dictionary mapping each result type to itself.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">d</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">ResultTypes</span><span class="p">,</span> <span class="n">ResultTypes</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">available_results</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
             <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">values</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">available_results</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
@@ -490,10 +491,10 @@
 <div class="viewcode-block" id="ResultsTemplate.get_name_tree">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Simulations.html#VeraGridEngine.Simulations.results_template.ResultsTemplate.get_name_tree">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_name_tree</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">d</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">available_results</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
             <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">values</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">available_results</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
@@ -507,11 +508,11 @@
 <div class="viewcode-block" id="ResultsTemplate.get_results_type_tree">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Simulations.html#VeraGridEngine.Simulations.results_template.ResultsTemplate.get_results_type_tree">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_results_type_tree</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="n">ResultTypes</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">ResultTypes</span><span class="p">]],</span> <span class="n">List</span><span class="p">[</span><span class="n">ResultTypes</span><span class="p">]]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the result tree using enum values as runtime payloads.</span>
 
 <span class="sd">        :return: Result type tree.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">d</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="n">ResultTypes</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">ResultTypes</span><span class="p">]],</span> <span class="n">List</span><span class="p">[</span><span class="n">ResultTypes</span><span class="p">]]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">available_results</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
             <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">values</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">available_results</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
@@ -525,12 +526,12 @@
 <div class="viewcode-block" id="ResultsTemplate.to_json">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Simulations.html#VeraGridEngine.Simulations.results_template.ResultsTemplate.to_json">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">to_json</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_name</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Export as json</span>
 <span class="sd">        :param file_name: File name</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file_name</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">output_file</span><span class="p">:</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file_name</span><span class="p">,</span> <span class="s2">"w"</span><span class="p">)</span> <span class="k">as</span> <span class="n">output_file</span><span class="p">:</span>
             <span class="n">json_str</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_dict</span><span class="p">())</span>
             <span class="n">output_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">json_str</span><span class="p">)</span></div>
 
@@ -538,20 +539,20 @@
 <div class="viewcode-block" id="ResultsTemplate.apply_new_rates">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Simulations.html#VeraGridEngine.Simulations.results_template.ResultsTemplate.apply_new_rates">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">apply_new_rates</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rates</span><span class="p">:</span> <span class="n">Vec</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :param rates:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">pass</span></div>
 
 
 <div class="viewcode-block" id="ResultsTemplate.apply_new_time_series_rates">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Simulations.html#VeraGridEngine.Simulations.results_template.ResultsTemplate.apply_new_time_series_rates">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">apply_new_time_series_rates</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rates</span><span class="p">:</span> <span class="n">Vec</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :param rates:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">pass</span></div>
 
 
@@ -566,7 +567,7 @@
                              <span class="n">hvdc_T</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span>
                              <span class="n">hvdc_Pf</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
                              <span class="n">bus_area_indices</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Mat</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :param area_names:</span>
 <span class="sd">        :param F:</span>
@@ -577,7 +578,7 @@
 <span class="sd">        :param hvdc_Pf:</span>
 <span class="sd">        :param bus_area_indices:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">na</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">area_names</span><span class="p">)</span>
         <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">na</span><span class="p">,</span> <span class="n">na</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">)</span>
 
@@ -603,13 +604,13 @@
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Simulations.html#VeraGridEngine.Simulations.results_template.ResultsTemplate.get_bus_values_per_area">[docs]</a>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_bus_values_per_area</span><span class="p">(</span><span class="n">bus_values</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">area_names</span><span class="p">:</span> <span class="n">StrVec</span><span class="p">,</span> <span class="n">bus_area_indices</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Split array of bus-related values per area</span>
 <span class="sd">        :param bus_values:</span>
 <span class="sd">        :param area_names:</span>
 <span class="sd">        :param bus_area_indices:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">na</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">area_names</span><span class="p">)</span>
         <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">na</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">bus_values</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
 
@@ -626,7 +627,7 @@
                                    <span class="n">area_names</span><span class="p">:</span> <span class="n">StrVec</span><span class="p">,</span>
                                    <span class="n">bus_area_indices</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span>
                                    <span class="n">F</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">T</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Split array of branch-related values per area</span>
 <span class="sd">        :param branch_values:</span>
 <span class="sd">        :param area_names:</span>
@@ -634,7 +635,7 @@
 <span class="sd">        :param F:</span>
 <span class="sd">        :param T:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">na</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">area_names</span><span class="p">)</span>
         <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">na</span><span class="p">,</span> <span class="n">na</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">branch_values</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
 
@@ -651,7 +652,7 @@
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Simulations.html#VeraGridEngine.Simulations.results_template.ResultsTemplate.get_hvdc_values_per_area">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_hvdc_values_per_area</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hvdc_values</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">area_names</span><span class="p">:</span> <span class="n">StrVec</span><span class="p">,</span> <span class="n">bus_area_indices</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span>
                                  <span class="n">hvdc_F</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">hvdc_T</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Split array of hvdc-related values per area</span>
 <span class="sd">        :param hvdc_values:</span>
 <span class="sd">        :param area_names:</span>
@@ -659,7 +660,7 @@
 <span class="sd">        :param hvdc_F:</span>
 <span class="sd">        :param hvdc_T:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">na</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">area_names</span><span class="p">)</span>
         <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">na</span><span class="p">,</span> <span class="n">na</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">hvdc_values</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
 
@@ -675,41 +676,41 @@
 <div class="viewcode-block" id="ResultsTemplate.fill_circuit_info">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Simulations.html#VeraGridEngine.Simulations.results_template.ResultsTemplate.fill_circuit_info">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">fill_circuit_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">grid</span><span class="p">:</span> <span class="n">MultiCircuit</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :param grid:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">area_names</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">bus_area_indices</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">F</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">hvdc_F</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">hvdc_T</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">get_branch_areas_info</span><span class="p">()</span></div>
 
 
 <div class="viewcode-block" id="ResultsTemplate.fill_simulation_info">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Simulations.html#VeraGridEngine.Simulations.results_template.ResultsTemplate.fill_simulation_info">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">fill_simulation_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">grid</span><span class="p">:</span> <span class="n">MultiCircuit</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :param grid:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">area_names</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">bus_area_indices</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">F</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">hvdc_F</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">hvdc_T</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">get_branch_areas_info</span><span class="p">()</span></div>
 
 
 <div class="viewcode-block" id="ResultsTemplate.mdl">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Simulations.html#VeraGridEngine.Simulations.results_template.ResultsTemplate.mdl">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">mdl</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">result_type</span><span class="p">:</span> <span class="n">ResultTypes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ResultsTable</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get results model (overloaded in the respective implementations)</span>
 <span class="sd">        :param result_type: ResultTypes</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">pass</span></div>
 
 
 <div class="viewcode-block" id="ResultsTemplate.expand_clustered_results">
 <a class="viewcode-back" href="../../../rst_source/api/auto/VeraGridEngine.Simulations.html#VeraGridEngine.Simulations.results_template.ResultsTemplate.expand_clustered_results">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">expand_clustered_results</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Expand all arrays using the clustering info</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">using_clusters</span><span class="p">:</span>
 
@@ -719,7 +720,7 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">time_array</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">clustering_results</span><span class="o">.</span><span class="n">time_array</span>
 
                 <span class="c1"># NOTE: You might be tempted to change this loop to use the registered properties.</span>
-                <span class="c1">#       Don&#39;t do it, there may be unregistered properties that will fail if this doesn&#39;t</span>
+                <span class="c1">#       Don't do it, there may be unregistered properties that will fail if this doesn't</span>
                 <span class="c1">#       traverse all the actual properties of the class... this may be a future topic</span>
                 <span class="k">for</span> <span class="n">prop</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">CLASS_RESULTS_DECLARATIONS</span><span class="p">:</span>
                     <span class="k">if</span> <span class="n">prop</span><span class="o">.</span><span class="n">expandable</span><span class="p">:</span>
@@ -733,7 +734,7 @@
                                     <span class="n">arr</span> <span class="o">=</span> <span class="n">value</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">original_sample_idx</span><span class="p">]</span>  <span class="c1"># expand</span>
                                     <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prop</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">arr</span><span class="p">)</span>  <span class="c1"># overwrite the array</span>
                                 <span class="k">except</span> <span class="ne">IndexError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Index error in expand_clustered_results (1D) for </span><span class="si">{</span><span class="n">prop</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Index error in expand_clustered_results (1D) for </span><span class="si">{</span><span class="n">prop</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
                         <span class="k">elif</span> <span class="n">value</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
 
@@ -742,11 +743,11 @@
                                     <span class="n">arr</span> <span class="o">=</span> <span class="n">value</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">original_sample_idx</span><span class="p">,</span> <span class="p">:]</span>  <span class="c1"># expand</span>
                                     <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prop</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">arr</span><span class="p">)</span>  <span class="c1"># overwrite the array</span>
                                 <span class="k">except</span> <span class="ne">IndexError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Index error in expand_clustered_results (2D) for </span><span class="si">{</span><span class="n">prop</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Index error in expand_clustered_results (2D) for </span><span class="si">{</span><span class="n">prop</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
                         <span class="k">else</span><span class="p">:</span>
                             <span class="k">pass</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;No clusters!&quot;</span><span class="p">)</span></div>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">"No clusters!"</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="ResultsTemplate.parse_saved_data">
@@ -754,19 +755,19 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">parse_saved_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">grid</span><span class="p">:</span> <span class="n">MultiCircuit</span><span class="p">,</span>
                          <span class="n">data_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span>
                          <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span> <span class="o">=</span> <span class="n">Logger</span><span class="p">())</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :param grid: MultiCircuit</span>
 <span class="sd">        :param data_dict: Dictionary with the info loaded from disk</span>
 <span class="sd">        :param logger: Logger</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">time_array</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">get_time_array</span><span class="p">()</span>
 
         <span class="k">for</span> <span class="n">arr_name</span><span class="p">,</span> <span class="n">stored_data</span> <span class="ow">in</span> <span class="n">data_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
 
-            <span class="n">is_complex</span> <span class="o">=</span> <span class="s1">&#39;__complex__&#39;</span> <span class="ow">in</span> <span class="n">arr_name</span>
-            <span class="n">arr_name</span> <span class="o">=</span> <span class="n">arr_name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;__complex__&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+            <span class="n">is_complex</span> <span class="o">=</span> <span class="s1">'__complex__'</span> <span class="ow">in</span> <span class="n">arr_name</span>
+            <span class="n">arr_name</span> <span class="o">=</span> <span class="n">arr_name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">'__complex__'</span><span class="p">,</span> <span class="s1">''</span><span class="p">)</span>
 
             <span class="c1"># try to get the property of the saved file</span>
             <span class="n">res_prop</span><span class="p">:</span> <span class="n">ResultsProperty</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_variables</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">arr_name</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
@@ -818,7 +819,7 @@
 
                 <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">curr_value</span><span class="p">,</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Index</span><span class="p">)):</span>
 
-                    <span class="c1"># if results arrays are exactly 0, don&#39;t check</span>
+                    <span class="c1"># if results arrays are exactly 0, don't check</span>
                     <span class="n">curr_shape</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">curr_value</span><span class="p">)</span>
                     <span class="n">dont_check</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">curr_shape</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="nb">sum</span><span class="p">(</span><span class="n">curr_shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span>
                     <span class="n">both_empty</span> <span class="o">=</span> <span class="p">(</span>
@@ -833,7 +834,7 @@
                     <span class="k">elif</span> <span class="n">both_empty</span><span class="p">:</span>
                         <span class="k">pass</span>
                     <span class="k">else</span><span class="p">:</span>
-                        <span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">&quot;Wrong array shape&quot;</span><span class="p">,</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">"Wrong array shape"</span><span class="p">,</span>
                                          <span class="n">device_class</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
                                          <span class="n">device_property</span><span class="o">=</span><span class="n">res_prop</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
                                          <span class="n">value</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">array</span><span class="p">)),</span>

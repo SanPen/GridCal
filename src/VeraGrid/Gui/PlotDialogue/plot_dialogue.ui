@@ -14,171 +14,179 @@
    <string>Plot</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-  <layout class="QVBoxLayout" name="verticalLayout">
-   <item>
-    <widget class="QToolBar" name="plotToolBar">
-     <property name="movable">
-      <bool>false</bool>
-     </property>
-     <property name="floatable">
-      <bool>false</bool>
-     </property>
-     <addaction name="actionopencloseTree"/>
-     <addaction name="separator"/>
-     <addaction name="actionAddPlot"/>
-     <addaction name="actionSaveImage"/>
-     <addaction name="actionResetView"/>
-    </widget>
-   </item>
-   <item>
-    <widget class="QSplitter" name="plotSplitter">
-     <property name="orientation">
-      <enum>Qt::Orientation::Horizontal</enum>
-     </property>
-     <widget class="QFrame" name="seriesSelectorFrame">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <item>
+     <widget class="QToolBar" name="plotToolBar">
+      <property name="movable">
+       <bool>false</bool>
       </property>
-      <property name="minimumSize">
-       <size>
-        <width>220</width>
-        <height>0</height>
-       </size>
+      <property name="floatable">
+       <bool>false</bool>
       </property>
-      <property name="visible">
-       <bool>true</bool>
-      </property>
-      <property name="frameShape">
-       <enum>QFrame::Shape::NoFrame</enum>
-      </property>
-      <property name="frameShadow">
-       <enum>QFrame::Shadow::Sunken</enum>
-      </property>
-      <layout class="QVBoxLayout" name="seriesSelectorLayout">
-       <item>
-        <widget class="QFrame" name="frame">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="frameShape">
-          <enum>QFrame::Shape::NoFrame</enum>
-         </property>
-         <property name="frameShadow">
-          <enum>QFrame::Shadow::Raised</enum>
-         </property>
-         <layout class="QHBoxLayout" name="horizontalLayout">
-          <property name="leftMargin">
-           <number>0</number>
-          </property>
-          <property name="topMargin">
-           <number>0</number>
-          </property>
-          <property name="rightMargin">
-           <number>0</number>
-          </property>
-          <property name="bottomMargin">
-           <number>0</number>
-          </property>
-          <item>
-           <widget class="QLineEdit" name="seriesSearchLineEdit">
-            <property name="placeholderText">
-             <string>Search series</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="selectAllButton">
-            <property name="toolTip">
-             <string>Select all series</string>
-            </property>
-            <property name="text">
-             <string/>
-            </property>
-            <property name="icon">
-             <iconset resource="../Icons/icons.qrc">
-              <normaloff>:/Icons/icons/check_all.png</normaloff>:/Icons/icons/check_all.png</iconset>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="selectNoneButton">
-            <property name="toolTip">
-             <string>Select no series</string>
-            </property>
-            <property name="text">
-             <string/>
-            </property>
-            <property name="icon">
-             <iconset resource="../Icons/icons.qrc">
-              <normaloff>:/Icons/icons/uncheck_all.png</normaloff>:/Icons/icons/uncheck_all.png</iconset>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item>
-        <widget class="QTreeWidget" name="seriesTreeWidget">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="frameShape">
-          <enum>QFrame::Shape::NoFrame</enum>
-         </property>
-         <property name="headerHidden">
-          <bool>true</bool>
-         </property>
-         <column>
-          <property name="text">
-           <string notr="true">1</string>
-          </property>
-         </column>
-        </widget>
-       </item>
-      </layout>
+      <addaction name="actionopencloseTree"/>
+      <addaction name="separator"/>
+      <addaction name="actionAddPlot"/>
+      <addaction name="actionx_y"/>
+      <addaction name="separator"/>
+      <addaction name="actionStacked_plot"/>
+      <addaction name="actionBar_plot"/>
+      <addaction name="actionCDF"/>
+      <addaction name="actionAbs"/>
+      <addaction name="actionTranspose"/>
+      <addaction name="separator"/>
+      <addaction name="actionResetView"/>
+      <addaction name="actionSaveImage"/>
      </widget>
-     <widget class="QTabWidget" name="plotTabs">
-      <property name="tabPosition">
-       <enum>QTabWidget::TabPosition::South</enum>
+    </item>
+    <item>
+     <widget class="QSplitter" name="plotSplitter">
+      <property name="orientation">
+       <enum>Qt::Orientation::Horizontal</enum>
       </property>
-      <property name="tabsClosable">
-       <bool>true</bool>
-      </property>
-      <widget class="QWidget" name="plotTab">
-       <attribute name="title">
-        <string>Plot</string>
-       </attribute>
-       <layout class="QVBoxLayout" name="plotTabLayout">
-        <property name="leftMargin">
-         <number>0</number>
-        </property>
-        <property name="topMargin">
-         <number>0</number>
-        </property>
-        <property name="rightMargin">
-         <number>0</number>
-        </property>
-        <property name="bottomMargin">
-         <number>0</number>
-        </property>
+      <widget class="QFrame" name="seriesSelectorFrame">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>220</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="visible">
+        <bool>true</bool>
+       </property>
+       <property name="frameShape">
+        <enum>QFrame::Shape::NoFrame</enum>
+       </property>
+       <property name="frameShadow">
+        <enum>QFrame::Shadow::Sunken</enum>
+       </property>
+       <layout class="QVBoxLayout" name="seriesSelectorLayout">
         <item>
-         <widget class="GraphsWidget" name="plotwidget" native="true"/>
+         <widget class="QFrame" name="frame">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="frameShape">
+           <enum>QFrame::Shape::NoFrame</enum>
+          </property>
+          <property name="frameShadow">
+           <enum>QFrame::Shadow::Raised</enum>
+          </property>
+          <layout class="QHBoxLayout" name="horizontalLayout">
+           <property name="leftMargin">
+            <number>0</number>
+           </property>
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <property name="rightMargin">
+            <number>0</number>
+           </property>
+           <property name="bottomMargin">
+            <number>0</number>
+           </property>
+           <item>
+            <widget class="QLineEdit" name="seriesSearchLineEdit">
+             <property name="placeholderText">
+              <string>Search series</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="selectAllButton">
+             <property name="toolTip">
+              <string>Select all series</string>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+             <property name="icon">
+              <iconset resource="../Icons/icons.qrc">
+               <normaloff>:/Icons/icons/check_all.png</normaloff>:/Icons/icons/check_all.png</iconset>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="selectNoneButton">
+             <property name="toolTip">
+              <string>Select no series</string>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+             <property name="icon">
+              <iconset resource="../Icons/icons.qrc">
+               <normaloff>:/Icons/icons/uncheck_all.png</normaloff>:/Icons/icons/uncheck_all.png</iconset>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <widget class="QTreeWidget" name="seriesTreeWidget">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="frameShape">
+           <enum>QFrame::Shape::NoFrame</enum>
+          </property>
+          <property name="headerHidden">
+           <bool>true</bool>
+          </property>
+          <column>
+           <property name="text">
+            <string notr="true">1</string>
+           </property>
+          </column>
+         </widget>
         </item>
        </layout>
       </widget>
+      <widget class="QTabWidget" name="plotTabs">
+       <property name="tabPosition">
+        <enum>QTabWidget::TabPosition::South</enum>
+       </property>
+       <property name="tabsClosable">
+        <bool>true</bool>
+       </property>
+       <widget class="QWidget" name="plotTab">
+        <attribute name="title">
+         <string>Plot</string>
+        </attribute>
+        <layout class="QVBoxLayout" name="plotTabLayout">
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
+         <item>
+          <widget class="GraphsWidget" name="plotwidget" native="true"/>
+         </item>
+        </layout>
+       </widget>
+      </widget>
      </widget>
-    </widget>
-   </item>
-  </layout>
+    </item>
+   </layout>
   </widget>
   <action name="actionSaveImage">
    <property name="icon">
@@ -232,6 +240,108 @@
    </property>
    <property name="toolTip">
     <string>Add another plot tab</string>
+   </property>
+  </action>
+  <action name="actionCDF">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../Icons/icons.qrc">
+     <normaloff>:/Icons/icons/cdf.png</normaloff>:/Icons/icons/cdf.png</iconset>
+   </property>
+   <property name="text">
+    <string>CDF</string>
+   </property>
+   <property name="toolTip">
+    <string>Cummulative density function plot</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::NoRole</enum>
+   </property>
+  </action>
+  <action name="actionAbs">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../Icons/icons.qrc">
+     <normaloff>:/Icons/icons/abs.png</normaloff>:/Icons/icons/abs.png</iconset>
+   </property>
+   <property name="text">
+    <string>Abs</string>
+   </property>
+   <property name="toolTip">
+    <string>Absolute of values</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::NoRole</enum>
+   </property>
+  </action>
+  <action name="actionx_y">
+   <property name="icon">
+    <iconset resource="../Icons/icons.qrc">
+     <normaloff>:/Icons/icons/x_y.png</normaloff>:/Icons/icons/x_y.png</iconset>
+   </property>
+   <property name="text">
+    <string>x,y</string>
+   </property>
+   <property name="toolTip">
+    <string>New X, Y plot from thie current data</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::NoRole</enum>
+   </property>
+  </action>
+  <action name="actionTranspose">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../Icons/icons.qrc">
+     <normaloff>:/Icons/icons/transpose.png</normaloff>:/Icons/icons/transpose.png</iconset>
+   </property>
+   <property name="text">
+    <string>Transpose</string>
+   </property>
+   <property name="toolTip">
+    <string>Traspose data</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::NoRole</enum>
+   </property>
+  </action>
+  <action name="actionStacked_plot">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../Icons/icons.qrc">
+     <normaloff>:/Icons/icons/stacked_plot.png</normaloff>:/Icons/icons/stacked_plot.png</iconset>
+   </property>
+   <property name="text">
+    <string>Stacked plot</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::NoRole</enum>
+   </property>
+  </action>
+  <action name="actionBar_plot">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../Icons/icons.qrc">
+     <normaloff>:/Icons/icons/stats.png</normaloff>:/Icons/icons/stats.png</iconset>
+   </property>
+   <property name="text">
+    <string>Bar plot</string>
+   </property>
+   <property name="toolTip">
+    <string>Bar plot mode</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::NoRole</enum>
    </property>
   </action>
  </widget>

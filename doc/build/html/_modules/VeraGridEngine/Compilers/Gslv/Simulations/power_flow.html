@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Compilers.Gslv.Simulations.power_flow &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Compilers.Gslv.Simulations.power_flow &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/license.html">📜 License</a></li>
@@ -128,12 +129,12 @@
 
 <div class="viewcode-block" id="get_gslv_pf_options">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Compilers.Gslv.Simulations.html#VeraGridEngine.Compilers.Gslv.Simulations.power_flow.get_gslv_pf_options">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">get_gslv_pf_options</span><span class="p">(</span><span class="n">opt</span><span class="p">:</span> <span class="n">PowerFlowOptions</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;pg.PowerFlowOptions&quot;</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_gslv_pf_options</span><span class="p">(</span><span class="n">opt</span><span class="p">:</span> <span class="n">PowerFlowOptions</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"pg.PowerFlowOptions"</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Translate VeraGrid power flow options to GSLV power flow options</span>
 <span class="sd">    :param opt:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">solver_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">SolverType</span><span class="o">.</span><span class="n">NR</span><span class="p">:</span> <span class="n">pg</span><span class="o">.</span><span class="n">SolverType</span><span class="o">.</span><span class="n">NR</span><span class="p">,</span>
                    <span class="n">SolverType</span><span class="o">.</span><span class="n">Linear</span><span class="p">:</span> <span class="n">pg</span><span class="o">.</span><span class="n">SolverType</span><span class="o">.</span><span class="n">DC</span><span class="p">,</span>
                    <span class="n">SolverType</span><span class="o">.</span><span class="n">HELM</span><span class="p">:</span> <span class="n">pg</span><span class="o">.</span><span class="n">SolverType</span><span class="o">.</span><span class="n">HELM</span><span class="p">,</span>
@@ -151,7 +152,7 @@
     <span class="k">else</span><span class="p">:</span>
         <span class="n">solver_type</span> <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">SolverType</span><span class="o">.</span><span class="n">NR</span>
 
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    solver_type: GSLVpa.SolverType = &lt;SolverType.NR: 0&gt;, </span>
 <span class="sd">    retry_with_other_methods: bool = True, </span>
 <span class="sd">    verbose: bool = False, </span>
@@ -164,9 +165,9 @@
 <span class="sd">    ignore_single_node_islands: bool = False, </span>
 <span class="sd">    correction_parameter: float = 0.5, </span>
 <span class="sd">    mu0: float = 1.0</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    solver_type: pygslv.SolverType = &lt;SolverType.NR: 0&gt;, </span>
 <span class="sd">    retry_with_other_methods: bool = True, </span>
 <span class="sd">    verbose: int = 0, </span>
@@ -187,7 +188,7 @@
 <span class="sd">    use_stored_guess: bool = False, </span>
 <span class="sd">    generate_report: bool = False)</span>
 
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">return</span> <span class="n">pg</span><span class="o">.</span><span class="n">PowerFlowOptions</span><span class="p">(</span>
         <span class="n">solver_type</span><span class="o">=</span><span class="n">solver_type</span><span class="p">,</span>
@@ -223,8 +224,8 @@
             <span class="n">time_series</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
             <span class="n">time_indices</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">IntVec</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
             <span class="n">opf_results</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="n">OptimalPowerFlowResults</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;pg.PowerFlowResults&quot;</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+            <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"pg.PowerFlowResults"</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    GSLV power flow</span>
 <span class="sd">    :param logger: Optional execution logger.</span>
 <span class="sd">    :param circuit: MultiCircuit instance</span>
@@ -233,7 +234,7 @@
 <span class="sd">    :param time_indices: Array of time indices</span>
 <span class="sd">    :param opf_results: Instance of</span>
 <span class="sd">    :return: GSLV Power flow results object</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">logger_obj</span><span class="p">:</span> <span class="n">Logger</span>
     <span class="n">override_branch_controls</span> <span class="o">=</span> <span class="ow">not</span> <span class="p">(</span><span class="n">pf_opt</span><span class="o">.</span><span class="n">control_taps_modules</span> <span class="ow">and</span> <span class="n">pf_opt</span><span class="o">.</span><span class="n">control_taps_phase</span><span class="p">)</span>
 
@@ -256,7 +257,7 @@
             <span class="n">time_indices</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">circuit</span><span class="o">.</span><span class="n">get_time_number</span><span class="p">())]</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">time_indices</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">time_indices</span><span class="p">)</span>
-        <span class="c1"># GSLV&#39;s batched multi-threaded PF path is not stable with controllable shunts.</span>
+        <span class="c1"># GSLV's batched multi-threaded PF path is not stable with controllable shunts.</span>
         <span class="n">n_threads</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">circuit</span><span class="o">.</span><span class="n">get_controllable_shunts</span><span class="p">())</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="mi">0</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">time_indices</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span>
@@ -268,7 +269,7 @@
                                 <span class="n">time_indices</span><span class="o">=</span><span class="n">time_indices</span><span class="p">,</span>
                                 <span class="n">n_threads</span><span class="o">=</span><span class="n">n_threads</span><span class="p">)</span>
 
-    <span class="n">logger_obj</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="s2">&quot;gslv time&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">t0</span><span class="p">)</span><span class="si">}</span><span class="s2"> s&quot;</span><span class="p">)</span>
+    <span class="n">logger_obj</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="s2">"gslv time"</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">t0</span><span class="p">)</span><span class="si">}</span><span class="s2"> s"</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">pf_res</span></div>
 
@@ -277,14 +278,14 @@
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Compilers.Gslv.Simulations.html#VeraGridEngine.Compilers.Gslv.Simulations.power_flow.translate_gslv_pf_results">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">translate_gslv_pf_results</span><span class="p">(</span>
         <span class="n">grid</span><span class="p">:</span> <span class="n">MultiCircuit</span><span class="p">,</span>
-        <span class="n">res</span><span class="p">:</span> <span class="s2">&quot;pg.PowerFlowResults&quot;</span><span class="p">,</span>
+        <span class="n">res</span><span class="p">:</span> <span class="s2">"pg.PowerFlowResults"</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PowerFlowResults</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Translate the GSLV Power Analytics results back to VeraGrid</span>
 <span class="sd">    :param grid: MultiCircuit instance</span>
-<span class="sd">    :param res: GSLV&#39;s PowerFlowResults instance</span>
+<span class="sd">    :param res: GSLV's PowerFlowResults instance</span>
 <span class="sd">    :return: PowerFlowResults instance</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">results</span> <span class="o">=</span> <span class="n">PowerFlowResults</span><span class="p">(</span>
         <span class="n">n</span><span class="o">=</span><span class="n">grid</span><span class="o">.</span><span class="n">get_bus_number</span><span class="p">(),</span>
         <span class="n">m</span><span class="o">=</span><span class="n">grid</span><span class="o">.</span><span class="n">get_branch_number</span><span class="p">(</span><span class="n">add_switch</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">add_vsc</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">add_hvdc</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
@@ -358,12 +359,12 @@
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Compilers.Gslv.Simulations.html#VeraGridEngine.Compilers.Gslv.Simulations.power_flow.translate_gslv_pf_time_series_results">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">translate_gslv_pf_time_series_results</span><span class="p">(</span>
         <span class="n">grid</span><span class="p">:</span> <span class="n">MultiCircuit</span><span class="p">,</span>
-        <span class="n">res</span><span class="p">:</span> <span class="s2">&quot;pg.PowerFlowResults&quot;</span><span class="p">,</span>
+        <span class="n">res</span><span class="p">:</span> <span class="s2">"pg.PowerFlowResults"</span><span class="p">,</span>
         <span class="n">options</span><span class="p">:</span> <span class="n">PowerFlowOptions</span><span class="p">,</span>
         <span class="n">time_indices</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">IntVec</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span>
         <span class="n">clustering_results</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PowerFlowTimeSeriesResults</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Translate GSLV time-series power-flow results to VeraGrid results.</span>
 
 <span class="sd">    :param grid: MultiCircuit instance.</span>
@@ -372,7 +373,7 @@
 <span class="sd">    :param time_indices: Requested global time indices, or ``None`` for all.</span>
 <span class="sd">    :param clustering_results: Optional clustering metadata.</span>
 <span class="sd">    :return: PowerFlowTimeSeriesResults instance.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">time_indices</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">selected_time_indices</span><span class="p">:</span> <span class="n">IntVec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">grid</span><span class="o">.</span><span class="n">get_all_time_indices</span><span class="p">(),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>

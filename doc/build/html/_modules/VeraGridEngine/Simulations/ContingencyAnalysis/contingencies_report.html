@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Simulations.ContingencyAnalysis.contingencies_report &mdash; VeraGrid 6.7.13 documentation</title>
+  <title>VeraGridEngine.Simulations.ContingencyAnalysis.contingencies_report &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=16fbabd8"></script>
+      <script src="../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -124,7 +124,7 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.ContingencyAnalysis.html#VeraGridEngine.Simulations.ContingencyAnalysis.contingencies_report.get_ptdf_comp_numba">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_ptdf_comp_numba</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">indices</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">indptr</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">PTDF</span><span class="p">:</span> <span class="n">Mat</span><span class="p">,</span> <span class="n">m</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">bd_indices</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    This computes the compensatd PTDF for a single branch</span>
 <span class="sd">    PTDFc = MLODF[m, βδ] x PTDF[βδ, :] + PTDF[m, :]</span>
 <span class="sd">    :param data: MLODF[:, βδ].data</span>
@@ -134,7 +134,7 @@
 <span class="sd">    :param m: intex of the monitored branch</span>
 <span class="sd">    :param bd_indices: indices of the failed branches</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># Perform the operation</span>
     <span class="c1"># We need to create a copy. Otherwise we were modifying the PTDF matrix</span>
     <span class="c1"># and over several passes it degraded making curtailments not converge</span>
@@ -154,14 +154,14 @@
 <div class="viewcode-block" id="get_ptdf_comp">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.ContingencyAnalysis.html#VeraGridEngine.Simulations.ContingencyAnalysis.contingencies_report.get_ptdf_comp">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_ptdf_comp</span><span class="p">(</span><span class="n">mon_br_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">branch_indices</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">mlodf_factors</span><span class="p">:</span> <span class="n">csc_matrix</span><span class="p">,</span> <span class="n">PTDF</span><span class="p">:</span> <span class="n">Mat</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Get the compensated PTDF values for a single monitored branch</span>
 <span class="sd">    :param mon_br_idx:</span>
 <span class="sd">    :param branch_indices:</span>
 <span class="sd">    :param mlodf_factors:</span>
 <span class="sd">    :param PTDF:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># PTDFc = MLODF[m, βδ] x PTDF[βδ, :] + PTDF[m, :]</span>
     <span class="c1"># PTDFc = mlodf_factors[mon_br_idx, :] @ PTDF[branch_indices, :] + PTDF[mon_br_idx, :]</span>
 
@@ -181,54 +181,54 @@
 <div class="viewcode-block" id="ContingencyTableEntry">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.ContingencyAnalysis.html#VeraGridEngine.Simulations.ContingencyAnalysis.contingencies_report.ContingencyTableEntry">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">ContingencyTableEntry</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Entry of a contingency report</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;time_index&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;t_prob&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;mon_idx&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;con_group_idx&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;area_from&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;area_to&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;base_name&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;contingency_name&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;base_rating&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;contingency_rating&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;srap_rating&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;base_flow&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;post_contingency_flow&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;post_srap_flow&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;base_loading&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;post_contingency_loading&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;post_srap_loading&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;msg_ov&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;msg_srap&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;srap_power&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;solved_by_srap&quot;</span><span class="p">,</span>
+        <span class="s2">"time_index"</span><span class="p">,</span>
+        <span class="s2">"t_prob"</span><span class="p">,</span>
+        <span class="s2">"mon_idx"</span><span class="p">,</span>
+        <span class="s2">"con_group_idx"</span><span class="p">,</span>
+        <span class="s2">"area_from"</span><span class="p">,</span>
+        <span class="s2">"area_to"</span><span class="p">,</span>
+        <span class="s2">"base_name"</span><span class="p">,</span>
+        <span class="s2">"contingency_name"</span><span class="p">,</span>
+        <span class="s2">"base_rating"</span><span class="p">,</span>
+        <span class="s2">"contingency_rating"</span><span class="p">,</span>
+        <span class="s2">"srap_rating"</span><span class="p">,</span>
+        <span class="s2">"base_flow"</span><span class="p">,</span>
+        <span class="s2">"post_contingency_flow"</span><span class="p">,</span>
+        <span class="s2">"post_srap_flow"</span><span class="p">,</span>
+        <span class="s2">"base_loading"</span><span class="p">,</span>
+        <span class="s2">"post_contingency_loading"</span><span class="p">,</span>
+        <span class="s2">"post_srap_loading"</span><span class="p">,</span>
+        <span class="s2">"msg_ov"</span><span class="p">,</span>
+        <span class="s2">"msg_srap"</span><span class="p">,</span>
+        <span class="s2">"srap_power"</span><span class="p">,</span>
+        <span class="s2">"solved_by_srap"</span><span class="p">,</span>
     <span class="p">)</span>
 
-    <span class="n">__hdr__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Time idx&quot;</span><span class="p">,</span>
-               <span class="s2">&quot;Time&quot;</span><span class="p">,</span>
-               <span class="s2">&quot;Probability cluster&quot;</span><span class="p">,</span>
-               <span class="s2">&quot;Area 1&quot;</span><span class="p">,</span>
-               <span class="s2">&quot;Area 2&quot;</span><span class="p">,</span>
-               <span class="s2">&quot;Monitored&quot;</span><span class="p">,</span>
-               <span class="s2">&quot;Contingency&quot;</span><span class="p">,</span>
-               <span class="s2">&quot;Base rating (MW)&quot;</span><span class="p">,</span>
-               <span class="s2">&quot;Contingency rating (MW)&quot;</span><span class="p">,</span>
-               <span class="s2">&quot;SRAP rating (MW)&quot;</span><span class="p">,</span>
-               <span class="s2">&quot;Base flow (MW)&quot;</span><span class="p">,</span>
-               <span class="s2">&quot;Post-Contingency flow (MW)&quot;</span><span class="p">,</span>
-               <span class="s2">&quot;Post-SRAP flow (MW)&quot;</span><span class="p">,</span>
-               <span class="s2">&quot;Base loading (pu)&quot;</span><span class="p">,</span>
-               <span class="s2">&quot;Post-Contingency loading (pu)&quot;</span><span class="p">,</span>
-               <span class="s2">&quot;Post-SRAP loading (pu)&quot;</span><span class="p">,</span>
-               <span class="s2">&quot;Overload&quot;</span><span class="p">,</span>
-               <span class="s2">&quot;SRAP availability&quot;</span><span class="p">,</span>
-               <span class="s2">&quot;SRAP Power (MW)&quot;</span><span class="p">,</span>
-               <span class="s2">&quot;Solved with SRAP&quot;</span><span class="p">]</span>
+    <span class="n">__hdr__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"Time idx"</span><span class="p">,</span>
+               <span class="s2">"Time"</span><span class="p">,</span>
+               <span class="s2">"Probability cluster"</span><span class="p">,</span>
+               <span class="s2">"Area 1"</span><span class="p">,</span>
+               <span class="s2">"Area 2"</span><span class="p">,</span>
+               <span class="s2">"Monitored"</span><span class="p">,</span>
+               <span class="s2">"Contingency"</span><span class="p">,</span>
+               <span class="s2">"Base rating (MW)"</span><span class="p">,</span>
+               <span class="s2">"Contingency rating (MW)"</span><span class="p">,</span>
+               <span class="s2">"SRAP rating (MW)"</span><span class="p">,</span>
+               <span class="s2">"Base flow (MW)"</span><span class="p">,</span>
+               <span class="s2">"Post-Contingency flow (MW)"</span><span class="p">,</span>
+               <span class="s2">"Post-SRAP flow (MW)"</span><span class="p">,</span>
+               <span class="s2">"Base loading (pu)"</span><span class="p">,</span>
+               <span class="s2">"Post-Contingency loading (pu)"</span><span class="p">,</span>
+               <span class="s2">"Post-SRAP loading (pu)"</span><span class="p">,</span>
+               <span class="s2">"Overload"</span><span class="p">,</span>
+               <span class="s2">"SRAP availability"</span><span class="p">,</span>
+               <span class="s2">"SRAP Power (MW)"</span><span class="p">,</span>
+               <span class="s2">"Solved with SRAP"</span><span class="p">]</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                  <span class="n">time_index</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
@@ -252,7 +252,7 @@
                  <span class="n">msg_srap</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
                  <span class="n">srap_power</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
                  <span class="n">solved_by_srap</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        ContingencyTableEntry constructor</span>
 <span class="sd">        :param time_index:</span>
 <span class="sd">        :param t_prob:</span>
@@ -273,7 +273,7 @@
 <span class="sd">        :param msg_srap:</span>
 <span class="sd">        :param srap_power:</span>
 <span class="sd">        :param solved_by_srap:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">time_index</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">time_index</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">t_prob</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">t_prob</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">mon_idx</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">mon_idx</span>
@@ -299,23 +299,23 @@
 <div class="viewcode-block" id="ContingencyTableEntry.get_headers">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.ContingencyAnalysis.html#VeraGridEngine.Simulations.ContingencyAnalysis.contingencies_report.ContingencyTableEntry.get_headers">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_headers</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the headers</span>
 <span class="sd">        :return: list of header names</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__hdr__</span></div>
 
 
 <div class="viewcode-block" id="ContingencyTableEntry.to_list">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.ContingencyAnalysis.html#VeraGridEngine.Simulations.ContingencyAnalysis.contingencies_report.ContingencyTableEntry.to_list">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">to_list</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time_array</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DatetimeIndex</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span> <span class="n">time_format</span><span class="o">=</span><span class="s1">&#39;%Y/%m/</span><span class="si">%d</span><span class="s1">  %H:%M.%S&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Any</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">to_list</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time_array</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DatetimeIndex</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span> <span class="n">time_format</span><span class="o">=</span><span class="s1">'%Y/%m/</span><span class="si">%d</span><span class="s1">  %H:%M.%S'</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get a list representation of this entry</span>
 <span class="sd">        :param time_array: optional time array to get the time</span>
 <span class="sd">        :param time_format: optional time format to display the time</span>
 <span class="sd">        :return: List[Any]</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">t_str</span> <span class="o">=</span> <span class="n">time_array</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">time_index</span><span class="p">]</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="n">time_format</span><span class="p">)</span> <span class="k">if</span> <span class="n">time_array</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
+<span class="sd">        """</span>
+        <span class="n">t_str</span> <span class="o">=</span> <span class="n">time_array</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">time_index</span><span class="p">]</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="n">time_format</span><span class="p">)</span> <span class="k">if</span> <span class="n">time_array</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s2">""</span>
 
         <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">time_index</span><span class="p">,</span>
                 <span class="n">t_str</span><span class="p">,</span>
@@ -341,21 +341,21 @@
 
 <div class="viewcode-block" id="ContingencyTableEntry.to_string_list">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.ContingencyAnalysis.html#VeraGridEngine.Simulations.ContingencyAnalysis.contingencies_report.ContingencyTableEntry.to_string_list">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">to_string_list</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time_array</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DatetimeIndex</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span> <span class="n">time_format</span><span class="o">=</span><span class="s1">&#39;%Y/%m/</span><span class="si">%d</span><span class="s1">  %H:%M.%S&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">to_string_list</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time_array</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DatetimeIndex</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span> <span class="n">time_format</span><span class="o">=</span><span class="s1">'%Y/%m/</span><span class="si">%d</span><span class="s1">  %H:%M.%S'</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get list of string values</span>
 <span class="sd">        :return: List[str]</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_list</span><span class="p">(</span><span class="n">time_array</span><span class="o">=</span><span class="n">time_array</span><span class="p">,</span> <span class="n">time_format</span><span class="o">=</span><span class="n">time_format</span><span class="p">)]</span></div>
 
 
 <div class="viewcode-block" id="ContingencyTableEntry.to_array">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.ContingencyAnalysis.html#VeraGridEngine.Simulations.ContingencyAnalysis.contingencies_report.ContingencyTableEntry.to_array">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">to_array</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time_array</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DatetimeIndex</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span> <span class="n">time_format</span><span class="o">=</span><span class="s1">&#39;%Y/%m/</span><span class="si">%d</span><span class="s1">  %H:%M.%S&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StrVec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">to_array</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time_array</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DatetimeIndex</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span> <span class="n">time_format</span><span class="o">=</span><span class="s1">'%Y/%m/</span><span class="si">%d</span><span class="s1">  %H:%M.%S'</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StrVec</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get array of string values</span>
 <span class="sd">        :return: StrVec</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">to_string_list</span><span class="p">(</span><span class="n">time_array</span><span class="o">=</span><span class="n">time_array</span><span class="p">,</span> <span class="n">time_format</span><span class="o">=</span><span class="n">time_format</span><span class="p">))</span></div>
 </div>
 
@@ -364,25 +364,25 @@
 <div class="viewcode-block" id="ContingencyResultsReport">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.ContingencyAnalysis.html#VeraGridEngine.Simulations.ContingencyAnalysis.contingencies_report.ContingencyResultsReport">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">ContingencyResultsReport</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Contingency results report table</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
-    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;entries&quot;</span><span class="p">,)</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"entries"</span><span class="p">,)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Constructor</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">entries</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">ContingencyTableEntry</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
 
 <div class="viewcode-block" id="ContingencyResultsReport.add_entry">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.ContingencyAnalysis.html#VeraGridEngine.Simulations.ContingencyAnalysis.contingencies_report.ContingencyResultsReport.add_entry">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">add_entry</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entry</span><span class="p">:</span> <span class="n">ContingencyTableEntry</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Add contingencies entry</span>
 <span class="sd">        :param entry: ContingencyTableEntry</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">entries</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span></div>
 
 
@@ -411,7 +411,7 @@
             <span class="n">srap_power</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
             <span class="n">solved_by_srap</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
 
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Add report data</span>
 <span class="sd">        :param time_index:</span>
 <span class="sd">        :param mon_idx:</span>
@@ -435,7 +435,7 @@
 <span class="sd">        :param srap_power:</span>
 <span class="sd">        :param solved_by_srap:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">add_entry</span><span class="p">(</span><span class="n">ContingencyTableEntry</span><span class="p">(</span>
             <span class="n">time_index</span><span class="o">=</span><span class="n">time_index</span><span class="p">,</span>
             <span class="n">t_prob</span><span class="o">=</span><span class="n">t_prob</span><span class="p">,</span>
@@ -463,31 +463,31 @@
 
 <div class="viewcode-block" id="ContingencyResultsReport.merge">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.ContingencyAnalysis.html#VeraGridEngine.Simulations.ContingencyAnalysis.contingencies_report.ContingencyResultsReport.merge">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">merge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="s2">&quot;ContingencyResultsReport&quot;</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">merge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="s2">"ContingencyResultsReport"</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Add another ContingencyResultsReport in-place</span>
 <span class="sd">        :param other: ContingencyResultsReport instance</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">entries</span> <span class="o">+=</span> <span class="n">other</span><span class="o">.</span><span class="n">entries</span></div>
 
 
 <div class="viewcode-block" id="ContingencyResultsReport.size">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.ContingencyAnalysis.html#VeraGridEngine.Simulations.ContingencyAnalysis.contingencies_report.ContingencyResultsReport.size">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">size</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the size</span>
 <span class="sd">        :return: number of entries</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">entries</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="ContingencyResultsReport.n_cols">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.ContingencyAnalysis.html#VeraGridEngine.Simulations.ContingencyAnalysis.contingencies_report.ContingencyResultsReport.n_cols">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">n_cols</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Number of columns</span>
 <span class="sd">        :return: int</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_headers</span><span class="p">())</span></div>
 
 
@@ -495,30 +495,30 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.ContingencyAnalysis.html#VeraGridEngine.Simulations.ContingencyAnalysis.contingencies_report.ContingencyResultsReport.get_headers">[docs]</a>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_headers</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the headers</span>
 <span class="sd">        :return: List[str]</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">ContingencyTableEntry</span><span class="o">.</span><span class="n">__hdr__</span></div>
 
 
 <div class="viewcode-block" id="ContingencyResultsReport.get_index">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.ContingencyAnalysis.html#VeraGridEngine.Simulations.ContingencyAnalysis.contingencies_report.ContingencyResultsReport.get_index">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_index</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">IntVec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the index</span>
 <span class="sd">        :return: IntVec</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">())</span></div>
 
 
 <div class="viewcode-block" id="ContingencyResultsReport.get_data">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.ContingencyAnalysis.html#VeraGridEngine.Simulations.ContingencyAnalysis.contingencies_report.ContingencyResultsReport.get_data">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">get_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time_array</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DatetimeIndex</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">time_format</span><span class="o">=</span><span class="s1">&#39;%Y/%m/</span><span class="si">%d</span><span class="s1">  %H:%M.%S&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StrMat</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time_array</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DatetimeIndex</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">time_format</span><span class="o">=</span><span class="s1">'%Y/%m/</span><span class="si">%d</span><span class="s1">  %H:%M.%S'</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StrMat</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get data as list of lists of strings</span>
 <span class="sd">        :return: List[List[str]]</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_cols</span><span class="p">()),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">e</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">entries</span><span class="p">):</span>
             <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="n">to_array</span><span class="p">(</span><span class="n">time_array</span><span class="o">=</span><span class="n">time_array</span><span class="p">,</span> <span class="n">time_format</span><span class="o">=</span><span class="n">time_format</span><span class="p">)</span>
@@ -527,11 +527,11 @@
 
 <div class="viewcode-block" id="ContingencyResultsReport.get_df">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.ContingencyAnalysis.html#VeraGridEngine.Simulations.ContingencyAnalysis.contingencies_report.ContingencyResultsReport.get_df">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">get_df</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time_array</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DatetimeIndex</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span> <span class="n">time_format</span><span class="o">=</span><span class="s1">&#39;%Y/%m/</span><span class="si">%d</span><span class="s1">  %H:%M.%S&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_df</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time_array</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DatetimeIndex</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span> <span class="n">time_format</span><span class="o">=</span><span class="s1">'%Y/%m/</span><span class="si">%d</span><span class="s1">  %H:%M.%S'</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get data as pandas DataFrame</span>
 <span class="sd">        :return: DataFrame</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">get_data</span><span class="p">(</span><span class="n">time_array</span><span class="o">=</span><span class="n">time_array</span><span class="p">,</span> <span class="n">time_format</span><span class="o">=</span><span class="n">time_format</span><span class="p">),</span>
                             <span class="n">index</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">get_index</span><span class="p">(),</span>
                             <span class="n">columns</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">get_headers</span><span class="p">())</span></div>
@@ -541,78 +541,78 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.ContingencyAnalysis.html#VeraGridEngine.Simulations.ContingencyAnalysis.contingencies_report.ContingencyResultsReport.get_summary_table">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_summary_table</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                           <span class="n">time_array</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DatetimeIndex</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span>
-                          <span class="n">time_format</span><span class="o">=</span><span class="s1">&#39;%Y/%m/</span><span class="si">%d</span><span class="s1">  %H:%M.%S&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+                          <span class="n">time_format</span><span class="o">=</span><span class="s1">'%Y/%m/</span><span class="si">%d</span><span class="s1">  %H:%M.%S'</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :param time_array:</span>
 <span class="sd">        :param time_format:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="n">df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_df</span><span class="p">(</span><span class="n">time_array</span><span class="o">=</span><span class="n">time_array</span><span class="p">,</span> <span class="n">time_format</span><span class="o">=</span><span class="n">time_format</span><span class="p">)</span>
 
-        <span class="n">df</span><span class="p">[</span><span class="s2">&quot;Time idx&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;Time idx&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+        <span class="n">df</span><span class="p">[</span><span class="s2">"Time idx"</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">"Time idx"</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="s2">&quot;Probability cluster&quot;</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
-            <span class="n">df</span><span class="p">[</span><span class="s2">&quot;Probability cluster&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;Probability cluster&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s2">"Probability cluster"</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+            <span class="n">df</span><span class="p">[</span><span class="s2">"Probability cluster"</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">"Probability cluster"</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">df</span><span class="p">[</span><span class="s2">&quot;Probability cluster&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">df</span><span class="p">[</span><span class="s2">"Probability cluster"</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 
-        <span class="n">df</span><span class="p">[</span><span class="s2">&quot;Base rating (MW)&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;Base rating (MW)&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
-        <span class="n">df</span><span class="p">[</span><span class="s2">&quot;Contingency rating (MW)&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;Contingency rating (MW)&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
-        <span class="n">df</span><span class="p">[</span><span class="s2">&quot;SRAP rating (MW)&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;SRAP rating (MW)&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
-        <span class="n">df</span><span class="p">[</span><span class="s2">&quot;Base flow (MW)&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;Base flow (MW)&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
-        <span class="n">df</span><span class="p">[</span><span class="s2">&quot;Post-Contingency flow (MW)&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;Post-Contingency flow (MW)&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
-        <span class="n">df</span><span class="p">[</span><span class="s2">&quot;Post-SRAP flow (MW)&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;Post-SRAP flow (MW)&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
-        <span class="n">df</span><span class="p">[</span><span class="s2">&quot;Base loading (pu)&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;Base loading (pu)&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
-        <span class="n">df</span><span class="p">[</span><span class="s2">&quot;Post-Contingency loading (pu)&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;Post-Contingency loading (pu)&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
-        <span class="n">df</span><span class="p">[</span><span class="s2">&quot;Post-SRAP loading (pu)&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;Post-SRAP loading (pu)&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
-        <span class="n">df</span><span class="p">[</span><span class="s2">&quot;SRAP Power (MW)&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;SRAP Power (MW)&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
-        <span class="n">df</span><span class="p">[</span><span class="s2">&quot;Solved with SRAP&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;Solved with SRAP&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">bool</span><span class="p">)</span>
+        <span class="n">df</span><span class="p">[</span><span class="s2">"Base rating (MW)"</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">"Base rating (MW)"</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">df</span><span class="p">[</span><span class="s2">"Contingency rating (MW)"</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">"Contingency rating (MW)"</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">df</span><span class="p">[</span><span class="s2">"SRAP rating (MW)"</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">"SRAP rating (MW)"</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">df</span><span class="p">[</span><span class="s2">"Base flow (MW)"</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">"Base flow (MW)"</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">df</span><span class="p">[</span><span class="s2">"Post-Contingency flow (MW)"</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">"Post-Contingency flow (MW)"</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">df</span><span class="p">[</span><span class="s2">"Post-SRAP flow (MW)"</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">"Post-SRAP flow (MW)"</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">df</span><span class="p">[</span><span class="s2">"Base loading (pu)"</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">"Base loading (pu)"</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">df</span><span class="p">[</span><span class="s2">"Post-Contingency loading (pu)"</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">"Post-Contingency loading (pu)"</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">df</span><span class="p">[</span><span class="s2">"Post-SRAP loading (pu)"</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">"Post-SRAP loading (pu)"</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">df</span><span class="p">[</span><span class="s2">"SRAP Power (MW)"</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">"SRAP Power (MW)"</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">df</span><span class="p">[</span><span class="s2">"Solved with SRAP"</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">"Solved with SRAP"</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">bool</span><span class="p">)</span>
 
         <span class="c1"># If we are analyzing a base case, we report base case</span>
         <span class="c1"># If we are analyzing an overload due to a contingency (not in base), we report:</span>
-        <span class="c1"># --- If &#39;SRAP applicable&#39; we report &quot;Post-SRAP loading (pu)&quot;</span>
-        <span class="c1"># --- If it is different to &#39;SRAP  applicable&#39; (only two options available &quot;not applicable&quot; o &quot;not needed&quot;) and we report &quot;Post-Contingency loading (pu)&quot;</span>
+        <span class="c1"># --- If 'SRAP applicable' we report "Post-SRAP loading (pu)"</span>
+        <span class="c1"># --- If it is different to 'SRAP  applicable' (only two options available "not applicable" o "not needed") and we report "Post-Contingency loading (pu)"</span>
 
-        <span class="n">df</span><span class="p">[</span><span class="s2">&quot;Overload for reporting&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
-            <span class="n">condlist</span><span class="o">=</span><span class="p">[(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;Contingency&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;Base&quot;</span><span class="p">),</span>
-                      <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;Contingency&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;Base&quot;</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;SRAP availability&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;SRAP applicable&quot;</span><span class="p">),</span>
-                      <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;Contingency&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;Base&quot;</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;SRAP availability&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;SRAP applicable&quot;</span><span class="p">)],</span>
-            <span class="n">choicelist</span><span class="o">=</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;Base loading (pu)&quot;</span><span class="p">],</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;Post-SRAP loading (pu)&quot;</span><span class="p">],</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;Post-Contingency loading (pu)&quot;</span><span class="p">]],</span>
+        <span class="n">df</span><span class="p">[</span><span class="s2">"Overload for reporting"</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
+            <span class="n">condlist</span><span class="o">=</span><span class="p">[(</span><span class="n">df</span><span class="p">[</span><span class="s2">"Contingency"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"Base"</span><span class="p">),</span>
+                      <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">"Contingency"</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">"Base"</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">"SRAP availability"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"SRAP applicable"</span><span class="p">),</span>
+                      <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">"Contingency"</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">"Base"</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">"SRAP availability"</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">"SRAP applicable"</span><span class="p">)],</span>
+            <span class="n">choicelist</span><span class="o">=</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s2">"Base loading (pu)"</span><span class="p">],</span> <span class="n">df</span><span class="p">[</span><span class="s2">"Post-SRAP loading (pu)"</span><span class="p">],</span> <span class="n">df</span><span class="p">[</span><span class="s2">"Post-Contingency loading (pu)"</span><span class="p">]],</span>
             <span class="n">default</span><span class="o">=-</span><span class="mi">999999</span>
         <span class="p">)</span>
 
-        <span class="n">df</span><span class="p">[</span><span class="s2">&quot;Overload for reporting weighted with cluster&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;Overload for reporting&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;Probability cluster&quot;</span><span class="p">]</span>
+        <span class="n">df</span><span class="p">[</span><span class="s2">"Overload for reporting weighted with cluster"</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">"Overload for reporting"</span><span class="p">]</span> <span class="o">*</span> <span class="n">df</span><span class="p">[</span><span class="s2">"Probability cluster"</span><span class="p">]</span>
 
         <span class="c1"># Count the number of Hours the monitored line appears</span>
 
-        <span class="n">df_</span> <span class="o">=</span> <span class="n">df</span><span class="p">[[</span><span class="s2">&quot;Time idx&quot;</span><span class="p">,</span> <span class="s2">&quot;Monitored&quot;</span><span class="p">,</span> <span class="s2">&quot;Probability cluster&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">drop_duplicates</span><span class="p">()</span>
-        <span class="n">df_monit_time_pu</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">pivot_table</span><span class="p">(</span><span class="n">df_</span><span class="p">,</span> <span class="n">values</span><span class="o">=</span><span class="s1">&#39;Probability cluster&#39;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="s2">&quot;Monitored&quot;</span><span class="p">,</span> <span class="n">aggfunc</span><span class="o">=</span><span class="s2">&quot;sum&quot;</span><span class="p">)</span>
-        <span class="n">df_monit_time_clust</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">pivot_table</span><span class="p">(</span><span class="n">df_</span><span class="p">,</span> <span class="n">values</span><span class="o">=</span><span class="s1">&#39;Probability cluster&#39;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="s2">&quot;Monitored&quot;</span><span class="p">,</span> <span class="n">aggfunc</span><span class="o">=</span><span class="s2">&quot;count&quot;</span><span class="p">)</span>
+        <span class="n">df_</span> <span class="o">=</span> <span class="n">df</span><span class="p">[[</span><span class="s2">"Time idx"</span><span class="p">,</span> <span class="s2">"Monitored"</span><span class="p">,</span> <span class="s2">"Probability cluster"</span><span class="p">]]</span><span class="o">.</span><span class="n">drop_duplicates</span><span class="p">()</span>
+        <span class="n">df_monit_time_pu</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">pivot_table</span><span class="p">(</span><span class="n">df_</span><span class="p">,</span> <span class="n">values</span><span class="o">=</span><span class="s1">'Probability cluster'</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="s2">"Monitored"</span><span class="p">,</span> <span class="n">aggfunc</span><span class="o">=</span><span class="s2">"sum"</span><span class="p">)</span>
+        <span class="n">df_monit_time_clust</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">pivot_table</span><span class="p">(</span><span class="n">df_</span><span class="p">,</span> <span class="n">values</span><span class="o">=</span><span class="s1">'Probability cluster'</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="s2">"Monitored"</span><span class="p">,</span> <span class="n">aggfunc</span><span class="o">=</span><span class="s2">"count"</span><span class="p">)</span>
 
-        <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Time this line is monitored by any contingency (pu)&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Monitored&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span>
-            <span class="n">df_monit_time_pu</span><span class="p">[</span><span class="s1">&#39;Probability cluster&#39;</span><span class="p">])</span>
-        <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Number of clusters this line is monitored&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Monitored&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span>
-            <span class="n">df_monit_time_clust</span><span class="p">[</span><span class="s1">&#39;Probability cluster&#39;</span><span class="p">])</span>
+        <span class="n">df</span><span class="p">[</span><span class="s1">'Time this line is monitored by any contingency (pu)'</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">'Monitored'</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span>
+            <span class="n">df_monit_time_pu</span><span class="p">[</span><span class="s1">'Probability cluster'</span><span class="p">])</span>
+        <span class="n">df</span><span class="p">[</span><span class="s1">'Number of clusters this line is monitored'</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">'Monitored'</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span>
+            <span class="n">df_monit_time_clust</span><span class="p">[</span><span class="s1">'Probability cluster'</span><span class="p">])</span>
 
         <span class="c1"># Group de columns by Area1, Area2, Monitored, Contingency</span>
         <span class="n">df_grp</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span>
-            <span class="p">[</span><span class="s2">&quot;Area 1&quot;</span><span class="p">,</span> <span class="s2">&quot;Area 2&quot;</span><span class="p">,</span> <span class="s2">&quot;Monitored&quot;</span><span class="p">,</span> <span class="s2">&quot;Contingency&quot;</span><span class="p">,</span> <span class="s2">&quot;Base rating (MW)&quot;</span><span class="p">,</span> <span class="s2">&quot;Contingency rating (MW)&quot;</span><span class="p">,</span>
-             <span class="s2">&quot;SRAP rating (MW)&quot;</span><span class="p">,</span> <span class="s2">&quot;Time this line is monitored by any contingency (pu)&quot;</span><span class="p">,</span>
-             <span class="s2">&quot;Number of clusters this line is monitored&quot;</span><span class="p">])</span>
+            <span class="p">[</span><span class="s2">"Area 1"</span><span class="p">,</span> <span class="s2">"Area 2"</span><span class="p">,</span> <span class="s2">"Monitored"</span><span class="p">,</span> <span class="s2">"Contingency"</span><span class="p">,</span> <span class="s2">"Base rating (MW)"</span><span class="p">,</span> <span class="s2">"Contingency rating (MW)"</span><span class="p">,</span>
+             <span class="s2">"SRAP rating (MW)"</span><span class="p">,</span> <span class="s2">"Time this line is monitored by any contingency (pu)"</span><span class="p">,</span>
+             <span class="s2">"Number of clusters this line is monitored"</span><span class="p">])</span>
 
         <span class="c1"># Compute the columns</span>
-        <span class="n">ov_max</span> <span class="o">=</span> <span class="n">df_grp</span><span class="p">[</span><span class="s2">&quot;Overload for reporting&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
-        <span class="n">ov_max_date</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">df_grp</span><span class="p">[</span><span class="s2">&quot;Overload for reporting&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">idxmax</span><span class="p">(),</span> <span class="s2">&quot;Time idx&quot;</span><span class="p">]</span>
-        <span class="n">ov_avg</span> <span class="o">=</span> <span class="n">df_grp</span><span class="p">[</span><span class="s2">&quot;Overload for reporting&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+        <span class="n">ov_max</span> <span class="o">=</span> <span class="n">df_grp</span><span class="p">[</span><span class="s2">"Overload for reporting"</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+        <span class="n">ov_max_date</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">df_grp</span><span class="p">[</span><span class="s2">"Overload for reporting"</span><span class="p">]</span><span class="o">.</span><span class="n">idxmax</span><span class="p">(),</span> <span class="s2">"Time idx"</span><span class="p">]</span>
+        <span class="n">ov_avg</span> <span class="o">=</span> <span class="n">df_grp</span><span class="p">[</span><span class="s2">"Overload for reporting"</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
 
-        <span class="n">ov_desvest</span> <span class="o">=</span> <span class="n">df_grp</span><span class="p">[</span><span class="s2">&quot;Overload for reporting&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
+        <span class="n">ov_desvest</span> <span class="o">=</span> <span class="n">df_grp</span><span class="p">[</span><span class="s2">"Overload for reporting"</span><span class="p">]</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
         <span class="n">ov_desvest</span> <span class="o">=</span> <span class="n">ov_desvest</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
 
-        <span class="n">ov_count_clusters</span> <span class="o">=</span> <span class="n">df_grp</span><span class="p">[</span><span class="s2">&quot;Overload for reporting&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
+        <span class="n">ov_count_clusters</span> <span class="o">=</span> <span class="n">df_grp</span><span class="p">[</span><span class="s2">"Overload for reporting"</span><span class="p">]</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
 
-        <span class="n">ov_time_pu</span> <span class="o">=</span> <span class="n">df_grp</span><span class="p">[</span><span class="s2">&quot;Probability cluster&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+        <span class="n">ov_time_pu</span> <span class="o">=</span> <span class="n">df_grp</span><span class="p">[</span><span class="s2">"Probability cluster"</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
 
         <span class="k">if</span> <span class="n">time_array</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">ov_max_dates</span> <span class="o">=</span> <span class="p">[</span><span class="n">time_array</span><span class="p">[</span><span class="n">t</span><span class="p">]</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="n">time_format</span><span class="p">)</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">ov_max_date</span><span class="o">.</span><span class="n">values</span><span class="p">]</span>
@@ -620,66 +620,66 @@
             <span class="n">ov_max_dates</span> <span class="o">=</span> <span class="n">ov_max_date</span><span class="o">.</span><span class="n">values</span>
 
         <span class="c1"># new, work in progress</span>
-        <span class="n">ov_avg_clust</span> <span class="o">=</span> <span class="n">df_grp</span><span class="p">[</span><span class="s2">&quot;Overload for reporting weighted with cluster&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="n">df_grp</span><span class="p">[</span>
-            <span class="s2">&quot;Probability cluster&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>  <span class="c1"># checked</span>
-        <span class="n">ov_desvest_clust</span> <span class="o">=</span> <span class="n">df_grp</span><span class="p">[</span><span class="s2">&quot;Overload for reporting weighted with cluster&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">std</span><span class="p">()</span> <span class="o">/</span> <span class="n">df_grp</span><span class="p">[</span>
-            <span class="s2">&quot;Probability cluster&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+        <span class="n">ov_avg_clust</span> <span class="o">=</span> <span class="n">df_grp</span><span class="p">[</span><span class="s2">"Overload for reporting weighted with cluster"</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="n">df_grp</span><span class="p">[</span>
+            <span class="s2">"Probability cluster"</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>  <span class="c1"># checked</span>
+        <span class="n">ov_desvest_clust</span> <span class="o">=</span> <span class="n">df_grp</span><span class="p">[</span><span class="s2">"Overload for reporting weighted with cluster"</span><span class="p">]</span><span class="o">.</span><span class="n">std</span><span class="p">()</span> <span class="o">/</span> <span class="n">df_grp</span><span class="p">[</span>
+            <span class="s2">"Probability cluster"</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
 
         <span class="c1"># Create the new dataframe with the columns we need</span>
         <span class="n">df_summary</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
-            <span class="s2">&quot;Area 1&quot;</span><span class="p">:</span> <span class="n">ov_max</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span><span class="s2">&quot;Area 1&quot;</span><span class="p">),</span>
-            <span class="s2">&quot;Area 2&quot;</span><span class="p">:</span> <span class="n">ov_max</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span><span class="s2">&quot;Area 2&quot;</span><span class="p">),</span>
-            <span class="s2">&quot;Monitored&quot;</span><span class="p">:</span> <span class="n">ov_max</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span><span class="s2">&quot;Monitored&quot;</span><span class="p">),</span>
-            <span class="s2">&quot;Contingency&quot;</span><span class="p">:</span> <span class="n">ov_max</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span><span class="s2">&quot;Contingency&quot;</span><span class="p">),</span>
+            <span class="s2">"Area 1"</span><span class="p">:</span> <span class="n">ov_max</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span><span class="s2">"Area 1"</span><span class="p">),</span>
+            <span class="s2">"Area 2"</span><span class="p">:</span> <span class="n">ov_max</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span><span class="s2">"Area 2"</span><span class="p">),</span>
+            <span class="s2">"Monitored"</span><span class="p">:</span> <span class="n">ov_max</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span><span class="s2">"Monitored"</span><span class="p">),</span>
+            <span class="s2">"Contingency"</span><span class="p">:</span> <span class="n">ov_max</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span><span class="s2">"Contingency"</span><span class="p">),</span>
 
-            <span class="c1"># &quot;Area 1&quot;: ov_max.index.get_level_values(&quot;Area 1&quot;),</span>
-            <span class="c1"># &quot;Area 2&quot;: ov_max.index.get_level_values(&quot;Area 2&quot;),</span>
-            <span class="c1"># &quot;Monitored&quot;: ov_max.index.get_level_values(&quot;Monitored&quot;),</span>
-            <span class="c1"># &quot;Contingency&quot;: ov_max.index.get_level_values(&quot;Contingency&quot;),</span>
+            <span class="c1"># "Area 1": ov_max.index.get_level_values("Area 1"),</span>
+            <span class="c1"># "Area 2": ov_max.index.get_level_values("Area 2"),</span>
+            <span class="c1"># "Monitored": ov_max.index.get_level_values("Monitored"),</span>
+            <span class="c1"># "Contingency": ov_max.index.get_level_values("Contingency"),</span>
 
-            <span class="s2">&quot;Base rating (MW)&quot;</span><span class="p">:</span> <span class="n">ov_max</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span><span class="s2">&quot;Base rating (MW)&quot;</span><span class="p">),</span>
-            <span class="s2">&quot;Contingency rating (MW)&quot;</span><span class="p">:</span> <span class="n">ov_max</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span><span class="s2">&quot;Contingency rating (MW)&quot;</span><span class="p">),</span>
-            <span class="s2">&quot;SRAP rating (MW)&quot;</span><span class="p">:</span> <span class="n">ov_max</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span><span class="s2">&quot;SRAP rating (MW)&quot;</span><span class="p">),</span>
+            <span class="s2">"Base rating (MW)"</span><span class="p">:</span> <span class="n">ov_max</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span><span class="s2">"Base rating (MW)"</span><span class="p">),</span>
+            <span class="s2">"Contingency rating (MW)"</span><span class="p">:</span> <span class="n">ov_max</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span><span class="s2">"Contingency rating (MW)"</span><span class="p">),</span>
+            <span class="s2">"SRAP rating (MW)"</span><span class="p">:</span> <span class="n">ov_max</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span><span class="s2">"SRAP rating (MW)"</span><span class="p">),</span>
 
-            <span class="s2">&quot;Overload max (pu)&quot;</span><span class="p">:</span> <span class="n">ov_max</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
-            <span class="s2">&quot;Date Overload max&quot;</span><span class="p">:</span> <span class="n">ov_max_dates</span><span class="p">,</span>
+            <span class="s2">"Overload max (pu)"</span><span class="p">:</span> <span class="n">ov_max</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
+            <span class="s2">"Date Overload max"</span><span class="p">:</span> <span class="n">ov_max_dates</span><span class="p">,</span>
 
-            <span class="s2">&quot;Overload average weighting time (pu)&quot;</span><span class="p">:</span> <span class="n">ov_avg_clust</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
-            <span class="s2">&quot;Annual time the Monitored line is overloaded by this contingency (pu)&quot;</span><span class="p">:</span> <span class="n">ov_time_pu</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
+            <span class="s2">"Overload average weighting time (pu)"</span><span class="p">:</span> <span class="n">ov_avg_clust</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
+            <span class="s2">"Annual time the Monitored line is overloaded by this contingency (pu)"</span><span class="p">:</span> <span class="n">ov_time_pu</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
 
-            <span class="s2">&quot;Time this line is monitored by any contingency (pu)&quot;</span><span class="p">:</span> <span class="n">ov_max</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span>
-                <span class="s2">&quot;Time this line is monitored by any contingency (pu)&quot;</span><span class="p">),</span>
-            <span class="s2">&quot;Number of clusters this line is monitored&quot;</span><span class="p">:</span> <span class="n">ov_max</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span>
-                <span class="s2">&quot;Number of clusters this line is monitored&quot;</span><span class="p">),</span>
+            <span class="s2">"Time this line is monitored by any contingency (pu)"</span><span class="p">:</span> <span class="n">ov_max</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span>
+                <span class="s2">"Time this line is monitored by any contingency (pu)"</span><span class="p">),</span>
+            <span class="s2">"Number of clusters this line is monitored"</span><span class="p">:</span> <span class="n">ov_max</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span>
+                <span class="s2">"Number of clusters this line is monitored"</span><span class="p">),</span>
 
-            <span class="s2">&quot;Overload average for clusters(pu)&quot;</span><span class="p">:</span> <span class="n">ov_avg</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
-            <span class="s2">&quot;Standard deviation for clusters(pu)&quot;</span><span class="p">:</span> <span class="n">ov_desvest</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
-            <span class="s2">&quot;Number of clusters with this overload (h)&quot;</span><span class="p">:</span> <span class="n">ov_count_clusters</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+            <span class="s2">"Overload average for clusters(pu)"</span><span class="p">:</span> <span class="n">ov_avg</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
+            <span class="s2">"Standard deviation for clusters(pu)"</span><span class="p">:</span> <span class="n">ov_desvest</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
+            <span class="s2">"Number of clusters with this overload (h)"</span><span class="p">:</span> <span class="n">ov_count_clusters</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
 
         <span class="p">})</span>
 
-        <span class="n">df_summary</span> <span class="o">=</span> <span class="n">df_summary</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">by</span><span class="o">=</span><span class="s2">&quot;Contingency&quot;</span><span class="p">,</span> <span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">df_summary</span> <span class="o">=</span> <span class="n">df_summary</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">by</span><span class="o">=</span><span class="s2">"Contingency"</span><span class="p">,</span> <span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
-        <span class="n">cols_1dec</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Number of clusters this line is monitored&quot;</span><span class="p">,</span> <span class="s2">&quot;Number of clusters with this overload (h)&quot;</span><span class="p">]</span>
-        <span class="n">cols_2dec</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Base rating (MW)&quot;</span><span class="p">,</span> <span class="s2">&quot;Contingency rating (MW)&quot;</span><span class="p">,</span> <span class="s2">&quot;SRAP rating (MW)&quot;</span><span class="p">]</span>
-        <span class="n">cols_4dec</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Overload max (pu)&quot;</span><span class="p">,</span> <span class="s2">&quot;Overload average weighting time (pu)&quot;</span><span class="p">,</span>
-                     <span class="s2">&quot;Annual time the Monitored line is overloaded by this contingency (pu)&quot;</span><span class="p">,</span>
-                     <span class="s2">&quot;Time this line is monitored by any contingency (pu)&quot;</span><span class="p">,</span> <span class="s2">&quot;Overload average for clusters(pu)&quot;</span><span class="p">,</span>
-                     <span class="s2">&quot;Standard deviation for clusters(pu)&quot;</span><span class="p">]</span>
+        <span class="n">cols_1dec</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"Number of clusters this line is monitored"</span><span class="p">,</span> <span class="s2">"Number of clusters with this overload (h)"</span><span class="p">]</span>
+        <span class="n">cols_2dec</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"Base rating (MW)"</span><span class="p">,</span> <span class="s2">"Contingency rating (MW)"</span><span class="p">,</span> <span class="s2">"SRAP rating (MW)"</span><span class="p">]</span>
+        <span class="n">cols_4dec</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"Overload max (pu)"</span><span class="p">,</span> <span class="s2">"Overload average weighting time (pu)"</span><span class="p">,</span>
+                     <span class="s2">"Annual time the Monitored line is overloaded by this contingency (pu)"</span><span class="p">,</span>
+                     <span class="s2">"Time this line is monitored by any contingency (pu)"</span><span class="p">,</span> <span class="s2">"Overload average for clusters(pu)"</span><span class="p">,</span>
+                     <span class="s2">"Standard deviation for clusters(pu)"</span><span class="p">]</span>
 
-        <span class="n">df_summary</span><span class="p">[</span><span class="n">cols_1dec</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_summary</span><span class="p">[</span><span class="n">cols_1dec</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">x</span><span class="si">:</span><span class="s1">.1f</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
-        <span class="n">df_summary</span><span class="p">[</span><span class="n">cols_2dec</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_summary</span><span class="p">[</span><span class="n">cols_2dec</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">x</span><span class="si">:</span><span class="s1">.2f</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
-        <span class="n">df_summary</span><span class="p">[</span><span class="n">cols_4dec</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_summary</span><span class="p">[</span><span class="n">cols_4dec</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">x</span><span class="si">:</span><span class="s1">.4f</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="n">df_summary</span><span class="p">[</span><span class="n">cols_1dec</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_summary</span><span class="p">[</span><span class="n">cols_1dec</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="n">x</span><span class="si">:</span><span class="s1">.1f</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
+        <span class="n">df_summary</span><span class="p">[</span><span class="n">cols_2dec</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_summary</span><span class="p">[</span><span class="n">cols_2dec</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="n">x</span><span class="si">:</span><span class="s1">.2f</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
+        <span class="n">df_summary</span><span class="p">[</span><span class="n">cols_4dec</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_summary</span><span class="p">[</span><span class="n">cols_4dec</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="n">x</span><span class="si">:</span><span class="s1">.4f</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">df_summary</span></div>
 
 
-    <span class="k">def</span><span class="w"> </span><span class="fm">__iadd__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="s2">&quot;ContingencyResultsReport&quot;</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__iadd__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="s2">"ContingencyResultsReport"</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Incremental adition of reports</span>
 <span class="sd">        :param other: ContingencyResultsReport</span>
 <span class="sd">        :return: self</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">other</span><span class="o">.</span><span class="n">entries</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">add_entry</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span>
@@ -713,7 +713,7 @@
                 <span class="n">area_names</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                 <span class="n">top_n</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span>
                 <span class="n">detailed_massive_report</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Analyze contingency results and add them to the report</span>
 <span class="sd">        :param t: time index</span>
 <span class="sd">        :param t_prob: probability of the time</span>
@@ -741,7 +741,7 @@
 <span class="sd">        :param area_names: Array of area names</span>
 <span class="sd">        :param top_n: maximum number of nodes affecting the oveload</span>
 <span class="sd">        :param detailed_massive_report: Generate massive report</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="n">mon_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">mon_idx</span><span class="p">)</span>
 
@@ -756,15 +756,15 @@
             <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">base_overloaded</span><span class="p">:</span>
 
                 <span class="k">if</span> <span class="n">area_names</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="n">area_from</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
-                    <span class="n">area_to</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+                    <span class="n">area_from</span> <span class="o">=</span> <span class="s2">""</span>
+                    <span class="n">area_to</span> <span class="o">=</span> <span class="s2">""</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">area_names</span><span class="p">):</span>
                         <span class="n">area_from</span> <span class="o">=</span> <span class="n">area_names</span><span class="p">[</span><span class="n">bus_area_indices</span><span class="p">[</span><span class="n">F</span><span class="p">[</span><span class="n">m</span><span class="p">]]]</span>
                         <span class="n">area_to</span> <span class="o">=</span> <span class="n">area_names</span><span class="p">[</span><span class="n">bus_area_indices</span><span class="p">[</span><span class="n">T</span><span class="p">[</span><span class="n">m</span><span class="p">]]]</span>
                     <span class="k">else</span><span class="p">:</span>
-                        <span class="n">area_from</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
-                        <span class="n">area_to</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+                        <span class="n">area_from</span> <span class="o">=</span> <span class="s2">""</span>
+                        <span class="n">area_to</span> <span class="o">=</span> <span class="s2">""</span>
 
                 <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">time_index</span><span class="o">=</span><span class="n">t</span> <span class="k">if</span> <span class="n">t</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="mi">0</span><span class="p">,</span>
                          <span class="n">t_prob</span><span class="o">=</span><span class="n">t_prob</span><span class="p">,</span>
@@ -773,7 +773,7 @@
                          <span class="n">area_from</span><span class="o">=</span><span class="n">area_from</span><span class="p">,</span>
                          <span class="n">area_to</span><span class="o">=</span><span class="n">area_to</span><span class="p">,</span>
                          <span class="n">base_name</span><span class="o">=</span><span class="n">nc</span><span class="o">.</span><span class="n">passive_branch_data</span><span class="o">.</span><span class="n">names</span><span class="p">[</span><span class="n">m</span><span class="p">],</span>
-                         <span class="n">contingency_name</span><span class="o">=</span><span class="s1">&#39;Base&#39;</span><span class="p">,</span>
+                         <span class="n">contingency_name</span><span class="o">=</span><span class="s1">'Base'</span><span class="p">,</span>
                          <span class="n">base_rating</span><span class="o">=</span><span class="n">nc</span><span class="o">.</span><span class="n">passive_branch_data</span><span class="o">.</span><span class="n">rates</span><span class="p">[</span><span class="n">m</span><span class="p">],</span>
                          <span class="n">contingency_rating</span><span class="o">=</span><span class="n">nc</span><span class="o">.</span><span class="n">passive_branch_data</span><span class="o">.</span><span class="n">contingency_rates</span><span class="p">[</span><span class="n">m</span><span class="p">],</span>
                          <span class="n">srap_rating</span><span class="o">=</span><span class="n">srap_ratings</span><span class="p">[</span><span class="n">m</span><span class="p">],</span>
@@ -783,8 +783,8 @@
                          <span class="n">base_loading</span><span class="o">=</span><span class="nb">abs</span><span class="p">(</span><span class="n">base_flow</span><span class="p">[</span><span class="n">m</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span><span class="n">nc</span><span class="o">.</span><span class="n">passive_branch_data</span><span class="o">.</span><span class="n">rates</span><span class="p">[</span><span class="n">m</span><span class="p">]</span> <span class="o">+</span> <span class="mf">1e-9</span><span class="p">),</span>
                          <span class="n">post_contingency_loading</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
                          <span class="n">post_srap_loading</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
-                         <span class="n">msg_ov</span><span class="o">=</span><span class="s1">&#39;Overload not acceptable&#39;</span><span class="p">,</span>
-                         <span class="n">msg_srap</span><span class="o">=</span><span class="s1">&#39;SRAP not applicable&#39;</span><span class="p">,</span>
+                         <span class="n">msg_ov</span><span class="o">=</span><span class="s1">'Overload not acceptable'</span><span class="p">,</span>
+                         <span class="n">msg_srap</span><span class="o">=</span><span class="s1">'SRAP not applicable'</span><span class="p">,</span>
                          <span class="n">srap_power</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
                          <span class="n">solved_by_srap</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
@@ -806,15 +806,15 @@
         <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">candidate_branches</span><span class="p">:</span>  <span class="c1"># for each branch actually overloaded by this contingency</span>
 
             <span class="k">if</span> <span class="n">area_names</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">area_from</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
-                <span class="n">area_to</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+                <span class="n">area_from</span> <span class="o">=</span> <span class="s2">""</span>
+                <span class="n">area_to</span> <span class="o">=</span> <span class="s2">""</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">area_names</span><span class="p">):</span>
                     <span class="n">area_from</span> <span class="o">=</span> <span class="n">area_names</span><span class="p">[</span><span class="n">bus_area_indices</span><span class="p">[</span><span class="n">F</span><span class="p">[</span><span class="n">m</span><span class="p">]]]</span>
                     <span class="n">area_to</span> <span class="o">=</span> <span class="n">area_names</span><span class="p">[</span><span class="n">bus_area_indices</span><span class="p">[</span><span class="n">T</span><span class="p">[</span><span class="n">m</span><span class="p">]]]</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="n">area_from</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
-                    <span class="n">area_to</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+                    <span class="n">area_from</span> <span class="o">=</span> <span class="s2">""</span>
+                    <span class="n">area_to</span> <span class="o">=</span> <span class="s2">""</span>
 
             <span class="n">c_flow</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">contingency_flows</span><span class="p">[</span><span class="n">m</span><span class="p">])</span>
             <span class="n">b_flow</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">base_flow</span><span class="p">[</span><span class="n">m</span><span class="p">])</span>
@@ -835,45 +835,45 @@
                 <span class="c1"># Conditions to set behavior</span>
                 <span class="k">if</span> <span class="mi">1</span> <span class="o">&lt;</span> <span class="n">c_load</span> <span class="o">&lt;=</span> <span class="n">rate_nx_pu</span><span class="p">:</span>
                     <span class="n">ov_status</span> <span class="o">=</span> <span class="mi">1</span>
-                    <span class="n">msg_ov</span> <span class="o">=</span> <span class="s1">&#39;Overload acceptable&#39;</span>
+                    <span class="n">msg_ov</span> <span class="o">=</span> <span class="s1">'Overload acceptable'</span>
                     <span class="n">cond_srap</span> <span class="o">=</span> <span class="kc">False</span>
-                    <span class="n">msg_srap</span> <span class="o">=</span> <span class="s1">&#39;SRAP not needed&#39;</span>
+                    <span class="n">msg_srap</span> <span class="o">=</span> <span class="s1">'SRAP not needed'</span>
                     <span class="n">solved_by_srap</span> <span class="o">=</span> <span class="kc">False</span>
                     <span class="n">post_srap_flow</span> <span class="o">=</span> <span class="n">c_flow</span>
                     <span class="n">max_srap_power</span> <span class="o">=</span> <span class="mf">0.0</span>
 
                 <span class="k">elif</span> <span class="n">rate_nx_pu</span> <span class="o">&lt;</span> <span class="n">c_load</span> <span class="o">&lt;=</span> <span class="n">rate_srap_pu</span><span class="p">:</span>
                     <span class="n">ov_status</span> <span class="o">=</span> <span class="mi">2</span>
-                    <span class="n">msg_ov</span> <span class="o">=</span> <span class="s1">&#39;Overload not acceptable&#39;</span>  <span class="c1"># Overwritten if solved</span>
+                    <span class="n">msg_ov</span> <span class="o">=</span> <span class="s1">'Overload not acceptable'</span>  <span class="c1"># Overwritten if solved</span>
                     <span class="n">cond_srap</span> <span class="o">=</span> <span class="kc">True</span>  <span class="c1"># Srap aplicable</span>
-                    <span class="n">msg_srap</span> <span class="o">=</span> <span class="s1">&#39;SRAP applicable&#39;</span>
+                    <span class="n">msg_srap</span> <span class="o">=</span> <span class="s1">'SRAP applicable'</span>
                     <span class="n">solved_by_srap</span> <span class="o">=</span> <span class="kc">False</span>
                     <span class="n">post_srap_flow</span> <span class="o">=</span> <span class="n">c_flow</span>  <span class="c1"># Overwritten if srap activated</span>
                     <span class="n">max_srap_power</span> <span class="o">=</span> <span class="mf">0.0</span>
 
                 <span class="k">elif</span> <span class="n">rate_srap_pu</span> <span class="o">&lt;</span> <span class="n">c_load</span> <span class="o">&lt;=</span> <span class="n">rate_srap_pu</span> <span class="o">+</span> <span class="n">srap_deadband</span> <span class="o">/</span> <span class="mi">100</span><span class="p">:</span>
                     <span class="n">ov_status</span> <span class="o">=</span> <span class="mi">3</span>
-                    <span class="n">msg_ov</span> <span class="o">=</span> <span class="s1">&#39;Overload not acceptable&#39;</span>
+                    <span class="n">msg_ov</span> <span class="o">=</span> <span class="s1">'Overload not acceptable'</span>
                     <span class="n">cond_srap</span> <span class="o">=</span> <span class="kc">True</span>
-                    <span class="n">msg_srap</span> <span class="o">=</span> <span class="s1">&#39;SRAP not applicable&#39;</span>
+                    <span class="n">msg_srap</span> <span class="o">=</span> <span class="s1">'SRAP not applicable'</span>
                     <span class="n">solved_by_srap</span> <span class="o">=</span> <span class="kc">False</span>
                     <span class="n">post_srap_flow</span> <span class="o">=</span> <span class="n">c_flow</span>  <span class="c1"># Overwritten if srap activated</span>
                     <span class="n">max_srap_power</span> <span class="o">=</span> <span class="mf">0.0</span>
 
                 <span class="k">elif</span> <span class="n">c_load</span> <span class="o">&gt;</span> <span class="n">rate_srap_pu</span> <span class="o">+</span> <span class="n">srap_deadband</span> <span class="o">/</span> <span class="mi">100</span><span class="p">:</span>
                     <span class="n">ov_status</span> <span class="o">=</span> <span class="mi">4</span>
-                    <span class="n">msg_ov</span> <span class="o">=</span> <span class="s1">&#39;Overload not acceptable&#39;</span>
+                    <span class="n">msg_ov</span> <span class="o">=</span> <span class="s1">'Overload not acceptable'</span>
                     <span class="n">cond_srap</span> <span class="o">=</span> <span class="kc">False</span>
-                    <span class="n">msg_srap</span> <span class="o">=</span> <span class="s1">&#39;SRAP not applicable&#39;</span>
+                    <span class="n">msg_srap</span> <span class="o">=</span> <span class="s1">'SRAP not applicable'</span>
                     <span class="n">solved_by_srap</span> <span class="o">=</span> <span class="kc">False</span>
                     <span class="n">post_srap_flow</span> <span class="o">=</span> <span class="n">c_flow</span>
                     <span class="n">max_srap_power</span> <span class="o">=</span> <span class="mf">0.0</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="n">msg_srap</span> <span class="o">=</span> <span class="s1">&#39;Error&#39;</span>
+                    <span class="n">msg_srap</span> <span class="o">=</span> <span class="s1">'Error'</span>
                     <span class="n">ov_status</span> <span class="o">=</span> <span class="mi">0</span>
                     <span class="n">cond_srap</span> <span class="o">=</span> <span class="kc">False</span>
                     <span class="n">post_srap_flow</span> <span class="o">=</span> <span class="n">c_flow</span>
-                    <span class="n">msg_ov</span> <span class="o">=</span> <span class="s1">&#39;Error&#39;</span>
+                    <span class="n">msg_ov</span> <span class="o">=</span> <span class="s1">'Error'</span>
                     <span class="n">max_srap_power</span> <span class="o">=</span> <span class="o">-</span><span class="mf">99999.999</span>
                     <span class="n">solved_by_srap</span> <span class="o">=</span> <span class="kc">False</span>
 
@@ -914,9 +914,9 @@
                         <span class="n">post_srap_flow</span> <span class="o">=</span> <span class="mf">0.0</span>
 
                     <span class="k">if</span> <span class="n">solved_by_srap</span> <span class="ow">and</span> <span class="n">ov_status</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
-                        <span class="n">msg_ov</span> <span class="o">=</span> <span class="s1">&#39;Overload acceptable&#39;</span>
+                        <span class="n">msg_ov</span> <span class="o">=</span> <span class="s1">'Overload acceptable'</span>
                     <span class="k">else</span><span class="p">:</span>
-                        <span class="n">msg_ov</span> <span class="o">=</span> <span class="s1">&#39;Overload not acceptable&#39;</span>
+                        <span class="n">msg_ov</span> <span class="o">=</span> <span class="s1">'Overload not acceptable'</span>
 
                 <span class="k">if</span> <span class="n">detailed_massive_report</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">time_index</span><span class="o">=</span><span class="n">t</span> <span class="k">if</span> <span class="n">t</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="mi">0</span><span class="p">,</span>

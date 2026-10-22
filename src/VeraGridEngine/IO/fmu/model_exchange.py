@@ -40,7 +40,10 @@ from VeraGridEngine.IO.fmu.Elements.bindings import (
     validate_fmu_float64_parameter_values,
     resolve_fmi_three_float64_session_value_selectors,
 )
-from VeraGridEngine.IO.fmu.fmu_device_integration import load_fmu_me_device_config, restore_fmu_me_spec_from_record
+from VeraGridEngine.IO.fmu.Elements.device_configuration import (
+    FmuCsDeviceConfigRecord, FmuMeDeviceConfigRecord, build_import_config_from_record,
+    load_fmu_me_device_config, _resolve_parameter_values_from_block,
+)
 from VeraGridEngine.IO.fmu.co_simulation import (
     _build_template_block,
     _ensure_emt_external_mapping_keys,
@@ -510,7 +513,7 @@ class FmuMeDeviceAdapter:
             )
         return mapped_values
 
-    def _map_bound_output_values(
+    def map_bound_output_values(
         self,
         output_values: tuple[float, ...],
     ) -> dict[VarPowerFlowReferenceType, float]:
@@ -1213,7 +1216,7 @@ class FmuMeDeviceAdapter:
             input_values=input_values,
             evaluation_budget=evaluation_budget,
         )
-        return self._map_bound_output_values(ordered_values)
+        return self.map_bound_output_values(ordered_values)
 
     def _validate_finite_vector(
         self,
@@ -2641,7 +2644,7 @@ class FmuMeDeviceAdapter:
                 raise RuntimeError(
                     "FMU ME adapter must be initialized before preparing a step"
                 )
-        return self._map_bound_output_values(readable_values)
+        return self.map_bound_output_values(readable_values)
 
     def close(self) -> None:
         """Release the FMU runtime used by the adapter.
@@ -3338,12 +3341,33 @@ class RmsFmuMeDeviceAdapter:
         )
         if readable_values is not None:
             resolved_outputs: dict[VarPowerFlowReferenceType, float] = (
-                self.runtime_adapter._map_bound_output_values(readable_values)
+                self.runtime_adapter.map_bound_output_values(readable_values)
             )
             self.last_outputs = dict(resolved_outputs)
         else:
             resolved_outputs = dict(self.last_outputs)
         return resolved_outputs
+
+    def prepare_state_event_retry(
+        self,
+        event_time: float | None,
+        evaluation_budget: FmuMeEvaluationBudget,
+    ) -> dict[VarPowerFlowReferenceType, float]:
+        """Restore this device's accepted outputs for a coordinated event retry.
+
+        :param event_time: Global localized time when this device must arm its event.
+        :param evaluation_budget: Existing shared runtime-call budget.
+        :return: Restored outputs without evaluating the FMU again.
+        """
+        # The runtime restores the transaction; mapping consumes its cached values.
+        restored_values: tuple[float, ...] = self.runtime_adapter.prepare_state_event_retry(
+            event_time=event_time, evaluation_budget=evaluation_budget,
+        )
+        restored_outputs: dict[VarPowerFlowReferenceType, float] = (
+            self.runtime_adapter.map_bound_output_values(restored_values)
+        )
+        self.last_outputs = dict(restored_outputs)
+        return restored_outputs
 
     def apply_outputs(self, target: np.ndarray, outputs: dict[VarPowerFlowReferenceType, float]) -> None:
         """Write the FMU ME outputs into VeraGrid runtime-parameter storage.
@@ -3506,7 +3530,7 @@ class EmtFmuMeDeviceAdapter:
         )
         if readable_values is not None:
             resolved_outputs: dict[VarPowerFlowReferenceType, float] = (
-                self.runtime_adapter._map_bound_output_values(readable_values)
+                self.runtime_adapter.map_bound_output_values(readable_values)
             )
             self.last_outputs = dict(resolved_outputs)
         else:
@@ -3520,6 +3544,33 @@ class EmtFmuMeDeviceAdapter:
             pass
         self.pending_previous_time = None
         return resolved_outputs
+
+    def prepare_state_event_retry(
+        self,
+        event_time: float | None,
+        evaluation_budget: FmuMeEvaluationBudget,
+    ) -> dict[VarPowerFlowReferenceType, float]:
+        """Restore this device's accepted outputs for a coordinated event retry.
+
+        :param event_time: Global localized time when this device must arm its event.
+        :param evaluation_budget: Existing shared runtime-call budget.
+        :return: Restored outputs without evaluating the FMU again.
+        """
+        # The runtime restores the transaction; mapping consumes its cached values.
+        restored_values: tuple[float, ...] = self.runtime_adapter.prepare_state_event_retry(
+            event_time=event_time, evaluation_budget=evaluation_budget,
+        )
+        restored_outputs: dict[VarPowerFlowReferenceType, float] = (
+            self.runtime_adapter.map_bound_output_values(restored_values)
+        )
+        # Restore the device communication clock to the same accepted point.
+        if self.pending_previous_time is not None:
+            self.last_time = self.pending_previous_time
+        else:
+            pass
+        self.pending_previous_time = None
+        self.last_outputs = dict(restored_outputs)
+        return restored_outputs
 
     def apply_outputs(self, target: np.ndarray, outputs: dict[VarPowerFlowReferenceType, float]) -> None:
         """Write the FMU ME outputs into VeraGrid runtime-parameter storage.
@@ -3794,16 +3845,9 @@ def _prepare_rms_fmu_me_state_event_retry(
                 retry_event_time: float | None = earliest_event_time
             else:
                 retry_event_time = None
-            restored_values: tuple[float, ...] = (
-                adapter.runtime_adapter.prepare_state_event_retry(
-                    event_time=retry_event_time,
-                    evaluation_budget=evaluation_budget,
-                )
-            )
             restored_outputs: dict[VarPowerFlowReferenceType, float] = (
-                adapter.runtime_adapter._map_bound_output_values(restored_values)
+                adapter.prepare_state_event_retry(retry_event_time, evaluation_budget)
             )
-            adapter.last_outputs = dict(restored_outputs)
             adapter.apply_outputs(
                 problem._variable_parameters_values,
                 restored_outputs,
@@ -3930,3 +3974,79 @@ def finalize_emt_fmu_me_devices(problem: Any) -> None:
     pending_device: tuple[Any, Block]
     for pending_device in problem._pending_fmu_me_devices:
         register_emt_fmu_me_device(problem, pending_device[0], pending_device[1])
+
+
+def restore_fmu_me_spec_from_record(record: FmuMeDeviceConfigRecord, block: Block, device_tpe: DeviceType) -> FmuMeDeviceSpec:
+    """Rebuild the runtime FMU ME device specification from the stored record.
+
+    :param record: Serialized FMU ME device record.
+    :param block: Device block used in the active problem.
+    :param device_tpe: VeraGrid device type.
+    :return: Runtime FMU ME device specification.
+    """
+
+    parameter_values: tuple[FmuFloat64ParameterValue, ...] = (
+        _resolve_parameter_values_from_block(
+            parameter_bindings=record.parameter_bindings,
+            block=block,
+        )
+    )
+    event_params_by_name: dict[str, Var] = dict()
+    event_parameter: Var
+    for event_parameter in block.event_dict.keys():
+        event_params_by_name[event_parameter.name] = event_parameter
+    output_param_uids: dict[VarPowerFlowReferenceType, int] = dict()
+    reference: VarPowerFlowReferenceType
+    parameter_name: str
+    for reference, parameter_name in record.output_param_names.items():
+        resolved_event_parameter: Var | None = event_params_by_name.get(
+            parameter_name,
+            None,
+        )
+        if resolved_event_parameter is None:
+            raise KeyError(parameter_name)
+        else:
+            output_param_uids[reference] = resolved_event_parameter.uid
+
+    input_variable_names: list[str] = [""] * len(record.input_bindings)
+    binding_index: int
+    for binding_index in range(len(record.input_bindings)):
+        input_variable_names[binding_index] = (
+            record.input_bindings[binding_index].fmu_variable_name
+        )
+    output_variable_names: list[str] = [""] * len(record.output_bindings)
+    for binding_index in range(len(record.output_bindings)):
+        output_variable_names[binding_index] = (
+            record.output_bindings[binding_index].fmu_variable_name
+        )
+
+    return build_fmu_me_device_spec(
+        domain=FmuMeDomain(record.domain.value),
+        config=build_import_config_from_record(
+            FmuCsDeviceConfigRecord(
+                domain=record.domain,
+                fmu_path=record.fmu_path,
+                preferred_mode=record.preferred_mode,
+                input_bindings=record.input_bindings,
+                output_bindings=record.output_bindings,
+                output_defaults=record.output_defaults,
+                output_param_names=record.output_param_names,
+                extraction_root=record.extraction_root,
+                communication_step=None,
+                relative_tolerance=record.relative_tolerance,
+                debug_logging=record.debug_logging,
+            )
+        ),
+        device_tpe=device_tpe,
+        input_variable_names=tuple(input_variable_names),
+        output_variable_names=tuple(output_variable_names),
+        worker_limits=record.worker_limits,
+        maximum_event_iterations=record.maximum_event_iterations,
+        input_bindings=record.input_bindings,
+        output_bindings=record.output_bindings,
+        output_defaults=record.output_defaults,
+        output_param_uids=output_param_uids,
+        configuration_float64_values=record.configuration_float64_values,
+        configuration_uint64_values=record.configuration_uint64_values,
+        parameter_values=parameter_values,
+    )

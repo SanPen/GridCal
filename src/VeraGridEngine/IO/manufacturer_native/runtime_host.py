@@ -23,7 +23,6 @@ from VeraGridEngine.IO.manufacturer_native.model_info_codec import decode_manufa
 from VeraGridEngine.IO.manufacturer_native.worker_artifact import (
     ManufacturerNativeWorkerArtifact,
     resolve_manufacturer_native_worker,
-    resolve_packaged_windows_x86_worker,
 )
 from VeraGridEngine.IO.manufacturer_native.worker_protocol import (
     ManufacturerNativeWorkerCallOperation,
@@ -409,10 +408,10 @@ def prepare_manufacturer_native_worker_host(source: ManufacturerNativeBinarySour
     if worker_artifact is not None:
         artifact: ManufacturerNativeWorkerArtifact = worker_artifact
     else:
-        if variant.platform == IeeeCigreDllPlatform.WINDOWS_X86:
-            artifact = resolve_packaged_windows_x86_worker()
-        else:
-            artifact = resolve_manufacturer_native_worker(prepare_if_missing=True)
+        artifact = resolve_manufacturer_native_worker(
+            prepare_if_missing=True,
+            platform=variant.platform,
+        )
     if artifact.platform != variant.platform:
         raise ValueError("Prepared manufacturer worker platform differs from the selected binary")
     else:

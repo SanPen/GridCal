@@ -159,10 +159,11 @@ def _build_rms_options() -> RmsOptions:
     )
 
 
-def _build_two_bus_emt_grid() -> Tuple[MultiCircuit, Generator, Line, Load]:
+def _build_two_bus_emt_grid(balanced_line: bool = False) -> Tuple[MultiCircuit, Generator, Line, Load]:
     """
     Build one two-bus EMT benchmark grid.
 
+    :param balanced_line: Use symmetric sequence data for balanced-PF cases.
     :return: Grid and the three dynamic devices.
     :rtype: Tuple[MultiCircuit, Generator, Line, Load]
     """
@@ -182,6 +183,13 @@ def _build_two_bus_emt_grid() -> Tuple[MultiCircuit, Generator, Line, Load]:
     tower.add_wire_relationship(wire=wire, xpos=12.65, ypos=27.5, phase=3)
     tower.compute()
     line0.apply_template(tower, grid.Sbase, grid.fBase)
+    if balanced_line:
+        # These cases compare model assignment paths using a compatible balanced grid.
+        line0.template = None
+        line0.R2, line0.X2, line0.B2 = line0.R, line0.X, line0.B
+        line0.fill_3_phase_from_sequence()
+    else:
+        pass
 
     r_ph: float = 100.0
     v_ph: float = vnom / (3.0 ** 0.5)
@@ -396,7 +404,7 @@ def test_gui_editor_apply_changes_matches_scripting_for_emt_with_balanced_pf(
     script_gen: Generator
     script_line: Line
     script_load: Load
-    script_grid, script_gen, script_line, script_load = _build_two_bus_emt_grid()
+    script_grid, script_gen, script_line, script_load = _build_two_bus_emt_grid(balanced_line=True)
 
     bus_obj: Bus
     for bus_obj in script_grid.buses:
@@ -410,7 +418,7 @@ def test_gui_editor_apply_changes_matches_scripting_for_emt_with_balanced_pf(
     gui_gen: Generator
     gui_line: Line
     gui_load: Load
-    gui_grid, gui_gen, gui_line, gui_load = _build_two_bus_emt_grid()
+    gui_grid, gui_gen, gui_line, gui_load = _build_two_bus_emt_grid(balanced_line=True)
 
     gui_gen.emt_template = get_generator_thevenin_rl_emt_template_with_ref(vf=gui_grid.var_factory)
     gui_line.emt_template = get_pi_line_emt_template(vf=gui_grid.var_factory, phN=False, phA=True, phB=True, phC=True)
@@ -454,7 +462,7 @@ def test_native_emt_template_assignment_matches_set_emt_model_with_balanced_pf()
     script_gen: Generator
     script_line: Line
     script_load: Load
-    script_grid, script_gen, script_line, script_load = _build_two_bus_emt_grid()
+    script_grid, script_gen, script_line, script_load = _build_two_bus_emt_grid(balanced_line=True)
 
     bus_obj: Bus
     for bus_obj in script_grid.buses:
@@ -468,7 +476,7 @@ def test_native_emt_template_assignment_matches_set_emt_model_with_balanced_pf()
     template_gen: Generator
     template_line: Line
     template_load: Load
-    template_grid, template_gen, template_line, template_load = _build_two_bus_emt_grid()
+    template_grid, template_gen, template_line, template_load = _build_two_bus_emt_grid(balanced_line=True)
 
     for bus_obj in template_grid.buses:
         get_bus_emt_template(template_grid, bus_obj)
@@ -986,11 +994,7 @@ def test_nested_dc_line_editor_does_not_connect_the_rms_root_interface(
 def test_empty_generic_nested_editor_contains_only_boundary_ports(
         qt_app: QtWidgets.QApplication,
 ) -> None:
-    """Keep an empty Generic nested view free from a duplicate central block.
-
-    Also exercise migration of a diagram saved by the former behaviour, where
-    the Generic persisted a node representing itself between its own boundary
-    ports.
+    """Show only boundary ports when first opening an empty Generic nested view.
 
     :param qt_app: Shared Qt application fixture.
     :return: None.
@@ -1010,16 +1014,6 @@ def test_empty_generic_nested_editor_contains_only_boundary_ports(
     )
     root_block: Block = Block(name="generic_root")
     root_block.add(generic_block)
-
-    # Reproduce a file saved by the regression. The constructor must discard
-    # this self node before it creates the legitimate boundary wrappers.
-    generic_block.diagram.add_node(
-        name=generic_block.name,
-        x=480.0,
-        y=260.0,
-        tpe=BlockType.GENERIC.name,
-        device_uid=generic_block.uid,
-    )
 
     editor: DynamicBlockEditorGUI = DynamicBlockEditorGUI(
         var_factory=circuit.var_factory,

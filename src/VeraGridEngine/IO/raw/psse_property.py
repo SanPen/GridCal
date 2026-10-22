@@ -7,6 +7,7 @@ from __future__ import annotations
 from typing import TypeVar
 from VeraGridEngine.IO.base.units import Unit
 from VeraGridEngine.IO.base.base_property import BaseProperty
+from VeraGridEngine.IO.raw.psse_file_type import PsseFileType
 
 
 def coerce_psse_int(value: int | str | None, current_value: int) -> int:
@@ -95,6 +96,7 @@ class PsseProperty(BaseProperty):
     __slots__ = (
         "rawx_key",
         "format_rule",
+        "file_type",
     )
 
     def __init__(self,
@@ -107,7 +109,8 @@ class PsseProperty(BaseProperty):
                  max_chars=None,
                  min_value=-1e20,
                  max_value=1e20,
-                 format_rule=None):
+                 format_rule=None,
+                 file_type: PsseFileType = PsseFileType.RAW):
         BaseProperty.__init__(self,
                               property_name=property_name,
                               class_type=class_type,
@@ -120,6 +123,8 @@ class PsseProperty(BaseProperty):
 
         self.rawx_key = rawx_key
         self.format_rule = format_rule
+        # Auxiliary data belongs to its source format, never a RAWX network table.
+        self.file_type: PsseFileType = file_type
 
     def __str__(self):
         return f'PSSeProp:{self.property_name}'

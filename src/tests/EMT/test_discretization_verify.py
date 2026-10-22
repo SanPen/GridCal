@@ -6,7 +6,7 @@
 # Mathematical Verification Suite for VeraGrid Unified Solvers
 # ==============================================================================
 
-from typing import Any, Dict, List, Tuple
+from typing import Any, Callable, Dict, Iterator, List, Tuple
 
 import numpy as np
 import pytest
@@ -18,6 +18,9 @@ from VeraGridEngine.Simulations.EMT.problems.emt_problem_template import EmtProb
 from VeraGridEngine.Simulations.EMT.solvers.solver_AD import JitAdSolver
 from VeraGridEngine.Simulations.EMT.solvers.StructuralVectorizedSolver import StructuralVectorizedSolver
 from VeraGridEngine.Simulations.EMT.solvers.jit_symbolic_solver import BoundaryUpdateWrapper
+from VeraGridEngine.Simulations.EMT.solvers.jit_symbolic_solver import JitSymbolicSolver
+from VeraGridEngine.Simulations.EMT.solvers.structural_compiled_solver import StructuralCompiledSolver
+from VeraGridEngine.Utils.Symbolic.diagnostic import NewtonDiagnosticsConfig
 from VeraGridEngine.enumerations import DynamicIntegrationMethod
 from VeraGridEngine.Devices.Dynamic.var_factory import VarFactory
 
@@ -52,6 +55,202 @@ class SyncTimeWrapper(BoundaryUpdateWrapper):
 
 
 # --- Unit Test Suite ---
+@pytest.mark.parametrize("solver_class", (JitSymbolicSolver, JitAdSolver, StructuralVectorizedSolver, StructuralCompiledSolver))
+@pytest.mark.parametrize("dense_threshold", (0, 100))
+@pytest.mark.parametrize("backtracking", (False, True))
+@pytest.mark.parametrize("initial_slope", (-1.0, 17.0))
+def test_bdf2_published_derivative_and_order(
+        solver_class: type[JitSymbolicSolver] | type[JitAdSolver] | type[StructuralVectorizedSolver] | type[StructuralCompiledSolver],
+        dense_threshold: int, backtracking: bool, initial_slope: float) -> None:
+    """Verify accepted derivatives and global order against analytic decay.
+
+    :param solver_class: One of the four existing EMT backends.
+    :param dense_threshold: Force dense or sparse linear solves.
+    :param backtracking: Enable the existing line search.
+    :param initial_slope: Consistent or finite inconsistent caller seed.
+    :return: None.
+    """
+    errors: np.ndarray = np.empty(3, dtype=np.float64)
+    index: int
+    h: float
+    solver: JitSymbolicSolver | JitAdSolver | StructuralVectorizedSolver | StructuralCompiledSolver
+    problem: GenericEmtProblem
+    times: np.ndarray
+    values: np.ndarray
+    derivatives: np.ndarray
+    well: bool
+    converged: bool
+    for index, h in enumerate((0.1, 0.05, 0.025)):
+        x: Var = Var("bdf_decay_x")
+        dx: Var = Var("bdf_decay_dx", base_var=x)
+        block: Block = Block(name="BdfDecay", state_vars=list((x,)), diff_vars=list((dx,)),
+                             state_eqs=list((-x,)), parameters=dict())
+        solver, problem = make_solver(solver_class, block, 1.0, h, DynamicIntegrationMethod.DaeBDF2,
+                                      1e-10, dense_threshold, backtracking)
+        seed: np.ndarray = np.ones(1)
+        slope: np.ndarray = np.array((initial_slope,))
+        times, values, derivatives, well, converged = solver.simulate(x0=seed, dx0=slope)
+        assert well and converged
+        np.testing.assert_array_equal(seed, (1.0,))
+        np.testing.assert_array_equal(slope, (initial_slope,))
+        np.testing.assert_array_equal(derivatives[0], slope)
+        assert values[1, 0] == pytest.approx(1.0 / (1.0 + h), abs=1e-8)
+        # An accepted Newton flag alone does not prove the published DAE residual.
+        np.testing.assert_allclose(derivatives[1:, 0] + values[1:, 0], 0.0, atol=1e-8, rtol=0)
+        np.testing.assert_allclose(derivatives[2:, 0],
+                                   (1.5 * values[2:, 0] - 2.0 * values[1:-1, 0] + 0.5 * values[:-2, 0]) / h,
+                                   atol=1e-8, rtol=0)
+        assert times[-1] == pytest.approx(1.0)
+        errors[index] = abs(values[-1, 0] - np.exp(-1.0))
+    assert np.all(errors[:-1] / errors[1:] >= 3.5)
+
+
+@pytest.mark.parametrize("solver_class", (JitSymbolicSolver, JitAdSolver, StructuralVectorizedSolver, StructuralCompiledSolver))
+@pytest.mark.parametrize("dense_threshold", (0, 100))
+def test_bdf2_derivative_uid_order(
+        solver_class: type[JitSymbolicSolver] | type[JitAdSolver] | type[StructuralVectorizedSolver] | type[StructuralCompiledSolver],
+        dense_threshold: int) -> None:
+    """Check unequal rates with independently permuted state and derivative order.
+
+    :param solver_class: Existing EMT backend.
+    :param dense_threshold: Force dense or sparse linear solves.
+    :return: None.
+    """
+    reverse: bool
+    solver: JitSymbolicSolver | JitAdSolver | StructuralVectorizedSolver | StructuralCompiledSolver
+    problem: GenericEmtProblem
+    times: np.ndarray
+    values: np.ndarray
+    derivatives: np.ndarray
+    well: bool
+    converged: bool
+    for reverse in (False, True):
+        slow: Var = Var("bdf_slow")
+        fast: Var = Var("bdf_fast")
+        dslow: Var = Var("bdf_dslow", base_var=slow)
+        dfast: Var = Var("bdf_dfast", base_var=fast)
+        block: Block = Block(name="BdfUidOrder",
+                             state_vars=list((fast, slow) if reverse else (slow, fast)),
+                             state_eqs=list((-2.0 * fast, -slow) if reverse else (-slow, -2.0 * fast)),
+                             diff_vars=list((dslow, dfast) if reverse else (dfast, dslow)), parameters=dict())
+        solver, problem = make_solver(solver_class, block, 0.4, 0.1, DynamicIntegrationMethod.DaeBDF2,
+                                      1e-10, dense_threshold)
+        slow_index: int = problem.uid2idx_vars[slow.uid]
+        fast_index: int = problem.uid2idx_vars[fast.uid]
+        dslow_index: int = problem.uid2idx_diff[dslow.uid]
+        dfast_index: int = problem.uid2idx_diff[dfast.uid]
+        assert slow_index != dslow_index and fast_index != dfast_index
+        seed: np.ndarray = np.empty(2)
+        seed[slow_index] = 1.0
+        seed[fast_index] = 2.0
+        times, values, derivatives, well, converged = solver.simulate(x0=seed, dx0=np.array((13.0, 19.0)))
+        assert well and converged and times.size == 5
+        assert values[1, slow_index] == pytest.approx(1.0 / 1.1, abs=1e-8)
+        assert values[1, fast_index] == pytest.approx(2.0 / 1.2, abs=1e-8)
+        np.testing.assert_allclose(derivatives[1:, dslow_index] + values[1:, slow_index], 0.0, atol=1e-8, rtol=0)
+        np.testing.assert_allclose(derivatives[1:, dfast_index] + 2.0 * values[1:, fast_index], 0.0, atol=1e-8, rtol=0)
+
+
+@pytest.mark.parametrize("solver_class", (JitSymbolicSolver, JitAdSolver, StructuralVectorizedSolver, StructuralCompiledSolver))
+def test_bdf2_fresh_run_and_empty_derivatives(
+        solver_class: type[JitSymbolicSolver] | type[JitAdSolver] | type[StructuralVectorizedSolver] | type[StructuralCompiledSolver]) -> None:
+    """Keep seeds and empty public derivative vectors intact across fresh calls.
+
+    :param solver_class: Existing EMT backend, including cancellation.
+    :return: None.
+    """
+    algebraic_only: bool
+    solver: JitSymbolicSolver | JitAdSolver | StructuralVectorizedSolver | StructuralCompiledSolver
+    fresh: JitSymbolicSolver | JitAdSolver | StructuralVectorizedSolver | StructuralCompiledSolver
+    cancelled_solver: JitSymbolicSolver | JitAdSolver | StructuralVectorizedSolver | StructuralCompiledSolver
+    problem: GenericEmtProblem
+    fresh_problem: GenericEmtProblem
+    cancelled_problem: GenericEmtProblem
+    first: Tuple[np.ndarray, np.ndarray, np.ndarray, bool, bool]
+    repeated: Tuple[np.ndarray, np.ndarray, np.ndarray, bool, bool]
+    reference: Tuple[np.ndarray, np.ndarray, np.ndarray, bool, bool]
+    changed: Tuple[np.ndarray, np.ndarray, np.ndarray, bool, bool]
+    cancelled: Tuple[np.ndarray, np.ndarray, np.ndarray, bool, bool]
+    for algebraic_only in (False, True):
+        x: Var = Var("bdf_empty_x")
+        block: Block = Block(name="BdfEmpty", state_vars=list() if algebraic_only else list((x,)),
+                             state_eqs=list() if algebraic_only else list((-x,)),
+                             algebraic_vars=list((x,)) if algebraic_only else list(),
+                             algebraic_eqs=list((x - 2.0,)) if algebraic_only else list(),
+                             diff_vars=list(), parameters=dict())
+        solver, problem = make_solver(solver_class, block, 0.3, 0.1, DynamicIntegrationMethod.DaeBDF2, 1e-10)
+        assert problem.get_dx0().size == 0
+        first = solver.simulate(x0=np.array((2.0,)), dx0=np.empty(0))
+        repeated = solver.simulate(x0=np.array((2.0,)), dx0=np.empty(0))
+        fresh, fresh_problem = make_solver(solver_class, block, 0.3, 0.1, DynamicIntegrationMethod.DaeBDF2, 1e-10)
+        reference = fresh.simulate(x0=np.array((3.0,)), dx0=np.empty(0))
+        changed = solver.simulate(x0=np.array((3.0,)), dx0=np.empty(0))
+        assert first[4] and repeated[4] and reference[4] and changed[4]
+        assert first[2].shape == (first[0].size, 0)
+        np.testing.assert_allclose(first[1], repeated[1], atol=1e-10, rtol=0)
+        np.testing.assert_allclose(changed[1], reference[1], atol=1e-10, rtol=0)
+        if algebraic_only:
+            np.testing.assert_allclose(first[1][1:], 2.0, atol=1e-10, rtol=0)
+        else:
+            assert first[1][1, 0] == pytest.approx(2.0 / 1.1, abs=1e-8)
+        # A standard iterator supplies the existing callback without a new helper.
+        cancellation: Iterator[bool] = iter((False, True))
+        cancelled_solver, cancelled_problem = make_solver(
+            solver_class, block, 0.3, 0.1, DynamicIntegrationMethod.DaeBDF2,
+            1e-10, 100, False, cancellation.__next__)
+        cancelled = cancelled_solver.simulate(x0=np.array((2.0,)), dx0=np.empty(0))
+        np.testing.assert_allclose(cancelled[1], first[1][:2], atol=1e-10, rtol=0)
+        assert cancelled[0].size == 2 and cancelled[2].shape == (2, 0)
+
+
+@pytest.mark.parametrize("solver_class", (JitSymbolicSolver, JitAdSolver, StructuralVectorizedSolver, StructuralCompiledSolver))
+@pytest.mark.parametrize("dense_threshold", (0, 100))
+@pytest.mark.parametrize("backtracking", (False, True))
+def test_bdf2_coupled_and_nonlinear_dae(
+        solver_class: type[JitSymbolicSolver] | type[JitAdSolver] | type[StructuralVectorizedSolver] | type[StructuralCompiledSolver],
+        dense_threshold: int, backtracking: bool) -> None:
+    """Verify coupled DAE constraints and nonlinear second-order convergence.
+
+    :param solver_class: Existing EMT backend.
+    :param dense_threshold: Force dense or sparse linear solves.
+    :param backtracking: Enable the existing line search.
+    :return: None.
+    """
+    nonlinear: bool
+    solver: JitSymbolicSolver | JitAdSolver | StructuralVectorizedSolver | StructuralCompiledSolver
+    problem: GenericEmtProblem
+    times: np.ndarray
+    values: np.ndarray
+    derivatives: np.ndarray
+    well: bool
+    converged: bool
+    for nonlinear in (False, True):
+        errors: np.ndarray = np.empty(3)
+        index: int
+        h: float
+        for index, h in enumerate((0.1, 0.05, 0.025)):
+            x: Var = Var("bdf_coupled_x")
+            dx: Var = Var("bdf_coupled_dx", base_var=x)
+            z: Var = Var("bdf_coupled_z")
+            block: Block = Block(name="BdfCoupled", state_vars=list((x,)), diff_vars=list((dx,)),
+                                 state_eqs=list((-x * x if nonlinear else z,)),
+                                 algebraic_vars=list() if nonlinear else list((z,)),
+                                 algebraic_eqs=list() if nonlinear else list((z + x,)), parameters=dict())
+            solver, problem = make_solver(solver_class, block, 1.0, h, DynamicIntegrationMethod.DaeBDF2,
+                                          1e-11, dense_threshold, backtracking)
+            seed: np.ndarray = np.ones(1) if nonlinear else np.array((1.0, -1.0))
+            times, values, derivatives, well, converged = solver.simulate(x0=seed, dx0=np.array((23.0,)))
+            assert well and converged
+            if nonlinear:
+                np.testing.assert_allclose(derivatives[1:, 0] + values[1:, 0] * values[1:, 0], 0.0, atol=1e-8, rtol=0)
+                errors[index] = abs(values[-1, 0] - 0.5)
+            else:
+                np.testing.assert_allclose(values[1:, 1] + values[1:, 0], 0.0, atol=1e-8, rtol=0)
+                np.testing.assert_allclose(derivatives[1:, 0] - values[1:, 1], 0.0, atol=1e-8, rtol=0)
+                errors[index] = abs(values[-1, 0] - np.exp(-1.0))
+        assert np.all(errors[:-1] / errors[1:] >= 3.5)
+
+
 def create_decay_system(k_val: float = 1.0) -> Tuple[Block, Var, Var]:
     x: Var = Var("x")
     k: Var = Var("k")
@@ -68,13 +267,29 @@ SOLVERS_TO_TEST: List[Any] = list([JitAdSolver, StructuralVectorizedSolver])
 
 
 def make_solver(
-    solver_class: Any,
+    solver_class: type[JitSymbolicSolver] | type[JitAdSolver] | type[StructuralVectorizedSolver] | type[StructuralCompiledSolver],
     block: Block,
     t_end: float,
     h: float,
     method: DynamicIntegrationMethod,
-) -> Tuple[Any, GenericEmtProblem]:
-    """Helper to construct a BaseProblem and initialize the chosen solver."""
+    newton_tolerance: float = 1.0e-6,
+    dense_threshold: int = 100,
+    backtracking: bool = False,
+    cancel_checker: Callable[[], bool] | None = None,
+) -> Tuple[JitSymbolicSolver | JitAdSolver | StructuralVectorizedSolver | StructuralCompiledSolver, GenericEmtProblem]:
+    """Construct a real EMT backend with the declared model and solver settings.
+
+    :param solver_class: Existing implicit EMT backend constructor.
+    :param block: Declared state, derivative and algebraic model.
+    :param t_end: Requested simulation horizon.
+    :param h: Fixed macro time step.
+    :param method: Requested integration method.
+    :param newton_tolerance: Accepted residual infinity-norm bound.
+    :param dense_threshold: Largest system using dense linear solves.
+    :param backtracking: Enable the existing line search.
+    :param cancel_checker: Optional existing cancellation callback.
+    :return: Solver and its canonical problem, sharing the declared variable identity.
+    """
     block.unify_blocks()
     static_parameter_values_mapping: Dict[Var, Const] = dict(block.parameters)
     problem: GenericEmtProblem = GenericEmtProblem(
@@ -82,7 +297,11 @@ def make_solver(
         glob_time=Var("t"),
         static_parameter_values_mapping=static_parameter_values_mapping,
     )
-    solver: Any = solver_class(problem, t0=0.0, t_end=t_end, h=h, method=method)
+    config: NewtonDiagnosticsConfig = NewtonDiagnosticsConfig(enable_backtracking=backtracking)
+    solver: JitSymbolicSolver | JitAdSolver | StructuralVectorizedSolver | StructuralCompiledSolver = solver_class(
+        problem, t0=0.0, t_end=t_end, h=h, method=method,
+        newton_tolerance=newton_tolerance, dense_threshold=dense_threshold,
+        newton_diag_config=config, cancel_checker=cancel_checker)
     return solver, problem
 
 

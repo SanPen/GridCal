@@ -46,8 +46,6 @@ import VeraGrid.Gui.Diagrams.SchematicWidget.schematic_widget as schematic_widge
 from VeraGrid.Gui.DynamicModelEditor.Events.dynamic_events_support import DynamicEventsGroupsDialog
 from VeraGrid.Gui.DynamicModelEditor.Events.dynamic_events_support import SwitchSequenceDialog
 from VeraGrid.Gui.DynamicModelEditor.Editor.ElementDialogues.jmarti_line_emt_dialog import JMartiLineEmtDialog
-from VeraGrid.Gui.DynamicModelEditor.Editor.ElementDialogues.lookup_table_dialog import LookupArrayLinearDialog
-from VeraGrid.Gui.DynamicModelEditor.Editor.ElementDialogues.lookup_table_dialog import LookupMatrixLinearDialog
 from VeraGrid.Gui.DynamicModelEditor.Editor.ElementDialogues.MeasurementsDialog import MeasurementsDialog
 from VeraGrid.Gui.DynamicModelEditor.Workspace.detachable_editor_tabs_widget import DynamicEditorPickerDialog
 from VeraGrid.Gui.DynamicModelEditor.Editor.dynamic_block_editor import DynamicBlockEditorGUI
@@ -81,7 +79,7 @@ from VeraGrid.Gui.GridMerge.grid_diff import GridDiffDialogue
 from VeraGrid.Gui.GridMerge.grid_merge import GridMergeDialogue
 from VeraGrid.Gui.GridReduce.grid_reduce import GridReduceDialogue
 from VeraGrid.Gui.Main.SubClasses.Model.diagrams import DiagramsMain
-from VeraGrid.Gui.Main.VeraGridMain import VeraGridMainGUI
+from VeraGrid.Gui.Main.SubClasses.io import IoMain
 from VeraGrid.Gui.Main.object_select_window import ListSelectWindow
 from VeraGrid.Gui.Main.object_select_window import ObjectSelectWindow
 from VeraGrid.Gui.ProceduralGrid.map_warning import MapWarningDialog
@@ -170,8 +168,6 @@ class DialogSmokeTarget(Enum):
     SWITCH_SEQUENCE = "SwitchSequenceDialog"
     DYNAMIC_EVENTS_GROUPS = "DynamicEventsGroupsDialog"
     JMARTI_LINE_EMT = "JMartiLineEmtDialog"
-    LOOKUP_ARRAY_LINEAR = "LookupArrayLinearDialog"
-    LOOKUP_MATRIX_LINEAR = "LookupMatrixLinearDialog"
     MEASUREMENTS = "MeasurementsDialog"
     DYNAMIC_BLOCK_EDITOR = "DynamicBlockEditorGUI"
     DYNAMIC_BLOCK_PROPERTIES = "DynamicBlockPropertiesDialog"
@@ -384,6 +380,11 @@ class FakeIoApp:
     __slots__ = (
         "circuit",
         "current_boundary_set",
+        "psse_export_dialogue",
+        "dgs_export_dialogue",
+        "matpower_export_dialogue",
+        "ucte_export_dialogue",
+        "cgmes_dialogue",
         "file_name",
         "project_directory",
         "server_driver",
@@ -398,6 +399,11 @@ class FakeIoApp:
         :param circuit: Circuit exposed to dialogs.
         :return: None.
         """
+        self.psse_export_dialogue: PsseExportDialogue | None = None
+        self.dgs_export_dialogue: DgsExportDialogue | None = None
+        self.matpower_export_dialogue: MatpowerExportDialogue | None = None
+        self.ucte_export_dialogue: UcteExportDialogue | None = None
+        self.cgmes_dialogue: CgmesExportDialogue | None = None
         self.circuit: vge.MultiCircuit = circuit
         self.current_boundary_set: Set[object] = set()
         self.file_name: str = ""
@@ -1011,13 +1017,6 @@ def build_dialog_for_smoke(target: DialogSmokeTarget, context: DialogSmokeContex
         dialog = DynamicEventsGroupsDialog(mode=DynamicSimulationMode.RMS)
     elif target == DialogSmokeTarget.JMARTI_LINE_EMT:
         dialog = JMartiLineEmtDialog()
-    elif target == DialogSmokeTarget.LOOKUP_ARRAY_LINEAR:
-        dialog = LookupArrayLinearDialog(
-            block_label="Lookup",
-            preview_enabled=True,
-        )
-    elif target == DialogSmokeTarget.LOOKUP_MATRIX_LINEAR:
-        dialog = LookupMatrixLinearDialog(block_label="Lookup")
     elif target == DialogSmokeTarget.MEASUREMENTS:
         measurements: Dict[str, Dict[BlockType, List[VarPowerFlowReferenceType]]] = dict()
         ac_measurements: Dict[BlockType, List[VarPowerFlowReferenceType]] = dict()
@@ -1325,9 +1324,6 @@ def exercise_chart_window_operation_for_smoke(target: DialogSmokeTarget,
     elif target == DialogSmokeTarget.WIND_FARM_WIZARD and isinstance(dialog, WindFarmWizard):
         dialog.plot()
         assert len(dialog._open_plot_dialogs) == 1
-    elif target == DialogSmokeTarget.LOOKUP_ARRAY_LINEAR and isinstance(dialog, LookupArrayLinearDialog):
-        dialog.show_plot_preview()
-        assert dialog._preview_dialogue is not None
     elif target == DialogSmokeTarget.RMS_PLOT and isinstance(dialog, RmsPlotDialog):
         dialog.add_variable()
         dialog.show_external_plot()
@@ -1477,7 +1473,6 @@ def run_dialog_smoke_suite_in_child(message_queue: Any) -> None:
     chart_targets.add(DialogSmokeTarget.GRID_GENERATOR)
     chart_targets.add(DialogSmokeTarget.PROCEDURAL_GRID)
     chart_targets.add(DialogSmokeTarget.SIGMA_ANALYSIS)
-    chart_targets.add(DialogSmokeTarget.LOOKUP_ARRAY_LINEAR)
     chart_targets.add(DialogSmokeTarget.RMS_PLOT)
     chart_targets.add(DialogSmokeTarget.PROFILE_INPUT)
     chart_targets.add(DialogSmokeTarget.TEMPLATE_DEVICE_EDITOR)
@@ -2073,46 +2068,47 @@ def test_modeless_export_dialogues_reuse_live_windows(qt_app: QtWidgets.QApplica
     :return: None.
     """
     app: QtWidgets.QApplication = qt_app
-    gui: VeraGridMainGUI = VeraGridMainGUI()
+    # Exercise the real export actions without starting unrelated maps or user settings.
+    gui: FakeIoApp = FakeIoApp(circuit=vge.MultiCircuit())
 
     try:
-        gui.export_psse()
+        IoMain.export_psse(gui)
         app.processEvents()
         psse_dialog: PsseExportDialogue | None = gui.psse_export_dialogue
         assert is_dialog_available(dialog=psse_dialog)
-        gui.export_psse()
+        IoMain.export_psse(gui)
         app.processEvents()
         assert gui.psse_export_dialogue is psse_dialog
 
-        gui.export_power_factory()
+        IoMain.export_power_factory(gui)
         app.processEvents()
         dgs_dialog: DgsExportDialogue | None = gui.dgs_export_dialogue
         assert is_dialog_available(dialog=dgs_dialog)
-        gui.export_power_factory()
+        IoMain.export_power_factory(gui)
         app.processEvents()
         assert gui.dgs_export_dialogue is dgs_dialog
 
-        gui.export_matpower()
+        IoMain.export_matpower(gui)
         app.processEvents()
         matpower_dialog: MatpowerExportDialogue | None = gui.matpower_export_dialogue
         assert is_dialog_available(dialog=matpower_dialog)
-        gui.export_matpower()
+        IoMain.export_matpower(gui)
         app.processEvents()
         assert gui.matpower_export_dialogue is matpower_dialog
 
-        gui.export_ucte()
+        IoMain.export_ucte(gui)
         app.processEvents()
         ucte_dialog: UcteExportDialogue | None = gui.ucte_export_dialogue
         assert is_dialog_available(dialog=ucte_dialog)
-        gui.export_ucte()
+        IoMain.export_ucte(gui)
         app.processEvents()
         assert gui.ucte_export_dialogue is ucte_dialog
 
-        gui.export_cgmes()
+        IoMain.export_cgmes(gui)
         app.processEvents()
         cgmes_dialog: CgmesExportDialogue | None = gui.cgmes_dialogue
         assert is_dialog_available(dialog=cgmes_dialog)
-        gui.export_cgmes()
+        IoMain.export_cgmes(gui)
         app.processEvents()
         assert gui.cgmes_dialogue is cgmes_dialog
     finally:
@@ -2136,11 +2132,4 @@ def test_modeless_export_dialogues_reuse_live_windows(qt_app: QtWidgets.QApplica
             close_dialog_for_smoke(dialog=gui.cgmes_dialogue, app=app, close_extra_widgets=False)
         else:
             pass
-        if is_dialog_available(dialog=gui):
-            gui.hide()
-            gui.stop_all_threads()
-            delete_dialog_safely(dialog=gui)
-        else:
-            pass
-        close_extra_top_level_widgets(app=app, primary_dialog=gui)
         collect_qt_deletes(app=app)

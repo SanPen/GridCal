@@ -2965,17 +2965,17 @@ Qg = Qmin_G   if Qh &lt;= Qmin_G</p>
 <dt class="sig sig-object py" id="VeraGridEngine.Templates.Rms.pvd1_rms_template.get_pvd1_complete_rms_template">
 <span class="sig-prename descclassname"><span class="pre">VeraGridEngine.Templates.Rms.pvd1_rms_template.</span></span><span class="sig-name descname"><span class="pre">get_pvd1_complete_rms_template</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vfactory</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="VeraGridEngine.Devices.Dynamic.html#VeraGridEngine.Devices.Dynamic.var_factory.VarFactory" title="VeraGridEngine.Devices.Dynamic.var_factory.VarFactory"><span class="pre">VarFactory</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'PVD1</span> <span class="pre">complete</span> <span class="pre">RMS</span> <span class="pre">template'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="VeraGridEngine.Devices.Dynamic.html#VeraGridEngine.Devices.Dynamic.rms_template.RmsModelTemplate" title="VeraGridEngine.Devices.Dynamic.rms_template.RmsModelTemplate"><span class="pre">RmsModelTemplate</span></a></span></span><a class="reference internal" href="../../../_modules/VeraGridEngine/Templates/Rms/pvd1_rms_template.html#get_pvd1_complete_rms_template"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#VeraGridEngine.Templates.Rms.pvd1_rms_template.get_pvd1_complete_rms_template" title="Link to this definition"></a></dt>
 <dd><p>More complete WECC/ANDES-like PVD1 RMS model.</p>
-<p>Compared to <code class="docutils literal notranslate"><span class="pre">get_pvd1_rms_template</span></code>, this variant adds:
-- frequency deadband and post-deadband active-power support (fdbd, ddn),
-- explicit pref/pext internal summation channels,
-- optional active-power limiting switch (plim),
-- recovery multipliers with separate frequency/voltage enable flags.</p>
-<p>Notes:
-- <code class="docutils literal notranslate"><span class="pre">fn</span></code> is a static parameter mapped to the grid nominal frequency.</p>
-<blockquote>
-<div><p><code class="docutils literal notranslate"><span class="pre">f_hz</span></code> is the local frequency measured by the PLL.</p>
-</div></blockquote>
+<p>Compared to <code class="docutils literal notranslate"><span class="pre">get_pvd1_rms_template</span></code>, this variant adds:</p>
 <ul class="simple">
+<li><p>frequency deadband and post-deadband active-power support (fdbd, ddn),</p></li>
+<li><p>explicit pref/pext internal summation channels,</p></li>
+<li><p>optional active-power limiting switch (plim),</p></li>
+<li><p>recovery multipliers with separate frequency/voltage enable flags.</p></li>
+</ul>
+<p>Notes:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">fn</span></code> is a static parameter mapped to the grid nominal frequency.
+<code class="docutils literal notranslate"><span class="pre">f_hz</span></code> is the local frequency measured by the PLL.</p></li>
 <li><p>True latching tripping behavior (frflag/vrflag in the original ANDES formulation)
 is approximated by continuous enable factors; it does not implement memory latching.</p></li>
 </ul>
@@ -3038,17 +3038,17 @@ RMS studies in VeraGrid:
 <dt class="sig sig-object py" id="VeraGridEngine.Templates.Rms.pvd1_rms_template_procedural.get_pvd1_complete_rms_template">
 <span class="sig-prename descclassname"><span class="pre">VeraGridEngine.Templates.Rms.pvd1_rms_template_procedural.</span></span><span class="sig-name descname"><span class="pre">get_pvd1_complete_rms_template</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vfactory</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="VeraGridEngine.Devices.Dynamic.html#VeraGridEngine.Devices.Dynamic.var_factory.VarFactory" title="VeraGridEngine.Devices.Dynamic.var_factory.VarFactory"><span class="pre">VarFactory</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'PVD1</span> <span class="pre">complete</span> <span class="pre">RMS</span> <span class="pre">template'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="VeraGridEngine.Devices.Dynamic.html#VeraGridEngine.Devices.Dynamic.rms_template.RmsModelTemplate" title="VeraGridEngine.Devices.Dynamic.rms_template.RmsModelTemplate"><span class="pre">RmsModelTemplate</span></a></span></span><a class="reference internal" href="../../../_modules/VeraGridEngine/Templates/Rms/pvd1_rms_template_procedural.html#get_pvd1_complete_rms_template"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#VeraGridEngine.Templates.Rms.pvd1_rms_template_procedural.get_pvd1_complete_rms_template" title="Link to this definition"></a></dt>
 <dd><p>More complete WECC/ANDES-like PVD1 RMS model.</p>
-<p>Compared to <code class="docutils literal notranslate"><span class="pre">get_pvd1_rms_template</span></code>, this variant adds:
-- frequency deadband and post-deadband active-power support (fdbd, ddn),
-- explicit pref/pext internal summation channels,
-- optional active-power limiting switch (plim),
-- recovery multipliers with separate frequency/voltage enable flags.</p>
-<p>Notes:
-- <code class="docutils literal notranslate"><span class="pre">fn</span></code> is a static parameter mapped to the grid nominal frequency.</p>
-<blockquote>
-<div><p><code class="docutils literal notranslate"><span class="pre">f_hz</span></code> is the local frequency measured by the PLL.</p>
-</div></blockquote>
+<p>Compared to <code class="docutils literal notranslate"><span class="pre">get_pvd1_rms_template</span></code>, this variant adds:</p>
 <ul class="simple">
+<li><p>frequency deadband and post-deadband active-power support (fdbd, ddn),</p></li>
+<li><p>explicit pref/pext internal summation channels,</p></li>
+<li><p>optional active-power limiting switch (plim),</p></li>
+<li><p>recovery multipliers with separate frequency/voltage enable flags.</p></li>
+</ul>
+<p>Notes:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">fn</span></code> is a static parameter mapped to the grid nominal frequency.
+<code class="docutils literal notranslate"><span class="pre">f_hz</span></code> is the local frequency measured by the PLL.</p></li>
 <li><p>True latching tripping behavior (frflag/vrflag in the original ANDES formulation)
 is approximated by continuous enable factors; it does not implement memory latching.</p></li>
 </ul>

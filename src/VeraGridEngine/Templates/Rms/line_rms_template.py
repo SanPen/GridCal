@@ -14,61 +14,73 @@ from VeraGridEngine.Utils.Symbolic.block import Block
 import VeraGridEngine.Utils.Symbolic.symbolic as sym
 
 
-def get_line_rms_template(vfactory: VarFactory, name="Line_rms_template") -> RmsModelTemplate:
+def get_line_rms_template(vfactory: VarFactory, name: str = "Line_rms_template") -> RmsModelTemplate:
+    """Build polar terminal powers for a physical AC Line PI model.
+
+    Virtual taps convert bus magnitudes to the line's common voltage reference.
+    Structural identity defaults preserve unassigned/equal-base behavior; the
+    owner-local static mapper supplies the actual connected device ratios.
+
+    :param vfactory: Symbolic factory shared by the owning circuit.
+    :param name: Human-readable template name.
+    :return: RMS template exposing physical terminal active/reactive powers.
     """
-    Get the RMS template model of the Line
-    :return: RmsModelTemplate
-    """
-    templ = RmsModelTemplate()
+    templ: RmsModelTemplate = RmsModelTemplate()
     templ.tpe = DeviceType.LineDevice
     templ.name = name
 
-    inputs: List[Var] = [vfactory.add_var("Vmf", reference=VarPowerFlowReferenceType.Vmf),
+    inputs: List[Var] = list((vfactory.add_var("Vmf", reference=VarPowerFlowReferenceType.Vmf),
                          vfactory.add_var("Vaf", reference=VarPowerFlowReferenceType.Vaf),
                          vfactory.add_var("Vmt", reference=VarPowerFlowReferenceType.Vmt),
-                         vfactory.add_var("Vat", reference=VarPowerFlowReferenceType.Vat), ]
+                         vfactory.add_var("Vat", reference=VarPowerFlowReferenceType.Vat)))
 
-    Qf = vfactory.add_var("Qf", reference=VarPowerFlowReferenceType.Qf)
-    Qt = vfactory.add_var("Qt", reference=VarPowerFlowReferenceType.Qt)
-    Pf = vfactory.add_var("Pf", reference=VarPowerFlowReferenceType.Pf)
-    Pt = vfactory.add_var("Pt", reference=VarPowerFlowReferenceType.Pt)
+    Qf: Var = vfactory.add_var("Qf", reference=VarPowerFlowReferenceType.Qf)
+    Qt: Var = vfactory.add_var("Qt", reference=VarPowerFlowReferenceType.Qt)
+    Pf: Var = vfactory.add_var("Pf", reference=VarPowerFlowReferenceType.Pf)
+    Pt: Var = vfactory.add_var("Pt", reference=VarPowerFlowReferenceType.Pt)
 
-    g = vfactory.add_var("g")
-    b = vfactory.add_var("b")
-    bsh = vfactory.add_var("bsh")
+    g: Var = vfactory.add_var("g")
+    b: Var = vfactory.add_var("b")
+    bsh: Var = vfactory.add_var("bsh")
     gsh: Var = vfactory.add_var("gsh")
 
     u: Var = vfactory.add_var("u")
+    tap_from: Var = vfactory.add_var("vtap_f")
+    tap_to: Var = vfactory.add_var("vtap_t")
 
-    block = Block()
+    block: Block = Block()
 
     block.parameters[g] = vfactory.add_const(5)
     block.parameters[b] = vfactory.add_const(-12)
     block.parameters[bsh] = vfactory.add_const(0.03)
     block.parameters[gsh] = vfactory.add_const(0.0)
+    block.parameters[tap_from] = vfactory.add_const(1.0)
+    block.parameters[tap_to] = vfactory.add_const(1.0)
 
     block.event_dict[u] = vfactory.add_const(1)
 
-    block.algebraic_vars = [Pf, Pt, Qf, Qt]
+    block.algebraic_vars = list((Pf, Pt, Qf, Qt))
 
 
     # Physical shunt loss is split equally between the two terminal powers.
-    pi2 = np.pi / 2
-    block.algebraic_eqs = [
-        Pf - u * ((inputs[0] ** 2 * (g + gsh / 2)) - g * inputs[0] * inputs[2] * cos(inputs[1] - inputs[3]) + b * inputs[0] * inputs[2] * cos(inputs[1] - inputs[3] + pi2)),
-        Qf - u * (inputs[0] ** 2 * (-bsh / 2 - b) - g * inputs[0] * inputs[2] * sin(inputs[1] - inputs[3]) + b * inputs[0] * inputs[2] * sin(inputs[1] - inputs[3] + pi2)),
-        Pt - u * ((inputs[2] ** 2 * (g + gsh / 2)) - g * inputs[2] * inputs[0] * cos(inputs[3] - inputs[1]) + b * inputs[2] * inputs[0] * cos(inputs[3] - inputs[1] + pi2)),
-        Qt - u * (inputs[2] ** 2 * (-bsh / 2 - b) - g * inputs[2] * inputs[0] * sin(inputs[3] - inputs[1]) + b * inputs[2] * inputs[0] * sin(inputs[3] - inputs[1] + pi2)),
-    ]
+    pi2: float = np.pi / 2
+    voltage_from: Expr = inputs[0] / tap_from
+    voltage_to: Expr = inputs[2] / tap_to
+    block.algebraic_eqs = list((
+        Pf - u * (voltage_from ** 2 * (g + gsh / 2) - g * voltage_from * voltage_to * cos(inputs[1] - inputs[3]) + b * voltage_from * voltage_to * cos(inputs[1] - inputs[3] + pi2)),
+        Qf - u * (voltage_from ** 2 * (-bsh / 2 - b) - g * voltage_from * voltage_to * sin(inputs[1] - inputs[3]) + b * voltage_from * voltage_to * sin(inputs[1] - inputs[3] + pi2)),
+        Pt - u * (voltage_to ** 2 * (g + gsh / 2) - g * voltage_to * voltage_from * cos(inputs[3] - inputs[1]) + b * voltage_to * voltage_from * cos(inputs[3] - inputs[1] + pi2)),
+        Qt - u * (voltage_to ** 2 * (-bsh / 2 - b) - g * voltage_to * voltage_from * sin(inputs[3] - inputs[1]) + b * voltage_to * voltage_from * sin(inputs[3] - inputs[1] + pi2)),
+    ))
 
     block.in_vars = inputs
-    block.out_vars = [Pf, Pt, Qf, Qt]
+    block.out_vars = list((Pf, Pt, Qf, Qt))
 
     block.name = name
 
     templ.block.children.append(block)
 
-    templ.block.external_mapping = {
+    templ.block.external_mapping = dict({
         VarPowerFlowReferenceType.Vaf: inputs[1],
         VarPowerFlowReferenceType.Vat: inputs[3],
         VarPowerFlowReferenceType.Vmf: inputs[0],
@@ -77,20 +89,22 @@ def get_line_rms_template(vfactory: VarFactory, name="Line_rms_template") -> Rms
         VarPowerFlowReferenceType.Pt: Pt,
         VarPowerFlowReferenceType.Qf: Qf,
         VarPowerFlowReferenceType.Qt: Qt,
-    }
+    })
 
     # Static mappings belong to the same child that declares their parameter
     # targets. The root only exposes the external terminal interface, while the
     # recursive RMS/EMT mapper visits this physical line block directly.
-    block.api_obj_mapping = {
+    block.api_obj_mapping = dict({
         ParamPowerFlowReferenceType.g: g,
         ParamPowerFlowReferenceType.b: b,
         ParamPowerFlowReferenceType.bsh: bsh,
         ParamPowerFlowReferenceType.shunt_g_pu: gsh,
-    }
+        ParamPowerFlowReferenceType.vtap_f: tap_from,
+        ParamPowerFlowReferenceType.vtap_t: tap_to,
+    })
 
     templ.block.in_vars = inputs
-    templ.block.out_vars = [Pf, Pt, Qf, Qt]
+    templ.block.out_vars = list((Pf, Pt, Qf, Qt))
     # The fixed-size DAE keeps the branch compiled while a scheduled event
     # changes only this retained conduction parameter.
     templ.block.dynamic_model_contract.rms_conduction_status_var_uid = u.uid

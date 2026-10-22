@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Simulations.Derivatives.csc_derivatives &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Simulations.Derivatives.csc_derivatives &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/license.html">📜 License</a></li>
@@ -122,7 +123,7 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.Derivatives.html#VeraGridEngine.Simulations.Derivatives.csc_derivatives.dSbus_dV_numba_sparse_csc">[docs]</a>
 <span class="nd">@njit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">dSbus_dV_numba_sparse_csc</span><span class="p">(</span><span class="n">Yx</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span> <span class="n">Yp</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">Yi</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">V</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span> <span class="n">Vm</span><span class="p">:</span> <span class="n">Vec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">CxVec</span><span class="p">,</span> <span class="n">CxVec</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute the power injection derivatives w.r.t the voltage module and angle</span>
 <span class="sd">    :param Yx: data of Ybus in CSC format</span>
 <span class="sd">    :param Yp: indptr of Ybus in CSC format</span>
@@ -130,9 +131,9 @@
 <span class="sd">    :param V: Voltages vector</span>
 <span class="sd">    :param Vm: voltage modules vector</span>
 <span class="sd">    :return: dS_dVm, dS_dVa data ordered in the CSC format to match the indices of Ybus</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    The matrix operations that this is performing are:</span>
 
 <span class="sd">    diagV = diags(V)</span>
@@ -142,7 +143,7 @@
 
 <span class="sd">    dSbus_dVa = 1j * diagV * np.conj(diagIbus - Ybus * diagV)</span>
 <span class="sd">    dSbus_dVm = diagV * np.conj(Ybus * diagE) + np.conj(diagIbus) * diagE</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="c1"># init buffer vector</span>
     <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">Yp</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
@@ -207,7 +208,7 @@
 <span class="nd">@njit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">dSbus_dV_with_I0_numba_sparse_csc</span><span class="p">(</span><span class="n">Yx</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span> <span class="n">Yp</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">Yi</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span>
                                        <span class="n">V</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span> <span class="n">Vm</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">I0</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">CxVec</span><span class="p">,</span> <span class="n">CxVec</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute the power injection derivatives w.r.t the voltage module and angle,</span>
 <span class="sd">    including the contribution from Norton current injections I0.</span>
 
@@ -225,7 +226,7 @@
 <span class="sd">    :param Vm: voltage modules vector</span>
 <span class="sd">    :param I0: Norton current injections vector</span>
 <span class="sd">    :return: dS_dVm, dS_dVa data ordered in the CSC format to match the indices of Ybus</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># init buffer vector</span>
     <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">Yp</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
     <span class="n">Ibus</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">complex128</span><span class="p">)</span>
@@ -277,14 +278,14 @@
 <div class="viewcode-block" id="dSbus_dV_csc">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.Derivatives.html#VeraGridEngine.Simulations.Derivatives.csc_derivatives.dSbus_dV_csc">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">dSbus_dV_csc</span><span class="p">(</span><span class="n">Ybus</span><span class="p">:</span> <span class="n">csc_matrix</span><span class="p">,</span> <span class="n">V</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span> <span class="n">Vm</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">CxCSC</span><span class="p">,</span> <span class="n">CxCSC</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Call the numba sparse constructor of the derivatives</span>
 <span class="sd">    :param Ybus: Ybus in CSC format</span>
 <span class="sd">    :param V: Voltages vector</span>
 <span class="sd">    :param Vm: Voltages modules</span>
 <span class="sd">    :return: dS_dVm, dS_dVa in CSC format</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># compute the derivatives&#39; data fast</span>
+<span class="sd">    """</span>
+    <span class="c1"># compute the derivatives' data fast</span>
     <span class="n">dS_dVm_x</span><span class="p">,</span> <span class="n">dS_dVa_x</span> <span class="o">=</span> <span class="n">dSbus_dV_numba_sparse_csc</span><span class="p">(</span><span class="n">Ybus</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">Ybus</span><span class="o">.</span><span class="n">indptr</span><span class="p">,</span> <span class="n">Ybus</span><span class="o">.</span><span class="n">indices</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">Vm</span><span class="p">)</span>
 
     <span class="n">dS_dVm</span> <span class="o">=</span> <span class="n">CxCSC</span><span class="p">(</span><span class="n">Ybus</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">Ybus</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="nb">len</span><span class="p">(</span><span class="n">dS_dVm_x</span><span class="p">),</span> <span class="kc">False</span><span class="p">)</span>
@@ -305,7 +306,7 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.Derivatives.html#VeraGridEngine.Simulations.Derivatives.csc_derivatives.map_coordinates_numba">[docs]</a>
 <span class="nd">@njit</span><span class="p">()</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">map_coordinates_numba</span><span class="p">(</span><span class="n">nrows</span><span class="p">,</span> <span class="n">ncols</span><span class="p">,</span> <span class="n">indptr</span><span class="p">,</span> <span class="n">indices</span><span class="p">,</span> <span class="n">F</span><span class="p">,</span> <span class="n">T</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 
 <span class="sd">    :param nrows:</span>
 <span class="sd">    :param ncols:</span>
@@ -314,7 +315,7 @@
 <span class="sd">    :param F:</span>
 <span class="sd">    :param T:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">idx_f</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nrows</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">int32</span><span class="p">)</span>
     <span class="n">idx_t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nrows</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">int32</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ncols</span><span class="p">):</span>  <span class="c1"># para cada columna j ...</span>
@@ -334,12 +335,12 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.Derivatives.html#VeraGridEngine.Simulations.Derivatives.csc_derivatives.dSbr_dm_csc">[docs]</a>
 <span class="nd">@njit</span><span class="p">()</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">dSbr_dm_csc</span><span class="p">(</span><span class="n">nbus</span><span class="p">,</span> <span class="n">u_cbr_m</span><span class="p">,</span> <span class="n">F_cbr</span><span class="p">,</span> <span class="n">T_cbr</span><span class="p">,</span> <span class="n">yff_cbr</span><span class="p">,</span> <span class="n">yft_cbr</span><span class="p">,</span> <span class="n">ytf_cbr</span><span class="p">,</span> <span class="n">ytt_cbr</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">tap</span><span class="p">,</span> <span class="n">tap_modules</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CxCSC</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Derivative of the controllable branch power flows (and hence bus balance) w.r.t. m</span>
 <span class="sd">    :param nbus: number of buses</span>
 <span class="sd">    :param u_cbr_m: Array of indices where m is unknown</span>
-<span class="sd">    :param F_cbr: Array of branch &quot;from&quot; bus indices</span>
-<span class="sd">    :param T_cbr: Array of branch &quot;to&quot; bus indices</span>
+<span class="sd">    :param F_cbr: Array of branch "from" bus indices</span>
+<span class="sd">    :param T_cbr: Array of branch "to" bus indices</span>
 <span class="sd">    :param yff_cbr: Array of branch primitive admittances</span>
 <span class="sd">    :param yft_cbr: Array of branch primitive admittances</span>
 <span class="sd">    :param ytf_cbr: Array of branch primitive admittances</span>
@@ -348,7 +349,7 @@
 <span class="sd">    :param tap: Array of branch complex taps (m * exp(1j * tau)</span>
 <span class="sd">    :param tap_modules: Array of branch tap modules</span>
 <span class="sd">    :return: dSbr_dm</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">max_nnz</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">yff_cbr</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span>
     <span class="n">n_cbr_m</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">u_cbr_m</span><span class="p">)</span>
@@ -401,12 +402,12 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.Derivatives.html#VeraGridEngine.Simulations.Derivatives.csc_derivatives.dSbr_dtau_csc">[docs]</a>
 <span class="nd">@njit</span><span class="p">()</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">dSbr_dtau_csc</span><span class="p">(</span><span class="n">nbus</span><span class="p">,</span> <span class="n">u_cbr_tau</span><span class="p">,</span> <span class="n">F_cbr</span><span class="p">,</span> <span class="n">T_cbr</span><span class="p">,</span> <span class="n">yff_cbr</span><span class="p">,</span> <span class="n">yft_cbr</span><span class="p">,</span> <span class="n">ytf_cbr</span><span class="p">,</span> <span class="n">ytt_cbr</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">tap</span><span class="p">,</span> <span class="n">tap_modules</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CxCSC</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Derivative of the controllable branch power flows (and hence bus balance) w.r.t. tau</span>
 <span class="sd">    :param nbus: number of buses</span>
 <span class="sd">    :param u_cbr_m: Array of indices where m is unknown</span>
-<span class="sd">    :param F_cbr: Array of branch &quot;from&quot; bus indices</span>
-<span class="sd">    :param T_cbr: Array of branch &quot;to&quot; bus indices</span>
+<span class="sd">    :param F_cbr: Array of branch "from" bus indices</span>
+<span class="sd">    :param T_cbr: Array of branch "to" bus indices</span>
 <span class="sd">    :param yff_cbr: Array of branch primitive admittances</span>
 <span class="sd">    :param yft_cbr: Array of branch primitive admittances</span>
 <span class="sd">    :param ytf_cbr: Array of branch primitive admittances</span>
@@ -415,7 +416,7 @@
 <span class="sd">    :param tap: Array of branch complex taps (m * exp(1j * tau)</span>
 <span class="sd">    :param tap_modules: Array of branch tap modules</span>
 <span class="sd">    :return: dSbr_dtau</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">max_nnz</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">yff_cbr</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span>
     <span class="n">n_cbr_tau</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">u_cbr_tau</span><span class="p">)</span>
@@ -466,14 +467,14 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.Derivatives.html#VeraGridEngine.Simulations.Derivatives.csc_derivatives.csc_add_wrapper">[docs]</a>
 <span class="nd">@njit</span><span class="p">()</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">csc_add_wrapper</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">CxCSC</span><span class="p">,</span> <span class="n">B</span><span class="p">:</span> <span class="n">CxCSC</span><span class="p">,</span> <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">beta</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CxCSC</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Wrapper for csc_add_ff</span>
 <span class="sd">    :param A: matrix A</span>
 <span class="sd">    :param B: matrix B</span>
 <span class="sd">    :param alpha: scalar alpha</span>
 <span class="sd">    :param beta: scalar beta</span>
 <span class="sd">    :return: matrix C = A * alpha + B * beta</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">Cm</span><span class="p">,</span> <span class="n">Cn</span><span class="p">,</span> <span class="n">Cp</span><span class="p">,</span> <span class="n">Ci</span><span class="p">,</span> <span class="n">Cx</span> <span class="o">=</span> <span class="n">csc_add_ff_comp</span><span class="p">(</span><span class="n">A</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">A</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">A</span><span class="o">.</span><span class="n">indptr</span><span class="p">,</span> <span class="n">A</span><span class="o">.</span><span class="n">indices</span><span class="p">,</span> <span class="n">A</span><span class="o">.</span><span class="n">data</span><span class="p">,</span>
                                          <span class="n">B</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">B</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">B</span><span class="o">.</span><span class="n">indptr</span><span class="p">,</span> <span class="n">B</span><span class="o">.</span><span class="n">indices</span><span class="p">,</span> <span class="n">B</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
 
@@ -487,7 +488,7 @@
 <span class="nd">@njit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">csc_add_ff_comp</span><span class="p">(</span><span class="n">Am</span><span class="p">,</span> <span class="n">An</span><span class="p">,</span> <span class="n">Aindptr</span><span class="p">,</span> <span class="n">Aindices</span><span class="p">,</span> <span class="n">Adata</span><span class="p">,</span>
                     <span class="n">Bm</span><span class="p">,</span> <span class="n">Bn</span><span class="p">,</span> <span class="n">Bindptr</span><span class="p">,</span> <span class="n">Bindices</span><span class="p">,</span> <span class="n">Bdata</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    C = alpha*A + beta*B</span>
 
 <span class="sd">    @param A: column-compressed matrix</span>
@@ -495,7 +496,7 @@
 <span class="sd">    @param alpha: scalar alpha</span>
 <span class="sd">    @param beta: scalar beta</span>
 <span class="sd">    @return: C=alpha*A + beta*B, null on error (Cm, Cn, Cp, Ci, Cx)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">nz</span> <span class="o">=</span> <span class="mi">0</span>
 
     <span class="n">m</span><span class="p">,</span> <span class="n">anz</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">Bp</span><span class="p">,</span> <span class="n">Bx</span> <span class="o">=</span> <span class="n">Am</span><span class="p">,</span> <span class="n">Aindptr</span><span class="p">[</span><span class="n">An</span><span class="p">],</span> <span class="n">Bn</span><span class="p">,</span> <span class="n">Bindptr</span><span class="p">,</span> <span class="n">Bdata</span>
@@ -528,14 +529,14 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.Derivatives.html#VeraGridEngine.Simulations.Derivatives.csc_derivatives.csc_spalloc_f">[docs]</a>
 <span class="nd">@njit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">csc_spalloc_f</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">nzmax</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Allocate a sparse matrix (triplet form or compressed-column form).</span>
 
 <span class="sd">    @param m: number of rows</span>
 <span class="sd">    @param n: number of columns</span>
 <span class="sd">    @param nzmax: maximum number of entries</span>
 <span class="sd">    @return: m, n, Aindptr, Aindices, Adata, Anzmax</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">Anzmax</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">nzmax</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
     <span class="n">Aindptr</span> <span class="o">=</span> <span class="n">ialloc</span><span class="p">(</span><span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
     <span class="n">Aindices</span> <span class="o">=</span> <span class="n">ialloc</span><span class="p">(</span><span class="n">Anzmax</span><span class="p">)</span>
@@ -556,7 +557,7 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.Derivatives.html#VeraGridEngine.Simulations.Derivatives.csc_derivatives.csc_scatter_f_comp">[docs]</a>
 <span class="nd">@njit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">csc_scatter_f_comp</span><span class="p">(</span><span class="n">Ap</span><span class="p">,</span> <span class="n">Ai</span><span class="p">,</span> <span class="n">Ax</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">mark</span><span class="p">,</span> <span class="n">Ci</span><span class="p">,</span> <span class="n">nz</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Scatters and sums a sparse vector A(:,j) into a dense vector, x = x + beta * A(:,j)</span>
 <span class="sd">    :param Ap:</span>
 <span class="sd">    :param Ai:</span>
@@ -569,7 +570,7 @@
 <span class="sd">    :param Ci: pattern of x accumulated in C.i</span>
 <span class="sd">    :param nz: pattern of x placed in C starting at C.i[nz]</span>
 <span class="sd">    :return: new value of nz, -1 on error, x and w are modified</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Ap</span><span class="p">[</span><span class="n">j</span><span class="p">],</span> <span class="n">Ap</span><span class="p">[</span><span class="n">j</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]):</span>
         <span class="n">i</span> <span class="o">=</span> <span class="n">Ai</span><span class="p">[</span><span class="n">p</span><span class="p">]</span>  <span class="c1"># A(i,j) is nonzero</span>
@@ -588,7 +589,7 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.Derivatives.html#VeraGridEngine.Simulations.Derivatives.csc_derivatives.dSf_dV_numba">[docs]</a>
 <span class="nd">@njit</span><span class="p">()</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">dSf_dV_numba</span><span class="p">(</span><span class="n">Yf_nrows</span><span class="p">,</span> <span class="n">Yf_ncols</span><span class="p">,</span> <span class="n">Yf_indices</span><span class="p">,</span> <span class="n">Yf_indptr</span><span class="p">,</span> <span class="n">Yf_data</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">F</span><span class="p">,</span> <span class="n">T</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">CxCSC</span><span class="p">,</span> <span class="n">CxCSC</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 
 <span class="sd">    :param Yf_nrows:</span>
 <span class="sd">    :param Yf_ncols:</span>
@@ -599,7 +600,7 @@
 <span class="sd">    :param F:</span>
 <span class="sd">    :param T:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># map the i, j coordinates</span>
     <span class="n">idx_f</span><span class="p">,</span> <span class="n">idx_t</span> <span class="o">=</span> <span class="n">map_coordinates_numba</span><span class="p">(</span><span class="n">nrows</span><span class="o">=</span><span class="n">Yf_nrows</span><span class="p">,</span>
                                          <span class="n">ncols</span><span class="o">=</span><span class="n">Yf_ncols</span><span class="p">,</span>
@@ -642,7 +643,7 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.Derivatives.html#VeraGridEngine.Simulations.Derivatives.csc_derivatives.dSt_dV_numba">[docs]</a>
 <span class="nd">@njit</span><span class="p">()</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">dSt_dV_numba</span><span class="p">(</span><span class="n">Yt_nrows</span><span class="p">,</span> <span class="n">Yt_ncols</span><span class="p">,</span> <span class="n">Yt_indices</span><span class="p">,</span> <span class="n">Yt_indptr</span><span class="p">,</span> <span class="n">Yt_data</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">F</span><span class="p">,</span> <span class="n">T</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">CxCSC</span><span class="p">,</span> <span class="n">CxCSC</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 
 <span class="sd">    :param Yt_nrows:</span>
 <span class="sd">    :param Yt_ncols:</span>
@@ -653,7 +654,7 @@
 <span class="sd">    :param F:</span>
 <span class="sd">    :param T:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># map the i, j coordinates</span>
     <span class="n">idx_f</span><span class="p">,</span> <span class="n">idx_t</span> <span class="o">=</span> <span class="n">map_coordinates_numba</span><span class="p">(</span><span class="n">nrows</span><span class="o">=</span><span class="n">Yt_nrows</span><span class="p">,</span>
                                          <span class="n">ncols</span><span class="o">=</span><span class="n">Yt_ncols</span><span class="p">,</span>
@@ -695,14 +696,14 @@
 <div class="viewcode-block" id="dSf_dV_csc">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.Derivatives.html#VeraGridEngine.Simulations.Derivatives.csc_derivatives.dSf_dV_csc">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">dSf_dV_csc</span><span class="p">(</span><span class="n">Yf</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">F</span><span class="p">,</span> <span class="n">T</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">CxCSC</span><span class="p">,</span> <span class="n">CxCSC</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Flow &quot;from&quot; derivative w.r.t the voltage</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Flow "from" derivative w.r.t the voltage</span>
 <span class="sd">    :param Yf:</span>
 <span class="sd">    :param V:</span>
 <span class="sd">    :param F:</span>
 <span class="sd">    :param T:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">dSf_dVm</span><span class="p">,</span> <span class="n">dSf_dVa</span> <span class="o">=</span> <span class="n">dSf_dV_numba</span><span class="p">(</span><span class="n">Yf_nrows</span><span class="o">=</span><span class="n">Yf</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
                                     <span class="n">Yf_ncols</span><span class="o">=</span><span class="n">Yf</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
@@ -720,14 +721,14 @@
 <div class="viewcode-block" id="dSt_dV_csc">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.Derivatives.html#VeraGridEngine.Simulations.Derivatives.csc_derivatives.dSt_dV_csc">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">dSt_dV_csc</span><span class="p">(</span><span class="n">Yt</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">F</span><span class="p">,</span> <span class="n">T</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">CxCSC</span><span class="p">,</span> <span class="n">CxCSC</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Flow &quot;to&quot; derivative w.r.t the voltage</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Flow "to" derivative w.r.t the voltage</span>
 <span class="sd">    :param Yt:</span>
 <span class="sd">    :param V:</span>
 <span class="sd">    :param F:</span>
 <span class="sd">    :param T:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">dSt_dVm</span><span class="p">,</span> <span class="n">dSt_dVa</span> <span class="o">=</span> <span class="n">dSt_dV_numba</span><span class="p">(</span><span class="n">Yt_nrows</span><span class="o">=</span><span class="n">Yt</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
                                     <span class="n">Yt_ncols</span><span class="o">=</span><span class="n">Yt</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
@@ -746,7 +747,7 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.Derivatives.html#VeraGridEngine.Simulations.Derivatives.csc_derivatives.dSf_dVm_csc">[docs]</a>
 <span class="nd">@njit</span><span class="p">()</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">dSf_dVm_csc</span><span class="p">(</span><span class="n">nbus</span><span class="p">,</span> <span class="n">br_indices</span><span class="p">,</span> <span class="n">bus_indices</span><span class="p">,</span> <span class="n">yff</span><span class="p">,</span> <span class="n">yft</span><span class="p">,</span> <span class="n">Vm</span><span class="p">,</span> <span class="n">Va</span><span class="p">,</span> <span class="n">F</span><span class="p">,</span> <span class="n">T</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CxCSC</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    dSf_dVm[br_indices, bus_indices]</span>
 <span class="sd">    checked agins matpower derivatives</span>
 <span class="sd">    :param nbus: number of buses</span>
@@ -755,10 +756,10 @@
 <span class="sd">    :param yff: yff primitives array</span>
 <span class="sd">    :param yft: yft primitives array</span>
 <span class="sd">    :param V: Voltages array</span>
-<span class="sd">    :param F: Array of &quot;from&quot; indices</span>
-<span class="sd">    :param T: Array of &quot;to&quot; indices</span>
+<span class="sd">    :param F: Array of "from" indices</span>
+<span class="sd">    :param T: Array of "to" indices</span>
 <span class="sd">    :return: dSf_dVm</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">n_row</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">br_indices</span><span class="p">)</span>
     <span class="n">n_cols</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">bus_indices</span><span class="p">)</span>
     <span class="n">max_nnz</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">yff</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span>
@@ -807,7 +808,7 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.Derivatives.html#VeraGridEngine.Simulations.Derivatives.csc_derivatives.dPfdp_dVm_csc">[docs]</a>
 <span class="nd">@njit</span><span class="p">()</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">dPfdp_dVm_csc</span><span class="p">(</span><span class="n">nbus</span><span class="p">,</span> <span class="n">br_indices</span><span class="p">,</span> <span class="n">bus_indices</span><span class="p">,</span> <span class="n">yff</span><span class="p">,</span> <span class="n">yft</span><span class="p">,</span> <span class="n">kdp</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">F</span><span class="p">,</span> <span class="n">T</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CSC</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    dSf_dVm[br_indices, bus_indices]</span>
 <span class="sd">    checked agins matpower derivatives</span>
 <span class="sd">    :param nbus: number of buses</span>
@@ -816,17 +817,17 @@
 <span class="sd">    :param yff: yff primitives array</span>
 <span class="sd">    :param yft: yft primitives array</span>
 <span class="sd">    :param V: Voltages array</span>
-<span class="sd">    :param F: Array of &quot;from&quot; indices</span>
-<span class="sd">    :param T: Array of &quot;to&quot; indices</span>
+<span class="sd">    :param F: Array of "from" indices</span>
+<span class="sd">    :param T: Array of "to" indices</span>
 <span class="sd">    :return: dSf_dVm</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    # # compute the droop derivative</span>
 <span class="sd">    # dVmf_dVm = lil_matrix((nl, nb))</span>
 <span class="sd">    # dVmf_dVm[k_pf_dp, :] = Cf[k_pf_dp, :]</span>
 <span class="sd">    # dPfdp_dVm = -dSf_dVm.real + diags(Kdp) * dVmf_dVm</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">n_row</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">br_indices</span><span class="p">)</span>
     <span class="n">n_cols</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">bus_indices</span><span class="p">)</span>
@@ -878,7 +879,7 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.Derivatives.html#VeraGridEngine.Simulations.Derivatives.csc_derivatives.dSf_dVa_csc">[docs]</a>
 <span class="nd">@njit</span><span class="p">()</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">dSf_dVa_csc</span><span class="p">(</span><span class="n">nbus</span><span class="p">,</span> <span class="n">br_indices</span><span class="p">,</span> <span class="n">bus_indices</span><span class="p">,</span> <span class="n">yft</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">F</span><span class="p">,</span> <span class="n">T</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CxCSC</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 
 <span class="sd">    :param nbus: number of buses</span>
 <span class="sd">    :param br_indices:</span>
@@ -888,7 +889,7 @@
 <span class="sd">    :param F:</span>
 <span class="sd">    :param T:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">n_row</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">br_indices</span><span class="p">)</span>
     <span class="n">n_cols</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">bus_indices</span><span class="p">)</span>
     <span class="n">max_nnz</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">yft</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span>
@@ -941,7 +942,7 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.Derivatives.html#VeraGridEngine.Simulations.Derivatives.csc_derivatives.dSt_dVm_csc">[docs]</a>
 <span class="nd">@njit</span><span class="p">()</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">dSt_dVm_csc</span><span class="p">(</span><span class="n">nbus</span><span class="p">,</span> <span class="n">br_indices</span><span class="p">,</span> <span class="n">bus_indices</span><span class="p">,</span> <span class="n">ytt</span><span class="p">,</span> <span class="n">ytf</span><span class="p">,</span> <span class="n">Vm</span><span class="p">,</span> <span class="n">Va</span><span class="p">,</span> <span class="n">F</span><span class="p">,</span> <span class="n">T</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CxCSC</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 
 <span class="sd">    :param nbus</span>
 <span class="sd">    :param br_indices:</span>
@@ -953,7 +954,7 @@
 <span class="sd">    :param F:</span>
 <span class="sd">    :param T:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">n_row</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">br_indices</span><span class="p">)</span>
     <span class="n">n_cols</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">bus_indices</span><span class="p">)</span>
     <span class="n">max_nnz</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">ytt</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span>
@@ -1002,7 +1003,7 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.Derivatives.html#VeraGridEngine.Simulations.Derivatives.csc_derivatives.dSt_dVa_csc">[docs]</a>
 <span class="nd">@njit</span><span class="p">()</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">dSt_dVa_csc</span><span class="p">(</span><span class="n">nbus</span><span class="p">,</span> <span class="n">br_indices</span><span class="p">,</span> <span class="n">bus_indices</span><span class="p">,</span> <span class="n">ytf</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">F</span><span class="p">,</span> <span class="n">T</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CxCSC</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 
 <span class="sd">    :param nbus</span>
 <span class="sd">    :param br_indices:</span>
@@ -1012,7 +1013,7 @@
 <span class="sd">    :param F:</span>
 <span class="sd">    :param T:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">n_row</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">br_indices</span><span class="p">)</span>
     <span class="n">n_cols</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">bus_indices</span><span class="p">)</span>
     <span class="n">max_nnz</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">ytf</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span>
@@ -1069,7 +1070,7 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">derivatives_tau_csc_numba</span><span class="p">(</span><span class="n">nbus</span><span class="p">,</span> <span class="n">nbr</span><span class="p">,</span> <span class="n">iPxsh</span><span class="p">,</span>
                               <span class="n">F</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">T</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span>
                               <span class="n">Ys</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span> <span class="n">kconv</span><span class="p">,</span> <span class="n">tap</span><span class="p">,</span> <span class="n">V</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">CxCSC</span><span class="p">,</span> <span class="n">CxCSC</span><span class="p">,</span> <span class="n">CxCSC</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    This function computes the derivatives of Sbus, Sf and St w.r.t. the tap angle (tau)</span>
 <span class="sd">    - dSbus_dPfsh, dSf_dPfsh, dSt_dPfsh -&gt; if iPxsh=iPfsh</span>
 <span class="sd">    - dSbus_dPfdp, dSf_dPfdp, dSt_dPfdp -&gt; if iPxsh=iPfdp</span>
@@ -1077,16 +1078,16 @@
 <span class="sd">    :param nbus:</span>
 <span class="sd">    :param nbr:</span>
 <span class="sd">    :param iPxsh: array of indices {iPfsh or iPfdp}</span>
-<span class="sd">    :param F: Array of branch &quot;from&quot; bus indices</span>
-<span class="sd">    :param T: Array of branch &quot;to&quot; bus indices</span>
+<span class="sd">    :param F: Array of branch "from" bus indices</span>
+<span class="sd">    :param T: Array of branch "to" bus indices</span>
 <span class="sd">    :param Ys: Array of branch series admittances</span>
-<span class="sd">    :param kconv: Array of &quot;k2&quot; parameters</span>
+<span class="sd">    :param kconv: Array of "k2" parameters</span>
 <span class="sd">    :param tap: Array of branch complex taps (m * exp(1j * tau)</span>
 <span class="sd">    :param V: Array of complex voltages</span>
 <span class="sd">    :return:</span>
 <span class="sd">        - dSbus_dPfsh, dSf_dPfsh, dSt_dPfsh -&gt; if iPxsh=iPfsh</span>
 <span class="sd">        - dSbus_dPfdp, dSf_dPfdp, dSt_dPfdp -&gt; if iPxsh=iPfdp</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">ndev</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">iPxsh</span><span class="p">)</span>
 
     <span class="c1"># dSbus_dPxsh = lil_matrix((nb, ndev), dtype=complex)</span>
@@ -1127,13 +1128,13 @@
         <span class="n">dSbus_dsh</span><span class="o">.</span><span class="n">indices</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="n">k</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">t</span>
         <span class="n">dSbus_dsh</span><span class="o">.</span><span class="n">indptr</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">k</span>
 
-        <span class="c1"># Partials of Sf w.r.t. Ɵ shift (makes sense that this is ∂Sbus/∂Pxsh assigned to the &quot;from&quot; bus)</span>
+        <span class="c1"># Partials of Sf w.r.t. Ɵ shift (makes sense that this is ∂Sbus/∂Pxsh assigned to the "from" bus)</span>
         <span class="c1"># dSf_dshx2[idx, k] = val_f</span>
         <span class="n">dSf_dsh</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">val_f</span>
         <span class="n">dSf_dsh</span><span class="o">.</span><span class="n">indices</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">idx</span>
         <span class="n">dSf_dsh</span><span class="o">.</span><span class="n">indptr</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">k</span>
 
-        <span class="c1"># Partials of St w.r.t. Ɵ shift (makes sense that this is ∂Sbus/∂Pxsh assigned to the &quot;to&quot; bus)</span>
+        <span class="c1"># Partials of St w.r.t. Ɵ shift (makes sense that this is ∂Sbus/∂Pxsh assigned to the "to" bus)</span>
         <span class="c1"># dSt_dshx2[idx, k] = val_t</span>
         <span class="n">dSt_dsh</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">val_t</span>
         <span class="n">dSt_dsh</span><span class="o">.</span><span class="n">indices</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">idx</span>
@@ -1153,7 +1154,7 @@
 <span class="nd">@njit</span><span class="p">()</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">dSbus_dtau_csc</span><span class="p">(</span><span class="n">nbus</span><span class="p">,</span> <span class="n">bus_indices</span><span class="p">,</span> <span class="n">tau_indices</span><span class="p">,</span> <span class="n">F</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">T</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">Ys</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span>
                    <span class="n">tap</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span> <span class="n">V</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CxCSC</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    This function computes the derivatives of Sbus, Sf and St w.r.t. the tap angle (tau)</span>
 <span class="sd">    - dSbus_dPfsh, dSf_dPfsh, dSt_dPfsh -&gt; if iPxsh=iPfsh</span>
 <span class="sd">    - dSbus_dPfdp, dSf_dPfdp, dSt_dPfdp -&gt; if iPxsh=iPfdp</span>
@@ -1161,13 +1162,13 @@
 <span class="sd">    :param nbus:</span>
 <span class="sd">    :param bus_indices:</span>
 <span class="sd">    :param tau_indices: array of indices {iPfsh or iPfdp}</span>
-<span class="sd">    :param F: Array of branch &quot;from&quot; bus indices</span>
-<span class="sd">    :param T: Array of branch &quot;to&quot; bus indices</span>
+<span class="sd">    :param F: Array of branch "from" bus indices</span>
+<span class="sd">    :param T: Array of branch "to" bus indices</span>
 <span class="sd">    :param Ys: Array of branch series admittances</span>
 <span class="sd">    :param tap: Array of branch complex taps (m * exp(1j * tau)</span>
 <span class="sd">    :param V: Array of complex voltages</span>
 <span class="sd">    :return: dSbus_dsh</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">n_cols</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">tau_indices</span><span class="p">)</span>
     <span class="n">n_rows</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">bus_indices</span><span class="p">)</span>
     <span class="n">max_nnz</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">tau_indices</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span>
@@ -1213,7 +1214,7 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.Derivatives.html#VeraGridEngine.Simulations.Derivatives.csc_derivatives.dSf_dtau_csc">[docs]</a>
 <span class="nd">@njit</span><span class="p">()</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">dSf_dtau_csc</span><span class="p">(</span><span class="n">nbr</span><span class="p">,</span> <span class="n">sf_indices</span><span class="p">,</span> <span class="n">tau_indices</span><span class="p">,</span> <span class="n">F</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">T</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">Ys</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span> <span class="n">tap</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span> <span class="n">V</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CxCSC</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    This function computes the derivatives of Sbus, Sf and St w.r.t. the tap angle (tau)</span>
 <span class="sd">    - dSbus_dPfsh, dSf_dPfsh, dSt_dPfsh -&gt; if iPxsh=iPfsh</span>
 <span class="sd">    - dSbus_dPfdp, dSf_dPfdp, dSt_dPfdp -&gt; if iPxsh=iPfdp</span>
@@ -1221,13 +1222,13 @@
 <span class="sd">    :param nbr: number of branches</span>
 <span class="sd">    :param sf_indices: array of sf indices</span>
 <span class="sd">    :param tau_indices: array of branch indices with tau control (must be equal to sf_indices)</span>
-<span class="sd">    :param F: Array of branch &quot;from&quot; bus indices</span>
-<span class="sd">    :param T: Array of branch &quot;to&quot; bus indices</span>
+<span class="sd">    :param F: Array of branch "from" bus indices</span>
+<span class="sd">    :param T: Array of branch "to" bus indices</span>
 <span class="sd">    :param Ys: Array of branch series admittances</span>
 <span class="sd">    :param tap: Array of branch complex taps (m * exp(1j * tau)</span>
 <span class="sd">    :param V: Array of complex voltages</span>
 <span class="sd">    :return: dSf_dsh</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">n_cols</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">tau_indices</span><span class="p">)</span>
     <span class="n">n_rows</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">sf_indices</span><span class="p">)</span>
     <span class="n">max_nnz</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">tau_indices</span><span class="p">)</span>
@@ -1248,7 +1249,7 @@
             <span class="c1"># Partials of Ytt, Yff, Yft and Ytf w.r.t. Ɵ shift</span>
             <span class="n">yft_dsh</span> <span class="o">=</span> <span class="o">-</span><span class="n">Ys</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">/</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">conj</span><span class="p">(</span><span class="n">tap</span><span class="p">[</span><span class="n">k</span><span class="p">]))</span>
 
-            <span class="c1"># Partials of Sf w.r.t. Ɵ shift (makes sense that this is ∂Sbus/∂Pxsh assigned to the &quot;from&quot; bus)</span>
+            <span class="c1"># Partials of Sf w.r.t. Ɵ shift (makes sense that this is ∂Sbus/∂Pxsh assigned to the "from" bus)</span>
             <span class="n">Tx</span><span class="p">[</span><span class="n">nnz</span><span class="p">]</span> <span class="o">=</span> <span class="n">V</span><span class="p">[</span><span class="n">f</span><span class="p">]</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">conj</span><span class="p">(</span><span class="n">yft_dsh</span> <span class="o">*</span> <span class="n">V</span><span class="p">[</span><span class="n">t</span><span class="p">])</span>
             <span class="n">Ti</span><span class="p">[</span><span class="n">nnz</span><span class="p">]</span> <span class="o">=</span> <span class="n">i_idx</span>
             <span class="n">Tj</span><span class="p">[</span><span class="n">nnz</span><span class="p">]</span> <span class="o">=</span> <span class="n">k_idx</span>
@@ -1265,7 +1266,7 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.Derivatives.html#VeraGridEngine.Simulations.Derivatives.csc_derivatives.dSt_dtau_csc">[docs]</a>
 <span class="nd">@njit</span><span class="p">()</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">dSt_dtau_csc</span><span class="p">(</span><span class="n">nbr</span><span class="p">,</span> <span class="n">st_indices</span><span class="p">,</span> <span class="n">tau_indices</span><span class="p">,</span> <span class="n">F</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">T</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">Ys</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span> <span class="n">tap</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span> <span class="n">V</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CxCSC</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    This function computes the derivatives of Sbus, Sf and St w.r.t. the tap angle (tau)</span>
 <span class="sd">    - dSbus_dPfsh, dSf_dPfsh, dSt_dPfsh -&gt; if iPxsh=iPfsh</span>
 <span class="sd">    - dSbus_dPfdp, dSf_dPfdp, dSt_dPfdp -&gt; if iPxsh=iPfdp</span>
@@ -1273,14 +1274,14 @@
 <span class="sd">    :param nbr: number of branches</span>
 <span class="sd">    :param st_indices: array of st indices</span>
 <span class="sd">    :param tau_indices: array of branch indices with tau control</span>
-<span class="sd">    :param F: Array of branch &quot;from&quot; bus indices</span>
-<span class="sd">    :param T: Array of branch &quot;to&quot; bus indices</span>
+<span class="sd">    :param F: Array of branch "from" bus indices</span>
+<span class="sd">    :param T: Array of branch "to" bus indices</span>
 <span class="sd">    :param Ys: Array of branch series admittances</span>
 <span class="sd">    :param tap: Array of branch complex taps (m * exp(1j * tau)</span>
 <span class="sd">    :param V: Array of complex voltages</span>
 <span class="sd">    :return: dSf_dsh</span>
 <span class="sd">    :return: dSt_dtau</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">n_cols</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">tau_indices</span><span class="p">)</span>
     <span class="n">n_rows</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">st_indices</span><span class="p">)</span>
@@ -1301,7 +1302,7 @@
             <span class="c1"># Partials of Ytt, Yff, Yft and Ytf w.r.t. Ɵ shift</span>
             <span class="n">ytf_dsh</span> <span class="o">=</span> <span class="o">-</span><span class="n">Ys</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="n">tap</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
 
-            <span class="c1"># Partials of Sf w.r.t. Ɵ shift (makes sense that this is ∂Sbus/∂Pxsh assigned to the &quot;from&quot; bus)</span>
+            <span class="c1"># Partials of Sf w.r.t. Ɵ shift (makes sense that this is ∂Sbus/∂Pxsh assigned to the "from" bus)</span>
             <span class="n">Tx</span><span class="p">[</span><span class="n">nnz</span><span class="p">]</span> <span class="o">=</span> <span class="n">V</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">conj</span><span class="p">(</span><span class="n">ytf_dsh</span> <span class="o">*</span> <span class="n">V</span><span class="p">[</span><span class="n">f</span><span class="p">])</span>
             <span class="n">Ti</span><span class="p">[</span><span class="n">nnz</span><span class="p">]</span> <span class="o">=</span> <span class="n">i_idx</span>
             <span class="n">Tj</span><span class="p">[</span><span class="n">nnz</span><span class="p">]</span> <span class="o">=</span> <span class="n">k_idx</span>
@@ -1319,7 +1320,7 @@
 <span class="nd">@njit</span><span class="p">()</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">derivatives_ma_csc_numba</span><span class="p">(</span><span class="n">nbus</span><span class="p">,</span> <span class="n">nbr</span><span class="p">,</span> <span class="n">iXxma</span><span class="p">,</span> <span class="n">F</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">Ys</span><span class="p">,</span> <span class="n">kconv</span><span class="p">,</span> <span class="n">tap</span><span class="p">,</span> <span class="n">tap_module</span><span class="p">,</span> <span class="n">Bc</span><span class="p">,</span> <span class="n">Beq</span><span class="p">,</span> <span class="n">V</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span>
     <span class="n">CxCSC</span><span class="p">,</span> <span class="n">CxCSC</span><span class="p">,</span> <span class="n">CxCSC</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Useful for the calculation of</span>
 <span class="sd">    - dSbus_dQfma, dSf_dQfma, dSt_dQfma  -&gt; wih iXxma=iQfma</span>
 <span class="sd">    - dSbus_dQtma, dSf_dQtma, dSt_dQtma  -&gt; wih iXxma=iQtma</span>
@@ -1328,10 +1329,10 @@
 <span class="sd">    :param nbus: Number of buses</span>
 <span class="sd">    :param nbr: Number of Branches</span>
 <span class="sd">    :param iXxma: Array of indices {iQfma, iQtma, iVtma}</span>
-<span class="sd">    :param F: Array of branch &quot;from&quot; bus indices</span>
-<span class="sd">    :param T: Array of branch &quot;to&quot; bus indices</span>
+<span class="sd">    :param F: Array of branch "from" bus indices</span>
+<span class="sd">    :param T: Array of branch "to" bus indices</span>
 <span class="sd">    :param Ys: Array of branch series admittances</span>
-<span class="sd">    :param kconv: Array of &quot;k2&quot; parameters</span>
+<span class="sd">    :param kconv: Array of "k2" parameters</span>
 <span class="sd">    :param tap: Array of branch complex taps (ma * exp(1j * theta_sh)</span>
 <span class="sd">    :param tap_module: Array of tap modules (this is to avoid extra calculations)</span>
 <span class="sd">    :param Bc: Array of branch total shunt susceptance values (sum of the two legs)</span>
@@ -1339,7 +1340,7 @@
 <span class="sd">    :param V:Array of complex voltages</span>
 
 <span class="sd">    :return: dSbus_dma, dSf_dma, dSt_dma</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># Declare the derivative</span>
     <span class="n">ndev</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">iXxma</span><span class="p">)</span>
 
@@ -1408,20 +1409,20 @@
 <span class="nd">@njit</span><span class="p">()</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">dSbus_dm_csc</span><span class="p">(</span><span class="n">nbus</span><span class="p">,</span> <span class="n">bus_indices</span><span class="p">,</span> <span class="n">m_indices</span><span class="p">,</span> <span class="n">F</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">T</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">Ys</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span> <span class="n">Bc</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
                  <span class="n">tap</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span> <span class="n">tap_module</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">V</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CxCSC</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 
 <span class="sd">    :param nbus:</span>
 <span class="sd">    :param bus_indices: bus indices involved</span>
 <span class="sd">    :param m_indices: branch indices where m is controlled</span>
-<span class="sd">    :param F: Array of branch &quot;from&quot; bus indices</span>
-<span class="sd">    :param T: Array of branch &quot;to&quot; bus indices</span>
+<span class="sd">    :param F: Array of branch "from" bus indices</span>
+<span class="sd">    :param T: Array of branch "to" bus indices</span>
 <span class="sd">    :param Ys: Array of branch series admittances</span>
 <span class="sd">    :param Bc: Array of branch total susceptance values (sum of the two legs)</span>
 <span class="sd">    :param tap: Array of branch complex taps (m * exp(1j * tau)</span>
 <span class="sd">    :param tap_module: Array of tap modules</span>
 <span class="sd">    :param V: Array of complex voltages</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">n_cols</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">m_indices</span><span class="p">)</span>
     <span class="n">n_rows</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">bus_indices</span><span class="p">)</span>
     <span class="n">max_nnz</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">m_indices</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span>
@@ -1470,7 +1471,7 @@
 <span class="nd">@njit</span><span class="p">()</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">dSf_dm_csc</span><span class="p">(</span><span class="n">nbr</span><span class="p">,</span> <span class="n">sf_indices</span><span class="p">,</span> <span class="n">m_indices</span><span class="p">,</span> <span class="n">F</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">T</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">Ys</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span> <span class="n">Bc</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
                <span class="n">tap</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span> <span class="n">tap_module</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">V</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CxCSC</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    This function computes the derivatives of Sbus, Sf and St w.r.t. the tap angle (tau)</span>
 <span class="sd">    - dSbus_dPfsh, dSf_dPfsh, dSt_dPfsh -&gt; if iPxsh=iPfsh</span>
 <span class="sd">    - dSbus_dPfdp, dSf_dPfdp, dSt_dPfdp -&gt; if iPxsh=iPfdp</span>
@@ -1478,8 +1479,8 @@
 <span class="sd">    :param nbr</span>
 <span class="sd">    :param sf_indices: array of sf indices</span>
 <span class="sd">    :param m_indices: array of branch indices with tau control</span>
-<span class="sd">    :param F: Array of branch &quot;from&quot; bus indices</span>
-<span class="sd">    :param T: Array of branch &quot;to&quot; bus indices</span>
+<span class="sd">    :param F: Array of branch "from" bus indices</span>
+<span class="sd">    :param T: Array of branch "to" bus indices</span>
 <span class="sd">    :param Ys: Array of branch series admittances</span>
 <span class="sd">    :param Bc: Array of branch total susceptance values</span>
 <span class="sd">    :param Beq: Array of regulation susceptance of the FUBM model</span>
@@ -1487,7 +1488,7 @@
 <span class="sd">    :param tap_module: Array of tap modules</span>
 <span class="sd">    :param V: Array of complex voltages</span>
 <span class="sd">    :return: dSf_dsh</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">n_cols</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">m_indices</span><span class="p">)</span>
     <span class="n">n_rows</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">sf_indices</span><span class="p">)</span>
     <span class="n">max_nnz</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">m_indices</span><span class="p">)</span>
@@ -1510,7 +1511,7 @@
             <span class="n">dyff_dma</span> <span class="o">=</span> <span class="o">-</span><span class="mi">2</span> <span class="o">*</span> <span class="n">YttB</span> <span class="o">/</span>  <span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">tap_module</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="mi">3</span><span class="p">)</span>
             <span class="n">dyft_dma</span> <span class="o">=</span> <span class="n">Ys</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">/</span> <span class="p">(</span> <span class="n">tap_module</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">conj</span><span class="p">(</span><span class="n">tap</span><span class="p">[</span><span class="n">k</span><span class="p">]))</span>
 
-            <span class="c1"># Partials of Sf w.r.t. Ɵ shift (makes sense that this is ∂Sbus/∂Pxsh assigned to the &quot;from&quot; bus)</span>
+            <span class="c1"># Partials of Sf w.r.t. Ɵ shift (makes sense that this is ∂Sbus/∂Pxsh assigned to the "from" bus)</span>
             <span class="n">Tx</span><span class="p">[</span><span class="n">nnz</span><span class="p">]</span> <span class="o">=</span> <span class="n">V</span><span class="p">[</span><span class="n">f</span><span class="p">]</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">conj</span><span class="p">(</span><span class="n">dyff_dma</span> <span class="o">*</span> <span class="n">V</span><span class="p">[</span><span class="n">f</span><span class="p">]</span> <span class="o">+</span> <span class="n">dyft_dma</span> <span class="o">*</span> <span class="n">V</span><span class="p">[</span><span class="n">t</span><span class="p">])</span>
             <span class="n">Ti</span><span class="p">[</span><span class="n">nnz</span><span class="p">]</span> <span class="o">=</span> <span class="n">i_idx</span>
             <span class="n">Tj</span><span class="p">[</span><span class="n">nnz</span><span class="p">]</span> <span class="o">=</span> <span class="n">k_idx</span>
@@ -1528,7 +1529,7 @@
 <span class="nd">@njit</span><span class="p">()</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">dSt_dm_csc</span><span class="p">(</span><span class="n">nbr</span><span class="p">,</span> <span class="n">st_indices</span><span class="p">,</span> <span class="n">m_indices</span><span class="p">,</span> <span class="n">F</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">T</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">Ys</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span>
                <span class="n">tap</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span> <span class="n">tap_module</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">V</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CxCSC</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    This function computes the derivatives of Sbus, Sf and St w.r.t. the tap angle (tau)</span>
 <span class="sd">    - dSbus_dPfsh, dSf_dPfsh, dSt_dPfsh -&gt; if iPxsh=iPfsh</span>
 <span class="sd">    - dSbus_dPfdp, dSf_dPfdp, dSt_dPfdp -&gt; if iPxsh=iPfdp</span>
@@ -1536,16 +1537,16 @@
 <span class="sd">    :param nbr:</span>
 <span class="sd">    :param st_indices: array of st indices</span>
 <span class="sd">    :param m_indices: array of branch indices with tau control</span>
-<span class="sd">    :param F: Array of branch &quot;from&quot; bus indices</span>
-<span class="sd">    :param T: Array of branch &quot;to&quot; bus indices</span>
+<span class="sd">    :param F: Array of branch "from" bus indices</span>
+<span class="sd">    :param T: Array of branch "to" bus indices</span>
 <span class="sd">    :param Ys: Array of branch series admittances</span>
-<span class="sd">    :param kconv: Array of &quot;k2&quot; parameters</span>
+<span class="sd">    :param kconv: Array of "k2" parameters</span>
 <span class="sd">    :param tap: Array of branch complex taps (m * exp(1j * tau)</span>
 <span class="sd">    :param tap_module</span>
 <span class="sd">    :param V: Array of complex voltages</span>
 <span class="sd">    :return: dSf_dsh</span>
 <span class="sd">    :return: dSt_dtau</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">n_cols</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">m_indices</span><span class="p">)</span>
     <span class="n">n_rows</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">st_indices</span><span class="p">)</span>
@@ -1565,7 +1566,7 @@
 
             <span class="n">dytf_dma</span> <span class="o">=</span> <span class="n">Ys</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">/</span> <span class="p">(</span><span class="n">tap_module</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">*</span> <span class="n">tap</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
 
-            <span class="c1"># Partials of Sf w.r.t. Ɵ shift (makes sense that this is ∂Sbus/∂Pxsh assigned to the &quot;from&quot; bus)</span>
+            <span class="c1"># Partials of Sf w.r.t. Ɵ shift (makes sense that this is ∂Sbus/∂Pxsh assigned to the "from" bus)</span>
             <span class="n">Tx</span><span class="p">[</span><span class="n">nnz</span><span class="p">]</span> <span class="o">=</span> <span class="n">V</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">conj</span><span class="p">(</span><span class="n">dytf_dma</span> <span class="o">*</span> <span class="n">V</span><span class="p">[</span><span class="n">f</span><span class="p">])</span>
             <span class="n">Ti</span><span class="p">[</span><span class="n">nnz</span><span class="p">]</span> <span class="o">=</span> <span class="n">i_idx</span>
             <span class="n">Tj</span><span class="p">[</span><span class="n">nnz</span><span class="p">]</span> <span class="o">=</span> <span class="n">k_idx</span>
@@ -1582,7 +1583,7 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.Derivatives.html#VeraGridEngine.Simulations.Derivatives.csc_derivatives.derivatives_Beq_csc_numba">[docs]</a>
 <span class="nd">@njit</span><span class="p">()</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">derivatives_Beq_csc_numba</span><span class="p">(</span><span class="n">nbus</span><span class="p">,</span> <span class="n">nbr</span><span class="p">,</span> <span class="n">iBeqx</span><span class="p">,</span> <span class="n">F</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">tap_module</span><span class="p">,</span> <span class="n">kconv</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute the derivatives of:</span>
 <span class="sd">    - dSbus_dBeqz, dSf_dBeqz, dSt_dBeqz -&gt; iBeqx=iBeqz</span>
 <span class="sd">    - dSbus_dBeqv, dSf_dBeqv, dSt_dBeqv -&gt; iBeqx=iBeqv</span>
@@ -1590,15 +1591,15 @@
 <span class="sd">    :param nbus: Number of buses</span>
 <span class="sd">    :param nbr: Number of Branches</span>
 <span class="sd">    :param iBeqx: array of indices {iBeqz, iBeqv}</span>
-<span class="sd">    :param F: Array of branch &quot;from&quot; bus indices</span>
+<span class="sd">    :param F: Array of branch "from" bus indices</span>
 <span class="sd">    :param V:Array of complex voltages</span>
 <span class="sd">    :param tap_module: Array of branch taps modules</span>
-<span class="sd">    :param kconv: Array of &quot;k2&quot; parameters</span>
+<span class="sd">    :param kconv: Array of "k2" parameters</span>
 
 <span class="sd">    :return:</span>
 <span class="sd">    - dSbus_dBeqz, dSf_dBeqz, dSt_dBeqz -&gt; if iBeqx=iBeqz</span>
 <span class="sd">    - dSbus_dBeqv, dSf_dBeqv, dSt_dBeqv -&gt; if iBeqx=iBeqv</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">ndev</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">iBeqx</span><span class="p">)</span>
 
@@ -1647,17 +1648,17 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.Derivatives.html#VeraGridEngine.Simulations.Derivatives.csc_derivatives.dSbus_dbeq_csc">[docs]</a>
 <span class="nd">@njit</span><span class="p">()</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">dSbus_dbeq_csc</span><span class="p">(</span><span class="n">nbus</span><span class="p">,</span> <span class="n">bus_indices</span><span class="p">,</span> <span class="n">beq_indices</span><span class="p">,</span> <span class="n">F</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">kconv</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">tap_module</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">V</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CxCSC</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 
 <span class="sd">    :param nbus:</span>
 <span class="sd">    :param bus_indices:</span>
 <span class="sd">    :param beq_indices:</span>
-<span class="sd">    :param F: Array of branch &quot;from&quot; bus indices</span>
-<span class="sd">    :param kconv: Array of &quot;k2&quot; parameters</span>
+<span class="sd">    :param F: Array of branch "from" bus indices</span>
+<span class="sd">    :param kconv: Array of "k2" parameters</span>
 <span class="sd">    :param tap_module: Array of tap modules</span>
 <span class="sd">    :param V: Array of complex voltages</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">n_cols</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">beq_indices</span><span class="p">)</span>
     <span class="n">n_rows</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">bus_indices</span><span class="p">)</span>
     <span class="n">max_nnz</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">beq_indices</span><span class="p">)</span>
@@ -1676,13 +1677,13 @@
 
         <span class="c1"># from side</span>
         <span class="k">if</span> <span class="n">f_idx</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">:</span>
-<span class="w">            </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">            </span><span class="sd">"""</span>
 <span class="sd">            # Partials of Ytt, Yff, Yft and Ytf w.r.t.Beq</span>
 <span class="sd">            dyff_dBeq = 1j / np.power(kconv[idx] * tap_module[idx], 2.0)</span>
 <span class="sd">    </span>
 <span class="sd">            # Partials of S w.r.t.Beq</span>
 <span class="sd">            val_f = V[f] * np.conj(dyff_dBeq * V[f])</span>
-<span class="sd">            &quot;&quot;&quot;</span>
+<span class="sd">            """</span>
 
             <span class="n">dyff_dBeq</span> <span class="o">=</span> <span class="mf">1.0</span><span class="n">j</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">kconv</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">*</span> <span class="n">tap_module</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">+</span> <span class="mf">1e-20</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">)</span>
             <span class="n">Tx</span><span class="p">[</span><span class="n">nnz</span><span class="p">]</span> <span class="o">=</span> <span class="n">V</span><span class="p">[</span><span class="n">f</span><span class="p">]</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">conj</span><span class="p">(</span><span class="n">dyff_dBeq</span> <span class="o">*</span> <span class="n">V</span><span class="p">[</span><span class="n">f</span><span class="p">])</span>
@@ -1703,7 +1704,7 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.Derivatives.html#VeraGridEngine.Simulations.Derivatives.csc_derivatives.dSf_dbeq_csc">[docs]</a>
 <span class="nd">@njit</span><span class="p">()</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">dSf_dbeq_csc</span><span class="p">(</span><span class="n">nbr</span><span class="p">,</span> <span class="n">sf_indices</span><span class="p">,</span> <span class="n">beq_indices</span><span class="p">,</span> <span class="n">F</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">kconv</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">tap_module</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">V</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CxCSC</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    This function computes the derivatives of Sbus, Sf and St w.r.t. the tap angle (tau)</span>
 <span class="sd">    - dSbus_dPfsh, dSf_dPfsh, dSt_dPfsh -&gt; if iPxsh=iPfsh</span>
 <span class="sd">    - dSbus_dPfdp, dSf_dPfdp, dSt_dPfdp -&gt; if iPxsh=iPfdp</span>
@@ -1711,12 +1712,12 @@
 <span class="sd">    :param nbr: Number of branches</span>
 <span class="sd">    :param sf_indices: array of sf indices</span>
 <span class="sd">    :param beq_indices: array of branch indices with tau control</span>
-<span class="sd">    :param F: Array of branch &quot;from&quot; bus indices</span>
-<span class="sd">    :param kconv: Array of &quot;k2&quot; parameters</span>
+<span class="sd">    :param F: Array of branch "from" bus indices</span>
+<span class="sd">    :param kconv: Array of "k2" parameters</span>
 <span class="sd">    :param tap_module: Array of tap modules</span>
 <span class="sd">    :param V: Array of complex voltages</span>
 <span class="sd">    :return: dSf_dsh</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">n_cols</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">beq_indices</span><span class="p">)</span>
     <span class="n">n_rows</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">sf_indices</span><span class="p">)</span>
     <span class="n">max_nnz</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">beq_indices</span><span class="p">)</span>
@@ -1735,7 +1736,7 @@
             <span class="c1"># Partials of Ytt, Yff, Yft and Ytf w.r.t.Beq</span>
             <span class="n">dyff_dBeq</span> <span class="o">=</span> <span class="mi">1</span><span class="n">j</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">kconv</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">*</span> <span class="n">tap_module</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">+</span> <span class="mf">1e-20</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">)</span>
 
-            <span class="c1"># Partials of Sf w.r.t. Ɵ shift (makes sense that this is ∂Sbus/∂Pxsh assigned to the &quot;from&quot; bus)</span>
+            <span class="c1"># Partials of Sf w.r.t. Ɵ shift (makes sense that this is ∂Sbus/∂Pxsh assigned to the "from" bus)</span>
             <span class="n">Tx</span><span class="p">[</span><span class="n">nnz</span><span class="p">]</span> <span class="o">=</span> <span class="n">V</span><span class="p">[</span><span class="n">f</span><span class="p">]</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">conj</span><span class="p">(</span><span class="n">dyff_dBeq</span> <span class="o">*</span> <span class="n">V</span><span class="p">[</span><span class="n">f</span><span class="p">])</span>
             <span class="n">Ti</span><span class="p">[</span><span class="n">nnz</span><span class="p">]</span> <span class="o">=</span> <span class="n">i_idx</span>
             <span class="n">Tj</span><span class="p">[</span><span class="n">nnz</span><span class="p">]</span> <span class="o">=</span> <span class="n">k_idx</span>
@@ -1752,7 +1753,7 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.Derivatives.html#VeraGridEngine.Simulations.Derivatives.csc_derivatives.dSt_dbeq_csc">[docs]</a>
 <span class="nd">@njit</span><span class="p">()</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">dSt_dbeq_csc</span><span class="p">(</span><span class="n">sf_indices</span><span class="p">,</span> <span class="n">beq_indices</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CxCSC</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    This function computes the derivatives of Sbus, Sf and St w.r.t. the tap angle (tau)</span>
 <span class="sd">    - dSbus_dPfsh, dSf_dPfsh, dSt_dPfsh -&gt; if iPxsh=iPfsh</span>
 <span class="sd">    - dSbus_dPfdp, dSf_dPfdp, dSt_dPfdp -&gt; if iPxsh=iPfdp</span>
@@ -1761,7 +1762,7 @@
 <span class="sd">    :param beq_indices: array of branch indices with tau control</span>
 <span class="sd">    :return: dSf_dsh</span>
 <span class="sd">    :return: dSt_dtau</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">n_cols</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">beq_indices</span><span class="p">)</span>
     <span class="n">n_rows</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">sf_indices</span><span class="p">)</span>
@@ -1777,14 +1778,14 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.Derivatives.html#VeraGridEngine.Simulations.Derivatives.csc_derivatives.dLossvsc_dVm_csc">[docs]</a>
 <span class="nd">@njit</span><span class="p">()</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">dLossvsc_dVm_csc</span><span class="p">(</span><span class="n">nvsc</span><span class="p">,</span> <span class="n">nbus</span><span class="p">,</span> <span class="n">i_u_vm</span><span class="p">,</span> <span class="n">alpha2</span><span class="p">,</span> <span class="n">alpha3</span><span class="p">,</span> <span class="n">Vm</span><span class="p">,</span> <span class="n">Pt</span><span class="p">,</span> <span class="n">Qt</span><span class="p">,</span> <span class="n">T</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CSC</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">        pq = Pt[ig_plossacdc] * Pt[ig_plossacdc] + Qt[ig_plossacdc] * Qt[ig_plossacdc]</span>
 <span class="sd">        pq_sqrt = np.sqrt(pq)</span>
 <span class="sd">        pq_sqrt += 1e-20</span>
 <span class="sd">        dLacdc_dVm = (alpha2[vsc_order] * pq_sqrt * Qt[ig_plossacdc] / (Vm[T_acdc] * Vm[T_acdc])</span>
 <span class="sd">                      + 2 * alpha3[vsc_order] * (pq) / (</span>
 <span class="sd">                              Vm[T_acdc[vsc_order]] * Vm[T_acdc[vsc_order]] * Vm[T_acdc[vsc_order]]))</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">n_cols</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">i_u_vm</span><span class="p">)</span>
     <span class="n">n_rows</span> <span class="o">=</span> <span class="n">nvsc</span>
     <span class="n">max_nnz</span> <span class="o">=</span> <span class="n">nvsc</span>
@@ -1822,9 +1823,9 @@
 <span class="nd">@njit</span><span class="p">()</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">dLosshvdc_dVm_csc</span><span class="p">(</span><span class="n">nhvdc</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">nbus</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">i_u_vm</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">Vm</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">Pf_hvdc</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
                       <span class="n">hvdc_r</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">F_hvdc</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    dLosshvdc = rpu * Pf_hvdc / Vm[F_hvdc]**2 - Pf_hvdc - Pt_hvdc</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">n_cols</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">i_u_vm</span><span class="p">)</span>
     <span class="n">n_rows</span> <span class="o">=</span> <span class="n">nhvdc</span>
     <span class="n">max_nnz</span> <span class="o">=</span> <span class="n">nhvdc</span>
@@ -1860,9 +1861,9 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.Derivatives.html#VeraGridEngine.Simulations.Derivatives.csc_derivatives.dLosshvdc_dPfhvdc_csc">[docs]</a>
 <span class="nd">@njit</span><span class="p">()</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">dLosshvdc_dPfhvdc_csc</span><span class="p">(</span><span class="n">nhvdc</span><span class="p">,</span> <span class="n">Vm</span><span class="p">,</span> <span class="n">hvdc_r</span><span class="p">,</span> <span class="n">F_hvdc</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    dLosshvdc = rpu * Pf_hvdc / Vm[F_hvdc]**2 - Pf_hvdc - Pt_hvdc</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">n_cols</span> <span class="o">=</span> <span class="n">nhvdc</span>
     <span class="n">n_rows</span> <span class="o">=</span> <span class="n">nhvdc</span>
     <span class="n">max_nnz</span> <span class="o">=</span> <span class="n">nhvdc</span>
@@ -1893,9 +1894,9 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.Derivatives.html#VeraGridEngine.Simulations.Derivatives.csc_derivatives.dLosshvdc_dPthvdc_csc">[docs]</a>
 <span class="nd">@njit</span><span class="p">()</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">dLosshvdc_dPthvdc_csc</span><span class="p">(</span><span class="n">nhvdc</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    dLosshvdc = rpu * Pf_hvdc / Vm[F_hvdc]**2 - Pf_hvdc - Pt_hvdc</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">n_cols</span> <span class="o">=</span> <span class="n">nhvdc</span>
     <span class="n">n_rows</span> <span class="o">=</span> <span class="n">nhvdc</span>
     <span class="n">max_nnz</span> <span class="o">=</span> <span class="n">nhvdc</span>
@@ -1925,9 +1926,9 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.Derivatives.html#VeraGridEngine.Simulations.Derivatives.csc_derivatives.dInjhvdc_dPfhvdc_csc">[docs]</a>
 <span class="nd">@njit</span><span class="p">()</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">dInjhvdc_dPfhvdc_csc</span><span class="p">(</span><span class="n">nhvdc</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    dInjhvdc = Pf_hvdc - Pset - droop(Va[f] - Va[t])</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">n_cols</span> <span class="o">=</span> <span class="n">nhvdc</span>
     <span class="n">n_rows</span> <span class="o">=</span> <span class="n">nhvdc</span>
     <span class="n">max_nnz</span> <span class="o">=</span> <span class="n">nhvdc</span>
@@ -1957,13 +1958,13 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.Derivatives.html#VeraGridEngine.Simulations.Derivatives.csc_derivatives.dLossvsc_dPfvsc_csc">[docs]</a>
 <span class="nd">@njit</span><span class="p">()</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">dLossvsc_dPfvsc_csc</span><span class="p">(</span><span class="n">nvsc</span><span class="p">,</span> <span class="n">u_vsc_pf</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CSC</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute dLossvsc_dPfvsc in CSC format with column indices aligned to u_vsc_pf.</span>
 
 <span class="sd">    :param nvsc: Total number of rows in the matrix (number of VSCs).</span>
 <span class="sd">    :param u_vsc_pf: Indices to define the column indices for the sparse matrix.</span>
 <span class="sd">    :return: Sparse matrix in CSC format.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">n_cols</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">u_vsc_pf</span><span class="p">)</span>  <span class="c1"># Number of columns (length of u_vsc_pf).</span>
     <span class="n">n_rows</span> <span class="o">=</span> <span class="n">nvsc</span>  <span class="c1"># Number of rows (equal to nvsc).</span>
     <span class="n">max_nnz</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">u_vsc_pf</span><span class="p">)</span>  <span class="c1"># Maximum number of non-zero entries.</span>
@@ -1994,7 +1995,7 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.Derivatives.html#VeraGridEngine.Simulations.Derivatives.csc_derivatives.dLossvsc_dPtvsc_csc">[docs]</a>
 <span class="nd">@njit</span><span class="p">()</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">dLossvsc_dPtvsc_csc</span><span class="p">(</span><span class="n">nvsc</span><span class="p">,</span> <span class="n">u_vsc_pt</span><span class="p">,</span> <span class="n">alpha2</span><span class="p">,</span> <span class="n">alpha3</span><span class="p">,</span> <span class="n">Vm</span><span class="p">,</span> <span class="n">Pt</span><span class="p">,</span> <span class="n">Qt</span><span class="p">,</span> <span class="n">T_vsc</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CSC</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute the sparse matrix for the derivative of loss with respect to Pt in CSC format.</span>
 
 <span class="sd">    :param nvsc: Number of VSCs (rows of the matrix).</span>
@@ -2006,7 +2007,7 @@
 <span class="sd">    :param Qt: Reactive power flows.</span>
 <span class="sd">    :param T_vsc: Indices for VSC buses.</span>
 <span class="sd">    :return: Sparse matrix in CSC format.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">n_cols</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">u_vsc_pt</span><span class="p">)</span>  <span class="c1"># Number of columns (length of i_u_pt).</span>
     <span class="n">n_rows</span> <span class="o">=</span> <span class="n">nvsc</span>  <span class="c1"># Number of rows (equal to nvsc).</span>
@@ -2042,7 +2043,7 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.Derivatives.html#VeraGridEngine.Simulations.Derivatives.csc_derivatives.dLossvsc_dQtvsc_csc">[docs]</a>
 <span class="nd">@njit</span><span class="p">()</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">dLossvsc_dQtvsc_csc</span><span class="p">(</span><span class="n">nvsc</span><span class="p">,</span> <span class="n">u_vsc_qt</span><span class="p">,</span> <span class="n">alpha2</span><span class="p">,</span> <span class="n">alpha3</span><span class="p">,</span> <span class="n">Vm</span><span class="p">,</span> <span class="n">Pt</span><span class="p">,</span> <span class="n">Qt</span><span class="p">,</span> <span class="n">T_vsc</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CSC</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute the sparse matrix for the derivative of loss with respect to Qt in CSC format.</span>
 
 <span class="sd">    :param nvsc: Number of VSCs (rows of the matrix).</span>
@@ -2054,7 +2055,7 @@
 <span class="sd">    :param Qt: Reactive power flows.</span>
 <span class="sd">    :param T_vsc: Indices for VSC buses.</span>
 <span class="sd">    :return: Sparse matrix in CSC format.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">n_cols</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">u_vsc_qt</span><span class="p">)</span>  <span class="c1"># Number of columns (length of i_u_qt).</span>
     <span class="n">n_rows</span> <span class="o">=</span> <span class="n">nvsc</span>  <span class="c1"># Number of rows (equal to nvsc).</span>
@@ -2089,7 +2090,7 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.Derivatives.html#VeraGridEngine.Simulations.Derivatives.csc_derivatives.dIvsc_dPfpvsc_csc">[docs]</a>
 <span class="nd">@njit</span><span class="p">()</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">dIvsc_dPfpvsc_csc</span><span class="p">(</span><span class="n">k_vsc_has_dc_n</span><span class="p">,</span> <span class="n">u_vsc_pfp</span><span class="p">,</span> <span class="n">Vm</span><span class="p">,</span> <span class="n">Va</span><span class="p">,</span> <span class="n">Fdcn_vsc</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CSC</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute dIvsc_dPfpvsc in CSC format.</span>
 <span class="sd">    :param k_vsc_has_dc_n: array of VSC indices with negative poles.</span>
 <span class="sd">    :param u_vsc_pfp: Column indices for the sparse matrix.</span>
@@ -2097,7 +2098,7 @@
 <span class="sd">    :param Va: Voltage angles at buses (used for the signed DC voltage Vm*cos(Va)).</span>
 <span class="sd">    :param Fdcn_vsc: From negative bus indices for VSCs.</span>
 <span class="sd">    :return: Sparse matrix in CSC format.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">ndev</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">k_vsc_has_dc_n</span><span class="p">)</span>
     <span class="n">n_cols</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">u_vsc_pfp</span><span class="p">)</span>  <span class="c1"># Number of columns (length of i_u_pfp).</span>
     <span class="n">n_rows</span> <span class="o">=</span> <span class="n">ndev</span>  <span class="c1"># Number of rows (equal to nvsc with negative pole asigned).</span>
@@ -2137,7 +2138,7 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.Derivatives.html#VeraGridEngine.Simulations.Derivatives.csc_derivatives.dIvsc_dPfnvsc_csc">[docs]</a>
 <span class="nd">@njit</span><span class="p">()</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">dIvsc_dPfnvsc_csc</span><span class="p">(</span><span class="n">k_vsc_has_dc_n</span><span class="p">,</span> <span class="n">u_vsc_pfn</span><span class="p">,</span> <span class="n">Vm</span><span class="p">,</span> <span class="n">Va</span><span class="p">,</span> <span class="n">Fdcp_vsc</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CSC</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute dIvsc_dPfnvsc in CSC format.</span>
 <span class="sd">    :param k_vsc_has_dc_n: array of VSC indices with negative poles.</span>
 <span class="sd">    :param u_vsc_pfn: Column indices for the sparse matrix.</span>
@@ -2145,7 +2146,7 @@
 <span class="sd">    :param Va: Voltage angles at buses (used for the signed DC voltage Vm*cos(Va)).</span>
 <span class="sd">    :param Fdcp_vsc: From positive bus indices for VSCs.</span>
 <span class="sd">    :return: Sparse matrix in CSC format.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">n_cols</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">u_vsc_pfn</span><span class="p">)</span>  <span class="c1"># Number of columns (length of i_u_pfn).</span>
     <span class="n">n_rows</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">k_vsc_has_dc_n</span><span class="p">)</span>  <span class="c1"># Number of rows (equal to nvsc with negative poles connected).</span>
     <span class="n">max_nnz</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">u_vsc_pfn</span><span class="p">)</span>  <span class="c1"># Maximum number of non-zero entries.</span>
@@ -2185,7 +2186,7 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">dIvsc_dVm_csc</span><span class="p">(</span><span class="n">k_vsc_has_dc_n</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span>
                   <span class="n">nbus</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
                   <span class="n">i_u_vm</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">Pfp_vsc</span><span class="p">,</span> <span class="n">Pfn_vsc</span><span class="p">,</span> <span class="n">Va</span><span class="p">,</span> <span class="n">Fdcp_vsc</span><span class="p">,</span> <span class="n">Fdcn_vsc</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CSC</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute dIvsc_dVm in CSC format.</span>
 <span class="sd">    :param k_vsc_has_dc_n: array of VSC indices with negative poles.</span>
 <span class="sd">    :param nbus: Number of buses.</span>
@@ -2196,7 +2197,7 @@
 <span class="sd">    :param Fdcp_vsc: From positive bus indices for VSCs.</span>
 <span class="sd">    :param Fdcn_vsc: From negative bus indices for VSCs.</span>
 <span class="sd">    :return: Sparse matrix in CSC format.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">n_dev</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">k_vsc_has_dc_n</span><span class="p">)</span>
     <span class="n">n_cols</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">i_u_vm</span><span class="p">)</span>  <span class="c1"># Number of columns (length of i_u_vm).</span>
     <span class="n">n_rows</span> <span class="o">=</span> <span class="n">n_dev</span>  <span class="c1"># Number of rows (equal to nvsc).</span>
@@ -2248,7 +2249,7 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.Derivatives.html#VeraGridEngine.Simulations.Derivatives.csc_derivatives.dDroopvsc_dVm_csc">[docs]</a>
 <span class="nd">@njit</span><span class="p">()</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">dDroopvsc_dVm_csc</span><span class="p">(</span><span class="n">n_droop</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">nbus</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">i_u_vm</span><span class="p">,</span> <span class="n">k_vsc_pfp_droop</span><span class="p">,</span> <span class="n">Fdcp_vsc</span><span class="p">,</span> <span class="n">dpfp_droop_slope</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CSC</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute the d(droop equation)/dVm block</span>
 <span class="sd">    :param n_droop: number of droop equations (rows)</span>
 <span class="sd">    :param nbus: number of buses</span>
@@ -2257,7 +2258,7 @@
 <span class="sd">    :param Fdcp_vsc: from (positive pole) bus index of each VSC</span>
 <span class="sd">    :param dpfp_droop_slope: d(Pfp)/dVm slope of each droop equation</span>
 <span class="sd">    :return: CSC block.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">j_lookup</span> <span class="o">=</span> <span class="n">make_lookup</span><span class="p">(</span><span class="n">nbus</span><span class="p">,</span> <span class="n">i_u_vm</span><span class="p">)</span>
     <span class="n">mat</span> <span class="o">=</span> <span class="n">CSC</span><span class="p">(</span><span class="n">n_droop</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">i_u_vm</span><span class="p">),</span> <span class="n">n_droop</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
     <span class="n">Tx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">n_droop</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
@@ -2282,7 +2283,7 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.Derivatives.html#VeraGridEngine.Simulations.Derivatives.csc_derivatives.dVmdcDiff_dVm_csc">[docs]</a>
 <span class="nd">@njit</span><span class="p">()</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">dVmdcDiff_dVm_csc</span><span class="p">(</span><span class="n">n_diff</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">nbus</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">i_u_vm</span><span class="p">,</span> <span class="n">k_vsc_vmdc_diff</span><span class="p">,</span> <span class="n">Fdcp_vsc</span><span class="p">,</span> <span class="n">Fdcn_vsc</span><span class="p">,</span> <span class="n">Va</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CSC</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute the d/dVm block of the bipolar Vm_dc pole-to-pole equation</span>
 <span class="sd">    (V[F].real - V[F_dcn].real) - Udc_set = 0. Using V.real = Vm*cos(Va):</span>
 <span class="sd">    d/dVm[F] = cos(Va[F]) and d/dVm[F_dcn] = -cos(Va[F_dcn]).</span>
@@ -2294,7 +2295,7 @@
 <span class="sd">    :param Fdcn_vsc: negative pole bus index of each VSC</span>
 <span class="sd">    :param Va: voltage angles at buses (used for the signed DC voltage Vm*cos(Va))</span>
 <span class="sd">    :return: CSC block.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">j_lookup</span> <span class="o">=</span> <span class="n">make_lookup</span><span class="p">(</span><span class="n">nbus</span><span class="p">,</span> <span class="n">i_u_vm</span><span class="p">)</span>
     <span class="n">max_nnz</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">n_diff</span>
     <span class="n">mat</span> <span class="o">=</span> <span class="n">CSC</span><span class="p">(</span><span class="n">n_diff</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">i_u_vm</span><span class="p">),</span> <span class="n">max_nnz</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
@@ -2328,7 +2329,7 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.Derivatives.html#VeraGridEngine.Simulations.Derivatives.csc_derivatives.dunit_vsc_csc">[docs]</a>
 <span class="nd">@njit</span><span class="p">()</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">dunit_vsc_csc</span><span class="p">(</span><span class="n">n_eq</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">nvsc</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">k_vsc_eq</span><span class="p">,</span> <span class="n">u_vsc_col</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CSC</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Block for a VSC equation that depends linearly (coefficient +1) on one unknown</span>
 <span class="sd">    Row i relates to the equation, column to the unknown </span>
 <span class="sd">    To recycle some code.</span>
@@ -2337,7 +2338,7 @@
 <span class="sd">    :param k_vsc_eq: VSC index of each equation</span>
 <span class="sd">    :param u_vsc_col: unknown VSC indices</span>
 <span class="sd">    :return: CSC block</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">col_lookup</span> <span class="o">=</span> <span class="n">make_lookup</span><span class="p">(</span><span class="n">nvsc</span><span class="p">,</span> <span class="n">u_vsc_col</span><span class="p">)</span>
     <span class="n">mat</span> <span class="o">=</span> <span class="n">CSC</span><span class="p">(</span><span class="n">n_eq</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">u_vsc_col</span><span class="p">),</span> <span class="n">n_eq</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
     <span class="n">Tx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">n_eq</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
@@ -2360,7 +2361,7 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.Derivatives.html#VeraGridEngine.Simulations.Derivatives.csc_derivatives.dImaxvsc_dVm_csc">[docs]</a>
 <span class="nd">@njit</span><span class="p">()</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">dImaxvsc_dVm_csc</span><span class="p">(</span><span class="n">nbus</span><span class="p">,</span> <span class="n">k_vsc_imax</span><span class="p">,</span> <span class="n">i_u_vm</span><span class="p">,</span> <span class="n">Pt_vsc</span><span class="p">,</span> <span class="n">Qt_vsc</span><span class="p">,</span> <span class="n">Vm</span><span class="p">,</span> <span class="n">T_vsc</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CSC</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute dImaxvsc_dVm in CSC format.</span>
 <span class="sd">    The equation is: (P**2 + Q**2) / Vm**2 - Imax**2 = 0</span>
 <span class="sd">    :param nbus: Number of buses.</span>
@@ -2371,7 +2372,7 @@
 <span class="sd">    :param Vm: Voltage magnitude</span>
 <span class="sd">    :param T_vsc: Bus index pointing to the AC bus of the VSC.</span>
 <span class="sd">    :return: Sparse matrix in CSC format.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">n_cols</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">i_u_vm</span><span class="p">)</span>  <span class="c1"># Number of columns (length of i_u_vm).</span>
     <span class="n">n_rows</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">k_vsc_imax</span><span class="p">)</span>  <span class="c1"># Number of rows (equal to nvsc).</span>
     <span class="n">max_nnz</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">k_vsc_imax</span><span class="p">)</span>  <span class="c1"># Maximum number of non-zero entries.</span>
@@ -2405,7 +2406,7 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.Derivatives.html#VeraGridEngine.Simulations.Derivatives.csc_derivatives.dImaxvsc_dPQ_csc">[docs]</a>
 <span class="nd">@njit</span><span class="p">()</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">dImaxvsc_dPQ_csc</span><span class="p">(</span><span class="n">nvsc</span><span class="p">,</span> <span class="n">k_vsc_imax</span><span class="p">,</span> <span class="n">u_vsc_pqt</span><span class="p">,</span> <span class="n">PQt_vsc</span><span class="p">,</span> <span class="n">Vm</span><span class="p">,</span> <span class="n">T_vsc</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CSC</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute dImaxvsc_dPQ in CSC format.</span>
 <span class="sd">    The equation is: (P**2 + Q**2) / Vm**2 - Imax**2 = 0</span>
 <span class="sd">    :param nvsc: Number of VSCs (rows of the matrix).</span>
@@ -2415,7 +2416,7 @@
 <span class="sd">    :param Vm: Voltage magnitude</span>
 <span class="sd">    :param T_vsc: Bus index pointing to the AC bus of the VSC.</span>
 <span class="sd">    :return: Sparse matrix in CSC format.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">n_cols</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">u_vsc_pqt</span><span class="p">)</span>  <span class="c1"># Number of columns (length of i_u_vm).</span>
     <span class="n">n_rows</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">k_vsc_imax</span><span class="p">)</span>  <span class="c1"># Number of rows (equal to nvsc).</span>
     <span class="n">max_nnz</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">k_vsc_imax</span><span class="p">)</span>  <span class="c1"># Maximum number of non-zero entries.</span>
@@ -2449,14 +2450,14 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.Derivatives.html#VeraGridEngine.Simulations.Derivatives.csc_derivatives.dP_dPfvsc_csc">[docs]</a>
 <span class="nd">@njit</span><span class="p">()</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">dP_dPfvsc_csc</span><span class="p">(</span><span class="n">i_k_p</span><span class="p">,</span> <span class="n">u_vsc_pf</span><span class="p">,</span> <span class="n">F_vsc</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CSC</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute dP_dPfvsc in CSC format.</span>
 
 <span class="sd">    :param i_k_p: Indices for the rows corresponding to the power injections.</span>
 <span class="sd">    :param u_vsc_pf: Column indices for the sparse matrix.</span>
 <span class="sd">    :param F_vsc: From bus indices for VSCs.</span>
 <span class="sd">    :return: Sparse matrix in CSC format.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">n_cols</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">u_vsc_pf</span><span class="p">)</span>  <span class="c1"># Number of columns (length of u_vsc_pf).</span>
     <span class="n">n_rows</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">i_k_p</span><span class="p">)</span>  <span class="c1"># Number of rows (equal to nbus).</span>
     <span class="n">max_nnz</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">u_vsc_pf</span><span class="p">)</span>  <span class="c1"># Maximum number of non-zero entries.</span>
@@ -2493,7 +2494,7 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.Derivatives.html#VeraGridEngine.Simulations.Derivatives.csc_derivatives.dPQ_dPQft_csc">[docs]</a>
 <span class="nd">@njit</span><span class="p">()</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">dPQ_dPQft_csc</span><span class="p">(</span><span class="n">nbus</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">nvsc</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">i_k_pq</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">u_dev_pq</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">FT_dev</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CSC</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Calculate the derivatives of the power balance with respect to injections of branches</span>
 <span class="sd">    The method works for vscs and transformers without loss of generality</span>
 
@@ -2501,7 +2502,7 @@
 <span class="sd">    :param u_dev_pq: Column indices for the sparse matrix.</span>
 <span class="sd">    :param FT_dev: From or To bus indices.</span>
 <span class="sd">    :return: Sparse matrix in CSC format.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">n_cols</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">u_dev_pq</span><span class="p">)</span>  <span class="c1"># Number of columns (length of u_vsc_pf).</span>
     <span class="n">n_rows</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">i_k_pq</span><span class="p">)</span>  <span class="c1"># Number of rows (equal to nbus).</span>
     <span class="n">max_nnz</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">u_dev_pq</span><span class="p">)</span>  <span class="c1"># Maximum number of non-zero entries.</span>
@@ -2537,7 +2538,7 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.Derivatives.html#VeraGridEngine.Simulations.Derivatives.csc_derivatives.dInj_dVa_csc">[docs]</a>
 <span class="nd">@njit</span><span class="p">()</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">dInj_dVa_csc</span><span class="p">(</span><span class="n">nhvdc</span><span class="p">,</span> <span class="n">i_u_va</span><span class="p">,</span> <span class="n">hvdc_pset</span><span class="p">,</span> <span class="n">hvdc_r</span><span class="p">,</span> <span class="n">hvdc_droop</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">F_hvdc</span><span class="p">,</span> <span class="n">T_hvdc</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CSC</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute dInj_dVa in CSC format for HVDC systems.</span>
 
 <span class="sd">    :param nhvdc: Number of HVDC systems (rows of the matrix).</span>
@@ -2549,7 +2550,7 @@
 <span class="sd">    :param F_hvdc: From-bus indices for HVDC.</span>
 <span class="sd">    :param T_hvdc: To-bus indices for HVDC.</span>
 <span class="sd">    :return: Sparse matrix in CSC format.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">n_cols</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">i_u_va</span><span class="p">)</span>  <span class="c1"># Number of columns (length of i_u_va).</span>
     <span class="n">n_rows</span> <span class="o">=</span> <span class="n">nhvdc</span>  <span class="c1"># Number of rows (equal to nhvdc).</span>
     <span class="n">max_nnz</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">nhvdc</span>  <span class="c1"># Maximum number of non-zero entries (2 per HVDC system).</span>
@@ -2591,7 +2592,7 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.Derivatives.html#VeraGridEngine.Simulations.Derivatives.csc_derivatives.dInjhvdc_dVa_csc">[docs]</a>
 <span class="nd">@njit</span><span class="p">()</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">dInjhvdc_dVa_csc</span><span class="p">(</span><span class="n">nhvdc</span><span class="p">,</span> <span class="n">nbus</span><span class="p">,</span> <span class="n">i_u_va</span><span class="p">,</span> <span class="n">hvdc_droop</span><span class="p">,</span> <span class="n">F_hvdc</span><span class="p">,</span> <span class="n">T_hvdc</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CSC</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute dInjhvdc_dVa in CSC format for HVDC systems.</span>
 
 <span class="sd">    :param nhvdc: Number of HVDC systems (rows of the matrix).</span>
@@ -2602,7 +2603,7 @@
 <span class="sd">    :param F_hvdc: From-bus indices for HVDC.</span>
 <span class="sd">    :param T_hvdc: To-bus indices for HVDC.</span>
 <span class="sd">    :return: Sparse matrix in CSC format.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">n_cols</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">i_u_va</span><span class="p">)</span>
     <span class="n">n_rows</span> <span class="o">=</span> <span class="n">nhvdc</span>  <span class="c1"># Number of rows (equal to nhvdc).</span>
@@ -2648,7 +2649,7 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">dLossvsc_dVm_curr_csc</span><span class="p">(</span><span class="n">nvsc</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">nbus</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">i_u_vm</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">alpha2</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">alpha3</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
                           <span class="n">Vm</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">Pt</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">Qt</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">T</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span>
                           <span class="n">Ifp</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">Va</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">Fdcp</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">Fdcn</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CSC</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    d/dVm block of the VSC loss equation in the current-based DC formulation:</span>
 <span class="sd">        loss = PLoss_IEC(It) - Pt - Vdcp * Ifp + Vdcn * Ifp</span>
 <span class="sd">    with It = sqrt(Pt^2 + Qt^2) / Vm[T] and Vdc = Vm * cos(Va) the signed DC voltage.</span>
@@ -2670,7 +2671,7 @@
 <span class="sd">    :param Fdcp: VSC positive pole bus indices</span>
 <span class="sd">    :param Fdcn: VSC negative pole bus indices (-1 if not present)</span>
 <span class="sd">    :return: CSC block</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">n_cols</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">i_u_vm</span><span class="p">)</span>
     <span class="n">max_nnz</span> <span class="o">=</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">nvsc</span>
     <span class="n">mat</span> <span class="o">=</span> <span class="n">CSC</span><span class="p">(</span><span class="n">nvsc</span><span class="p">,</span> <span class="n">n_cols</span><span class="p">,</span> <span class="n">max_nnz</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
@@ -2719,14 +2720,14 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.Derivatives.html#VeraGridEngine.Simulations.Derivatives.csc_derivatives.dLossvsc_dIfp_csc">[docs]</a>
 <span class="nd">@njit</span><span class="p">()</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">dLossvsc_dIfp_csc</span><span class="p">(</span><span class="n">nvsc</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">u_vsc_ifp</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">Udc</span><span class="p">:</span> <span class="n">Vec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CSC</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    d/dIfp block of the VSC loss equation: loss = PLoss_IEC - Pt - Udc * Ifp,</span>
 <span class="sd">    hence d(loss_k)/dIfp_k = -Udc_k.</span>
 <span class="sd">    :param nvsc: number of VSCs (rows)</span>
 <span class="sd">    :param u_vsc_ifp: VSC indices whose Ifp is an unknown (column space)</span>
 <span class="sd">    :param Udc: signed pole-to-return DC voltage per VSC (V difference)</span>
 <span class="sd">    :return: CSC block</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">n_cols</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">u_vsc_ifp</span><span class="p">)</span>
     <span class="n">mat</span> <span class="o">=</span> <span class="n">CSC</span><span class="p">(</span><span class="n">nvsc</span><span class="p">,</span> <span class="n">n_cols</span><span class="p">,</span> <span class="n">n_cols</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
     <span class="n">Tx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">n_cols</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
@@ -2749,7 +2750,7 @@
 <span class="nd">@njit</span><span class="p">()</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">dUdcIfp_dVm_csc</span><span class="p">(</span><span class="n">n_eq</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">nbus</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">i_u_vm</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">k_sel</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">factor</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
                     <span class="n">Va</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">Fdcp</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">Fdcn</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CSC</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    d/dVm block of the equations of the shape Udc * Ifp - g(Udc) = 0 </span>
 <span class="sd">    with Udc = Vm[Fdcp] * cos(Va[Fdcp]) - Vm[Fdcn] * cos(Va[Fdcn]), i.e. V diff</span>
 <span class="sd">    The whole voltage sensitivity collapses to a per-equation factor:</span>
@@ -2767,7 +2768,7 @@
 <span class="sd">    :param Fdcp: VSC positive pole bus indices</span>
 <span class="sd">    :param Fdcn: VSC negative pole bus indices (-1 if not present)</span>
 <span class="sd">    :return: CSC block</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">j_lookup</span> <span class="o">=</span> <span class="n">make_lookup</span><span class="p">(</span><span class="n">nbus</span><span class="p">,</span> <span class="n">i_u_vm</span><span class="p">)</span>
     <span class="n">max_nnz</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">n_eq</span>
     <span class="n">mat</span> <span class="o">=</span> <span class="n">CSC</span><span class="p">(</span><span class="n">n_eq</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">i_u_vm</span><span class="p">),</span> <span class="n">max_nnz</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
@@ -2799,16 +2800,16 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.Derivatives.html#VeraGridEngine.Simulations.Derivatives.csc_derivatives.dUdcIfp_dIfp_csc">[docs]</a>
 <span class="nd">@njit</span><span class="p">()</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">dUdcIfp_dIfp_csc</span><span class="p">(</span><span class="n">n_eq</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">nvsc</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">k_sel</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">u_vsc_ifp</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">Udc</span><span class="p">:</span> <span class="n">Vec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CSC</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    d/dIfp block of the equations of the shape Udc * Ifp - g(Udc) = 0</span>
-<span class="sd">        d/dIfp = Udc for the equation&#39;s own converter, zero elsewhere.</span>
+<span class="sd">        d/dIfp = Udc for the equation's own converter, zero elsewhere.</span>
 <span class="sd">    :param n_eq: number of equations</span>
 <span class="sd">    :param nvsc: total number of VSCs</span>
 <span class="sd">    :param k_sel: VSC index of each equation</span>
 <span class="sd">    :param u_vsc_ifp: VSC indices whose Ifp is an unknown</span>
 <span class="sd">    :param Udc: signed pole-to-return DC voltage per VSC</span>
 <span class="sd">    :return: CSC block</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">col_lookup</span> <span class="o">=</span> <span class="n">make_lookup</span><span class="p">(</span><span class="n">nvsc</span><span class="p">,</span> <span class="n">u_vsc_ifp</span><span class="p">)</span>
     <span class="n">mat</span> <span class="o">=</span> <span class="n">CSC</span><span class="p">(</span><span class="n">n_eq</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">u_vsc_ifp</span><span class="p">),</span> <span class="n">n_eq</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
     <span class="n">Tx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">n_eq</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
@@ -2834,7 +2835,7 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">dIdc_dVm_csc</span><span class="p">(</span><span class="n">nbus</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">i_u_vm</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">dc_rows</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span>
                  <span class="n">Yp</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">Yi</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">Yx</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span>
                  <span class="n">Va</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">Vdc</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">S0r</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">Y0r</span><span class="p">:</span> <span class="n">Vec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CSC</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    d/dVm block of the DC bus current balance:</span>
 <span class="sd">        r_i = Re(Ybus @ V)_i + Iconv_i - (Re(S0_i) / Vdc_i + Re(I0_i) + Vdc_i * Re(Y0_i))</span>
 <span class="sd">    with Vdc = Vm * cos(Va), that is, DC voltage with signs. The entries are:</span>
@@ -2851,7 +2852,7 @@
 <span class="sd">    :param S0r: real part of the base power injections per bus [pu]</span>
 <span class="sd">    :param Y0r: real part of the base admittance injections per bus [pu]</span>
 <span class="sd">    :return: CSC block</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">row_lookup</span> <span class="o">=</span> <span class="n">make_lookup</span><span class="p">(</span><span class="n">nbus</span><span class="p">,</span> <span class="n">dc_rows</span><span class="p">)</span>
     <span class="n">n_rows</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">dc_rows</span><span class="p">)</span>
     <span class="n">n_cols</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">i_u_vm</span><span class="p">)</span>
@@ -2909,7 +2910,7 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.Derivatives.html#VeraGridEngine.Simulations.Derivatives.csc_derivatives.dIdc_dIfp_csc">[docs]</a>
 <span class="nd">@njit</span><span class="p">()</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">dIdc_dIfp_csc</span><span class="p">(</span><span class="n">nbus</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">dc_rows</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">u_vsc_ifp</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">Fdcp</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">Fdcn</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CSC</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    d/dIfp block of the DC bus current balance. Each converter injects +Ifp at its</span>
 <span class="sd">    positive pole bus and -Ifp at its return/negative pole bus so:</span>
 <span class="sd">        dr[Fdcp]/dIfp = +1 and dr[Fdcn]/dIfp = -1</span>
@@ -2919,7 +2920,7 @@
 <span class="sd">    :param Fdcp: VSC positive pole bus indices</span>
 <span class="sd">    :param Fdcn: VSC negative pole bus indices (-1 if not present)</span>
 <span class="sd">    :return: CSC block</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">row_lookup</span> <span class="o">=</span> <span class="n">make_lookup</span><span class="p">(</span><span class="n">nbus</span><span class="p">,</span> <span class="n">dc_rows</span><span class="p">)</span>
     <span class="n">n_cols</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">u_vsc_ifp</span><span class="p">)</span>
     <span class="n">max_nnz</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">n_cols</span>

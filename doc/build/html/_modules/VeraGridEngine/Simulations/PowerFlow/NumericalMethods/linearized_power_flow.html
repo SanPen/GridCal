@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Simulations.PowerFlow.NumericalMethods.linearized_power_flow &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Simulations.PowerFlow.NumericalMethods.linearized_power_flow &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/license.html">📜 License</a></li>
@@ -132,7 +133,7 @@
               <span class="n">Ybus</span><span class="p">:</span> <span class="n">sp</span><span class="o">.</span><span class="n">csc_matrix</span><span class="p">,</span> <span class="n">Bpqpv</span><span class="p">:</span> <span class="n">sp</span><span class="o">.</span><span class="n">csc_matrix</span><span class="p">,</span> <span class="n">Bref</span><span class="p">:</span> <span class="n">sp</span><span class="o">.</span><span class="n">csc_matrix</span><span class="p">,</span> <span class="n">Bf</span><span class="p">:</span> <span class="n">sp</span><span class="o">.</span><span class="n">csc_matrix</span><span class="p">,</span>
               <span class="n">S0</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span> <span class="n">I0</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span> <span class="n">Y0</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span> <span class="n">V0</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span> <span class="n">tau</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
               <span class="n">vd</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">no_slack</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">pq</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">pv</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NumericPowerFlowResults</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Solves a linear-DC power flow.</span>
 <span class="sd">    :param nc: NumericalCircuit instance</span>
 <span class="sd">    :param Ybus: Normal circuit admittance matrix</span>
@@ -149,7 +150,7 @@
 <span class="sd">    :param pq: array of the indices of the pq nodes</span>
 <span class="sd">    :param pv: array of the indices of the pv nodes</span>
 <span class="sd">    :return: NumericPowerFlowResults instance</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
     <span class="n">npq</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">pq</span><span class="p">)</span>
@@ -240,7 +241,7 @@
 <div class="viewcode-block" id="VscLinearModel">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow.NumericalMethods.html#VeraGridEngine.Simulations.PowerFlow.NumericalMethods.linearized_power_flow.VscLinearModel">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">VscLinearModel</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Linear (DC) representation of the VSC converters.</span>
 
 <span class="sd">    A converter moves power from its DC bus to its AC bus, and how much it moves is decided</span>
@@ -250,16 +251,16 @@
 <span class="sd">    - droop (P-mode 3): it follows ``P = P0 + k · (theta_ctrl - theta_ac)``</span>
 <span class="sd">    - DC slack: it controls the DC voltage, so it has no schedule of its own and instead</span>
 <span class="sd">      closes the power balance of its DC subgrid.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
-    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;is_droop&quot;</span><span class="p">,</span> <span class="s2">&quot;is_dc_slack&quot;</span><span class="p">,</span> <span class="s2">&quot;p_set&quot;</span><span class="p">,</span> <span class="s2">&quot;k_droop&quot;</span><span class="p">,</span> <span class="s2">&quot;ctrl_bus&quot;</span><span class="p">,</span> <span class="s2">&quot;dc_island&quot;</span><span class="p">)</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"is_droop"</span><span class="p">,</span> <span class="s2">"is_dc_slack"</span><span class="p">,</span> <span class="s2">"p_set"</span><span class="p">,</span> <span class="s2">"k_droop"</span><span class="p">,</span> <span class="s2">"ctrl_bus"</span><span class="p">,</span> <span class="s2">"dc_island"</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_vsc</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Constructor</span>
 
 <span class="sd">        :param n_vsc: number of converters</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">is_droop</span><span class="p">:</span> <span class="n">BoolVec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_vsc</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">is_dc_slack</span><span class="p">:</span> <span class="n">BoolVec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_vsc</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">p_set</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_vsc</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>  <span class="c1"># p.u. (droop base power for droop converters)</span>
@@ -272,14 +273,14 @@
 <div class="viewcode-block" id="build_vsc_linear_model">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow.NumericalMethods.html#VeraGridEngine.Simulations.PowerFlow.NumericalMethods.linearized_power_flow.build_vsc_linear_model">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">build_vsc_linear_model</span><span class="p">(</span><span class="n">nc</span><span class="p">:</span> <span class="n">NumericalCircuit</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">VscLinearModel</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Classify every converter for the linear power flow and label the DC subgrid it belongs</span>
-<span class="sd">    to, so that the converter that fixes the DC voltage can later close that subgrid&#39;s</span>
+<span class="sd">    to, so that the converter that fixes the DC voltage can later close that subgrid's</span>
 <span class="sd">    power balance.</span>
 
 <span class="sd">    :param nc: NumericalCircuit</span>
 <span class="sd">    :return: VscLinearModel</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">model</span> <span class="o">=</span> <span class="n">VscLinearModel</span><span class="p">(</span><span class="n">n_vsc</span><span class="o">=</span><span class="n">nc</span><span class="o">.</span><span class="n">vsc_data</span><span class="o">.</span><span class="n">nelm</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">nc</span><span class="o">.</span><span class="n">vsc_data</span><span class="o">.</span><span class="n">nelm</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
@@ -326,7 +327,7 @@
 
         <span class="k">else</span><span class="p">:</span>
             <span class="c1"># Scheduled converter. The model works with the power that leaves the DC bus</span>
-            <span class="c1"># towards the AC bus, which is the &quot;from&quot; side.</span>
+            <span class="c1"># towards the AC bus, which is the "from" side.</span>
             <span class="k">if</span> <span class="n">c1</span> <span class="o">==</span> <span class="n">pdc_code</span><span class="p">:</span>
                 <span class="n">model</span><span class="o">.</span><span class="n">p_set</span><span class="p">[</span><span class="n">m</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">nc</span><span class="o">.</span><span class="n">vsc_data</span><span class="o">.</span><span class="n">control1_val</span><span class="p">[</span><span class="n">m</span><span class="p">])</span> <span class="o">/</span> <span class="n">nc</span><span class="o">.</span><span class="n">Sbase</span>
             <span class="k">elif</span> <span class="n">c2</span> <span class="o">==</span> <span class="n">pdc_code</span><span class="p">:</span>
@@ -348,7 +349,7 @@
                          <span class="n">model</span><span class="p">:</span> <span class="n">VscLinearModel</span><span class="p">,</span>
                          <span class="n">A</span><span class="p">:</span> <span class="n">sp</span><span class="o">.</span><span class="n">lil_matrix</span><span class="p">,</span>
                          <span class="n">pinned</span><span class="p">:</span> <span class="n">Vec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Add the converter behaviour to the linear (DC) power flow system.</span>
 
 <span class="sd">    :param nc: NumericalCircuit</span>
@@ -357,7 +358,7 @@
 <span class="sd">    :param pinned: per converter forced power in p.u., NaN where the converter is free.</span>
 <span class="sd">                   A droop converter is pinned once it reaches its rating.</span>
 <span class="sd">    :return: constant power injections caused by the converters, in p.u.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">p_vsc</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nc</span><span class="o">.</span><span class="n">nbus</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
 
     <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nc</span><span class="o">.</span><span class="n">vsc_data</span><span class="o">.</span><span class="n">nelm</span><span class="p">):</span>
@@ -434,7 +435,7 @@
                        <span class="n">model</span><span class="p">:</span> <span class="n">VscLinearModel</span><span class="p">,</span>
                        <span class="n">va</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
                        <span class="n">pinned</span><span class="p">:</span> <span class="n">Vec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Evaluate the power that every converter moves from its DC bus to its AC bus, given the</span>
 <span class="sd">    solved bus angles.</span>
 
@@ -443,7 +444,7 @@
 <span class="sd">    :param va: solved bus angles in radians</span>
 <span class="sd">    :param pinned: per converter forced power in p.u., NaN where the converter is free</span>
 <span class="sd">    :return: converter powers in p.u.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">powers</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nc</span><span class="o">.</span><span class="n">vsc_data</span><span class="o">.</span><span class="n">nelm</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
 
     <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nc</span><span class="o">.</span><span class="n">vsc_data</span><span class="o">.</span><span class="n">nelm</span><span class="p">):</span>
@@ -488,7 +489,7 @@
                 <span class="n">Gbus</span><span class="p">:</span> <span class="n">sp</span><span class="o">.</span><span class="n">csc_matrix</span><span class="p">,</span> <span class="n">Gf</span><span class="p">:</span> <span class="n">sp</span><span class="o">.</span><span class="n">csc_matrix</span><span class="p">,</span>
                 <span class="n">ac</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">dc</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">vd</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">pv</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span>
                 <span class="n">S0</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span> <span class="n">I0</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span> <span class="n">Y0</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span> <span class="n">V0</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span> <span class="n">tau</span><span class="p">:</span> <span class="n">Vec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NumericPowerFlowResults</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Solves a linear-ACDC power flow.</span>
 <span class="sd">    :param nc:</span>
 <span class="sd">    :param Bbus:</span>
@@ -505,9 +506,9 @@
 <span class="sd">    :param V0:</span>
 <span class="sd">    :param tau:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    </span>
 <span class="sd">    :param nc: NumericalCircuit instance</span>
 <span class="sd">    :param Ybus: Normal circuit admittance matrix</span>
@@ -524,7 +525,7 @@
 <span class="sd">    :param pq: array of the indices of the pq nodes</span>
 <span class="sd">    :param pv: array of the indices of the pv nodes</span>
 <span class="sd">    :return: NumericPowerFlowResults instance</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
 
@@ -556,7 +557,7 @@
 
         <span class="k">else</span><span class="p">:</span>
             <span class="c1"># this is an error</span>
-            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The branch </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2"> is nether fully AC not fully DC :(&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"The branch </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2"> is nether fully AC not fully DC :("</span><span class="p">)</span>
 
         <span class="n">ys_arr</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">ys</span>
         <span class="n">Af</span><span class="p">[</span><span class="n">k</span><span class="p">,</span> <span class="n">f</span><span class="p">]</span> <span class="o">=</span> <span class="n">ys</span>
@@ -612,11 +613,11 @@
     <span class="n">zm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nc</span><span class="o">.</span><span class="n">nbr</span><span class="p">)</span>
 
     <span class="k">with</span> <span class="n">warnings</span><span class="o">.</span><span class="n">catch_warnings</span><span class="p">():</span>
-        <span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s1">&#39;error&#39;</span><span class="p">)</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s1">'error'</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">dx</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">spsolve</span><span class="p">(</span><span class="n">Ared</span><span class="o">.</span><span class="n">tocsc</span><span class="p">(),</span> <span class="n">Pred</span><span class="p">)</span>
         <span class="k">except</span> <span class="n">sp</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">MatrixRankWarning</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="c1"># logger.add_error(&quot;ACDC PTDF singular matrix. Does each subgrid have a slack?&quot;)</span>
+            <span class="c1"># logger.add_error("ACDC PTDF singular matrix. Does each subgrid have a slack?")</span>
             <span class="nb">print</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
 
             <span class="n">norm_f</span> <span class="o">=</span> <span class="mf">0.0</span>
@@ -751,7 +752,7 @@
           <span class="n">Ybus</span><span class="p">:</span> <span class="n">CscMat</span><span class="p">,</span> <span class="n">Yf</span><span class="p">:</span> <span class="n">CscMat</span><span class="p">,</span> <span class="n">Yt</span><span class="p">:</span> <span class="n">CscMat</span><span class="p">,</span> <span class="n">Ys</span><span class="p">:</span> <span class="n">CscMat</span><span class="p">,</span> <span class="n">Yshunt_bus</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span>
           <span class="n">S0</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span> <span class="n">V0</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span> <span class="n">pq</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">pv</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">vd</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span>
           <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NumericPowerFlowResults</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Linearized AC Load Flow</span>
 
 <span class="sd">    form the article:</span>
@@ -771,7 +772,7 @@
 <span class="sd">    :param vd: Array with the indices of the slack buses</span>
 <span class="sd">    :param logger: Logger</span>
 <span class="sd">    :return: NumericPowerFlowResults</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
 
@@ -794,7 +795,7 @@
         <span class="n">A22</span> <span class="o">=</span> <span class="o">-</span><span class="n">Ybus</span><span class="o">.</span><span class="n">imag</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ix_</span><span class="p">(</span><span class="n">pq</span><span class="p">,</span> <span class="n">pq</span><span class="p">)]</span>
 
         <span class="n">Asys</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">sp</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="n">A11</span><span class="p">,</span> <span class="n">A12</span><span class="p">]),</span>
-                          <span class="n">sp</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="n">A21</span><span class="p">,</span> <span class="n">A22</span><span class="p">])],</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;csc&quot;</span><span class="p">)</span>
+                          <span class="n">sp</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="n">A21</span><span class="p">,</span> <span class="n">A22</span><span class="p">])],</span> <span class="nb">format</span><span class="o">=</span><span class="s2">"csc"</span><span class="p">)</span>
 
         <span class="c1"># compose the right hand side (power vectors)</span>
         <span class="n">rhs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span><span class="n">S0</span><span class="o">.</span><span class="n">real</span><span class="p">[</span><span class="n">pvpq</span><span class="p">],</span> <span class="n">S0</span><span class="o">.</span><span class="n">imag</span><span class="p">[</span><span class="n">pq</span><span class="p">]]</span>
@@ -813,8 +814,8 @@
             <span class="n">end</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
             <span class="n">elapsed</span> <span class="o">=</span> <span class="n">end</span> <span class="o">-</span> <span class="n">start</span>
 
-            <span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="s2">&quot;Failed linear system solution&quot;</span><span class="p">,</span>
-                             <span class="n">device</span><span class="o">=</span><span class="s2">&quot;Linear power flow with voltage modules&quot;</span><span class="p">,</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="s2">"Failed linear system solution"</span><span class="p">,</span>
+                             <span class="n">device</span><span class="o">=</span><span class="s2">"Linear power flow with voltage modules"</span><span class="p">,</span>
                              <span class="n">comment</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
 
             <span class="k">return</span> <span class="n">NumericPowerFlowResults</span><span class="p">(</span><span class="n">V</span><span class="o">=</span><span class="n">V</span><span class="p">,</span>

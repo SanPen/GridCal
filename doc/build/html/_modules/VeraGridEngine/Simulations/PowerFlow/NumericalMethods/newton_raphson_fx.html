@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Simulations.PowerFlow.NumericalMethods.newton_raphson_fx &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Simulations.PowerFlow.NumericalMethods.newton_raphson_fx &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/license.html">📜 License</a></li>
@@ -122,7 +123,7 @@
                       <span class="n">trust</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
                       <span class="n">verbose</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
                       <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span> <span class="o">=</span> <span class="n">Logger</span><span class="p">())</span> <span class="o">-&gt;</span> <span class="n">NumericPowerFlowResults</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Newton-Raphson with Line search to solve:</span>
 
 <span class="sd">        min: error(g(x))</span>
@@ -136,14 +137,14 @@
 <span class="sd">    :param verbose:  Display console information</span>
 <span class="sd">    :param logger: Logger instance</span>
 <span class="sd">    :return: ConvexMethodResult</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
 
     <span class="c1"># get the initial point</span>
     <span class="n">x</span> <span class="o">=</span> <span class="n">problem</span><span class="o">.</span><span class="n">var2x</span><span class="p">()</span>
 
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="c1"># if the length of x is zero, means that there&#39;s nothing to solve;</span>
+        <span class="c1"># if the length of x is zero, means that there's nothing to solve;</span>
         <span class="c1"># for instance, there might be a single node that is a slack node</span>
         <span class="k">return</span> <span class="n">problem</span><span class="o">.</span><span class="n">get_solution</span><span class="p">(</span><span class="n">elapsed</span><span class="o">=</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 
@@ -151,7 +152,7 @@
     <span class="n">error</span><span class="p">,</span> <span class="n">converged</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">f</span> <span class="o">=</span> <span class="n">problem</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">update_controls</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">f</span><span class="p">)):</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="s2">&quot;Newton-Raphson&#39;s initial residual is not finite&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="s2">"Newton-Raphson's initial residual is not finite"</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">problem</span><span class="o">.</span><span class="n">get_solution</span><span class="p">(</span><span class="n">elapsed</span><span class="o">=</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">pass</span>
@@ -165,10 +166,10 @@
     <span class="n">error_evolution</span><span class="p">[</span><span class="n">iteration</span><span class="p">]</span> <span class="o">=</span> <span class="n">problem</span><span class="o">.</span><span class="n">error</span>
 
     <span class="k">if</span> <span class="n">verbose</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;-&#39;</span> <span class="o">*</span> <span class="mi">200</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Iter: </span><span class="si">{</span><span class="n">iteration</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;-&#39;</span> <span class="o">*</span> <span class="mi">200</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;x:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">problem</span><span class="o">.</span><span class="n">get_x_df</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">'-'</span> <span class="o">*</span> <span class="mi">200</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'Iter: </span><span class="si">{</span><span class="n">iteration</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">'-'</span> <span class="o">*</span> <span class="mi">200</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"x:</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span> <span class="n">problem</span><span class="o">.</span><span class="n">get_x_df</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
 
     <span class="k">if</span> <span class="n">problem</span><span class="o">.</span><span class="n">converged</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">problem</span><span class="o">.</span><span class="n">get_solution</span><span class="p">(</span><span class="n">elapsed</span><span class="o">=</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="n">iteration</span><span class="p">)</span>
@@ -176,7 +177,7 @@
     <span class="k">else</span><span class="p">:</span>
 
         <span class="k">if</span> <span class="n">verbose</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;x0:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">problem</span><span class="o">.</span><span class="n">get_x_df</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">"x0:</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span> <span class="n">problem</span><span class="o">.</span><span class="n">get_x_df</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
 
         <span class="k">while</span> <span class="ow">not</span> <span class="n">converged</span> <span class="ow">and</span> <span class="n">iteration</span> <span class="o">&lt;</span> <span class="n">max_iter</span><span class="p">:</span>
 
@@ -184,24 +185,24 @@
             <span class="n">iteration</span> <span class="o">+=</span> <span class="mi">1</span>
 
             <span class="k">if</span> <span class="n">verbose</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;-&#39;</span> <span class="o">*</span> <span class="mi">200</span><span class="p">)</span>
-                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Iter: </span><span class="si">{</span><span class="n">iteration</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;-&#39;</span> <span class="o">*</span> <span class="mi">200</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">'-'</span> <span class="o">*</span> <span class="mi">200</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'Iter: </span><span class="si">{</span><span class="n">iteration</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">'-'</span> <span class="o">*</span> <span class="mi">200</span><span class="p">)</span>
 
             <span class="n">J</span><span class="p">:</span> <span class="n">CSC</span> <span class="o">=</span> <span class="n">problem</span><span class="o">.</span><span class="n">Jacobian</span><span class="p">()</span>
 
             <span class="k">if</span> <span class="n">J</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="n">J</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="s2">&quot;Jacobian not square, check the controls!&quot;</span><span class="p">,</span> <span class="s2">&quot;Newton-Raphson&quot;</span><span class="p">,</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="s2">"Jacobian not square, check the controls!"</span><span class="p">,</span> <span class="s2">"Newton-Raphson"</span><span class="p">,</span>
                                  <span class="n">value</span><span class="o">=</span><span class="n">J</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">expected_value</span><span class="o">=</span><span class="n">J</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
                 <span class="k">return</span> <span class="n">problem</span><span class="o">.</span><span class="n">get_solution</span><span class="p">(</span><span class="n">elapsed</span><span class="o">=</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="n">iteration</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="n">J</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">f</span><span class="p">):</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="s2">&quot;Jacobian and residuals have different sizes!&quot;</span><span class="p">,</span> <span class="s2">&quot;Newton-Raphson&quot;</span><span class="p">,</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="s2">"Jacobian and residuals have different sizes!"</span><span class="p">,</span> <span class="s2">"Newton-Raphson"</span><span class="p">,</span>
                                  <span class="n">value</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">f</span><span class="p">),</span> <span class="n">expected_value</span><span class="o">=</span><span class="n">J</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
                 <span class="k">return</span> <span class="n">problem</span><span class="o">.</span><span class="n">get_solution</span><span class="p">(</span><span class="n">elapsed</span><span class="o">=</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="n">iteration</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">f</span><span class="p">))</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">J</span><span class="o">.</span><span class="n">data</span><span class="p">)):</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Newton-Raphson&#39;s linear system is not finite @iter </span><span class="si">{</span><span class="n">iteration</span><span class="si">}</span><span class="s2">:&quot;</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Newton-Raphson's linear system is not finite @iter </span><span class="si">{</span><span class="n">iteration</span><span class="si">}</span><span class="s2">:"</span><span class="p">)</span>
                 <span class="k">return</span> <span class="n">problem</span><span class="o">.</span><span class="n">get_solution</span><span class="p">(</span><span class="n">elapsed</span><span class="o">=</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="n">iteration</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">pass</span>
@@ -212,15 +213,15 @@
                 <span class="n">dx</span><span class="p">,</span> <span class="n">ok</span> <span class="o">=</span> <span class="n">spsolve_csc</span><span class="p">(</span><span class="n">J</span><span class="p">,</span> <span class="o">-</span><span class="n">f</span><span class="p">)</span>
 
             <span class="k">except</span> <span class="ne">RuntimeError</span><span class="p">:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Newton-Raphson&#39;s Jacobian is singular @iter </span><span class="si">{</span><span class="n">iteration</span><span class="si">}</span><span class="s2">:&quot;</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Newton-Raphson's Jacobian is singular @iter </span><span class="si">{</span><span class="n">iteration</span><span class="si">}</span><span class="s2">:"</span><span class="p">)</span>
                 <span class="k">return</span> <span class="n">problem</span><span class="o">.</span><span class="n">get_solution</span><span class="p">(</span><span class="n">elapsed</span><span class="o">=</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="n">iteration</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="ow">not</span> <span class="n">ok</span><span class="p">:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Newton-Raphson&#39;s Jacobian is singular @iter </span><span class="si">{</span><span class="n">iteration</span><span class="si">}</span><span class="s2">:&quot;</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Newton-Raphson's Jacobian is singular @iter </span><span class="si">{</span><span class="n">iteration</span><span class="si">}</span><span class="s2">:"</span><span class="p">)</span>
                 <span class="k">return</span> <span class="n">problem</span><span class="o">.</span><span class="n">get_solution</span><span class="p">(</span><span class="n">elapsed</span><span class="o">=</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="n">iteration</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">dx</span><span class="p">)):</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Newton-Raphson&#39;s update is not finite @iter </span><span class="si">{</span><span class="n">iteration</span><span class="si">}</span><span class="s2">:&quot;</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Newton-Raphson's update is not finite @iter </span><span class="si">{</span><span class="n">iteration</span><span class="si">}</span><span class="s2">:"</span><span class="p">)</span>
                 <span class="k">return</span> <span class="n">problem</span><span class="o">.</span><span class="n">get_solution</span><span class="p">(</span><span class="n">elapsed</span><span class="o">=</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="n">iteration</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">pass</span>
@@ -236,21 +237,21 @@
             <span class="n">error</span><span class="p">,</span> <span class="n">converged</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">f</span> <span class="o">=</span> <span class="n">problem</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">x_sol</span><span class="p">,</span> <span class="n">update_controls</span><span class="o">=</span><span class="n">update_controls</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="n">verbose</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;x:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">problem</span><span class="o">.</span><span class="n">get_x_df</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">"x:</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span> <span class="n">problem</span><span class="o">.</span><span class="n">get_x_df</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
 
             <span class="c1"># save the error evolution</span>
             <span class="n">error0</span> <span class="o">=</span> <span class="n">error</span>
             <span class="n">error_evolution</span><span class="p">[</span><span class="n">iteration</span><span class="p">]</span> <span class="o">=</span> <span class="n">error</span>
 
             <span class="k">if</span> <span class="n">verbose</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;J:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">problem</span><span class="o">.</span><span class="n">get_jacobian_df</span><span class="p">(</span><span class="n">J</span><span class="p">))</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;f:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">problem</span><span class="o">.</span><span class="n">get_f_df</span><span class="p">(</span><span class="n">f</span><span class="p">))</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;dx:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">problem</span><span class="o">.</span><span class="n">get_x_df</span><span class="p">(</span><span class="n">dx</span><span class="p">))</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;x:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">problem</span><span class="o">.</span><span class="n">get_x_df</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
-                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;error </span><span class="si">{</span><span class="n">error</span><span class="si">}</span><span class="s1">, </span><span class="se">\n</span><span class="s1"> converged </span><span class="si">{</span><span class="n">converged</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">"J:</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span> <span class="n">problem</span><span class="o">.</span><span class="n">get_jacobian_df</span><span class="p">(</span><span class="n">J</span><span class="p">))</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">"f:</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span> <span class="n">problem</span><span class="o">.</span><span class="n">get_f_df</span><span class="p">(</span><span class="n">f</span><span class="p">))</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">"dx:</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span> <span class="n">problem</span><span class="o">.</span><span class="n">get_x_df</span><span class="p">(</span><span class="n">dx</span><span class="p">))</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">"x:</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span> <span class="n">problem</span><span class="o">.</span><span class="n">get_x_df</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'error </span><span class="si">{</span><span class="n">error</span><span class="si">}</span><span class="s1">, </span><span class="se">\n</span><span class="s1"> converged </span><span class="si">{</span><span class="n">converged</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
 
             <span class="k">elif</span> <span class="n">verbose</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;It </span><span class="si">{</span><span class="n">iteration</span><span class="si">}</span><span class="s1">, error </span><span class="si">{</span><span class="n">error</span><span class="si">}</span><span class="s1">, converged </span><span class="si">{</span><span class="n">converged</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'It </span><span class="si">{</span><span class="n">iteration</span><span class="si">}</span><span class="s1">, error </span><span class="si">{</span><span class="n">error</span><span class="si">}</span><span class="s1">, converged </span><span class="si">{</span><span class="n">converged</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">problem</span><span class="o">.</span><span class="n">get_solution</span><span class="p">(</span><span class="n">elapsed</span><span class="o">=</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="n">iteration</span><span class="p">)</span></div>
 

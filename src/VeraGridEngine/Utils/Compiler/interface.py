@@ -8,12 +8,13 @@ from __future__ import annotations
 
 import os
 import platform
+from pathlib import Path
 import shutil
 import subprocess
 from abc import ABC, abstractmethod
 from typing import Any
 from VeraGridEngine.basic_structures import Logger
-from VeraGridEngine.enumerations import CompilerName, OperatingSystem
+from VeraGridEngine.enumerations import CompilerName, NativeCompilerFramework, OperatingSystem
 
 
 def ensure_output_directory(output_dir: str, logger: Logger | None = None) -> bool:
@@ -42,40 +43,6 @@ def ensure_output_directory(output_dir: str, logger: Logger | None = None) -> bo
         return True
 
 
-def verify_shared_library(library_path: str, operating_system: str, logger: Logger | None = None) -> None:
-    """Run the native library verifier when the platform provides one.
-
-    :param library_path: Generated library path.
-    :param operating_system: Platform name.
-    :param logger: Optional logger for verifier failures.
-    :return: None.
-    """
-    # Select the native inspection tool because shared-library formats differ by OS.
-    verification_command: list[str] | None = None
-    if operating_system == "Linux":
-        verification_command = ["readelf", "-h", library_path]
-    else:
-        if operating_system == "Darwin":
-            verification_command = ["otool", "-f", library_path]
-        else:
-            if operating_system == "Windows":
-                verification_command = ["dumpbin", "/headers", library_path]
-            else:
-                verification_command = None
-    if verification_command is None:
-        return
-    else:
-        # Verification is advisory: a missing inspection utility must not invalidate a built library.
-        try:
-            subprocess.run(verification_command, check=True, capture_output=True)
-        except (subprocess.CalledProcessError, FileNotFoundError) as error:
-            message: str = f"Could not verify shared library format for {library_path}: {error}"
-            if logger is not None:
-                logger.add_warning(message)
-            else:
-                print(f"Warning: {message}")
-
-
 class CompilerInterface(ABC):
     """Define the common compiler-handler interface."""
 
@@ -94,6 +61,11 @@ class CompilerInterface(ABC):
         """
         self.logger: Logger = logger if logger is not None else Logger()
         self.executable_path: str = executable_path if executable_path is not None else compiler_name
+        self._compiler_driver: CompilerName | None
+        try:
+            self._compiler_driver = CompilerName(compiler_name)
+        except ValueError:
+            self._compiler_driver = None
         self.setup_valid: bool = self._is_setup_valid()
         if self.setup_valid:
             return
@@ -105,13 +77,33 @@ class CompilerInterface(ABC):
         """Run a compiler command and log all process failures.
 
         :param command: Executable and command-line arguments.
-        :param cwd: Working directory.
+        :param cwd: Requested working directory; Windows GCC-compatible tools
+            use their compiler directory to resolve installed runtime DLLs.
         :return: Completed subprocess result with captured text output.
         """
+        execution_directory: str = cwd
+        execution_command: list[str] = command
+        if platform.system() == "Windows" and self._compiler_driver in (CompilerName.GCC, CompilerName.CLANG):
+            compiler_executable: str | None = shutil.which(self.executable_path)
+            if compiler_executable is not None:
+                # MSYS2 child tools need the selected compiler's runtime DLLs in
+                # their working directory; this changes no parent or environment state.
+                execution_directory = str(Path(compiler_executable).resolve().parent)
+                command_executable: str | None = shutil.which(command[0]) if command else None
+                if command_executable is not None:
+                    # Preserve executable paths relative to the caller before selecting child cwd.
+                    execution_command = list(command)
+                    execution_command[0] = str(Path(command_executable).resolve())
+                else:
+                    pass
+            else:
+                pass
+        else:
+            pass
         # Capture both streams so compiler diagnostics remain available in Logger after failure.
         try:
             result: subprocess.CompletedProcess[str] = subprocess.run(
-                command, cwd=cwd, check=False, capture_output=True, text=True
+                execution_command, cwd=execution_directory, check=False, capture_output=True, text=True, errors="replace"
             )
         except OSError as error:
             self.logger.add_error(f"Compiler executable failed: {' '.join(command)}; {error}")
@@ -152,15 +144,12 @@ class CompilerInterface(ABC):
         """
         pass
 
-    @abstractmethod
-    def _execute_command(self, command: list[str], cwd: str) -> subprocess.CompletedProcess[Any]:
-        """Execute a compiler command.
+    def get_native_framework(self) -> NativeCompilerFramework | None:
+        """Identify an explicitly selected native provider.
 
-        :param command: Executable and arguments.
-        :param cwd: Working directory.
-        :return: Completed subprocess result.
+        :return: Native framework, or None for a generic executable handler.
         """
-        pass
+        return None
 
     @abstractmethod
     def _is_setup_valid(self) -> bool:
@@ -231,17 +220,19 @@ class GCCHandler(CompilerInterface):
         include_flags: list[str] = list()
         if include_directories is not None:
             for include_directory in include_directories:
-                include_flags.extend(["-I", include_directory])
+                include_flags.extend(["-I", os.path.abspath(include_directory)])
         else:
             pass
         for source_file in source_files:
             object_file: str = os.path.join(
                 output_dir, f"{os.path.splitext(os.path.basename(source_file))[0]}.o"
             )
-            # Keep object files in the build directory; they are temporary inputs to the linker.
-            object_files.append(object_file)
+            # Resolve caller-relative paths before Windows child tools use the
+            # compiler directory to locate their existing runtime DLLs.
+            object_files.append(os.path.abspath(object_file))
             compile_result: subprocess.CompletedProcess[Any] = self._execute_command(
-                [self.executable_path, "-c", "-fPIC"] + include_flags + [source_file, "-o", object_file], os.getcwd()
+                [self.executable_path, "-c", "-fPIC"] + include_flags
+                + [os.path.abspath(source_file), "-o", os.path.abspath(object_file)], os.getcwd()
             )
             if not self._command_succeeded(compile_result):
                 return ""
@@ -249,7 +240,7 @@ class GCCHandler(CompilerInterface):
                 pass
         # Link only after every source has produced a successful object file.
         link_result: subprocess.CompletedProcess[Any] = self._execute_command(
-            [self.executable_path, "-shared"] + object_files + ["-o", library_path], os.getcwd()
+            [self.executable_path, "-shared"] + object_files + ["-o", os.path.abspath(library_path)], os.getcwd()
         )
         if not self._command_succeeded(link_result):
             return ""
@@ -257,7 +248,6 @@ class GCCHandler(CompilerInterface):
             pass
         # Confirm the compiler produced the artifact before reporting success.
         if os.path.exists(library_path):
-            verify_shared_library(library_path, "Linux", self.logger)
             return library_path
         else:
             self.logger.add_error(f"Shared library was not created: {library_path}")
@@ -444,7 +434,6 @@ class MSVCHandler(CompilerInterface):
         else:
             pass
         if os.path.exists(library_path):
-            verify_shared_library(library_path, "Windows", self.logger)
             return library_path
         else:
             self.logger.add_error(f"Shared library was not created: {library_path}")
@@ -488,6 +477,7 @@ class Compiler:
             logger: Logger | None = None,
             compiler_paths: dict[CompilerName, str] | None = None,
             compiler_directory: str | None = None,
+            compiler_handler: CompilerInterface | None = None,
     ) -> None:
         """Initialize the compiler coordinator.
 
@@ -496,6 +486,7 @@ class Compiler:
         :param logger: Optional logger to retain and share with the handler.
         :param compiler_paths: Optional explicit executable paths by compiler.
         :param compiler_directory: Optional directory searched for compiler executables.
+        :param compiler_handler: Explicit provider; bypasses unrelated discovery and setup.
         :return: None.
         """
         # Store the logger first because detection and handler validation can fail during construction.
@@ -504,17 +495,26 @@ class Compiler:
         # Detect the platform once so every later decision uses the same snapshot.
         self._operating_system: str = self.detect_os()
         # Resolve paths before probing; probes and handlers must use identical executables.
-        self._compiler_paths: dict[CompilerName, str | None] = self._resolve_compiler_paths(
-            compiler_paths, compiler_directory
-        )
-        # Probe all candidates before selecting one so a failed request can fall back safely.
-        self._compiler_status: dict[CompilerName, dict[str, Any]] = self.check_compiler_availability()
-        # Requested selection is preferred, but availability determines whether fallback is needed.
-        self._handler: CompilerInterface | None = self._select_handler(compiler_name)
+        self._compiler_paths: dict[CompilerName, str | None]
+        self._compiler_status: dict[CompilerName, dict[str, Any]]
+        self._handler: CompilerInterface | None
+        if compiler_handler is None:
+            self._compiler_paths = self._resolve_compiler_paths(compiler_paths, compiler_directory)
+            # Preserve the existing generic discovery and fallback behavior.
+            self._compiler_status = self.check_compiler_availability()
+            self._handler = self._select_handler(compiler_name)
+        else:
+            # Package providers have no executable probes; empty reports mean unperformed discovery.
+            self._compiler_paths = dict()
+            self._compiler_status = dict()
+            self._handler = compiler_handler if compiler_handler.setup_valid else None
         self._selected_compiler: CompilerName | None = self._identify_handler(self._handler)
         self._compiled_library_path: str | None = None
         # Detection is observable through Logger; no aggregate report object is required.
-        self._log_detection_info()
+        if compiler_handler is None:
+            self._log_detection_info()
+        else:
+            self.logger.add_info("Explicit compiler provider selected", value=str(compiler_handler.get_native_framework()))
 
     def _log_detection_info(self) -> None:
         """Write the complete detection state to the coordinator logger.
@@ -771,7 +771,7 @@ class Compiler:
             # A successful version/help command proves that this exact executable is invocable.
             try:
                 completed_process: subprocess.CompletedProcess[str] = subprocess.run(
-                    command, capture_output=True, text=True, check=True
+                    command, capture_output=True, text=True, errors="replace", check=True
                 )
                 result["available"] = True
                 result["stdout"] = completed_process.stdout.strip()

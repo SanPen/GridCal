@@ -6,14 +6,17 @@
 import os
 import zipfile
 from typing import BinaryIO, Dict, List, Union, Callable, Tuple, Optional
+from VeraGridEngine.Utils.optional_dependencies import optional_dependency_failure
 
 try:
     # Prefer lxml when it is available because CGMES import is dominated by large
     # RDF/XML streams, and lxml's iterparse implementation is usually faster.
     # The rest of the parser stays backend-agnostic and falls back to the
-    # standard library XML implementation if lxml is not installed.
+    # standard library XML implementation if lxml is absent or its native binary/API is incompatible.
     from lxml import etree as ET
-except ImportError:
+    from lxml.etree import Element, iterparse
+except (ImportError, AttributeError, OSError, RuntimeError, ValueError, TypeError) as error:
+    optional_dependency_failure("lxml", error)
     import xml.etree.ElementTree as ET
 from VeraGridEngine.data_logger import DataLogger
 from VeraGridEngine.IO.base.base_circuit import BaseCircuit

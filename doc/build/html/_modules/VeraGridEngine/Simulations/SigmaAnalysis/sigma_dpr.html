@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Simulations.SigmaAnalysis.sigma_dpr &mdash; VeraGrid 6.5.26 documentation</title>
+  <title>VeraGridEngine.Simulations.SigmaAnalysis.sigma_dpr &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=c62e3d9e"></script>
+      <script src="../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/license.html">📜 License</a></li>
@@ -107,7 +108,7 @@
 <span class="c1"># file, You can obtain one at https://mozilla.org/MPL/2.0/.</span>
 <span class="c1"># SPDX-License-Identifier: MPL-2.0</span>
 
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 <span class="sd">DPRHEM sigma analysis.</span>
 
 <span class="sd">Canonical sigma analysis assumes one HELM embedding from the no-load germ to the target system. DPRHEM is different:</span>
@@ -118,7 +119,7 @@
 <span class="sd">it evaluates the standard sigma function locally, then reports the per-bus worst distance over that controlled DPR</span>
 <span class="sd">path. Control actions are treated as model discontinuities, not analytic continuation segments, so earlier pre-control</span>
 <span class="sd">segments are discarded when a control restart changes the fixed algebraic model.</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
 
@@ -142,23 +143,23 @@
 <div class="viewcode-block" id="DprSigmaPath">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SigmaAnalysis.html#VeraGridEngine.Simulations.SigmaAnalysis.sigma_dpr.DprSigmaPath">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">DprSigmaPath</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Sigma values obtained from the accepted DPRHEM segments of one fixed-control model.</span>
 
 <span class="sd">    :param sigma_re: Per-bus sigma real coordinate selected from the worst local DPR segment.</span>
 <span class="sd">    :param sigma_im: Per-bus sigma imaginary coordinate selected from the worst local DPR segment.</span>
 <span class="sd">    :param distances: Per-bus minimum sigma distance over the accepted DPR path.</span>
 <span class="sd">    :param segment_distances: Matrix with one distance row per accepted DPR segment.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
-    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;sigma_re&quot;</span><span class="p">,</span> <span class="s2">&quot;sigma_im&quot;</span><span class="p">,</span> <span class="s2">&quot;distances&quot;</span><span class="p">,</span> <span class="s2">&quot;segment_distances&quot;</span><span class="p">)</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"sigma_re"</span><span class="p">,</span> <span class="s2">"sigma_im"</span><span class="p">,</span> <span class="s2">"distances"</span><span class="p">,</span> <span class="s2">"segment_distances"</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                  <span class="n">sigma_re</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
                  <span class="n">sigma_im</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
                  <span class="n">distances</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
                  <span class="n">segment_distances</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Build the DPR sigma path values.</span>
 
 <span class="sd">        :param sigma_re: Per-bus sigma real coordinate selected from the worst local DPR segment.</span>
@@ -166,7 +167,7 @@
 <span class="sd">        :param distances: Per-bus minimum sigma distance over the accepted DPR path.</span>
 <span class="sd">        :param segment_distances: Matrix with one distance row per accepted DPR segment.</span>
 <span class="sd">        :return: None.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">sigma_re</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">=</span> <span class="n">sigma_re</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">sigma_im</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">=</span> <span class="n">sigma_im</span>
@@ -178,7 +179,7 @@
 <div class="viewcode-block" id="DprSigmaResult">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SigmaAnalysis.html#VeraGridEngine.Simulations.SigmaAnalysis.sigma_dpr.DprSigmaResult">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">DprSigmaResult</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    DPRHEM sigma result for the final controlled model.</span>
 
 <span class="sd">    :param V: Final voltage vector used by the settled controlled model.</span>
@@ -191,10 +192,10 @@
 <span class="sd">    :param sigma_im: Per-bus sigma imaginary coordinate selected from the worst local DPR segment.</span>
 <span class="sd">    :param distances: Per-bus minimum sigma distance over the accepted DPR path.</span>
 <span class="sd">    :param segment_distances: Matrix with one distance row per accepted DPR segment.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
-    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;V&quot;</span><span class="p">,</span> <span class="s2">&quot;norm_f&quot;</span><span class="p">,</span> <span class="s2">&quot;converged&quot;</span><span class="p">,</span> <span class="s2">&quot;iterations&quot;</span><span class="p">,</span> <span class="s2">&quot;control_restarts&quot;</span><span class="p">,</span> <span class="s2">&quot;elapsed&quot;</span><span class="p">,</span>
-                 <span class="s2">&quot;sigma_re&quot;</span><span class="p">,</span> <span class="s2">&quot;sigma_im&quot;</span><span class="p">,</span> <span class="s2">&quot;distances&quot;</span><span class="p">,</span> <span class="s2">&quot;segment_distances&quot;</span><span class="p">)</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"V"</span><span class="p">,</span> <span class="s2">"norm_f"</span><span class="p">,</span> <span class="s2">"converged"</span><span class="p">,</span> <span class="s2">"iterations"</span><span class="p">,</span> <span class="s2">"control_restarts"</span><span class="p">,</span> <span class="s2">"elapsed"</span><span class="p">,</span>
+                 <span class="s2">"sigma_re"</span><span class="p">,</span> <span class="s2">"sigma_im"</span><span class="p">,</span> <span class="s2">"distances"</span><span class="p">,</span> <span class="s2">"segment_distances"</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                  <span class="n">V</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span>
@@ -204,7 +205,7 @@
                  <span class="n">control_restarts</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
                  <span class="n">elapsed</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
                  <span class="n">sigma_path</span><span class="p">:</span> <span class="n">DprSigmaPath</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Build the DPRHEM sigma result.</span>
 
 <span class="sd">        :param V: Final voltage vector used by the settled controlled model.</span>
@@ -215,7 +216,7 @@
 <span class="sd">        :param elapsed: Elapsed time in seconds.</span>
 <span class="sd">        :param sigma_path: Computed sigma path values.</span>
 <span class="sd">        :return: None.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">V</span><span class="p">:</span> <span class="n">CxVec</span> <span class="o">=</span> <span class="n">V</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">norm_f</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">norm_f</span>
@@ -233,13 +234,13 @@
 <div class="viewcode-block" id="dpr_sigma_distance">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.SigmaAnalysis.html#VeraGridEngine.Simulations.SigmaAnalysis.sigma_dpr.dpr_sigma_distance">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">dpr_sigma_distance</span><span class="p">(</span><span class="n">sigma_re</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">sigma_im</span><span class="p">:</span> <span class="n">Vec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute the canonical sigma distance without importing the driver at module import time.</span>
 
 <span class="sd">    :param sigma_re: Sigma real coordinates.</span>
 <span class="sd">    :param sigma_im: Sigma imaginary coordinates.</span>
 <span class="sd">    :return: Distance of each sigma point to the collapse curve.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Simulations.SigmaAnalysis.sigma_analysis_driver</span><span class="w"> </span><span class="kn">import</span> <span class="n">sigma_distance</span>
 
@@ -254,7 +255,7 @@
                             <span class="n">sl</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span>
                             <span class="n">no_slack</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span>
                             <span class="n">nbus</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DprSigmaPath</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute the per-bus worst local sigma values over accepted DPRHEM segments.</span>
 
 <span class="sd">    :param segments: Accepted DPRHEM segments for the final fixed-control model.</span>
@@ -263,7 +264,7 @@
 <span class="sd">    :param no_slack: Original non-slack bus indices.</span>
 <span class="sd">    :param nbus: Number of buses.</span>
 <span class="sd">    :return: DPR sigma path values.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">valid_segments</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">DprSegmentResult</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
 
@@ -327,7 +328,7 @@
                           <span class="n">allow_dynamic_restart</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
                           <span class="n">verbose</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
                           <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">DprCoefficientPath</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">bool</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Solve one fixed-control DPRHEM model and expose its accepted coefficient path.</span>
 
 <span class="sd">    :param Ybus: Complete admittance matrix.</span>
@@ -351,7 +352,7 @@
 <span class="sd">    :param verbose: Verbosity flag.</span>
 <span class="sd">    :param logger: Logger object.</span>
 <span class="sd">    :return: DPR coefficient path, final mismatch norm and convergence flag.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">path</span><span class="p">:</span> <span class="n">DprCoefficientPath</span> <span class="o">=</span> <span class="n">helm_coefficients_dpr_path</span><span class="p">(</span><span class="n">Ybus</span><span class="o">=</span><span class="n">Ybus</span><span class="p">,</span>
                                                           <span class="n">Yseries</span><span class="o">=</span><span class="n">Yseries</span><span class="p">,</span>
@@ -417,7 +418,7 @@
               <span class="n">max_control_restarts</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
               <span class="n">verbose</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
               <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DprSigmaResult</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute DPRHEM sigma analysis after applying the same controls as the DPR power-flow solver.</span>
 
 <span class="sd">    :param nc: Numerical circuit island.</span>
@@ -450,7 +451,7 @@
 <span class="sd">    :param verbose: Verbosity flag.</span>
 <span class="sd">    :param logger: Logger object.</span>
 <span class="sd">    :return: DPRHEM sigma result for the final controlled model.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">start_time</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
     <span class="n">Vset</span><span class="p">:</span> <span class="n">CxVec</span> <span class="o">=</span> <span class="n">nc</span><span class="o">.</span><span class="n">bus_data</span><span class="o">.</span><span class="n">Vbus</span>
@@ -612,8 +613,8 @@
     <span class="c1"># Sigma coefficients are an analytic diagnostic. Their direct summed voltage may fail the PF tolerance even when</span>
     <span class="c1"># the controlled DPR power-flow state has converged; report PF convergence and use the coefficients only for sigma.</span>
     <span class="k">if</span> <span class="n">verbose</span> <span class="ow">and</span> <span class="n">logger</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">add_debug</span><span class="p">(</span><span class="s2">&quot;DPR sigma coefficient norm&quot;</span><span class="p">,</span> <span class="n">sigma_norm_f</span><span class="p">)</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">add_debug</span><span class="p">(</span><span class="s2">&quot;DPR sigma coefficient converged&quot;</span><span class="p">,</span> <span class="n">sigma_converged</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">add_debug</span><span class="p">(</span><span class="s2">"DPR sigma coefficient norm"</span><span class="p">,</span> <span class="n">sigma_norm_f</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">add_debug</span><span class="p">(</span><span class="s2">"DPR sigma coefficient converged"</span><span class="p">,</span> <span class="n">sigma_converged</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">verbose</span> <span class="o">=</span> <span class="n">verbose</span>
 

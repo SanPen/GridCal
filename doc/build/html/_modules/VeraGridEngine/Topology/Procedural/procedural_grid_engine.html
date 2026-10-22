@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Topology.Procedural.procedural_grid_engine &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Topology.Procedural.procedural_grid_engine &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/license.html">📜 License</a></li>
@@ -137,7 +138,7 @@
 <div class="viewcode-block" id="coord_calc">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Topology.Procedural.html#VeraGridEngine.Topology.Procedural.procedural_grid_engine.coord_calc">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">coord_calc</span><span class="p">(</span><span class="n">current_bus_lon</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">current_bus_lat</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">length</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">coord_out</span><span class="p">:</span> <span class="n">Vec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Calculate the coordinates of the next bus based on the current bus,</span>
 <span class="sd">    the length to be covered (in km), and the output coordinates (in degrees).</span>
 
@@ -151,7 +152,7 @@
 <span class="sd">    :param length: Distance to advance toward ``coord_out`` in km.</span>
 <span class="sd">    :param coord_out: Target coordinates as ``[longitude, latitude]`` in degrees.</span>
 <span class="sd">    :return: New coordinates as ``[longitude, latitude]`` in degrees.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">km_per_deg_lat</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">111.0</span>
     <span class="n">km_per_deg_lon</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">111.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">current_bus_lat</span><span class="p">))</span>
 
@@ -177,13 +178,13 @@
                                      <span class="n">current_bus</span><span class="p">:</span> <span class="n">dev</span><span class="o">.</span><span class="n">Bus</span><span class="p">,</span>
                                      <span class="n">next_bus</span><span class="p">:</span> <span class="n">dev</span><span class="o">.</span><span class="n">Bus</span><span class="p">,</span>
                                      <span class="n">length</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Create a new branch object using an existing branch as template.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">template_branch</span><span class="p">,</span> <span class="n">dev</span><span class="o">.</span><span class="n">Line</span><span class="p">):</span>
         <span class="n">new_branch</span> <span class="o">=</span> <span class="n">dev</span><span class="o">.</span><span class="n">Line</span><span class="p">(</span>
-            <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;AC_Line_</span><span class="si">{</span><span class="n">current_bus</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">next_bus</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">"AC_Line_</span><span class="si">{</span><span class="n">current_bus</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">next_bus</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
             <span class="n">bus_from</span><span class="o">=</span><span class="n">current_bus</span><span class="p">,</span>
             <span class="n">bus_to</span><span class="o">=</span><span class="n">next_bus</span><span class="p">,</span>
             <span class="n">length</span><span class="o">=</span><span class="n">length</span><span class="p">,</span>
@@ -198,7 +199,7 @@
 
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">template_branch</span><span class="p">,</span> <span class="n">dev</span><span class="o">.</span><span class="n">Transformer2W</span><span class="p">):</span>
         <span class="n">new_branch</span> <span class="o">=</span> <span class="n">dev</span><span class="o">.</span><span class="n">Transformer2W</span><span class="p">(</span>
-            <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;TR_</span><span class="si">{</span><span class="n">current_bus</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">next_bus</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">"TR_</span><span class="si">{</span><span class="n">current_bus</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">next_bus</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
             <span class="n">bus_from</span><span class="o">=</span><span class="n">current_bus</span><span class="p">,</span>
             <span class="n">bus_to</span><span class="o">=</span><span class="n">next_bus</span><span class="p">,</span>
             <span class="n">HV</span><span class="o">=</span><span class="nb">max</span><span class="p">(</span><span class="n">current_bus</span><span class="o">.</span><span class="n">Vnom</span><span class="p">,</span> <span class="n">next_bus</span><span class="o">.</span><span class="n">Vnom</span><span class="p">),</span>
@@ -222,10 +223,10 @@
 <span class="k">class</span><span class="w"> </span><span class="nc">TransitionMatrix</span><span class="p">:</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s1">&#39;voltages_sorted&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;voltages_dict&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;transition_matrix&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;template_dict&#39;</span><span class="p">,</span>
+        <span class="s1">'voltages_sorted'</span><span class="p">,</span>
+        <span class="s1">'voltages_dict'</span><span class="p">,</span>
+        <span class="s1">'transition_matrix'</span><span class="p">,</span>
+        <span class="s1">'template_dict'</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">grid</span><span class="p">:</span> <span class="n">MultiCircuit</span><span class="p">):</span>
@@ -260,12 +261,12 @@
 <div class="viewcode-block" id="TransitionMatrix.at">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Topology.Procedural.html#VeraGridEngine.Topology.Procedural.procedural_grid_engine.TransitionMatrix.at">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">at</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">V1</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">V2</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get probability associated to V1, transitioning to V2</span>
 <span class="sd">        :param V1: Voltage Source</span>
 <span class="sd">        :param V2: Voltage target</span>
 <span class="sd">        :return: Probability of transition</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="n">i1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">voltages_dict</span><span class="p">[</span><span class="n">V1</span><span class="p">]</span>
         <span class="n">i2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">voltages_dict</span><span class="p">[</span><span class="n">V2</span><span class="p">]</span>
@@ -276,7 +277,7 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Topology.Procedural.html#VeraGridEngine.Topology.Procedural.procedural_grid_engine.TransitionMatrix.template_dictionary">[docs]</a>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">template_dictionary</span><span class="p">(</span><span class="n">grid</span><span class="p">:</span> <span class="n">MultiCircuit</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">object</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]]]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Build a nested dictionary of branch templates grouped by voltage transition.</span>
 
 <span class="sd">        The outer key is the lower voltage (kV) and the inner key is the higher voltage</span>
@@ -288,7 +289,7 @@
 
 <span class="sd">        :param grid: MultiCircuit instance</span>
 <span class="sd">        :return: Nested dict {v_lo: {v_hi: [(branch_object, probability), ...]}}</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">grouped_elements</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">object</span><span class="p">]]]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
 
         <span class="k">for</span> <span class="n">branch</span> <span class="ow">in</span> <span class="n">grid</span><span class="o">.</span><span class="n">get_branches</span><span class="p">(</span><span class="n">add_vsc</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">add_hvdc</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">add_switch</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
@@ -326,11 +327,11 @@
 <div class="viewcode-block" id="TransitionMatrix.get_most_likely_transition_voltage">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Topology.Procedural.html#VeraGridEngine.Topology.Procedural.procedural_grid_engine.TransitionMatrix.get_most_likely_transition_voltage">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_most_likely_transition_voltage</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">V</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the most likely voltage to transition to, given a voltage</span>
 <span class="sd">        :param V: Some voltage source</span>
 <span class="sd">        :return: The most likely voltage target</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">i1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">voltages_dict</span><span class="p">[</span><span class="n">V</span><span class="p">]</span>
         <span class="n">i2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">transition_matrix</span><span class="p">[</span><span class="n">i1</span><span class="p">,</span> <span class="p">:])</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">voltages_sorted</span><span class="p">[</span><span class="n">i2</span><span class="p">]</span></div>
@@ -342,21 +343,21 @@
 <span class="k">class</span><span class="w"> </span><span class="nc">ProceduralGridGraph</span><span class="p">:</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s1">&#39;target_buses&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;candidate_buses&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;max_iterations&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;logger&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;n_target&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;n_candidate&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;n_steiner&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;coord_candidate&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;coord_target&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;min_lon&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;min_lat&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;max_lon&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;max_lat&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;base_coords&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;base_voltages&#39;</span><span class="p">,</span>
+        <span class="s1">'target_buses'</span><span class="p">,</span>
+        <span class="s1">'candidate_buses'</span><span class="p">,</span>
+        <span class="s1">'max_iterations'</span><span class="p">,</span>
+        <span class="s1">'logger'</span><span class="p">,</span>
+        <span class="s1">'n_target'</span><span class="p">,</span>
+        <span class="s1">'n_candidate'</span><span class="p">,</span>
+        <span class="s1">'n_steiner'</span><span class="p">,</span>
+        <span class="s1">'coord_candidate'</span><span class="p">,</span>
+        <span class="s1">'coord_target'</span><span class="p">,</span>
+        <span class="s1">'min_lon'</span><span class="p">,</span>
+        <span class="s1">'min_lat'</span><span class="p">,</span>
+        <span class="s1">'max_lon'</span><span class="p">,</span>
+        <span class="s1">'max_lat'</span><span class="p">,</span>
+        <span class="s1">'base_coords'</span><span class="p">,</span>
+        <span class="s1">'base_voltages'</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
@@ -364,12 +365,12 @@
                  <span class="n">candidate_buses</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">dev</span><span class="o">.</span><span class="n">Bus</span><span class="p">],</span>
                  <span class="n">max_iterations</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">,</span>
                  <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :param target_buses:</span>
 <span class="sd">        :param candidate_buses:</span>
 <span class="sd">        :param max_iterations: Maximum number of iterations</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">target_buses</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">dev</span><span class="o">.</span><span class="n">Bus</span><span class="p">]</span> <span class="o">=</span> <span class="n">target_buses</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">candidate_buses</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">dev</span><span class="o">.</span><span class="n">Bus</span><span class="p">]</span> <span class="o">=</span> <span class="n">candidate_buses</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">max_iterations</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">max_iterations</span>
@@ -417,11 +418,11 @@
 <div class="viewcode-block" id="ProceduralGridGraph.calculate_fitness">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Topology.Procedural.html#VeraGridEngine.Topology.Procedural.procedural_grid_engine.ProceduralGridGraph.calculate_fitness">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">calculate_fitness</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mu_lon</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">mu_lat</span><span class="p">:</span> <span class="n">Vec</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        VSA Fitness: MST Length + Degree Penalty.</span>
 <span class="sd">        :param mu_lat: steiner points latitudes</span>
 <span class="sd">        :param mu_lon: steiner points longitudes</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">steiner_coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">c_</span><span class="p">[</span><span class="n">mu_lon</span><span class="p">,</span> <span class="n">mu_lat</span><span class="p">]</span>
         <span class="n">all_coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">base_coords</span><span class="p">,</span> <span class="n">steiner_coords</span><span class="p">]</span>
 
@@ -447,10 +448,10 @@
 <div class="viewcode-block" id="ProceduralGridGraph.run_vsa">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Topology.Procedural.html#VeraGridEngine.Topology.Procedural.procedural_grid_engine.ProceduralGridGraph.run_vsa">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">run_vsa</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :return: best_solution (dim, (lat, lon))</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">dim</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_steiner</span>
 
         <span class="n">mu_lon</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">min_lon</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_lon</span><span class="p">,</span> <span class="n">dim</span><span class="p">)</span>
@@ -491,10 +492,10 @@
 <div class="viewcode-block" id="ProceduralGridGraph.prune_redundant_nodes">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Topology.Procedural.html#VeraGridEngine.Topology.Procedural.procedural_grid_engine.ProceduralGridGraph.prune_redundant_nodes">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">prune_redundant_nodes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">steiner_coords</span><span class="p">:</span> <span class="n">Mat</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Iteratively removes Steiner points with Degree &lt;= 2.</span>
 <span class="sd">        :param steiner_coords: steiner points coordinates (dim, (lon, lat))</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">current_steiner</span> <span class="o">=</span> <span class="n">steiner_coords</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 
         <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
@@ -504,7 +505,7 @@
             <span class="c1"># 1. Build MST with current set</span>
             <span class="n">all_coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">base_coords</span><span class="p">,</span> <span class="n">current_steiner</span><span class="p">]</span>
 
-            <span class="n">dist_matrix</span> <span class="o">=</span> <span class="n">cdist</span><span class="p">(</span><span class="n">all_coords</span><span class="p">,</span> <span class="n">all_coords</span><span class="p">,</span> <span class="n">metric</span><span class="o">=</span><span class="s1">&#39;euclidean&#39;</span><span class="p">)</span>
+            <span class="n">dist_matrix</span> <span class="o">=</span> <span class="n">cdist</span><span class="p">(</span><span class="n">all_coords</span><span class="p">,</span> <span class="n">all_coords</span><span class="p">,</span> <span class="n">metric</span><span class="o">=</span><span class="s1">'euclidean'</span><span class="p">)</span>
             <span class="n">mst_array</span> <span class="o">=</span> <span class="n">minimum_spanning_tree</span><span class="p">(</span><span class="n">dist_matrix</span><span class="p">)</span><span class="o">.</span><span class="n">toarray</span><span class="p">()</span>
             <span class="c1"># cost = np.sum(mst_array)</span>
 
@@ -522,7 +523,7 @@
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">useful_indices</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">current_steiner</span><span class="p">):</span>
                 <span class="k">break</span>
 
-            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Pruning... Removed </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">current_steiner</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="nb">len</span><span class="p">(</span><span class="n">useful_indices</span><span class="p">)</span><span class="si">}</span><span class="s2"> nodes.&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Pruning... Removed </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">current_steiner</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="nb">len</span><span class="p">(</span><span class="n">useful_indices</span><span class="p">)</span><span class="si">}</span><span class="s2"> nodes."</span><span class="p">)</span>
             <span class="n">current_steiner</span> <span class="o">=</span> <span class="n">current_steiner</span><span class="p">[</span><span class="n">useful_indices</span><span class="p">,</span> <span class="p">:]</span>
 
         <span class="k">return</span> <span class="n">current_steiner</span></div>
@@ -536,7 +537,7 @@
             <span class="n">existing_connections</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]],</span>
             <span class="n">n_fixed</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Remove MST edges that already exist in the incumbent grid.</span>
 
 <span class="sd">        This method is graph-only: it does not know anything about VeraGrid objects.</span>
@@ -552,7 +553,7 @@
 <span class="sd">        :param existing_connections: Set of existing graph edges as index pairs</span>
 <span class="sd">        :param n_fixed: Number of fixed nodes at the beginning of the node ordering</span>
 <span class="sd">        :return: Filtered MST adjacency matrix</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">cleaned_mst</span> <span class="o">=</span> <span class="n">mst_matrix</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 
         <span class="n">rows</span><span class="p">,</span> <span class="n">cols</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">cleaned_mst</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
@@ -574,21 +575,21 @@
 <div class="viewcode-block" id="Topology">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Topology.Procedural.html#VeraGridEngine.Topology.Procedural.procedural_grid_engine.Topology">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">Topology</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Represents the physical layout using domain objects.</span>
 <span class="sd">    Contains a Graph instance via composition.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s1">&#39;all_buses&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;discretization&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;edges&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;grid&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;intermediate_buses&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;logger&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;new_lines&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;new_transformers&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;transition_matrix&#39;</span><span class="p">,</span>
+        <span class="s1">'all_buses'</span><span class="p">,</span>
+        <span class="s1">'discretization'</span><span class="p">,</span>
+        <span class="s1">'edges'</span><span class="p">,</span>
+        <span class="s1">'grid'</span><span class="p">,</span>
+        <span class="s1">'intermediate_buses'</span><span class="p">,</span>
+        <span class="s1">'logger'</span><span class="p">,</span>
+        <span class="s1">'new_lines'</span><span class="p">,</span>
+        <span class="s1">'new_transformers'</span><span class="p">,</span>
+        <span class="s1">'transition_matrix'</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
@@ -613,9 +614,9 @@
 <div class="viewcode-block" id="Topology.generate_markov">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Topology.Procedural.html#VeraGridEngine.Topology.Procedural.procedural_grid_engine.Topology.generate_markov">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">generate_markov</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Generates combinations that are valid by construction.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">edges</span><span class="p">:</span>
 
@@ -671,9 +672,9 @@
                         <span class="c1"># line covers the geographic distance and the transformer is placed</span>
                         <span class="c1"># at the endpoint, regardless of whether a direct template exists.</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span>
-                            <span class="n">msg</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Voltage change from </span><span class="si">{</span><span class="n">current_bus</span><span class="o">.</span><span class="n">Vnom</span><span class="si">}</span><span class="s2">kV to </span><span class="si">{</span><span class="n">next_bus</span><span class="o">.</span><span class="n">Vnom</span><span class="si">}</span><span class="s2">kV. &quot;</span>
-                                <span class="sa">f</span><span class="s2">&quot;Creating voltage bridge near the output bus.&quot;</span><span class="p">,</span>
-                            <span class="n">device</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;edge </span><span class="si">{</span><span class="n">edge</span><span class="si">}</span><span class="s2">&quot;</span>
+                            <span class="n">msg</span><span class="o">=</span><span class="sa">f</span><span class="s2">"Voltage change from </span><span class="si">{</span><span class="n">current_bus</span><span class="o">.</span><span class="n">Vnom</span><span class="si">}</span><span class="s2">kV to </span><span class="si">{</span><span class="n">next_bus</span><span class="o">.</span><span class="n">Vnom</span><span class="si">}</span><span class="s2">kV. "</span>
+                                <span class="sa">f</span><span class="s2">"Creating voltage bridge near the output bus."</span><span class="p">,</span>
+                            <span class="n">device</span><span class="o">=</span><span class="sa">f</span><span class="s2">"edge </span><span class="si">{</span><span class="n">edge</span><span class="si">}</span><span class="s2">"</span>
                         <span class="p">)</span>
 
                         <span class="n">next_bus</span><span class="p">,</span> <span class="n">intermediate_bus_counter</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_bus_fix</span><span class="p">(</span>
@@ -701,7 +702,7 @@
                     <span class="p">)</span>
 
                     <span class="n">next_bus</span> <span class="o">=</span> <span class="n">dev</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span>
-                        <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Intermediate_</span><span class="si">{</span><span class="n">input_bus</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">output_bus</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">intermediate_bus_counter</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                        <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">"Intermediate_</span><span class="si">{</span><span class="n">input_bus</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">output_bus</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">intermediate_bus_counter</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
                         <span class="n">Vnom</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">next_bus_vnom</span><span class="p">),</span>
                         <span class="n">is_dc</span><span class="o">=</span><span class="n">current_bus</span><span class="o">.</span><span class="n">is_dc</span><span class="p">,</span>
                         <span class="n">longitude</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">next_coord</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
@@ -722,8 +723,8 @@
 
                 <span class="k">if</span> <span class="ow">not</span> <span class="n">template_options</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span>
-                        <span class="n">msg</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;No template branches for transition </span><span class="si">{</span><span class="n">v_lo</span><span class="si">}</span><span class="s2">kV-</span><span class="si">{</span><span class="n">v_hi</span><span class="si">}</span><span class="s2">kV. Skipping edge </span><span class="si">{</span><span class="n">edge</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">,</span>
-                        <span class="n">device</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;edge </span><span class="si">{</span><span class="n">edge</span><span class="si">}</span><span class="s2">&quot;</span>
+                        <span class="n">msg</span><span class="o">=</span><span class="sa">f</span><span class="s2">"No template branches for transition </span><span class="si">{</span><span class="n">v_lo</span><span class="si">}</span><span class="s2">kV-</span><span class="si">{</span><span class="n">v_hi</span><span class="si">}</span><span class="s2">kV. Skipping edge </span><span class="si">{</span><span class="n">edge</span><span class="si">}</span><span class="s2">."</span><span class="p">,</span>
+                        <span class="n">device</span><span class="o">=</span><span class="sa">f</span><span class="s2">"edge </span><span class="si">{</span><span class="n">edge</span><span class="si">}</span><span class="s2">"</span>
                     <span class="p">)</span>
                     <span class="k">break</span>
 
@@ -739,16 +740,16 @@
                 <span class="p">)</span>
 
                 <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span>
-                    <span class="n">msg</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Branch type=</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">new_branch</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">, &quot;</span>
-                        <span class="sa">f</span><span class="s2">&quot;accumulated_length=</span><span class="si">{</span><span class="n">accumulated_length</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">, distance=</span><span class="si">{</span><span class="n">distance</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">, &quot;</span>
-                        <span class="sa">f</span><span class="s2">&quot;conn_counter=</span><span class="si">{</span><span class="n">conn_counter</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
-                    <span class="n">device</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;edge </span><span class="si">{</span><span class="n">edge</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="n">msg</span><span class="o">=</span><span class="sa">f</span><span class="s2">"Branch type=</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">new_branch</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">, "</span>
+                        <span class="sa">f</span><span class="s2">"accumulated_length=</span><span class="si">{</span><span class="n">accumulated_length</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">, distance=</span><span class="si">{</span><span class="n">distance</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">, "</span>
+                        <span class="sa">f</span><span class="s2">"conn_counter=</span><span class="si">{</span><span class="n">conn_counter</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+                    <span class="n">device</span><span class="o">=</span><span class="sa">f</span><span class="s2">"edge </span><span class="si">{</span><span class="n">edge</span><span class="si">}</span><span class="s2">"</span>
                 <span class="p">)</span>
 
                 <span class="k">if</span> <span class="n">new_branch</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span>
-                        <span class="n">msg</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Could not instantiate branch for transition </span><span class="si">{</span><span class="n">v_lo</span><span class="si">}</span><span class="s2">kV-</span><span class="si">{</span><span class="n">v_hi</span><span class="si">}</span><span class="s2">kV. Skipping edge </span><span class="si">{</span><span class="n">edge</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">,</span>
-                        <span class="n">device</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;edge </span><span class="si">{</span><span class="n">edge</span><span class="si">}</span><span class="s2">&quot;</span>
+                        <span class="n">msg</span><span class="o">=</span><span class="sa">f</span><span class="s2">"Could not instantiate branch for transition </span><span class="si">{</span><span class="n">v_lo</span><span class="si">}</span><span class="s2">kV-</span><span class="si">{</span><span class="n">v_hi</span><span class="si">}</span><span class="s2">kV. Skipping edge </span><span class="si">{</span><span class="n">edge</span><span class="si">}</span><span class="s2">."</span><span class="p">,</span>
+                        <span class="n">device</span><span class="o">=</span><span class="sa">f</span><span class="s2">"edge </span><span class="si">{</span><span class="n">edge</span><span class="si">}</span><span class="s2">"</span>
                     <span class="p">)</span>
                     <span class="k">break</span>
 
@@ -767,9 +768,9 @@
 <div class="viewcode-block" id="Topology.add_branch_to_grid">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Topology.Procedural.html#VeraGridEngine.Topology.Procedural.procedural_grid_engine.Topology.add_branch_to_grid">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">add_branch_to_grid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">branch</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Add a branch object to the correct container of the expansion grid.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">branch</span><span class="p">,</span> <span class="n">dev</span><span class="o">.</span><span class="n">Line</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">add_line</span><span class="p">(</span><span class="n">obj</span><span class="o">=</span><span class="n">branch</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">new_lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">branch</span><span class="p">)</span>
@@ -786,14 +787,14 @@
 <div class="viewcode-block" id="Topology.find_voltage_path">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Topology.Procedural.html#VeraGridEngine.Topology.Procedural.procedural_grid_engine.Topology.find_voltage_path">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">find_voltage_path</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start_v</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">end_v</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Find a voltage path between start_v and end_v using the transitions</span>
 <span class="sd">        available in template_dict.</span>
 
 <span class="sd">        :param start_v: Initial voltage</span>
 <span class="sd">        :param end_v: Final voltage</span>
 <span class="sd">        :return: List of voltages [start_v, ..., end_v] or None if no path exists</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">start_v</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">start_v</span><span class="p">)</span>
         <span class="n">end_v</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">end_v</span><span class="p">)</span>
 
@@ -854,7 +855,7 @@
             <span class="n">edge</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
             <span class="n">intermediate_bus_counter</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">dev</span><span class="o">.</span><span class="n">Bus</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Create a voltage bridge near the output bus so that the last geographical</span>
 <span class="sd">        segment can still be connected and the final output voltage can be reached.</span>
 
@@ -871,7 +872,7 @@
 <span class="sd">        :param edge: Edge being processed</span>
 <span class="sd">        :param intermediate_bus_counter: Counter for naming intermediate buses</span>
 <span class="sd">        :return: (first_bridge_bus, updated_intermediate_bus_counter)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">voltage_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">find_voltage_path</span><span class="p">(</span>
             <span class="n">start_v</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">current_bus</span><span class="o">.</span><span class="n">Vnom</span><span class="p">),</span>
             <span class="n">end_v</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">output_bus</span><span class="o">.</span><span class="n">Vnom</span><span class="p">),</span>
@@ -879,17 +880,17 @@
 
         <span class="k">if</span> <span class="n">voltage_path</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;No voltage path exists from </span><span class="si">{</span><span class="n">current_bus</span><span class="o">.</span><span class="n">Vnom</span><span class="si">}</span><span class="s2"> kV to </span><span class="si">{</span><span class="n">output_bus</span><span class="o">.</span><span class="n">Vnom</span><span class="si">}</span><span class="s2"> kV.&quot;</span>
+                <span class="sa">f</span><span class="s2">"No voltage path exists from </span><span class="si">{</span><span class="n">current_bus</span><span class="o">.</span><span class="n">Vnom</span><span class="si">}</span><span class="s2"> kV to </span><span class="si">{</span><span class="n">output_bus</span><span class="o">.</span><span class="n">Vnom</span><span class="si">}</span><span class="s2"> kV."</span>
             <span class="p">)</span>
 
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">voltage_path</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;Invalid voltage path from </span><span class="si">{</span><span class="n">current_bus</span><span class="o">.</span><span class="n">Vnom</span><span class="si">}</span><span class="s2"> kV to </span><span class="si">{</span><span class="n">output_bus</span><span class="o">.</span><span class="n">Vnom</span><span class="si">}</span><span class="s2"> kV: </span><span class="si">{</span><span class="n">voltage_path</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">"Invalid voltage path from </span><span class="si">{</span><span class="n">current_bus</span><span class="o">.</span><span class="n">Vnom</span><span class="si">}</span><span class="s2"> kV to </span><span class="si">{</span><span class="n">output_bus</span><span class="o">.</span><span class="n">Vnom</span><span class="si">}</span><span class="s2"> kV: </span><span class="si">{</span><span class="n">voltage_path</span><span class="si">}</span><span class="s2">"</span>
             <span class="p">)</span>
 
         <span class="c1"># First bridge bus: same voltage as current_bus, but placed at output coordinates.</span>
         <span class="n">first_bridge_bus</span> <span class="o">=</span> <span class="n">dev</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span>
-            <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Intermediate_</span><span class="si">{</span><span class="n">current_bus</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">output_bus</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">intermediate_bus_counter</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">"Intermediate_</span><span class="si">{</span><span class="n">current_bus</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">output_bus</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">intermediate_bus_counter</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
             <span class="n">Vnom</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">current_bus</span><span class="o">.</span><span class="n">Vnom</span><span class="p">),</span>
             <span class="n">is_dc</span><span class="o">=</span><span class="n">current_bus</span><span class="o">.</span><span class="n">is_dc</span><span class="p">,</span>
             <span class="n">longitude</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">output_bus</span><span class="o">.</span><span class="n">longitude</span><span class="p">),</span>
@@ -913,7 +914,7 @@
                 <span class="n">next_bus</span> <span class="o">=</span> <span class="n">output_bus</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">next_bus</span> <span class="o">=</span> <span class="n">dev</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span>
-                    <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Intermediate_</span><span class="si">{</span><span class="n">current_bus</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">output_bus</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">intermediate_bus_counter</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                    <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">"Intermediate_</span><span class="si">{</span><span class="n">current_bus</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">output_bus</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">intermediate_bus_counter</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
                     <span class="n">Vnom</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">next_voltage</span><span class="p">),</span>
                     <span class="n">is_dc</span><span class="o">=</span><span class="n">current_bus</span><span class="o">.</span><span class="n">is_dc</span><span class="p">,</span>
                     <span class="n">longitude</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">output_bus</span><span class="o">.</span><span class="n">longitude</span><span class="p">),</span>
@@ -933,8 +934,8 @@
             <span class="n">template_options</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">transition_matrix</span><span class="o">.</span><span class="n">template_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">v_lo</span><span class="p">,</span> <span class="nb">dict</span><span class="p">())</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">v_hi</span><span class="p">,</span> <span class="nb">list</span><span class="p">())</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">template_options</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;No template branches available for transition </span><span class="si">{</span><span class="n">v_lo</span><span class="si">}</span><span class="s2">kV-</span><span class="si">{</span><span class="n">v_hi</span><span class="si">}</span><span class="s2">kV &quot;</span>
-                    <span class="sa">f</span><span class="s2">&quot;while fixing edge </span><span class="si">{</span><span class="n">edge</span><span class="si">}</span><span class="s2">.&quot;</span>
+                    <span class="sa">f</span><span class="s2">"No template branches available for transition </span><span class="si">{</span><span class="n">v_lo</span><span class="si">}</span><span class="s2">kV-</span><span class="si">{</span><span class="n">v_hi</span><span class="si">}</span><span class="s2">kV "</span>
+                    <span class="sa">f</span><span class="s2">"while fixing edge </span><span class="si">{</span><span class="n">edge</span><span class="si">}</span><span class="s2">."</span>
                 <span class="p">)</span>
 
             <span class="n">template_branches</span> <span class="o">=</span> <span class="p">[</span><span class="n">item</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">template_options</span><span class="p">]</span>
@@ -950,8 +951,8 @@
 
             <span class="k">if</span> <span class="n">new_branch</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;Could not instantiate branch for transition </span><span class="si">{</span><span class="n">v_lo</span><span class="si">}</span><span class="s2">kV-</span><span class="si">{</span><span class="n">v_hi</span><span class="si">}</span><span class="s2">kV &quot;</span>
-                    <span class="sa">f</span><span class="s2">&quot;while fixing edge </span><span class="si">{</span><span class="n">edge</span><span class="si">}</span><span class="s2">.&quot;</span>
+                    <span class="sa">f</span><span class="s2">"Could not instantiate branch for transition </span><span class="si">{</span><span class="n">v_lo</span><span class="si">}</span><span class="s2">kV-</span><span class="si">{</span><span class="n">v_hi</span><span class="si">}</span><span class="s2">kV "</span>
+                    <span class="sa">f</span><span class="s2">"while fixing edge </span><span class="si">{</span><span class="n">edge</span><span class="si">}</span><span class="s2">."</span>
                 <span class="p">)</span>
 
             <span class="bp">self</span><span class="o">.</span><span class="n">add_branch_to_grid</span><span class="p">(</span><span class="n">branch</span><span class="o">=</span><span class="n">new_branch</span><span class="p">)</span>
@@ -965,24 +966,24 @@
 <div class="viewcode-block" id="ProceduralGridComputationEngine">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Topology.Procedural.html#VeraGridEngine.Topology.Procedural.procedural_grid_engine.ProceduralGridComputationEngine">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">ProceduralGridComputationEngine</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Core engine for procedural grid expansion calculations.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s1">&#39;candidate_buses&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;candidates_substations&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;debugger&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;grid&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;intermediate_buses&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;logger&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;method&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;new_lines&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;new_transformers&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;steiner_buses&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;target_buses&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;targets_substations&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;transition_matrix&#39;</span><span class="p">,</span>
+        <span class="s1">'candidate_buses'</span><span class="p">,</span>
+        <span class="s1">'candidates_substations'</span><span class="p">,</span>
+        <span class="s1">'debugger'</span><span class="p">,</span>
+        <span class="s1">'grid'</span><span class="p">,</span>
+        <span class="s1">'intermediate_buses'</span><span class="p">,</span>
+        <span class="s1">'logger'</span><span class="p">,</span>
+        <span class="s1">'method'</span><span class="p">,</span>
+        <span class="s1">'new_lines'</span><span class="p">,</span>
+        <span class="s1">'new_transformers'</span><span class="p">,</span>
+        <span class="s1">'steiner_buses'</span><span class="p">,</span>
+        <span class="s1">'target_buses'</span><span class="p">,</span>
+        <span class="s1">'targets_substations'</span><span class="p">,</span>
+        <span class="s1">'transition_matrix'</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
@@ -991,13 +992,13 @@
                  <span class="n">targets</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">dev</span><span class="o">.</span><span class="n">Substation</span><span class="p">],</span>
                  <span class="n">candidates</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">dev</span><span class="o">.</span><span class="n">Substation</span><span class="p">],</span>
                  <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :param grid: MultiCircuit instance</span>
 <span class="sd">        :param method: Method to use</span>
 <span class="sd">        :param targets: List of substations to connect</span>
 <span class="sd">        :param candidates: List of Substation that we may want to connect</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">grid</span> <span class="o">=</span> <span class="n">grid</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">=</span> <span class="n">method</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">targets_substations</span> <span class="o">=</span> <span class="n">targets</span>
@@ -1052,50 +1053,50 @@
 <div class="viewcode-block" id="ProceduralGridComputationEngine.get_buses">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Topology.Procedural.html#VeraGridEngine.Topology.Procedural.procedural_grid_engine.ProceduralGridComputationEngine.get_buses">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_buses</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">dev</span><span class="o">.</span><span class="n">Bus</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get list of all the incumbent buses in the calculation</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_buses</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">candidate_buses</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">steiner_buses</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">intermediate_buses</span></div>
 
 
 <div class="viewcode-block" id="ProceduralGridComputationEngine.get_new_buses">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Topology.Procedural.html#VeraGridEngine.Topology.Procedural.procedural_grid_engine.ProceduralGridComputationEngine.get_new_buses">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_new_buses</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">dev</span><span class="o">.</span><span class="n">Bus</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get only the newly created buses (Steiner points + Markov intermediate buses).</span>
 <span class="sd">        These have no substation assigned and need one for map rendering.</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">steiner_buses</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">intermediate_buses</span></div>
 
 
 <div class="viewcode-block" id="ProceduralGridComputationEngine.get_new_lines">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Topology.Procedural.html#VeraGridEngine.Topology.Procedural.procedural_grid_engine.ProceduralGridComputationEngine.get_new_lines">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_new_lines</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">dev</span><span class="o">.</span><span class="n">Line</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get only the newly created Line objects added during topology generation.</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">new_lines</span></div>
 
 
 <div class="viewcode-block" id="ProceduralGridComputationEngine.get_new_transformers">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Topology.Procedural.html#VeraGridEngine.Topology.Procedural.procedural_grid_engine.ProceduralGridComputationEngine.get_new_transformers">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_new_transformers</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">dev</span><span class="o">.</span><span class="n">Transformer2W</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get only the newly created Transformer2W objects added during topology generation.</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">new_transformers</span></div>
 
 
 <div class="viewcode-block" id="ProceduralGridComputationEngine.run_steiner_alone">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Topology.Procedural.html#VeraGridEngine.Topology.Procedural.procedural_grid_engine.ProceduralGridComputationEngine.run_steiner_alone">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">run_steiner_alone</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Executes the Steiner Tree algorithm without further optimization.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="c1"># 2A. Run VSA: Create an initial radial topology with a Steiner tree approach</span>
         <span class="n">network</span> <span class="o">=</span> <span class="n">ProceduralGridGraph</span><span class="p">(</span><span class="n">target_buses</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">target_buses</span><span class="p">,</span>
@@ -1108,7 +1109,7 @@
         <span class="n">final_steiner_pts</span> <span class="o">=</span> <span class="n">network</span><span class="o">.</span><span class="n">prune_redundant_nodes</span><span class="p">(</span><span class="n">initial_steiner_points</span><span class="p">)</span>
         <span class="c1"># 2C. Get edges of the final network</span>
         <span class="n">coords_final_network</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span><span class="n">network</span><span class="o">.</span><span class="n">base_coords</span><span class="p">,</span> <span class="n">final_steiner_pts</span><span class="p">]</span>
-        <span class="n">dist_matrix</span> <span class="o">=</span> <span class="n">cdist</span><span class="p">(</span><span class="n">coords_final_network</span><span class="p">,</span> <span class="n">coords_final_network</span><span class="p">,</span> <span class="n">metric</span><span class="o">=</span><span class="s1">&#39;euclidean&#39;</span><span class="p">)</span>
+        <span class="n">dist_matrix</span> <span class="o">=</span> <span class="n">cdist</span><span class="p">(</span><span class="n">coords_final_network</span><span class="p">,</span> <span class="n">coords_final_network</span><span class="p">,</span> <span class="n">metric</span><span class="o">=</span><span class="s1">'euclidean'</span><span class="p">)</span>
         <span class="n">final_mst</span> <span class="o">=</span> <span class="n">minimum_spanning_tree</span><span class="p">(</span><span class="n">dist_matrix</span><span class="p">)</span><span class="o">.</span><span class="n">toarray</span><span class="p">()</span>
 
         <span class="n">existing_connections</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_existing_fixed_bus_connections</span><span class="p">()</span>
@@ -1144,7 +1145,7 @@
         <span class="c1"># 2F. Create Node buses (M, N, S)</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">final_steiner_pts</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
             <span class="n">sp_bus</span> <span class="o">=</span> <span class="n">dev</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span>
-                <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Intermediate_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">"Intermediate_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
                 <span class="n">Vnom</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">closest_voltage</span><span class="p">[</span><span class="n">i</span><span class="p">]),</span>
                 <span class="n">longitude</span><span class="o">=</span><span class="n">final_steiner_pts</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
                 <span class="n">latitude</span><span class="o">=</span><span class="n">final_steiner_pts</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
@@ -1183,7 +1184,7 @@
         <span class="p">)</span>
 
         <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">added_names</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">&quot;Added element&quot;</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">"Added element"</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid</span></div>
 
@@ -1191,7 +1192,7 @@
 <div class="viewcode-block" id="ProceduralGridComputationEngine.get_existing_fixed_bus_connections">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Topology.Procedural.html#VeraGridEngine.Topology.Procedural.procedural_grid_engine.ProceduralGridComputationEngine.get_existing_fixed_bus_connections">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_existing_fixed_bus_connections</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">set</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Build the set of existing direct connections between fixed buses</span>
 <span class="sd">        (candidate + target) in graph-index form.</span>
 
@@ -1200,7 +1201,7 @@
 <span class="sd">            [candidate_buses..., target_buses...]</span>
 
 <span class="sd">        :return: Set of existing fixed-bus connections as index pairs</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">fixed_buses</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">candidate_buses</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_buses</span>
         <span class="n">bus_index_by_id</span> <span class="o">=</span> <span class="p">{</span><span class="nb">id</span><span class="p">(</span><span class="n">bus</span><span class="p">):</span> <span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">bus</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">fixed_buses</span><span class="p">)}</span>
 
@@ -1223,8 +1224,8 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Topology.Procedural.html#VeraGridEngine.Topology.Procedural.procedural_grid_engine.ProceduralGridComputationEngine.run_steiner_tree_and_optimization">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">run_steiner_tree_and_optimization</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                                           <span class="n">pf_options</span><span class="p">:</span> <span class="n">PowerFlowOptions</span><span class="p">,</span>
-                                          <span class="n">max_eval_per_var</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;MultiCircuit&quot;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+                                          <span class="n">max_eval_per_var</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"MultiCircuit"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Execute the Steiner tree topology generation first, then run an NSGA-3</span>
 <span class="sd">        catalogue-template optimization over the newly created branches.</span>
 
@@ -1233,8 +1234,8 @@
 <span class="sd">        ``self.new_lines`` and ``self.new_transformers``; then a synchronous</span>
 <span class="sd">        catalogue optimization tunes the per-branch templates of those new</span>
 <span class="sd">        branches only (existing infrastructure is left untouched). On</span>
-<span class="sd">        completion the grid is left at the best Pareto member&#39;s templates so</span>
-<span class="sd">        the caller observes the optimizer&#39;s top recommendation.</span>
+<span class="sd">        completion the grid is left at the best Pareto member's templates so</span>
+<span class="sd">        the caller observes the optimizer's top recommendation.</span>
 
 <span class="sd">        :param pf_options: power flow options used by the inner PF evaluations</span>
 <span class="sd">            performed by the catalogue problem.</span>
@@ -1242,7 +1243,7 @@
 <span class="sd">            actual NSGA-3 evaluation cap becomes</span>
 <span class="sd">            ``max_eval_per_var * problem.n_vars()``.</span>
 <span class="sd">        :return: the (in-place mutated) :class:`MultiCircuit` reference.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># 1. Build the topology. Mutates self.grid and populates</span>
         <span class="c1">#    self.new_lines / self.new_transformers, which are the candidates</span>
         <span class="c1">#    for catalogue optimisation in step 2.</span>
@@ -1256,8 +1257,8 @@
         <span class="c1">#     to optimise. Surface a warning to the logger and exit early.</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">selected_branches</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span>
-                <span class="n">msg</span><span class="o">=</span><span class="s2">&quot;No new branches were created by the Steiner step; &quot;</span>
-                    <span class="s2">&quot;catalogue optimization skipped.&quot;</span>
+                <span class="n">msg</span><span class="o">=</span><span class="s2">"No new branches were created by the Steiner step; "</span>
+                    <span class="s2">"catalogue optimization skipped."</span>
             <span class="p">)</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid</span>
         <span class="k">else</span><span class="p">:</span>
@@ -1276,7 +1277,7 @@
             <span class="p">)</span>
         <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span>
-                <span class="n">msg</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Catalogue optimization skipped: </span><span class="si">{</span><span class="n">ex</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="n">msg</span><span class="o">=</span><span class="sa">f</span><span class="s2">"Catalogue optimization skipped: </span><span class="si">{</span><span class="n">ex</span><span class="si">}</span><span class="s2">"</span>
             <span class="p">)</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid</span>
 
@@ -1299,13 +1300,13 @@
         <span class="p">)</span>
         <span class="n">driver</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
 
-        <span class="c1"># 6. Merge the driver&#39;s logger into the engine logger so its messages</span>
+        <span class="c1"># 6. Merge the driver's logger into the engine logger so its messages</span>
         <span class="c1">#    reach the GUI LogsDialogue together with the topology-phase logs.</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">+=</span> <span class="n">driver</span><span class="o">.</span><span class="n">logger</span>
 
-        <span class="c1"># 7. Apply the best Pareto member&#39;s templates so the returned grid</span>
-        <span class="c1">#    reflects the optimizer&#39;s top recommendation. The driver leaves</span>
-        <span class="c1">#    the grid at baseline after each evaluation (per the problem&#39;s</span>
+        <span class="c1"># 7. Apply the best Pareto member's templates so the returned grid</span>
+        <span class="c1">#    reflects the optimizer's top recommendation. The driver leaves</span>
+        <span class="c1">#    the grid at baseline after each evaluation (per the problem's</span>
         <span class="c1">#    snapshot/restore convention), so we restore-then-apply to land</span>
         <span class="c1">#    on a deterministic, optimiser-chosen state.</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">driver</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">sorting_indices</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>

@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Simulations.PowerFlow.NumericalMethods.discrete_controls &mdash; VeraGrid 6.7.13 documentation</title>
+  <title>VeraGridEngine.Simulations.PowerFlow.NumericalMethods.discrete_controls &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../../_static/documentation_options.js?v=16fbabd8"></script>
+      <script src="../../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../../_static/js/theme.js"></script>
@@ -119,7 +119,7 @@
 <div class="viewcode-block" id="get_q_increment">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow.NumericalMethods.html#VeraGridEngine.Simulations.PowerFlow.NumericalMethods.discrete_controls.get_q_increment">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_q_increment</span><span class="p">(</span><span class="n">V1</span><span class="p">,</span> <span class="n">V2</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Logistic function to get the Q increment gain using the difference</span>
 <span class="sd">    between the current voltage (V1) and the target voltage (V2).</span>
 
@@ -139,7 +139,7 @@
 <span class="sd">    Returns:</span>
 
 <span class="sd">        Q increment gain</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">return</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">k</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">V2</span> <span class="o">-</span> <span class="n">V1</span><span class="p">)))</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">)</span></div>
 
@@ -148,7 +148,7 @@
 <div class="viewcode-block" id="control_q_direct">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow.NumericalMethods.html#VeraGridEngine.Simulations.PowerFlow.NumericalMethods.discrete_controls.control_q_direct">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">control_q_direct</span><span class="p">(</span><span class="n">V</span><span class="p">,</span> <span class="n">Vm</span><span class="p">,</span> <span class="n">Vset</span><span class="p">,</span> <span class="n">Q</span><span class="p">,</span> <span class="n">Qmax</span><span class="p">,</span> <span class="n">Qmin</span><span class="p">,</span> <span class="n">types</span><span class="p">,</span> <span class="n">original_types</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Change the buses type in order to control the generators reactive power.</span>
 <span class="sd">    :param V: Array of complex voltages</span>
 <span class="sd">    :param Vm: Array of voltage modules (for speed)</span>
@@ -167,9 +167,9 @@
 <span class="sd">            **types_new** (list): Modified types array</span>
 
 <span class="sd">            **any_control_issue** (bool): Was there any control issue?</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Logic:</span>
 
 <span class="sd">    ON PV-PQ BUS TYPE SWITCHING LOGIC IN POWER FLOW COMPUTATION</span>
@@ -220,10 +220,10 @@
 <span class="sd">            it is switched to PQ and set Qi = Qimin .</span>
 <span class="sd">        If Qi min &lt; Qi &lt; Qimax , then</span>
 <span class="sd">            it is still a PV bus.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Q control logic (fast)&#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">'Q control logic (fast)'</span><span class="p">)</span>
 
     <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">V</span><span class="p">)</span>
     <span class="n">Qnew</span> <span class="o">=</span> <span class="n">Q</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
@@ -252,7 +252,7 @@
                     <span class="n">Vnew</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">complex</span><span class="p">(</span><span class="n">Vset</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="mi">0</span><span class="p">)</span>
 
                     <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-                        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Bus&#39;</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="s1">&#39;switched back to PV&#39;</span><span class="p">)</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s1">'Bus'</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="s1">'switched back to PV'</span><span class="p">)</span>
 
                 <span class="n">any_control_issue</span> <span class="o">=</span> <span class="kc">True</span>
 
@@ -268,7 +268,7 @@
                 <span class="n">any_control_issue</span> <span class="o">=</span> <span class="kc">True</span>
 
                 <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-                    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Bus&#39;</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="s1">&#39;switched to PQ: Q&#39;</span><span class="p">,</span> <span class="n">Q</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="s1">&#39; Qmax:&#39;</span><span class="p">,</span> <span class="n">Qmax</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s1">'Bus'</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="s1">'switched to PQ: Q'</span><span class="p">,</span> <span class="n">Q</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="s1">' Qmax:'</span><span class="p">,</span> <span class="n">Qmax</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
 
             <span class="k">elif</span> <span class="n">Q</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">Qmin</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>  <span class="c1"># it is switched to PQ and set Q = Qmin .</span>
 
@@ -277,7 +277,7 @@
                 <span class="n">any_control_issue</span> <span class="o">=</span> <span class="kc">True</span>
 
                 <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-                    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Bus&#39;</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="s1">&#39;switched to PQ: Q&#39;</span><span class="p">,</span> <span class="n">Q</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="s1">&#39; Qmin:&#39;</span><span class="p">,</span> <span class="n">Qmin</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s1">'Bus'</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="s1">'switched to PQ: Q'</span><span class="p">,</span> <span class="n">Q</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="s1">' Qmin:'</span><span class="p">,</span> <span class="n">Qmin</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
 
             <span class="k">else</span><span class="p">:</span>  <span class="c1"># it is still a PV bus.</span>
                 <span class="k">pass</span>
@@ -295,7 +295,7 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">control_q_inside_method</span><span class="p">(</span><span class="n">Scalc</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span> <span class="n">S0</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span>
                             <span class="n">pv</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">pq</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">pqv</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">p</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span>
                             <span class="n">Qmin</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">Qmax</span><span class="p">:</span> <span class="n">Vec</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Control of reactive power within the numerical method</span>
 <span class="sd">    :param Scalc: Calculated power array (changed inside)</span>
 <span class="sd">    :param S0: Specified power array (changed inside)</span>
@@ -306,7 +306,7 @@
 <span class="sd">    :param Qmin: Array of lower reactive power limits per bus in p.u.</span>
 <span class="sd">    :param Qmax: Array of upper reactive power limits per bus in p.u.</span>
 <span class="sd">    :return: any change?, Scalc, Sbus, pv, pq, pqv, p</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">pv_indices</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
     <span class="n">changed</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
     <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">pv</span><span class="p">):</span>
@@ -344,7 +344,7 @@
                             <span class="n">shunt_b_steps</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
                             <span class="n">shunt_n_steps</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span>
                             <span class="n">sbase</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Control discrete shunts within the numerical method.</span>
 <span class="sd">    The sparse Ybus diagonal update is returned to the caller and applied outside numba.</span>
 <span class="sd">    :param Vm: Voltage module array.</span>
@@ -358,7 +358,7 @@
 <span class="sd">    :param shunt_n_steps: Number of valid steps for each controlled shunt.</span>
 <span class="sd">    :param sbase: Base power.</span>
 <span class="sd">    :return: changed bus indices, Ybus diagonal increments, number of changed shunts.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">n_ctrl</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">shunt_discrete_ctrl_idx</span><span class="p">)</span>
     <span class="n">changed_bus_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">n_ctrl</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
     <span class="n">changed_delta_y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">n_ctrl</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">complex128</span><span class="p">)</span>
@@ -408,7 +408,7 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">control_q_for_generalized_method</span><span class="p">(</span><span class="n">Scalc</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span> <span class="n">S0</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span>
                                      <span class="n">pv</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">i_u_vm</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">i_k_q</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span>
                                      <span class="n">Qmin</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">Qmax</span><span class="p">:</span> <span class="n">Vec</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Control of reactive power within the numerical method</span>
 <span class="sd">    Assume we only want to change regular PV buses to PQ buses (as in the conventional method)</span>
 <span class="sd">    :param Scalc: Calculated power array (changed inside)</span>
@@ -419,7 +419,7 @@
 <span class="sd">    :param Qmin: Array of lower bus reactive power limits per bus in p.u.</span>
 <span class="sd">    :param Qmax: Array of upper bus reactive power limits per bus in p.u.</span>
 <span class="sd">    :return: list of changed buses, i_u_vm, i_k_q</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">changed</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
 
     <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">pv</span><span class="p">):</span>
@@ -459,7 +459,7 @@
                                <span class="n">generator_qmin</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
                                <span class="n">generator_qmax</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
                                <span class="n">Vm</span><span class="p">:</span> <span class="n">Vec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Update generators with QV droop control within the numerical method.</span>
 <span class="sd">    :param S0: Specified power array (changed inside).</span>
 <span class="sd">    :param Q0: Initial specified reactive power per bus.</span>
@@ -474,7 +474,7 @@
 <span class="sd">    :param generator_qmin: Generator reactive power lower limit (p.u.).</span>
 <span class="sd">    :param Vm: Voltage module array.</span>
 <span class="sd">    :return: Was there any change?</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">any_change</span> <span class="o">=</span> <span class="kc">False</span>
 
     <span class="c1"># initialize</span>
@@ -521,30 +521,30 @@
 <div class="viewcode-block" id="DiscreteShuntControlState">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow.NumericalMethods.html#VeraGridEngine.Simulations.PowerFlow.NumericalMethods.discrete_controls.DiscreteShuntControlState">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">DiscreteShuntControlState</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Python-side state holder for discrete shunt controls.</span>
 
 <span class="sd">    The packed arrays owned by this class are consumed by the Numba kernel so</span>
 <span class="sd">    the formulations only need to keep a lightweight wrapper object.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;_sbase&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;_shunt_discrete_ctrl_idx&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;_shunt_step&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;_shunt_discrete_bus_idx&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;_shunt_discrete_vmax&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;_shunt_discrete_vmin&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;_shunt_g_steps&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;_shunt_b_steps&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;_shunt_n_steps&quot;</span><span class="p">,</span>
+        <span class="s2">"_sbase"</span><span class="p">,</span>
+        <span class="s2">"_shunt_discrete_ctrl_idx"</span><span class="p">,</span>
+        <span class="s2">"_shunt_step"</span><span class="p">,</span>
+        <span class="s2">"_shunt_discrete_bus_idx"</span><span class="p">,</span>
+        <span class="s2">"_shunt_discrete_vmax"</span><span class="p">,</span>
+        <span class="s2">"_shunt_discrete_vmin"</span><span class="p">,</span>
+        <span class="s2">"_shunt_g_steps"</span><span class="p">,</span>
+        <span class="s2">"_shunt_b_steps"</span><span class="p">,</span>
+        <span class="s2">"_shunt_n_steps"</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nc</span><span class="p">:</span> <span class="n">NumericalCircuit</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Build the discrete shunt control state.</span>
 
 <span class="sd">        :param nc: Numerical circuit hosting the shunt control data.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">max_shunt_steps</span><span class="p">:</span> <span class="nb">int</span>
         <span class="n">n_discrete_shunts</span><span class="p">:</span> <span class="nb">int</span>
         <span class="n">sh_i</span><span class="p">:</span> <span class="nb">int</span>
@@ -593,11 +593,11 @@
 <div class="viewcode-block" id="DiscreteShuntControlState.get_shunt_step">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow.NumericalMethods.html#VeraGridEngine.Simulations.PowerFlow.NumericalMethods.discrete_controls.DiscreteShuntControlState.get_shunt_step">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_shunt_step</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">IntVec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the mutable shunt step vector.</span>
 
 <span class="sd">        :return: Current discrete shunt step vector.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_shunt_step</span></div>
 
 
@@ -607,7 +607,7 @@
               <span class="n">Vm</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
               <span class="n">adm</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">AdmittanceMatrices</span><span class="p">,</span> <span class="n">AdmittanceMatricesFast</span><span class="p">],</span>
               <span class="n">yshunt_bus</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">CxVec</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Apply one discrete shunt control step.</span>
 
 <span class="sd">        :param Vm: Voltage magnitude vector.</span>
@@ -615,7 +615,7 @@
 <span class="sd">        :param yshunt_bus: Optional external shunt-bus vector that must remain</span>
 <span class="sd">                           synchronized with ``adm.Yshunt_bus``.</span>
 <span class="sd">        :return: ``True`` if any discrete shunt changed state, ``False`` otherwise.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">changed_bus_idx</span><span class="p">:</span> <span class="n">IntVec</span>
         <span class="n">changed_delta_y</span><span class="p">:</span> <span class="n">CxVec</span>
         <span class="n">n_changed</span><span class="p">:</span> <span class="nb">int</span>
@@ -664,33 +664,33 @@
 <div class="viewcode-block" id="QvDroopControlState">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow.NumericalMethods.html#VeraGridEngine.Simulations.PowerFlow.NumericalMethods.discrete_controls.QvDroopControlState">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">QvDroopControlState</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Python-side state holder for generator QV droop controls.</span>
 
 <span class="sd">    The arrays are allocated once and the numerical update remains delegated to</span>
 <span class="sd">    the Numba kernel.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;_Q0&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;_generator_q&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;_qv_droop_gen_idx&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;_qv_droop_bus_idx&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;_generator_bus_idx&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;_generator_k_droop&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;_generator_dead_band&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;_generator_v&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;_generator_qmax&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;_generator_qmin&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;_sbase&quot;</span><span class="p">,</span>
+        <span class="s2">"_Q0"</span><span class="p">,</span>
+        <span class="s2">"_generator_q"</span><span class="p">,</span>
+        <span class="s2">"_qv_droop_gen_idx"</span><span class="p">,</span>
+        <span class="s2">"_qv_droop_bus_idx"</span><span class="p">,</span>
+        <span class="s2">"_generator_bus_idx"</span><span class="p">,</span>
+        <span class="s2">"_generator_k_droop"</span><span class="p">,</span>
+        <span class="s2">"_generator_dead_band"</span><span class="p">,</span>
+        <span class="s2">"_generator_v"</span><span class="p">,</span>
+        <span class="s2">"_generator_qmax"</span><span class="p">,</span>
+        <span class="s2">"_generator_qmin"</span><span class="p">,</span>
+        <span class="s2">"_sbase"</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">S0</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span> <span class="n">nc</span><span class="p">:</span> <span class="n">NumericalCircuit</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Build the QV droop control state.</span>
 
 <span class="sd">        :param S0: Initial specified bus power.</span>
 <span class="sd">        :param nc: Numerical circuit hosting the generator control data.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># Copy the initial reactive schedules because the droop update resets</span>
         <span class="c1"># the controlled buses to that baseline on every control pass.</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_Q0</span> <span class="o">=</span> <span class="n">S0</span><span class="o">.</span><span class="n">imag</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
@@ -710,24 +710,24 @@
 <div class="viewcode-block" id="QvDroopControlState.get_generator_q">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow.NumericalMethods.html#VeraGridEngine.Simulations.PowerFlow.NumericalMethods.discrete_controls.QvDroopControlState.get_generator_q">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_generator_q</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the per-generator reactive power buffer.</span>
 
 <span class="sd">        :return: Generator reactive power vector.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_generator_q</span></div>
 
 
 <div class="viewcode-block" id="QvDroopControlState.apply">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow.NumericalMethods.html#VeraGridEngine.Simulations.PowerFlow.NumericalMethods.discrete_controls.QvDroopControlState.apply">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">apply</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">S0</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span> <span class="n">Vm</span><span class="p">:</span> <span class="n">Vec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Apply one QV droop control step.</span>
 
 <span class="sd">        :param S0: Specified bus power updated in place.</span>
 <span class="sd">        :param Vm: Voltage magnitude vector.</span>
 <span class="sd">        :return: ``True`` if any droop generator changed, ``False`` otherwise.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">update_qv_droop_generators</span><span class="p">(</span>
             <span class="n">S0</span><span class="o">=</span><span class="n">S0</span><span class="p">,</span>
             <span class="n">Q0</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_Q0</span><span class="p">,</span>
@@ -749,13 +749,13 @@
 <div class="viewcode-block" id="compute_slack_distribution">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.PowerFlow.NumericalMethods.html#VeraGridEngine.Simulations.PowerFlow.NumericalMethods.discrete_controls.compute_slack_distribution">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">compute_slack_distribution</span><span class="p">(</span><span class="n">Scalc</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span> <span class="n">vd</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">bus_installed_power</span><span class="p">:</span> <span class="n">Vec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="n">Vec</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Slack distribution logic</span>
 <span class="sd">    :param Scalc: Computed power array</span>
 <span class="sd">    :param vd: slack indices</span>
 <span class="sd">    :param bus_installed_power: Amount of installed power</span>
 <span class="sd">    :return: is slack division possible?</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># Distribute the slack power</span>
     <span class="n">slack_power</span> <span class="o">=</span> <span class="n">Scalc</span><span class="p">[</span><span class="n">vd</span><span class="p">]</span><span class="o">.</span><span class="n">real</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
     <span class="n">total_installed_power</span> <span class="o">=</span> <span class="n">bus_installed_power</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>

@@ -27,13 +27,10 @@ from VeraGridEngine.Devices.Substation.bus import Bus
 from VeraGridEngine.Devices.multi_circuit import MultiCircuit
 from VeraGridEngine.Devices.types import ALL_DEV_TYPES
 from VeraGridEngine.Utils.Symbolic.block import Block
-from VeraGridEngine.Utils.Symbolic.bus_emt_template import BusEmtTemplate, get_bus_emt_algebraic_vars
 from VeraGridEngine.Utils.Symbolic.bus_rms_template import initialize_bus_rms
 from VeraGridEngine.Utils.Symbolic.symbolic import Const, Expr, Var
 from VeraGridEngine.Utils.Symbolic.symbolic_io import duplicate_block_vars_uid
 from VeraGridEngine.Utils.Symbolic.templates_common_functions import (
-    emt_bus_shell_matches_grid_topology,
-    reconcile_saved_emt_model_against_current_topology,
     synchronize_emt_bus_shell_with_grid,
 )
 from VeraGridEngine.enumerations import DynamicSimulationMode
@@ -271,7 +268,7 @@ def block_requires_editor_connection_bootstrap(block: Block) -> bool:
         return False
 
 
-def _initialize_editor_assigned_rms_bus_model(bus: Bus, var_factory: VarFactory) -> None:
+def initialize_editor_assigned_rms_bus_model(bus: Bus, var_factory: VarFactory) -> None:
     """Create a missing RMS bus shell used by an editor-assigned model.
 
     :param bus: Connected network bus.
@@ -284,118 +281,40 @@ def _initialize_editor_assigned_rms_bus_model(bus: Bus, var_factory: VarFactory)
         pass
 
 
-def _initialize_editor_assigned_emt_bus_model(bus: Bus,
-                                              api_object: ALL_DEV_TYPES,
-                                              circuit: MultiCircuit | None,
-                                              var_factory: VarFactory) -> None:
-    """Create or reconcile one EMT bus shell before editor attachment.
-
-    :param bus: Connected network bus.
-    :param api_object: Device whose model is being assigned.
-    :param circuit: Optional grid used to infer the active topology.
-    :param var_factory: Shared symbolic variable factory.
-    :return: None.
-    """
-    if circuit is not None:
-        branch_shell_requires_check: bool = (
-            isinstance(api_object, BranchParent)
-            and not bus.emt_model.empty()
-            and not bus.is_emt_model_grid_synchronized()
-        )
-        if branch_shell_requires_check:
-            try:
-                get_bus_emt_algebraic_vars(bus.emt_model)
-            except (AttributeError, TypeError, ValueError):
-                synchronize_emt_bus_shell_with_grid(bus=bus,
-                                                    grid=circuit,
-                                                    var_factory=var_factory,
-                                                    device_to_skip=api_object)
-            else:
-                if emt_bus_shell_matches_grid_topology(bus=bus, grid=circuit):
-                    bus.mark_emt_model_grid_synchronized()
-                else:
-                    pass
-        else:
-            synchronize_emt_bus_shell_with_grid(bus=bus,
-                                                grid=circuit,
-                                                var_factory=var_factory,
-                                                device_to_skip=api_object)
-    else:
-        invalid_shell: bool = bus.emt_model.empty()
-        if not invalid_shell:
-            try:
-                get_bus_emt_algebraic_vars(bus.emt_model)
-            except (AttributeError, TypeError, ValueError):
-                invalid_shell = True
-            else:
-                pass
-        else:
-            pass
-
-        if invalid_shell:
-            phase_mask: list[bool]
-            if bus.is_dc:
-                phase_mask = list((False, False, False, False))
-            else:
-                phase_mask = list((False, True, True, True))
-            bus.emt_model = BusEmtTemplate(
-                vf=var_factory,
-                mask=phase_mask,
-                is_dc=bus.is_dc,
-                name=f"{bus.name}_emt_template",
-            ).block
-        else:
-            pass
-
-
 def initialize_connected_bus_models_for_editor_assignment(api_object: ALL_DEV_TYPES,
-                                                          circuit: MultiCircuit | None,
+                                                          circuit: MultiCircuit,
                                                           var_factory: VarFactory,
                                                           mode: DynamicSimulationMode) -> None:
-    """Initialize all bus-side shells needed by one editor-assigned model.
+    """Prepare persistent buses before constructing an editor working document.
 
-    :param api_object: Injection or branch device receiving the dynamic model.
-    :param circuit: Optional grid used for EMT topology reconciliation.
-    :param var_factory: Shared symbolic variable factory.
-    :param mode: Dynamic simulation domain being edited.
+    :param api_object: Device whose editor is requested.
+    :param circuit: Owning circuit used to derive phases.
+    :param var_factory: Persistent symbolic factory.
+    :param mode: Requested simulation domain.
     :return: None.
     """
+    buses: list[Bus] = list()
     if isinstance(api_object, InjectionParent):
-        bus: Bus | None = api_object.bus
-        if bus is None:
+        if api_object.bus is not None:
+            buses.append(api_object.bus)
+        else:
             pass
-        elif mode == DynamicSimulationMode.RMS:
-            _initialize_editor_assigned_rms_bus_model(bus=bus, var_factory=var_factory)
-        elif mode == DynamicSimulationMode.EMT:
-            _initialize_editor_assigned_emt_bus_model(bus=bus,
-                                                      api_object=api_object,
-                                                      circuit=circuit,
-                                                      var_factory=var_factory)
-        else:
-            raise ValueError(f"Unsupported dynamic editor mode {mode}")
     elif isinstance(api_object, BranchParent):
-        if mode == DynamicSimulationMode.RMS:
-            _initialize_editor_assigned_rms_bus_model(bus=api_object.bus_from, var_factory=var_factory)
-            _initialize_editor_assigned_rms_bus_model(bus=api_object.bus_to, var_factory=var_factory)
-        elif mode == DynamicSimulationMode.EMT:
-            _initialize_editor_assigned_emt_bus_model(bus=api_object.bus_from,
-                                                      api_object=api_object,
-                                                      circuit=circuit,
-                                                      var_factory=var_factory)
-            _initialize_editor_assigned_emt_bus_model(bus=api_object.bus_to,
-                                                      api_object=api_object,
-                                                      circuit=circuit,
-                                                      var_factory=var_factory)
-            if not api_object.emt_model.empty() and circuit is not None:
-                reconcile_saved_emt_model_against_current_topology(device=api_object,
-                                                                   grid=circuit,
-                                                                   var_factory=var_factory)
-            else:
-                pass
+        buses.append(api_object.bus_from)
+        if api_object.bus_to is not api_object.bus_from:
+            buses.append(api_object.bus_to)
         else:
-            raise ValueError(f"Unsupported dynamic editor mode {mode}")
+            pass
     else:
         pass
+    bus: Bus
+    for bus in buses:
+        if mode == DynamicSimulationMode.EMT:
+            synchronize_emt_bus_shell_with_grid(bus=bus, grid=circuit, var_factory=var_factory)
+        elif mode == DynamicSimulationMode.RMS:
+            initialize_editor_assigned_rms_bus_model(bus=bus, var_factory=var_factory)
+        else:
+            pass
 
 
 def is_valid_symbol_name(name: str) -> bool:

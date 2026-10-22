@@ -45,6 +45,13 @@ from VeraGridEngine.Templates.Rms.empty_rms_template import get_empty_rms_templa
 
 from VeraGridEngine.Templates.Rms.international_standards.excitation_systems.ac1a import build_ac1a_template
 from VeraGridEngine.Templates.Rms.international_standards.excitation_systems.ac1c import build_ac1c_template
+from VeraGridEngine.Templates.Rms.international_standards.excitation_systems.ac2c import build_ac2c_template
+from VeraGridEngine.Templates.Rms.international_standards.excitation_systems.ac4c import build_ac4c_template
+from VeraGridEngine.Templates.Rms.international_standards.excitation_systems.ac5c import build_ac5c_template
+from VeraGridEngine.Templates.Rms.international_standards.excitation_systems.dc2c import build_dc2c_template
+from VeraGridEngine.Templates.Rms.international_standards.excitation_systems.dc3a import build_dc3a_template
+from VeraGridEngine.Templates.Rms.international_standards.excitation_systems.dc4c import build_dc4c_template
+from VeraGridEngine.Templates.Rms.international_standards.excitation_systems.dc4b import build_dc4b_template
 from VeraGridEngine.Templates.Rms.international_standards.excitation_systems.ac6a import build_ac6a_template
 from VeraGridEngine.Templates.Rms.international_standards.excitation_systems.ac6c import build_ac6c_template
 from VeraGridEngine.Templates.Rms.international_standards.excitation_systems.ac7b import build_ac7b_template
@@ -56,6 +63,10 @@ from VeraGridEngine.Templates.Rms.international_standards.battery_energy_storage
 from VeraGridEngine.Templates.Rms.international_standards.excitation_systems.dc1a import build_dc1a_template
 from VeraGridEngine.Templates.Rms.international_standards.excitation_systems.dc1c import build_dc1c_template
 from VeraGridEngine.Templates.Rms.international_standards.excitation_systems.exac1 import build_exac1_template
+from VeraGridEngine.Templates.Rms.international_standards.governors.ivogo import build_ivogo_template
+from VeraGridEngine.Templates.Rms.international_standards.governors.degov import build_degov_template
+from VeraGridEngine.Templates.Rms.international_standards.governors.degov1d import build_degov1d_template
+from VeraGridEngine.Templates.Rms.international_standards.governors.degov1 import build_degov1_template
 from VeraGridEngine.Templates.Rms.international_standards.governors.govhydro4 import build_govhydro4_template
 from VeraGridEngine.Templates.Rms.international_standards.governors.govsteam1 import build_govsteam1_template
 from VeraGridEngine.Templates.Rms.international_standards.governors.govsteameu import build_govsteameu_template
@@ -69,6 +80,7 @@ from VeraGridEngine.Templates.Rms.international_standards.excitation_limiters.oe
 from VeraGridEngine.Templates.Rms.international_standards.excitation_limiters.oel3c import build_oel3c_template
 from VeraGridEngine.Templates.Rms.international_standards.excitation_limiters.oel4c import build_oel4c_template
 from VeraGridEngine.Templates.Rms.international_standards.excitation_limiters.oel5c import build_oel5c_template
+from VeraGridEngine.Templates.Rms.international_standards.power_system_stabilizers.ivost import build_ivost_template
 from VeraGridEngine.Templates.Rms.international_standards.power_system_stabilizers.pss1aomega import build_pss1aomega_template
 from VeraGridEngine.Templates.Rms.international_standards.power_system_stabilizers.pss1apgen import build_pss1apgen_template
 from VeraGridEngine.Templates.Rms.international_standards.power_system_stabilizers.pss2a import build_pss2a_template
@@ -124,3 +136,7 @@ from VeraGridEngine.Templates.Rms.international_standards.governors.ggov1 import
 from VeraGridEngine.Templates.Rms.international_standards.governors.hygov import build_hygov_template
 from VeraGridEngine.Templates.Rms.international_standards.excitation_limiters.ieel import build_ieel_template
 from VeraGridEngine.Templates.Rms.international_standards.governors.tgov1 import build_tgov1_template
+
+from VeraGridEngine.Templates.Rms.international_standards.excitation_systems.ieet1b import build_ieet1b_template
+from VeraGridEngine.Templates.Rms.international_standards.excitation_systems.exni import build_exni_template
+from VeraGridEngine.Templates.Rms.international_standards.excitation_systems.expic1 import build_expic1_template

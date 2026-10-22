@@ -11,8 +11,11 @@ import VeraGridEngine.api as gce
 from VeraGridEngine.Devices.multi_circuit import MultiCircuit
 from VeraGrid.Gui.DynamicModelEditor.Editor.dynamic_block_editor import DynamicBlockEditorGUI
 from VeraGrid.Gui.DynamicModelEditor.Editor.BlockProperties import DynamicBlockPropertiesDialog
+from VeraGrid.Gui.DynamicModelEditor.Workspace.Tabs.dynamic_editor_tab import DynamicEditorDocument
 from VeraGrid.Gui.DynamicModelEditor.Editor.DynamicLibrary.dynamic_editor_library import (
+    DerivativePresetDescriptor,
     DynamicEditorLibrary,
+    IntegratorPresetDescriptor,
     LibraryDeviceTemplateSpec,
     get_basic_procedural_category_path,
     get_dynamic_library_international_standard_descriptors,
@@ -20,7 +23,7 @@ from VeraGrid.Gui.DynamicModelEditor.Editor.DynamicLibrary.dynamic_editor_librar
     is_replaced_legacy_basic_descriptor,
 )
 from VeraGridEngine.Devices.Diagrams.block_diagram import BlockDiagramNode
-from VeraGridEngine.Devices.Dynamic.var_factory import VarFactory
+from VeraGridEngine.Devices.Dynamic.var_factory import Connection, VarFactory
 from VeraGridEngine.Templates.BasicBlockCatalog import BasicBlockTemplateDescriptor
 from VeraGridEngine.Templates.BasicBlockCatalog import ExactMathematicalBlockDescriptor
 from VeraGridEngine.Templates.BasicBlockCatalog import get_basic_block_catalog_descriptor_by_key
@@ -617,11 +620,34 @@ def test_emt_editor_exposes_flat_categorized_basic_block_catalog() -> None:
     ).isValid()
     assert _find_index_by_path(
         source_model,
-        ("Basic", "Continuous dynamics", "Integrators", "1/s (enable)"),
+        ("Basic", "Continuous dynamics", "Integrators", "Integrator"),
     ).isValid()
     assert _find_index_by_path(
         source_model,
+        (
+            "Basic", "Continuous dynamics", "Integrators",
+            "Integrator with startup freeze",
+        ),
+    ).isValid()
+    assert not _find_index_by_label(source_model, "1/s (enable)").isValid()
+    assert _find_index_by_path(
+        source_model,
+        (
+            "Basic", "Mechanical", "Drive train",
+            "Inertia integrator 1/(2Hs)",
+        ),
+    ).isValid()
+    assert not _find_index_by_path(
+        source_model,
         ("Basic", "Continuous dynamics", "Derivatives", "sT/(1+sT) (enable)"),
+    ).isValid()
+    assert _find_index_by_path(
+        source_model,
+        ("Basic", "Continuous dynamics", "Derivatives", "Bypassable washout"),
+    ).isValid()
+    assert _find_index_by_path(
+        source_model,
+        ("Basic", "Continuous dynamics", "Filters", "s/(w0^2+s^2)"),
     ).isValid()
     assert _find_index_by_path(
         source_model,
@@ -849,6 +875,82 @@ def test_proxy_drag_payload_materializes_catalog_template() -> None:
     editor.close()
 
 
+def test_proxy_drag_payload_materializes_integrator_preset() -> None:
+    """Integrator presets must survive MIME decoding and create their dynamic item.
+
+    :return: None.
+    """
+    editor: DynamicBlockEditorGUI = _build_editor(DynamicSimulationMode.EMT)
+    source_index: QtCore.QModelIndex = _find_index_by_path(
+        editor.library.library_model,
+        (
+            "Basic",
+            "Continuous dynamics",
+            "Integrators",
+            "Integrator",
+        ),
+    )
+    assert source_index.isValid()
+
+    proxy_index: QtCore.QModelIndex = editor.library_proxy_model.mapFromSource(source_index)
+    assert proxy_index.isValid()
+    mime_data: QtCore.QMimeData = editor.library_proxy_model.mimeData(list((proxy_index,)))
+    payload: object = editor.get_library_payload_from_mime_data(mime_data)
+
+    assert isinstance(payload, IntegratorPresetDescriptor)
+    children_before: int = len(editor.main_block.children)
+    block_item: object = editor.create_library_payload_item(
+        payload=payload,
+        x_pos=10.0,
+        y_pos=20.0,
+    )
+
+    assert isinstance(block_item, graph.IntegratorItem)
+    assert len(editor.main_block.children) == children_before + 1
+    assert block_item.subsys is editor.main_block.children[-1]
+
+    editor.has_unapplied_changes = False
+    editor.close()
+
+
+def test_proxy_drag_payload_materializes_derivative_preset() -> None:
+    """Derivative presets must decode and create their dedicated canvas item.
+
+    :return: None.
+    """
+    editor: DynamicBlockEditorGUI = _build_editor(DynamicSimulationMode.EMT)
+    source_index: QtCore.QModelIndex = _find_index_by_path(
+        editor.library.library_model,
+        (
+            "Basic",
+            "Continuous dynamics",
+            "Derivatives",
+            "Filtered derivative s/(1+Ts)",
+        ),
+    )
+    assert source_index.isValid()
+
+    proxy_index: QtCore.QModelIndex = editor.library_proxy_model.mapFromSource(source_index)
+    assert proxy_index.isValid()
+    mime_data: QtCore.QMimeData = editor.library_proxy_model.mimeData(list((proxy_index,)))
+    payload: object = editor.get_library_payload_from_mime_data(mime_data)
+
+    assert isinstance(payload, DerivativePresetDescriptor)
+    children_before: int = len(editor.main_block.children)
+    block_item: object = editor.create_library_payload_item(
+        payload=payload,
+        x_pos=10.0,
+        y_pos=20.0,
+    )
+
+    assert isinstance(block_item, graph.DerivativeItem)
+    assert len(editor.main_block.children) == children_before + 1
+    assert block_item.subsys is editor.main_block.children[-1]
+
+    editor.has_unapplied_changes = False
+    editor.close()
+
+
 @pytest.mark.parametrize("mode", (DynamicSimulationMode.RMS, DynamicSimulationMode.EMT))
 def test_procedural_descriptors_are_exposed_once_in_their_semantic_branch(
         mode: DynamicSimulationMode,
@@ -950,6 +1052,7 @@ def test_rms_library_exposes_every_international_standard_descriptor() -> None:
 
     :return: None.
     """
+    application: QtWidgets.QApplication = _get_app()
     collected_models: list[InternationalStandardModel] = list()
     device_type: DeviceType
     for device_type in (
@@ -1047,6 +1150,110 @@ def test_controls_removed_from_catalogue_remain_in_dynamic_library() -> None:
     vsc_labels: set[str] = set(_collect_leaf_labels(vsc_library.library_model))
     assert "GFL converter" in vsc_labels
     application.processEvents()
+
+
+def test_workspace_rms_device_clone_preserves_internal_symbolic_connections() -> None:
+    """Preserve directed controller wiring when a workspace drops a fresh RMS device.
+
+    A workspace owns a private working ``VarFactory`` in addition to the
+    persistent circuit factory.  Fresh native-device templates must be cloned
+    from the factory that actually built them; otherwise their variables survive
+    while the internal connection graph is silently lost.
+
+    :return: None.
+    """
+    application: QtWidgets.QApplication = _get_app()
+    circuit: MultiCircuit = MultiCircuit()
+    persistent_root: Block = Block(name="RMS device root")
+    document: DynamicEditorDocument = DynamicEditorDocument(
+        original_root_block=persistent_root,
+        source_var_factory=circuit.var_factory,
+    )
+    editor: DynamicBlockEditorGUI = DynamicBlockEditorGUI(
+        var_factory=document.working_var_factory,
+        current_block=document.working_root_block,
+        root_block=document.working_root_block,
+        api_object=_ApiStub(device_type=DeviceType.GeneratorDevice),
+        current_theme="Light",
+        mode=DynamicSimulationMode.RMS,
+        templates_list=list(),
+        circuit=circuit,
+        is_root_editor=False,
+        modal=False,
+        document=document,
+    )
+    editor.show()
+    application.processEvents()
+
+    source_index: QtCore.QModelIndex = _find_index_by_label(
+        editor.library.library_model,
+        "Complete generator",
+    )
+    assert source_index.isValid()
+    payload: object = editor.library.library_model.data(source_index, editor.block_role)
+    assert isinstance(payload, LibraryDeviceTemplateSpec)
+
+    block_item: object = editor.create_library_payload_item(
+        payload=payload,
+        x_pos=10.0,
+        y_pos=20.0,
+    )
+    assert isinstance(block_item, graph.GenericBlockItem)
+    assert block_item.subsys is not None
+
+    # Resolve the complete speed-signal fan-out generically from port roles and
+    # the semantic shared-reference identity. Composite wrappers may expose the
+    # same owned variable again at a parent boundary, so stable identities must
+    # be de-duplicated before evaluating the connection graph.
+    omega_output_vars: list[Var] = list()
+    omega_input_vars: list[Var] = list()
+    omega_output_non_mutable_uids: set[int] = set()
+    omega_input_non_mutable_uids: set[int] = set()
+    candidate_block: Block
+    candidate_var: Var
+    for candidate_block in block_item.subsys.get_all_blocks():
+        for candidate_var in candidate_block.out_vars:
+            if (candidate_var.shared_ref is not None
+                    and candidate_var.shared_ref.name == "omega_reference"):
+                if candidate_var.non_mutable_uid not in omega_output_non_mutable_uids:
+                    omega_output_vars.append(candidate_var)
+                    omega_output_non_mutable_uids.add(candidate_var.non_mutable_uid)
+                else:
+                    pass
+            else:
+                pass
+        for candidate_var in candidate_block.in_vars:
+            if (candidate_var.shared_ref is not None
+                    and candidate_var.shared_ref.name == "omega_reference"):
+                if candidate_var.non_mutable_uid not in omega_input_non_mutable_uids:
+                    omega_input_vars.append(candidate_var)
+                    omega_input_non_mutable_uids.add(candidate_var.non_mutable_uid)
+                else:
+                    pass
+            else:
+                pass
+
+    assert len(omega_output_vars) == 1
+    assert len(omega_input_vars) >= 2
+    omega_source: Var = omega_output_vars[0]
+    connection_records: list[Connection] | None = document.working_var_factory.get_connections_dict().get(
+        omega_source.non_mutable_uid,
+        None,
+    )
+    assert connection_records is not None
+    connected_target_uids: set[int] = set()
+    connection_record: Connection
+    for connection_record in connection_records:
+        connected_target_uids.add(connection_record.non_mutable_uid)
+
+    omega_input: Var
+    for omega_input in omega_input_vars:
+        assert omega_input.non_mutable_uid != omega_source.non_mutable_uid
+        assert omega_input.uid == omega_source.uid
+        assert omega_input.non_mutable_uid in connected_target_uids
+
+    editor.has_unapplied_changes = False
+    editor.close()
 
 
 def test_international_standard_library_payload_materializes_canvas_block() -> None:

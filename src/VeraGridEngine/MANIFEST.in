@@ -1,4 +1,4 @@
 include setup.py
 include LICENSE.txt
 recursive-include data/fmu *.c *.h
-recursive-include data/native_worker *.c *.h *.exe *.json
+recursive-include data/native_worker/source *.c *.h

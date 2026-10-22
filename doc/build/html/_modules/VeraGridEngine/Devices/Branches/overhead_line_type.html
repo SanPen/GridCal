@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Devices.Branches.overhead_line_type &mdash; VeraGrid 6.7.13 documentation</title>
+  <title>VeraGridEngine.Devices.Branches.overhead_line_type &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=16fbabd8"></script>
+      <script src="../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -117,10 +117,10 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.basic_structures</span><span class="w"> </span><span class="kn">import</span> <span class="n">Logger</span><span class="p">,</span> <span class="n">Mat</span><span class="p">,</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">CxMat</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Devices.Parents.editable_device</span><span class="w"> </span><span class="kn">import</span> <span class="n">DeviceType</span><span class="p">,</span> <span class="n">GCProp</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Devices.Parents.dynamic_parent</span><span class="w"> </span><span class="kn">import</span> <span class="n">DynamicDevice</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Devices.Branches.wire</span><span class="w"> </span><span class="kn">import</span> <span class="n">Wire</span><span class="p">,</span> <span class="n">calc_GMR</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Devices.Branches.wire</span><span class="w"> </span><span class="kn">import</span> <span class="n">Wire</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.enumerations</span><span class="w"> </span><span class="kn">import</span> <span class="n">SubObjectType</span><span class="p">,</span> <span class="n">PrpCat</span>
 
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 <span class="sd">Equations source:</span>
 <span class="sd">a) ATP-EMTP theory book</span>
 
@@ -128,17 +128,17 @@
 <span class="sd">10 Ω/m3 - Resistivity of swampy ground </span>
 <span class="sd">100 Ω/m3 - Resistivity of average damp earth </span>
 <span class="sd">1000 Ω/m3 - Resistivity of dry earth </span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 
 
 <div class="viewcode-block" id="phase2circuit">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Branches.html#VeraGridEngine.Devices.Branches.overhead_line_type.phase2circuit">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">phase2circuit</span><span class="p">(</span><span class="n">phase</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Convert a phase to a circuit number</span>
 <span class="sd">    :param phase: phase index, starting at 1 to n (i.e. phase 5, would be B from circuit 2)</span>
 <span class="sd">    :return: circuit number starting by 1</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">k</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="n">phase</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">3</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">k</span> <span class="o">+</span> <span class="mi">1</span></div>
 
@@ -146,12 +146,12 @@
 <div class="viewcode-block" id="build_y_4x4">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Branches.html#VeraGridEngine.Devices.Branches.overhead_line_type.build_y_4x4">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">build_y_4x4</span><span class="p">(</span><span class="n">y_nxn</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">circuit_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 
 <span class="sd">    :param y_nxn:</span>
 <span class="sd">    :param circuit_idx:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">start</span> <span class="o">=</span> <span class="mi">3</span> <span class="o">*</span> <span class="p">(</span><span class="n">circuit_idx</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
     <span class="n">idx</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">start</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">start</span> <span class="o">+</span> <span class="mi">2</span><span class="p">]</span>
     <span class="k">return</span> <span class="n">y_nxn</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ix_</span><span class="p">(</span><span class="n">idx</span><span class="p">,</span> <span class="n">idx</span><span class="p">)]</span></div>
@@ -160,11 +160,11 @@
 <div class="viewcode-block" id="n_circuits">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Branches.html#VeraGridEngine.Devices.Branches.overhead_line_type.n_circuits">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">n_circuits</span><span class="p">(</span><span class="n">idx</span><span class="p">:</span> <span class="n">CxMat</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 
 <span class="sd">    :param idx:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">m</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">m</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
         <span class="k">return</span> <span class="mi">0</span>
@@ -175,14 +175,14 @@
 <div class="viewcode-block" id="get_d_ij">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Branches.html#VeraGridEngine.Devices.Branches.overhead_line_type.get_d_ij">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_d_ij</span><span class="p">(</span><span class="n">xi</span><span class="p">,</span> <span class="n">yi</span><span class="p">,</span> <span class="n">xj</span><span class="p">,</span> <span class="n">yj</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Distance module between wires</span>
 <span class="sd">    :param xi: x position of the wire i</span>
 <span class="sd">    :param yi: y position of the wire i</span>
 <span class="sd">    :param xj: x position of the wire j</span>
 <span class="sd">    :param yj: y position of the wire j</span>
 <span class="sd">    :return: distance module</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">return</span> <span class="n">sqrt</span><span class="p">((</span><span class="n">xi</span> <span class="o">-</span> <span class="n">xj</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">yi</span> <span class="o">-</span> <span class="n">yj</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span></div>
 
@@ -191,14 +191,14 @@
 <div class="viewcode-block" id="get_D_ij">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Branches.html#VeraGridEngine.Devices.Branches.overhead_line_type.get_D_ij">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_D_ij</span><span class="p">(</span><span class="n">xi</span><span class="p">,</span> <span class="n">yi</span><span class="p">,</span> <span class="n">xj</span><span class="p">,</span> <span class="n">yj</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Distance module between the wire i and the image of the wire j</span>
 <span class="sd">    :param xi: x position of the wire i</span>
 <span class="sd">    :param yi: y position of the wire i</span>
 <span class="sd">    :param xj: x position of the wire j</span>
 <span class="sd">    :param yj: y position of the wire j</span>
 <span class="sd">    :return: Distance module between the wire i and the image of the wire j</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="n">sqrt</span><span class="p">((</span><span class="n">xi</span> <span class="o">-</span> <span class="n">xj</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">yi</span> <span class="o">+</span> <span class="n">yj</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span></div>
 
 
@@ -206,11 +206,11 @@
 <div class="viewcode-block" id="abc_2_seq">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Branches.html#VeraGridEngine.Devices.Branches.overhead_line_type.abc_2_seq">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">abc_2_seq</span><span class="p">(</span><span class="n">mat</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Convert ABC to sequence components</span>
 <span class="sd">    :param mat: ABC impedances matrix (3x3, 6x6, 9x9, etc...)</span>
 <span class="sd">    Returns: Sequence matrix (3x3, 6x6, 9x9, etc...) where the 3x3 blocks are the sequences</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">mat</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">mat</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">mat</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
             <span class="k">if</span> <span class="n">mat</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">%</span> <span class="mi">3</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
@@ -243,13 +243,13 @@
 <div class="viewcode-block" id="kron_reduction">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Branches.html#VeraGridEngine.Devices.Branches.overhead_line_type.kron_reduction">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">kron_reduction</span><span class="p">(</span><span class="n">mat</span><span class="p">,</span> <span class="n">keep</span><span class="p">,</span> <span class="n">embed</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Perform the Kron reduction</span>
 <span class="sd">    :param mat: primitive matrix</span>
 <span class="sd">    :param keep: indices to keep</span>
 <span class="sd">    :param embed: indices to delete / embed</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">Zaa</span> <span class="o">=</span> <span class="n">mat</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ix_</span><span class="p">(</span><span class="n">keep</span><span class="p">,</span> <span class="n">keep</span><span class="p">)]</span>
     <span class="n">Zag</span> <span class="o">=</span> <span class="n">mat</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ix_</span><span class="p">(</span><span class="n">keep</span><span class="p">,</span> <span class="n">embed</span><span class="p">)]</span>
     <span class="n">Zga</span> <span class="o">=</span> <span class="n">mat</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ix_</span><span class="p">(</span><span class="n">embed</span><span class="p">,</span> <span class="n">keep</span><span class="p">)]</span>
@@ -262,13 +262,13 @@
 <div class="viewcode-block" id="wire_bundling">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Branches.html#VeraGridEngine.Devices.Branches.overhead_line_type.wire_bundling">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">wire_bundling</span><span class="p">(</span><span class="n">phases_set</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">primitive</span><span class="p">:</span> <span class="n">Mat</span><span class="p">,</span> <span class="n">phases_vector</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Algorithm to bundle wires per phase</span>
 <span class="sd">    :param phases_set: set of phases (list with unique occurrences of each phase values, i.e. [0, 1, 2, 3])</span>
 <span class="sd">    :param primitive: Primitive matrix to reduce by bundling wires</span>
 <span class="sd">    :param phases_vector: Vector that contains the phase of each wire</span>
 <span class="sd">    :return: reduced primitive matrix, corresponding phases</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">for</span> <span class="n">phase</span> <span class="ow">in</span> <span class="n">phases_set</span><span class="p">:</span>
 
         <span class="c1"># get the list of wire indices</span>
@@ -310,7 +310,7 @@
 <div class="viewcode-block" id="calc_L_int">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Branches.html#VeraGridEngine.Devices.Branches.overhead_line_type.calc_L_int">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">calc_L_int</span><span class="p">(</span><span class="n">is_tube</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">q</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Calculates internal inductance of solid or tubular conductor</span>
 <span class="sd">    Note that calculations assume uniform current distribution in the conductor,</span>
 <span class="sd">    thus conductor stranding is not taken into account.</span>
@@ -319,13 +319,13 @@
 <span class="sd">        L_int = calc_L_int(type, r, q)</span>
 
 <span class="sd">    where:</span>
-<span class="sd">       type is &#39;solid&#39; or &#39;tube&#39;</span>
+<span class="sd">       type is 'solid' or 'tube'</span>
 <span class="sd">        r is the radius of the conductor [m]</span>
 <span class="sd">        q is the radius of the inner tube [m]</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        L_int the internal inductance of the conductor [H/m]</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">mu_0</span> <span class="o">=</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="mf">1e-7</span>  <span class="c1"># Permeability of free space [H/m]</span>
 
     <span class="k">if</span> <span class="n">is_tube</span><span class="p">:</span>
@@ -341,79 +341,141 @@
 
 
 
+<div class="viewcode-block" id="calc_GMR">
+<a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Branches.html#VeraGridEngine.Devices.Branches.overhead_line_type.calc_GMR">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">calc_GMR</span><span class="p">(</span><span class="n">is_tube</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">q</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Calculates geometric mean radius (GMR) of solid or tubular conductor</span>
+<span class="sd">    Note that calculations assume uniform current distribution in the conductor, thus conductor stranding is not taken into account.</span>
+
+<span class="sd">    :param is_tube:</span>
+<span class="sd">    :param r: radius of the conductor [m]</span>
+<span class="sd">    :param q: radius of the inner tube [m] (only relevant for tubes)</span>
+<span class="sd">    :return: GMR the geometric mean radius [m]</span>
+<span class="sd">    """</span>
+
+    <span class="k">if</span> <span class="n">is_tube</span><span class="p">:</span>
+        <span class="c1"># Tubular conductor GMR [m]</span>
+        <span class="n">GMR</span> <span class="o">=</span> <span class="p">(</span><span class="n">r</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">((</span><span class="mi">3</span> <span class="o">*</span> <span class="n">q</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">r</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">4</span> <span class="o">*</span> <span class="p">(</span><span class="n">r</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">q</span> <span class="o">**</span> <span class="mi">2</span><span class="p">))</span>
+                          <span class="o">-</span> <span class="n">q</span> <span class="o">**</span> <span class="mi">4</span> <span class="o">/</span> <span class="p">(</span><span class="n">r</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">q</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">r</span> <span class="o">/</span> <span class="n">q</span><span class="p">)))</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># Solid conductor GMR [m]</span>
+        <span class="n">GMR</span> <span class="o">=</span> <span class="n">r</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">0.25</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">GMR</span></div>
+
+
+
 <div class="viewcode-block" id="carsons">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Branches.html#VeraGridEngine.Devices.Branches.overhead_line_type.carsons">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">carsons</span><span class="p">(</span><span class="n">is_self</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">h_i</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">h_k</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">x_ik</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">f</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">rho</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">err_tol</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-6</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate Carson earth-return corrections (Rp, Xp), in Ohm/km.</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Calculates Carson's earth return correction factors Rp and Xp for both self and mutual terms.</span>
+<span class="sd">    The number of terms evaluated in the infinite loop is based on convergence to the desired error tolerance.</span>
 
-<span class="sd">    Heights and horizontal separation are in metres, f in Hz and rho in Ohm.m.</span>
-<span class="sd">    err_tol bounds the magnitude of terms in the dimensionless Carson series.</span>
-<span class="sd">    The EMTP series is summed in complete groups of four terms, so a vanishing</span>
-<span class="sd">    angular factor cannot prematurely terminate the calculation.</span>
-<span class="sd">    Coefficient recurrence: Carson implementation in https://doi.org/10.5772/58383.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="ow">and</span> <span class="n">v</span> <span class="o">&gt;</span> <span class="mf">0.0</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">rho</span><span class="p">,</span> <span class="n">err_tol</span><span class="p">)):</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Carson frequency, earth resistivity and tolerance must be finite and positive.&#39;</span><span class="p">)</span>
-    <span class="n">height</span> <span class="o">=</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">h_i</span> <span class="k">if</span> <span class="n">is_self</span> <span class="k">else</span> <span class="n">h_i</span> <span class="o">+</span> <span class="n">h_k</span>
-    <span class="n">separation</span> <span class="o">=</span> <span class="mf">0.0</span> <span class="k">if</span> <span class="n">is_self</span> <span class="k">else</span> <span class="nb">abs</span><span class="p">(</span><span class="n">x_ik</span><span class="p">)</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">math</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">height</span><span class="p">)</span> <span class="ow">or</span> <span class="n">height</span> <span class="o">&lt;=</span> <span class="mf">0.0</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">math</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">separation</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Carson image height must be positive and geometry must be finite.&#39;</span><span class="p">)</span>
+<span class="sd">    Usage:</span>
+<span class="sd">        Rp, Xp = carsons(type, h_i, h_k, x_ik, f, rho, err_tol)</span>
 
-    <span class="n">omega</span> <span class="o">=</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">f</span>
-    <span class="n">mu_0</span> <span class="o">=</span> <span class="mf">4.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="mf">1e-7</span>  <span class="c1"># H/m</span>
-    <span class="n">a</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">hypot</span><span class="p">(</span><span class="n">height</span><span class="p">,</span> <span class="n">separation</span><span class="p">)</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">omega</span> <span class="o">*</span> <span class="n">mu_0</span> <span class="o">/</span> <span class="n">rho</span><span class="p">)</span>
-    <span class="n">phi</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">atan2</span><span class="p">(</span><span class="n">separation</span><span class="p">,</span> <span class="n">height</span><span class="p">)</span>
-    <span class="n">log_a</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
-    <span class="n">constant</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">+</span> <span class="n">math</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mf">2.0</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">euler_gamma</span>
-    <span class="n">b</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">2.0</span><span class="p">)</span> <span class="o">/</span> <span class="mf">6.0</span><span class="p">,</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="mf">16.0</span><span class="p">]</span>
-    <span class="n">c</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">constant</span> <span class="o">+</span> <span class="mf">0.75</span><span class="p">]</span>
-    <span class="n">Rp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mf">8.0</span>
-    <span class="n">Xp</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">constant</span> <span class="o">-</span> <span class="n">log_a</span><span class="p">)</span>
-    <span class="n">step</span> <span class="o">=</span> <span class="n">a</span> <span class="o">*</span> <span class="nb">complex</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">phi</span><span class="p">),</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">phi</span><span class="p">))</span>
-    <span class="n">power</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">+</span> <span class="mf">0.0</span><span class="n">j</span>
-    <span class="n">group_error</span> <span class="o">=</span> <span class="mf">0.0</span>
+<span class="sd">    where   type is 'self' or 'mutual'</span>
+<span class="sd">            h_i is the height of conductor i above ground (m)</span>
+<span class="sd">            h_k is the height of conductor k above ground (m)</span>
+<span class="sd">            x_ik is the horizontal distance between conductors i and k (m)</span>
+<span class="sd">            f is the frequency (Hz)</span>
+<span class="sd">            rho is the earth resistivity (Ohm.m)</span>
+<span class="sd">            err_tol is the error tolerance for the calculation (default = 1e-6)</span>
 
-    <span class="c1"># Coefficients b_n depend on b_(n-2), with signs alternating every four</span>
-    <span class="c1"># terms. In particular, the second power uses the initial b_2 = 1/16.</span>
-    <span class="c1"># Bound the iteration instead of allowing a nonconvergent infinite loop.</span>
-    <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">201</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">n</span> <span class="o">&gt;=</span> <span class="mi">3</span><span class="p">:</span>
-            <span class="n">sign</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.0</span> <span class="k">if</span> <span class="p">((</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">//</span> <span class="mi">4</span><span class="p">)</span> <span class="o">%</span> <span class="mi">2</span> <span class="k">else</span> <span class="mf">1.0</span>
-            <span class="n">b</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">b</span><span class="p">[</span><span class="n">n</span> <span class="o">-</span> <span class="mi">2</span><span class="p">])</span> <span class="o">*</span> <span class="n">sign</span> <span class="o">/</span> <span class="p">(</span><span class="n">n</span> <span class="o">*</span> <span class="p">(</span><span class="n">n</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)))</span>
-            <span class="n">c</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">c</span><span class="p">[</span><span class="n">n</span> <span class="o">-</span> <span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="n">n</span> <span class="o">+</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="p">(</span><span class="n">n</span> <span class="o">+</span> <span class="mi">2</span><span class="p">))</span>
-        <span class="n">power</span> <span class="o">*=</span> <span class="n">step</span>
-        <span class="n">u</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="n">power</span><span class="o">.</span><span class="n">real</span><span class="p">,</span> <span class="n">power</span><span class="o">.</span><span class="n">imag</span>
-        <span class="n">bn</span> <span class="o">=</span> <span class="n">b</span><span class="p">[</span><span class="n">n</span><span class="p">]</span>
-        <span class="n">dn</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mf">4.0</span> <span class="o">*</span> <span class="n">bn</span>
-        <span class="n">term</span> <span class="o">=</span> <span class="n">n</span> <span class="o">%</span> <span class="mi">4</span>
-        <span class="k">if</span> <span class="n">term</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="n">dr</span><span class="p">,</span> <span class="n">dx</span> <span class="o">=</span> <span class="o">-</span><span class="n">bn</span> <span class="o">*</span> <span class="n">u</span><span class="p">,</span> <span class="n">bn</span> <span class="o">*</span> <span class="n">u</span>
-        <span class="k">elif</span> <span class="n">term</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
-            <span class="n">dr</span><span class="p">,</span> <span class="n">dx</span> <span class="o">=</span> <span class="n">bn</span> <span class="o">*</span> <span class="p">((</span><span class="n">c</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">-</span> <span class="n">log_a</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span> <span class="o">+</span> <span class="n">phi</span> <span class="o">*</span> <span class="n">v</span><span class="p">),</span> <span class="o">-</span><span class="n">dn</span> <span class="o">*</span> <span class="n">u</span>
-        <span class="k">elif</span> <span class="n">term</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
-            <span class="n">dr</span><span class="p">,</span> <span class="n">dx</span> <span class="o">=</span> <span class="n">bn</span> <span class="o">*</span> <span class="n">u</span><span class="p">,</span> <span class="n">bn</span> <span class="o">*</span> <span class="n">u</span>
+<span class="sd">    Returns:</span>
+<span class="sd">            Rp, Xp the Carson earth return correction factors (in Ohm/km)</span>
+<span class="sd">    """</span>
+    <span class="c1"># Geometrical calculations - See Figure 4.4. of EMTP Theory Book</span>
+    <span class="k">if</span> <span class="n">is_self</span><span class="p">:</span>
+        <span class="n">D</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">h_i</span>  <span class="c1"># Distance between conductor i and its image [m]</span>
+        <span class="n">cos_phi</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">sin_phi</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">phi</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">D</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">h_i</span> <span class="o">+</span> <span class="n">h_k</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">x_ik</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>  <span class="c1"># Distance between conductor i and image of conductor k [m]</span>
+        <span class="n">cos_phi</span> <span class="o">=</span> <span class="p">(</span><span class="n">h_i</span> <span class="o">+</span> <span class="n">h_k</span><span class="p">)</span> <span class="o">/</span> <span class="n">D</span>
+        <span class="n">sin_phi</span> <span class="o">=</span> <span class="n">x_ik</span> <span class="o">/</span> <span class="n">D</span>
+        <span class="n">phi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arccos</span><span class="p">(</span><span class="n">cos_phi</span><span class="p">)</span>
+
+    <span class="c1"># Initialise parameters</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">err</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">sgn</span> <span class="o">=</span> <span class="mi">1</span>
+
+    <span class="c1"># Initial values and constants for calculation</span>
+    <span class="n">omega</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">f</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span> <span class="o">*</span> <span class="mf">1e-4</span> <span class="o">*</span> <span class="n">D</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">f</span> <span class="o">/</span> <span class="n">rho</span><span class="p">)</span>  <span class="c1"># Equation 4.10 EMTP</span>
+    <span class="n">acosphi</span> <span class="o">=</span> <span class="n">a</span> <span class="o">*</span> <span class="n">cos_phi</span>
+    <span class="n">asinphi</span> <span class="o">=</span> <span class="n">a</span> <span class="o">*</span> <span class="n">sin_phi</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">1</span> <span class="o">/</span> <span class="mi">16</span><span class="p">])</span>  <span class="c1"># Equation 4.12 EMTP</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mf">1.3659315</span><span class="p">])</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">b</span>
+
+    <span class="c1"># First two terms of carson correction factor</span>
+    <span class="n">Rp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">8</span> <span class="o">-</span> <span class="n">b</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">acosphi</span>
+    <span class="n">Xp</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="mf">0.6159315</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">a</span><span class="p">))</span> <span class="o">+</span> <span class="n">b</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">acosphi</span>
+
+    <span class="c1"># Loop through carson coefficient terms starting with i = 2</span>
+    <span class="k">while</span> <span class="p">(</span><span class="n">err</span> <span class="o">&gt;</span> <span class="n">err_tol</span><span class="p">):</span>
+        <span class="n">term</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mod</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+        <span class="c1"># Check sign for b term</span>
+        <span class="k">if</span> <span class="n">term</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">sgn</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span> <span class="o">*</span> <span class="n">sgn</span>
+
+        <span class="c1"># Calculate coefficients</span>
+        <span class="n">bi</span> <span class="o">=</span> <span class="n">b</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">sgn</span> <span class="o">/</span> <span class="p">((</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">3</span><span class="p">))</span>
+        <span class="n">ci</span> <span class="o">=</span> <span class="n">c</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">3</span><span class="p">)</span>
+        <span class="n">di</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">bi</span>
+        <span class="n">b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">bi</span><span class="p">)</span>
+        <span class="n">c</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">ci</span><span class="p">)</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">di</span><span class="p">)</span>
+
+        <span class="c1"># Recursively calculate powers of acosphi and asinphi</span>
+        <span class="n">acosphi_prev</span> <span class="o">=</span> <span class="n">acosphi</span>
+        <span class="n">asinphi_prev</span> <span class="o">=</span> <span class="n">asinphi</span>
+        <span class="n">acosphi</span> <span class="o">=</span> <span class="p">(</span><span class="n">acosphi_prev</span> <span class="o">*</span> <span class="n">cos_phi</span> <span class="o">-</span> <span class="n">asinphi_prev</span> <span class="o">*</span> <span class="n">sin_phi</span><span class="p">)</span> <span class="o">*</span> <span class="n">a</span>
+        <span class="n">asinphi</span> <span class="o">=</span> <span class="p">(</span><span class="n">acosphi_prev</span> <span class="o">*</span> <span class="n">sin_phi</span> <span class="o">+</span> <span class="n">asinphi_prev</span> <span class="o">*</span> <span class="n">cos_phi</span><span class="p">)</span> <span class="o">*</span> <span class="n">a</span>
+
+        <span class="n">Rp_prev</span> <span class="o">=</span> <span class="n">Rp</span>
+        <span class="n">Xp_prev</span> <span class="o">=</span> <span class="n">Xp</span>
+
+        <span class="c1"># First term</span>
+        <span class="k">if</span> <span class="n">term</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">Rp</span> <span class="o">=</span> <span class="n">Rp</span> <span class="o">-</span> <span class="n">bi</span> <span class="o">*</span> <span class="n">acosphi</span>
+            <span class="n">Xp</span> <span class="o">=</span> <span class="n">Xp</span> <span class="o">+</span> <span class="n">bi</span> <span class="o">*</span> <span class="n">acosphi</span>
+
+        <span class="c1"># Second term</span>
+        <span class="k">elif</span> <span class="n">term</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">Rp</span> <span class="o">=</span> <span class="n">Rp</span> <span class="o">+</span> <span class="n">bi</span> <span class="o">*</span> <span class="p">((</span><span class="n">ci</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">a</span><span class="p">))</span> <span class="o">*</span> <span class="n">acosphi</span> <span class="o">+</span> <span class="n">phi</span> <span class="o">*</span> <span class="n">asinphi</span><span class="p">)</span>
+            <span class="n">Xp</span> <span class="o">=</span> <span class="n">Xp</span> <span class="o">-</span> <span class="n">di</span> <span class="o">*</span> <span class="n">acosphi</span>
+
+        <span class="c1"># Third term</span>
+        <span class="k">elif</span> <span class="n">term</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">Rp</span> <span class="o">=</span> <span class="n">Rp</span> <span class="o">+</span> <span class="n">bi</span> <span class="o">*</span> <span class="n">acosphi</span>
+            <span class="n">Xp</span> <span class="o">=</span> <span class="n">Xp</span> <span class="o">+</span> <span class="n">bi</span> <span class="o">*</span> <span class="n">acosphi</span>
+
+        <span class="c1"># Fourth term</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">dr</span><span class="p">,</span> <span class="n">dx</span> <span class="o">=</span> <span class="o">-</span><span class="n">dn</span> <span class="o">*</span> <span class="n">u</span><span class="p">,</span> <span class="o">-</span><span class="n">bn</span> <span class="o">*</span> <span class="p">((</span><span class="n">c</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">-</span> <span class="n">log_a</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span> <span class="o">+</span> <span class="n">phi</span> <span class="o">*</span> <span class="n">v</span><span class="p">)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">math</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">dr</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">math</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">dx</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ArithmeticError</span><span class="p">(</span><span class="s1">&#39;Carson series produced non-finite terms.&#39;</span><span class="p">)</span>
-        <span class="n">Rp</span> <span class="o">+=</span> <span class="n">dr</span>
-        <span class="n">Xp</span> <span class="o">+=</span> <span class="n">dx</span>
-        <span class="n">group_error</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">group_error</span><span class="p">,</span> <span class="n">math</span><span class="o">.</span><span class="n">hypot</span><span class="p">(</span><span class="n">dr</span><span class="p">,</span> <span class="n">dx</span><span class="p">))</span>
-        <span class="k">if</span> <span class="n">n</span> <span class="o">%</span> <span class="mi">4</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">math</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">group_error</span><span class="p">)</span> <span class="ow">and</span> <span class="n">group_error</span> <span class="o">&lt;=</span> <span class="n">err_tol</span><span class="p">:</span>
-                <span class="n">scale</span> <span class="o">=</span> <span class="mf">4.0</span> <span class="o">*</span> <span class="n">omega</span> <span class="o">*</span> <span class="mf">1e-4</span>  <span class="c1"># Ohm/km</span>
-                <span class="k">return</span> <span class="n">scale</span> <span class="o">*</span> <span class="n">Rp</span><span class="p">,</span> <span class="n">scale</span> <span class="o">*</span> <span class="n">Xp</span>
-            <span class="n">group_error</span> <span class="o">=</span> <span class="mf">0.0</span>
+            <span class="n">Rp</span> <span class="o">=</span> <span class="n">Rp</span> <span class="o">-</span> <span class="n">di</span> <span class="o">*</span> <span class="n">acosphi</span>
+            <span class="n">Xp</span> <span class="o">=</span> <span class="n">Xp</span> <span class="o">-</span> <span class="n">bi</span> <span class="o">*</span> <span class="p">((</span><span class="n">ci</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">a</span><span class="p">))</span> <span class="o">*</span> <span class="n">acosphi</span> <span class="o">+</span> <span class="n">phi</span> <span class="o">*</span> <span class="n">asinphi</span><span class="p">)</span>
 
-    <span class="k">raise</span> <span class="ne">ArithmeticError</span><span class="p">(</span><span class="s1">&#39;Carson series did not converge within 200 terms.&#39;</span><span class="p">)</span></div>
+        <span class="n">i</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">err</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">Rp</span> <span class="o">-</span> <span class="n">Rp_prev</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">Xp</span> <span class="o">-</span> <span class="n">Xp_prev</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+
+    <span class="n">Rp</span> <span class="o">=</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">omega</span> <span class="o">*</span> <span class="mf">1e-04</span> <span class="o">*</span> <span class="n">Rp</span>
+    <span class="n">Xp</span> <span class="o">=</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">omega</span> <span class="o">*</span> <span class="mf">1e-04</span> <span class="o">*</span> <span class="n">Xp</span>
+
+    <span class="k">return</span> <span class="n">Rp</span><span class="p">,</span> <span class="n">Xp</span></div>
 
 
 
 <div class="viewcode-block" id="calc_z_ii">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Branches.html#VeraGridEngine.Devices.Branches.overhead_line_type.calc_z_ii">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">calc_z_ii</span><span class="p">(</span><span class="n">R_int</span><span class="p">,</span> <span class="n">is_tube</span><span class="p">,</span> <span class="n">r_outer</span><span class="p">,</span> <span class="n">r_inner</span><span class="p">,</span> <span class="n">y_i</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">rho</span><span class="p">,</span> <span class="n">err_tol</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">,</span>
-              <span class="n">use_dubanton_aprox</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">gmr</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">calc_z_ii</span><span class="p">(</span><span class="n">R_int</span><span class="p">,</span> <span class="n">is_tube</span><span class="p">,</span> <span class="n">r_outer</span><span class="p">,</span> <span class="n">r_inner</span><span class="p">,</span> <span class="n">y_i</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">rho</span><span class="p">,</span> <span class="n">err_tol</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">,</span> <span class="n">use_dubanton_aprox</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Calculates self impedance term [Ohm/km]</span>
 <span class="sd">    NOTE: No allowance has been made for skin effects</span>
 <span class="sd">    :param R_int:  AC conductor resistance [Ohm/km]</span>
@@ -424,14 +486,13 @@
 <span class="sd">    :param f: frequency [Hz]</span>
 <span class="sd">    :param rho: earth resistivity [Ohm.m]</span>
 <span class="sd">    :param err_tol: error tolerance for the calculation (default = 1e-6)</span>
-<span class="sd">    :param use_dubanton_aprox: Use dubanton&#39;s approximation (default = False)</span>
-<span class="sd">    :param gmr: Specified GMR in metres; zero uses the solid/tubular geometry.</span>
+<span class="sd">    :param use_dubanton_aprox: Use dubanton's approximation (default = False)</span>
 <span class="sd">    :return: self impedance term of line impedance matrix [Ohm/km]</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">if</span> <span class="n">use_dubanton_aprox</span><span class="p">:</span>
 
-        <span class="c1"># Dubanton&#39;s approximation</span>
+        <span class="c1"># Dubanton's approximation</span>
 
         <span class="n">w</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">pi</span> <span class="o">*</span> <span class="n">f</span>  <span class="c1"># rad</span>
 
@@ -441,29 +502,28 @@
 
         <span class="n">p</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">(</span><span class="n">rho</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="n">w</span> <span class="o">*</span> <span class="n">mu_0</span><span class="p">))</span>
 
-        <span class="n">gmr_i</span> <span class="o">=</span> <span class="n">gmr</span> <span class="k">if</span> <span class="n">gmr</span> <span class="o">&gt;</span> <span class="mf">0.0</span> <span class="k">else</span> <span class="n">calc_GMR</span><span class="p">(</span><span class="n">is_tube</span><span class="o">=</span><span class="n">is_tube</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="n">r_outer</span><span class="p">,</span> <span class="n">q</span><span class="o">=</span><span class="n">r_inner</span><span class="p">)</span>
+        <span class="n">gmr_i</span> <span class="o">=</span> <span class="n">calc_GMR</span><span class="p">(</span><span class="n">is_tube</span><span class="o">=</span><span class="n">is_tube</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="n">r_outer</span><span class="p">,</span> <span class="n">q</span><span class="o">=</span><span class="n">r_inner</span><span class="p">)</span>
 
         <span class="n">z</span> <span class="o">=</span> <span class="n">R_int</span> <span class="o">+</span> <span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="p">(</span><span class="n">w</span> <span class="o">*</span> <span class="n">mu_0_2pi</span> <span class="o">*</span> <span class="n">log</span><span class="p">((</span><span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">y_i</span> <span class="o">+</span> <span class="n">p</span><span class="p">))</span> <span class="o">/</span> <span class="n">gmr_i</span><span class="p">))</span>
 
     <span class="k">else</span><span class="p">:</span>
 
-        <span class="c1"># Carson&#39;s &quot;exact&quot; equations</span>
+        <span class="c1"># Carson's "exact" equations</span>
 
         <span class="c1"># Constants</span>
         <span class="n">omega</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">f</span>  <span class="c1"># Nominal angular frequency [rad/s]</span>
         <span class="n">mu_0</span> <span class="o">=</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="mf">1e-7</span>  <span class="c1"># Permeability of free space [H/m]</span>
 
-        <span class="k">if</span> <span class="n">gmr</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">:</span>
-            <span class="c1"># GMR already includes the internal flux linkage. Do not add L_int</span>
-            <span class="c1"># again, and do not replace the physical radius used for capacitance.</span>
-            <span class="n">X_int</span> <span class="o">=</span> <span class="mf">0.0</span>
-            <span class="n">X_geo</span> <span class="o">=</span> <span class="mf">1000.0</span> <span class="o">*</span> <span class="n">omega</span> <span class="o">*</span> <span class="n">mu_0</span> <span class="o">/</span> <span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">y_i</span> <span class="o">/</span> <span class="n">gmr</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">X_int</span> <span class="o">=</span> <span class="mi">1000</span> <span class="o">*</span> <span class="n">omega</span> <span class="o">*</span> <span class="n">calc_L_int</span><span class="p">(</span><span class="n">is_tube</span><span class="p">,</span> <span class="n">r_outer</span><span class="p">,</span> <span class="n">r_inner</span><span class="p">)</span>
-            <span class="n">X_geo</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1000.0</span> <span class="o">*</span> <span class="n">omega</span> <span class="o">*</span> <span class="n">mu_0</span> <span class="o">/</span> <span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">y_i</span> <span class="o">/</span> <span class="n">r_outer</span><span class="p">)</span>
-                     <span class="k">if</span> <span class="n">r_outer</span> <span class="o">&gt;</span> <span class="mf">0.0</span> <span class="k">else</span> <span class="mf">0.0</span><span class="p">)</span>
+        <span class="c1"># Calculate internal conductor reactance (in Ohm/km)</span>
+        <span class="n">X_int</span> <span class="o">=</span> <span class="mi">1000</span> <span class="o">*</span> <span class="n">omega</span> <span class="o">*</span> <span class="n">calc_L_int</span><span class="p">(</span><span class="n">is_tube</span><span class="p">,</span> <span class="n">r_outer</span><span class="p">,</span> <span class="n">r_inner</span><span class="p">)</span>
 
-        <span class="c1"># Calculate Carson&#39;s correction factors (in Ohm/km)</span>
+        <span class="c1"># Calculate geometrical reactance (in Ohm/km) - Equation 4.15 EMTP</span>
+        <span class="k">if</span> <span class="n">r_outer</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">:</span>
+            <span class="n">X_geo</span> <span class="o">=</span> <span class="mf">1000.0</span> <span class="o">*</span> <span class="n">omega</span> <span class="o">*</span> <span class="n">mu_0</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">y_i</span> <span class="o">/</span> <span class="n">r_outer</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">X_geo</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+        <span class="c1"># Calculate Carson's correction factors (in Ohm/km)</span>
         <span class="n">Rp</span><span class="p">,</span> <span class="n">Xp</span> <span class="o">=</span> <span class="n">carsons</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">y_i</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">rho</span><span class="p">,</span> <span class="n">err_tol</span><span class="p">)</span>
 
         <span class="n">z</span> <span class="o">=</span> <span class="nb">complex</span><span class="p">(</span><span class="n">R_int</span> <span class="o">+</span> <span class="n">Rp</span><span class="p">,</span> <span class="n">X_int</span> <span class="o">+</span> <span class="n">X_geo</span> <span class="o">+</span> <span class="n">Xp</span><span class="p">)</span>
@@ -475,7 +535,7 @@
 <div class="viewcode-block" id="calc_z_ij">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Branches.html#VeraGridEngine.Devices.Branches.overhead_line_type.calc_z_ij">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">calc_z_ij</span><span class="p">(</span><span class="n">y_i</span><span class="p">,</span> <span class="n">y_j</span><span class="p">,</span> <span class="n">x_i</span><span class="p">,</span> <span class="n">x_j</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">rho</span><span class="p">,</span> <span class="n">err_tol</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">,</span> <span class="n">use_dubanton_aprox</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Calculates mutual impedance term [Ohm/km]</span>
 <span class="sd">    :param y_i: height of conductor i above ground [m]</span>
 <span class="sd">    :param y_j: height of conductor j above ground [m]</span>
@@ -484,9 +544,9 @@
 <span class="sd">    :param f: frequency [Hz]</span>
 <span class="sd">    :param rho: earth resistivity [ohm·m]</span>
 <span class="sd">    :param err_tol: error tolerance for the calculation (default = 1e-6)</span>
-<span class="sd">    :param use_dubanton_aprox: Use dubanton&#39;s approximation (default = False)</span>
+<span class="sd">    :param use_dubanton_aprox: Use dubanton's approximation (default = False)</span>
 <span class="sd">    :return:self impedance term of line impedance matrix (Ohm/km)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">use_dubanton_aprox</span><span class="p">:</span>
         <span class="n">w</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">pi</span> <span class="o">*</span> <span class="n">f</span>  <span class="c1"># rad</span>
 
@@ -512,7 +572,7 @@
         <span class="c1"># Calculate geometrical mutual reactance (in Ohm/km)</span>
         <span class="n">X_geo</span> <span class="o">=</span> <span class="mi">1000</span> <span class="o">*</span> <span class="n">omega</span> <span class="o">*</span> <span class="n">mu_0</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">D</span> <span class="o">/</span> <span class="n">d</span><span class="p">)</span>
 
-        <span class="c1"># Calculate Carson&#39;s correction factors (in Ohm/km)</span>
+        <span class="c1"># Calculate Carson's correction factors (in Ohm/km)</span>
         <span class="n">Rp</span><span class="p">,</span> <span class="n">Xp</span> <span class="o">=</span> <span class="n">carsons</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="n">y_i</span><span class="p">,</span> <span class="n">y_j</span><span class="p">,</span> <span class="n">x_ij</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">rho</span><span class="p">,</span> <span class="n">err_tol</span><span class="p">)</span>
 
         <span class="n">z</span> <span class="o">=</span> <span class="nb">complex</span><span class="p">(</span><span class="n">Rp</span><span class="p">,</span> <span class="n">X_geo</span> <span class="o">+</span> <span class="n">Xp</span><span class="p">)</span>
@@ -524,14 +584,14 @@
 <div class="viewcode-block" id="calc_z_matrix">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Branches.html#VeraGridEngine.Devices.Branches.overhead_line_type.calc_z_matrix">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">calc_z_matrix</span><span class="p">(</span><span class="n">wires_in_tower</span><span class="p">:</span> <span class="n">ListOfWires</span><span class="p">,</span> <span class="n">f</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">50</span><span class="p">,</span> <span class="n">rho</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span> <span class="n">use_dubanton_aprox</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Impedance matrix</span>
 <span class="sd">    :param wires_in_tower: WireInTower</span>
 <span class="sd">    :param f: system frequency (Hz)</span>
 <span class="sd">    :param rho: earth resistivity</span>
-<span class="sd">    :param use_dubanton_aprox: Use dubanton&#39;s approximation (default = False)</span>
+<span class="sd">    :param use_dubanton_aprox: Use dubanton's approximation (default = False)</span>
 <span class="sd">    :return: 4 by 4 impedance matrix where the order of the phases is: N, A, B, C</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">wires_in_tower</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
     <span class="n">z_prim</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n</span><span class="p">,</span> <span class="n">n</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">)</span>
@@ -552,15 +612,14 @@
                                  <span class="n">f</span><span class="o">=</span><span class="n">f</span><span class="p">,</span>
                                  <span class="n">rho</span><span class="o">=</span><span class="n">rho</span><span class="p">,</span>
                                  <span class="n">err_tol</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">,</span>
-                                 <span class="n">use_dubanton_aprox</span><span class="o">=</span><span class="n">use_dubanton_aprox</span><span class="p">,</span>
-                                 <span class="n">gmr</span><span class="o">=</span><span class="n">wire_i</span><span class="o">.</span><span class="n">wire</span><span class="o">.</span><span class="n">gmr</span> <span class="o">/</span> <span class="mf">1000.0</span><span class="p">)</span>
+                                 <span class="n">use_dubanton_aprox</span><span class="o">=</span><span class="n">use_dubanton_aprox</span><span class="p">)</span>
 
         <span class="c1"># mutual impedances</span>
         <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">wire_j</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">wires_in_tower</span><span class="o">.</span><span class="n">data</span><span class="p">):</span>
 
             <span class="k">if</span> <span class="n">i</span> <span class="o">!=</span> <span class="n">j</span><span class="p">:</span>
 
-                <span class="c1"># Carson&#39;s equations</span>
+                <span class="c1"># Carson's equations</span>
                 <span class="n">z_prim</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">calc_z_ij</span><span class="p">(</span><span class="n">y_i</span><span class="o">=</span><span class="n">wire_i</span><span class="o">.</span><span class="n">ypos</span> <span class="o">+</span> <span class="mf">1e-12</span><span class="p">,</span>
                                          <span class="n">y_j</span><span class="o">=</span><span class="n">wire_j</span><span class="o">.</span><span class="n">ypos</span> <span class="o">+</span> <span class="mf">1e-12</span><span class="p">,</span>
                                          <span class="n">x_i</span><span class="o">=</span><span class="n">wire_i</span><span class="o">.</span><span class="n">xpos</span><span class="p">,</span>
@@ -610,16 +669,16 @@
 <div class="viewcode-block" id="calc_y_matrix">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Branches.html#VeraGridEngine.Devices.Branches.overhead_line_type.calc_y_matrix">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">calc_y_matrix</span><span class="p">(</span><span class="n">wires_in_tower</span><span class="p">:</span> <span class="n">ListOfWires</span><span class="p">,</span> <span class="n">f</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">50</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Impedance matrix</span>
 <span class="sd">    :param wires_in_tower: ListOfWires</span>
 <span class="sd">    :param f: system frequency (Hz)</span>
 <span class="sd">    :return: 4 by 4 impedance matrix where the order of the phases is: N, A, B, C</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">wires_in_tower</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
 
-    <span class="c1"># Maxwell&#39;s potential matrix</span>
+    <span class="c1"># Maxwell's potential matrix</span>
     <span class="n">p_prim</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n</span><span class="p">,</span> <span class="n">n</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">)</span>
 
     <span class="c1"># dictionary with the wire indices per phase</span>
@@ -642,7 +701,7 @@
             <span class="n">p_prim</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">one_two_pi_e0</span> <span class="o">*</span> <span class="n">log</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">wire_i</span><span class="o">.</span><span class="n">ypos</span> <span class="o">/</span> <span class="n">r</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">p_prim</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
-            <span class="nb">print</span><span class="p">(</span><span class="n">wire_i</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s1">&#39;has y=0 !&#39;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">wire_i</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s1">'has y=0 !'</span><span class="p">)</span>
 
             <span class="c1"># mutual impedances</span>
         <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">wire_j</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">wires_in_tower</span><span class="o">.</span><span class="n">data</span><span class="p">):</span>
@@ -707,7 +766,7 @@
                                        <span class="n">Vnom</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
                                        <span class="n">earth_resistivity</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span>
                                        <span class="n">frequency</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">50</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OverheadLineType</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 
 <span class="sd">    :param name:</span>
 <span class="sd">    :param z_nabc:</span>
@@ -717,7 +776,7 @@
 <span class="sd">    :param earth_resistivity:</span>
 <span class="sd">    :param frequency:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">template</span> <span class="o">=</span> <span class="n">OverheadLineType</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
                                 <span class="n">Vnom</span><span class="o">=</span><span class="n">Vnom</span><span class="p">,</span>
                                 <span class="n">earth_resistivity</span><span class="o">=</span><span class="n">earth_resistivity</span><span class="p">,</span>
@@ -735,28 +794,28 @@
 <div class="viewcode-block" id="WireInTower">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Branches.html#VeraGridEngine.Devices.Branches.overhead_line_type.WireInTower">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">WireInTower</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Wire -&gt; Tower association</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s1">&#39;wire&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;name&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;xpos&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;ypos&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_phase&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;circuit_index&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;phase_type&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;device_type&#39;</span><span class="p">,</span>
+        <span class="s1">'wire'</span><span class="p">,</span>
+        <span class="s1">'name'</span><span class="p">,</span>
+        <span class="s1">'xpos'</span><span class="p">,</span>
+        <span class="s1">'ypos'</span><span class="p">,</span>
+        <span class="s1">'_phase'</span><span class="p">,</span>
+        <span class="s1">'circuit_index'</span><span class="p">,</span>
+        <span class="s1">'phase_type'</span><span class="p">,</span>
+        <span class="s1">'device_type'</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">wire</span><span class="p">:</span> <span class="n">Wire</span><span class="p">,</span> <span class="n">xpos</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">ypos</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">phase</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Wire in a tower</span>
 <span class="sd">        :param wire: Wire instance</span>
 <span class="sd">        :param xpos: x position in m</span>
 <span class="sd">        :param ypos: y position in m</span>
 <span class="sd">        :param phase: 0-&gt;Neutral, 1-&gt;A, 2-&gt;B, 3-&gt;C</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">wire</span><span class="p">:</span> <span class="n">Wire</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">wire</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">wire</span><span class="o">.</span><span class="n">name</span>
@@ -769,13 +828,13 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">circuit_index</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">phase_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">phase_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">set_phase</span><span class="p">(</span><span class="n">phase</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">device_type</span> <span class="o">=</span> <span class="n">DeviceType</span><span class="o">.</span><span class="n">WireDevice</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="s2">&quot;WireInTower&quot;</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="s2">"WireInTower"</span><span class="p">):</span>
         <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">wire</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">wire</span>
                 <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">xpos</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">xpos</span>
                 <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">ypos</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">ypos</span>
@@ -786,7 +845,7 @@
 <div class="viewcode-block" id="WireInTower.set_phase">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Branches.html#VeraGridEngine.Devices.Branches.overhead_line_type.WireInTower.set_phase">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">set_phase</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">phase</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Pase setter</span>
 
 <span class="sd">         A    B    C   circuit_idx</span>
@@ -798,31 +857,31 @@
 
 <span class="sd">        :param phase:</span>
 <span class="sd">        :return: None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">n_circuit</span> <span class="o">=</span> <span class="n">phase2circuit</span><span class="p">(</span><span class="n">phase</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">phase</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_phase</span> <span class="o">=</span> <span class="n">phase</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">phase_type</span> <span class="o">=</span> <span class="s2">&quot;N&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">phase_type</span> <span class="o">=</span> <span class="s2">"N"</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">circuit_index</span> <span class="o">=</span> <span class="mi">1</span>
 
         <span class="k">elif</span> <span class="p">(</span><span class="n">phase</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="mi">3</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_phase</span> <span class="o">=</span> <span class="n">phase</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">phase_type</span> <span class="o">=</span> <span class="s2">&quot;A&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">phase_type</span> <span class="o">=</span> <span class="s2">"A"</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">circuit_index</span> <span class="o">=</span> <span class="n">n_circuit</span>
 
         <span class="k">elif</span> <span class="p">(</span><span class="n">phase</span> <span class="o">-</span> <span class="mi">2</span><span class="p">)</span> <span class="o">%</span> <span class="mi">3</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_phase</span> <span class="o">=</span> <span class="n">phase</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">phase_type</span> <span class="o">=</span> <span class="s2">&quot;B&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">phase_type</span> <span class="o">=</span> <span class="s2">"B"</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">circuit_index</span> <span class="o">=</span> <span class="n">n_circuit</span>
 
         <span class="k">elif</span> <span class="p">(</span><span class="n">phase</span> <span class="o">-</span> <span class="mi">3</span><span class="p">)</span> <span class="o">%</span> <span class="mi">3</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_phase</span> <span class="o">=</span> <span class="n">phase</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">phase_type</span> <span class="o">=</span> <span class="s2">&quot;C&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">phase_type</span> <span class="o">=</span> <span class="s2">"C"</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">circuit_index</span> <span class="o">=</span> <span class="n">n_circuit</span>
 
         <span class="k">else</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Cannot recognize the phase...&quot;</span><span class="p">)</span></div>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">"Cannot recognize the phase..."</span><span class="p">)</span></div>
 
 
     <span class="nd">@property</span>
@@ -831,44 +890,44 @@
 
     <span class="nd">@phase</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">phase</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">phase</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Pase setter</span>
 <span class="sd">        :param phase: phase number</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">set_phase</span><span class="p">(</span><span class="n">phase</span><span class="p">)</span>
 
 <div class="viewcode-block" id="WireInTower.to_dict">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Branches.html#VeraGridEngine.Devices.Branches.overhead_line_type.WireInTower.to_dict">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">int</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        data to dict</span>
 <span class="sd">        :return: json like dictionary</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="p">{</span>
-            <span class="s2">&quot;wire&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">wire</span><span class="o">.</span><span class="n">idtag</span><span class="p">,</span>
-            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
-            <span class="s2">&quot;xpos&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">xpos</span><span class="p">,</span>
-            <span class="s2">&quot;ypos&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">ypos</span><span class="p">,</span>
-            <span class="s2">&quot;phase&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">phase</span><span class="p">,</span>
-            <span class="s2">&quot;circuit_index&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">circuit_index</span><span class="p">,</span>
+            <span class="s2">"wire"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">wire</span><span class="o">.</span><span class="n">idtag</span><span class="p">,</span>
+            <span class="s2">"name"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+            <span class="s2">"xpos"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">xpos</span><span class="p">,</span>
+            <span class="s2">"ypos"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">ypos</span><span class="p">,</span>
+            <span class="s2">"phase"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">phase</span><span class="p">,</span>
+            <span class="s2">"circuit_index"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">circuit_index</span><span class="p">,</span>
         <span class="p">}</span></div>
 
 
 <div class="viewcode-block" id="WireInTower.parse">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Branches.html#VeraGridEngine.Devices.Branches.overhead_line_type.WireInTower.parse">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">parse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">int</span><span class="p">],</span> <span class="n">wire_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Wire</span><span class="p">]):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Parse data from json dictionary</span>
 <span class="sd">        :param data: data to parse</span>
 <span class="sd">        :param wire_dict: wires dictionary</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">wire</span><span class="p">:</span> <span class="n">Wire</span> <span class="o">=</span> <span class="n">wire_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;wire&quot;</span><span class="p">])</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">xpos</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;xpos&quot;</span><span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">ypos</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;ypos&quot;</span><span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">phase</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;phase&quot;</span><span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">circuit_index</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;circuit_index&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span></div>
+<span class="sd">        """</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">wire</span><span class="p">:</span> <span class="n">Wire</span> <span class="o">=</span> <span class="n">wire_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">"wire"</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">"name"</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">xpos</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">"xpos"</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ypos</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">"ypos"</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">phase</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">"phase"</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">circuit_index</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"circuit_index"</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span></div>
 </div>
 
 
@@ -876,7 +935,7 @@
 <div class="viewcode-block" id="ListOfWires">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Branches.html#VeraGridEngine.Devices.Branches.overhead_line_type.ListOfWires">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">ListOfWires</span><span class="p">:</span>
-    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;data&quot;</span><span class="p">)</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"data"</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">WireInTower</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
@@ -890,28 +949,28 @@
 <div class="viewcode-block" id="ListOfWires.to_list">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Branches.html#VeraGridEngine.Devices.Branches.overhead_line_type.ListOfWires.to_list">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">to_list</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Generate list of WireInTower objects</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="p">[</span><span class="n">e</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">]</span></div>
 
 
 <div class="viewcode-block" id="ListOfWires.parse">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Branches.html#VeraGridEngine.Devices.Branches.overhead_line_type.ListOfWires.parse">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">parse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">int</span><span class="p">]],</span> <span class="n">wire_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Wire</span><span class="p">]):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Parse data from json dictionary</span>
 <span class="sd">        :param data:</span>
 <span class="sd">        :param wire_dict:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
             <span class="n">elm</span> <span class="o">=</span> <span class="n">WireInTower</span><span class="p">(</span>
-                <span class="n">wire</span><span class="o">=</span><span class="n">wire_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">entry</span><span class="p">[</span><span class="s2">&quot;wire&quot;</span><span class="p">]),</span>
-                <span class="n">xpos</span><span class="o">=</span><span class="n">entry</span><span class="p">[</span><span class="s2">&quot;xpos&quot;</span><span class="p">],</span>
-                <span class="n">ypos</span><span class="o">=</span><span class="n">entry</span><span class="p">[</span><span class="s2">&quot;ypos&quot;</span><span class="p">],</span>
-                <span class="n">phase</span><span class="o">=</span><span class="n">entry</span><span class="p">[</span><span class="s2">&quot;phase&quot;</span><span class="p">]</span>
+                <span class="n">wire</span><span class="o">=</span><span class="n">wire_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">entry</span><span class="p">[</span><span class="s2">"wire"</span><span class="p">]),</span>
+                <span class="n">xpos</span><span class="o">=</span><span class="n">entry</span><span class="p">[</span><span class="s2">"xpos"</span><span class="p">],</span>
+                <span class="n">ypos</span><span class="o">=</span><span class="n">entry</span><span class="p">[</span><span class="s2">"ypos"</span><span class="p">],</span>
+                <span class="n">phase</span><span class="o">=</span><span class="n">entry</span><span class="p">[</span><span class="s2">"phase"</span><span class="p">]</span>
             <span class="p">)</span>
 
             <span class="n">elm</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">entry</span><span class="p">,</span> <span class="n">wire_dict</span><span class="p">)</span>
@@ -921,10 +980,10 @@
 <div class="viewcode-block" id="ListOfWires.get_phases">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Branches.html#VeraGridEngine.Devices.Branches.overhead_line_type.ListOfWires.get_phases">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_phases</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the introduced phases</span>
 <span class="sd">        :return: list of phase numbers</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">x</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">:</span>
             <span class="n">x</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">phase</span><span class="p">)</span>
@@ -934,22 +993,22 @@
 <div class="viewcode-block" id="ListOfWires.get_circuits">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Branches.html#VeraGridEngine.Devices.Branches.overhead_line_type.ListOfWires.get_circuits">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_circuits</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the introduced circuits</span>
 <span class="sd">        :return: list of circuit numbers</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">x</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">:</span>
             <span class="n">x</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">circuit_index</span><span class="p">)</span>
         <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">x</span><span class="p">)</span></div>
 
 
-    <span class="k">def</span><span class="w"> </span><span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="s2">&quot;ListOfWires&quot;</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="s2">"ListOfWires"</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Equality operator</span>
 <span class="sd">        :param other:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">data</span><span class="p">):</span>
             <span class="k">return</span> <span class="kc">False</span>
 
@@ -974,80 +1033,80 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Branches.html#VeraGridEngine.Devices.Branches.overhead_line_type.OverheadLineType">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">OverheadLineType</span><span class="p">(</span><span class="n">DynamicDevice</span><span class="p">):</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s1">&#39;wires_in_tower&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_Vnom&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_earth_resistivity&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_frequency&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_Imax&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_z_nabc&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_z_phases_nabc&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_z_abc&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_z_phases_abc&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_z_seq&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_z_0123&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_y_nabc&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_y_phases_nabc&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_y_abc&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_y_phases_abc&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_y_seq&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_y_0123&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_capex&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_opex&#39;</span><span class="p">,</span>
+        <span class="s1">'wires_in_tower'</span><span class="p">,</span>
+        <span class="s1">'_Vnom'</span><span class="p">,</span>
+        <span class="s1">'_earth_resistivity'</span><span class="p">,</span>
+        <span class="s1">'_frequency'</span><span class="p">,</span>
+        <span class="s1">'_Imax'</span><span class="p">,</span>
+        <span class="s1">'_z_nabc'</span><span class="p">,</span>
+        <span class="s1">'_z_phases_nabc'</span><span class="p">,</span>
+        <span class="s1">'_z_abc'</span><span class="p">,</span>
+        <span class="s1">'_z_phases_abc'</span><span class="p">,</span>
+        <span class="s1">'_z_seq'</span><span class="p">,</span>
+        <span class="s1">'_z_0123'</span><span class="p">,</span>
+        <span class="s1">'_y_nabc'</span><span class="p">,</span>
+        <span class="s1">'_y_phases_nabc'</span><span class="p">,</span>
+        <span class="s1">'_y_abc'</span><span class="p">,</span>
+        <span class="s1">'_y_phases_abc'</span><span class="p">,</span>
+        <span class="s1">'_y_seq'</span><span class="p">,</span>
+        <span class="s1">'_y_0123'</span><span class="p">,</span>
+        <span class="s1">'_capex'</span><span class="p">,</span>
+        <span class="s1">'_opex'</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="n">LOCAL_PROPERTY_DECLARATIONS</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">GCProp</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;earth_resistivity&#39;</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;Ohm/m3&#39;</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'earth_resistivity'</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">'Ohm/m3'</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Earth resistivity&#39;</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">'Earth resistivity'</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">TP</span><span class="p">],</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;frequency&#39;</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;Hz&#39;</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'frequency'</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">'Hz'</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Frequency&#39;</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">'Frequency'</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">TP</span><span class="p">],</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;Vnom&#39;</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;kV&#39;</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'Vnom'</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">'kV'</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Voltage rating of the line&#39;</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">'Voltage rating of the line'</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">TP</span><span class="p">],</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;wires_in_tower&#39;</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'wires_in_tower'</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">''</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="n">SubObjectType</span><span class="o">.</span><span class="n">ListOfWires</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;List of wires&#39;</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">'List of wires'</span><span class="p">,</span>
             <span class="n">editable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
             <span class="n">display</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">TP</span><span class="p">],</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;capex&#39;</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;currency/km&#39;</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'capex'</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">'currency/km'</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Capital expenditure per km&#39;</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">'Capital expenditure per km'</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">INV</span><span class="p">],</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;opex&#39;</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;currency/MWh&#39;</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'opex'</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">'currency/MWh'</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Operational expenditure&#39;</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">'Operational expenditure'</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">INV</span><span class="p">],</span>
         <span class="p">),</span>
     <span class="p">)</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Tower&#39;</span><span class="p">,</span> <span class="n">idtag</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">'Tower'</span><span class="p">,</span> <span class="n">idtag</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">Vnom</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
                  <span class="n">earth_resistivity</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span>
                  <span class="n">frequency</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">50</span><span class="p">,</span>
                  <span class="n">capex</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">opex</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Overhead line editor</span>
 <span class="sd">        :param name: name</span>
 <span class="sd">        :param idtag:</span>
@@ -1056,10 +1115,10 @@
 <span class="sd">        :param frequency: system frequency (Hz)</span>
 <span class="sd">        :param capex: Capital expenditures</span>
 <span class="sd">        :param opex: Operating expenditures</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
                          <span class="n">idtag</span><span class="o">=</span><span class="n">idtag</span><span class="p">,</span>
-                         <span class="n">code</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+                         <span class="n">code</span><span class="o">=</span><span class="s1">''</span><span class="p">,</span>
                          <span class="n">device_type</span><span class="o">=</span><span class="n">DeviceType</span><span class="o">.</span><span class="n">OverheadLineTypeDevice</span><span class="p">)</span>
 
         <span class="c1"># list of wires in the tower</span>
@@ -1096,10 +1155,10 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">Vnom</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Vnom</span>
 
     <span class="nd">@Vnom</span><span class="o">.</span><span class="n">setter</span>
@@ -1108,10 +1167,10 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">n_circuits</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the number of circuits</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">n_circuit</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="k">for</span> <span class="n">wit</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">wires_in_tower</span><span class="o">.</span><span class="n">data</span><span class="p">:</span>
             <span class="n">c</span> <span class="o">=</span> <span class="n">phase2circuit</span><span class="p">(</span><span class="n">wit</span><span class="o">.</span><span class="n">phase</span><span class="p">)</span>
@@ -1120,31 +1179,31 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">Imax</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Current rating of the tower in kA.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Current rating of the tower in kA."""</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Imax</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">z_nabc</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CxMat</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_z_nabc</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">z_phases_nabc</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CxMat</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_z_phases_nabc</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">z_abc</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CxMat</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_z_abc</span>
 
     <span class="nd">@z_abc</span><span class="o">.</span><span class="n">setter</span>
@@ -1152,54 +1211,54 @@
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_z_abc</span> <span class="o">=</span> <span class="n">val</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;z_abc is not a numpy array&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">"z_abc is not a numpy array"</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">z_phases_abc</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CxMat</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_z_phases_abc</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">z_seq</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CxMat</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_z_seq</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">z_0123</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CxMat</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_z_0123</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">y_nabc</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CxMat</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_y_nabc</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">y_phases_nabc</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CxMat</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_y_phases_nabc</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">y_abc</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CxMat</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_y_abc</span>
 
     <span class="nd">@y_abc</span><span class="o">.</span><span class="n">setter</span>
@@ -1207,39 +1266,39 @@
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_y_abc</span> <span class="o">=</span> <span class="n">val</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;y_abc is not a numpy array&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">"y_abc is not a numpy array"</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">y_phases_abc</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CxMat</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_y_phases_abc</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">y_seq</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CxMat</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_y_seq</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">y_0123</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CxMat</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_y_0123</span>
 
 <div class="viewcode-block" id="OverheadLineType.get_phN">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Branches.html#VeraGridEngine.Devices.Branches.overhead_line_type.OverheadLineType.get_phN">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_phN</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">phases</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_phases_nabc</span>
         <span class="n">phN</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="k">if</span> <span class="mi">0</span> <span class="ow">in</span> <span class="n">phases</span><span class="p">:</span>
@@ -1250,10 +1309,10 @@
 <div class="viewcode-block" id="OverheadLineType.get_phA">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Branches.html#VeraGridEngine.Devices.Branches.overhead_line_type.OverheadLineType.get_phA">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_phA</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">phases</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_phases_nabc</span>
         <span class="n">phA</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="k">if</span> <span class="mi">1</span> <span class="ow">in</span> <span class="n">phases</span><span class="p">:</span>
@@ -1264,10 +1323,10 @@
 <div class="viewcode-block" id="OverheadLineType.get_phB">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Branches.html#VeraGridEngine.Devices.Branches.overhead_line_type.OverheadLineType.get_phB">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_phB</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">phases</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_phases_nabc</span>
         <span class="n">phB</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="k">if</span> <span class="mi">2</span> <span class="ow">in</span> <span class="n">phases</span><span class="p">:</span>
@@ -1278,10 +1337,10 @@
 <div class="viewcode-block" id="OverheadLineType.get_phC">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Branches.html#VeraGridEngine.Devices.Branches.overhead_line_type.OverheadLineType.get_phC">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_phC</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">phases</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_phases_nabc</span>
         <span class="n">phC</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="k">if</span> <span class="mi">3</span> <span class="ow">in</span> <span class="n">phases</span><span class="p">:</span>
@@ -1292,14 +1351,14 @@
 <div class="viewcode-block" id="OverheadLineType.get_ys">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Branches.html#VeraGridEngine.Devices.Branches.overhead_line_type.OverheadLineType.get_ys">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_ys</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">circuit_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">Sbase</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">length</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">Vnom</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AdmittanceMatrix</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        get the series admittance matrix in p.u. (total)</span>
 <span class="sd">        :param circuit_idx: Circuit index (starting by 1)</span>
 <span class="sd">        :param Sbase: Base power (MVA)</span>
 <span class="sd">        :param length: Line length (km)</span>
 <span class="sd">        :param Vnom: Nominal voltage (kV)</span>
 <span class="sd">        :return: AdmittanceMatrix with series admittance in p.u.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">Zbase</span> <span class="o">=</span> <span class="p">(</span><span class="n">Vnom</span> <span class="o">*</span> <span class="n">Vnom</span><span class="p">)</span> <span class="o">/</span> <span class="n">Sbase</span>
         <span class="n">adm</span> <span class="o">=</span> <span class="n">AdmittanceMatrix</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
 
@@ -1330,14 +1389,14 @@
 <div class="viewcode-block" id="OverheadLineType.get_ysh">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Branches.html#VeraGridEngine.Devices.Branches.overhead_line_type.OverheadLineType.get_ysh">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_ysh</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">circuit_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">Sbase</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">length</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">Vnom</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AdmittanceMatrix</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        get the shunt admittance matrix in p.u. (total)</span>
 <span class="sd">        :param circuit_idx: Circuit index (starting by 1)</span>
 <span class="sd">        :param Sbase: Base power (MVA)</span>
 <span class="sd">        :param length: Line length (km)</span>
 <span class="sd">        :param Vnom: Nominal voltage (kV)</span>
 <span class="sd">        :return: AdmittanceMatrix with shunt admittance in p.u.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="n">Zbase</span> <span class="o">=</span> <span class="p">(</span><span class="n">Vnom</span> <span class="o">*</span> <span class="n">Vnom</span><span class="p">)</span> <span class="o">/</span> <span class="n">Sbase</span>
         <span class="n">Ybase</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">Zbase</span>
@@ -1372,13 +1431,13 @@
                               <span class="n">xpos</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
                               <span class="n">ypos</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
                               <span class="n">phase</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Wire in a tower</span>
 <span class="sd">        :param wire: Wire instance</span>
 <span class="sd">        :param xpos: x position in m</span>
 <span class="sd">        :param ypos: y position in m</span>
 <span class="sd">        :param phase: 0-&gt;Neutral, 1-&gt;A, 2-&gt;B, 3-&gt;C</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">w</span> <span class="o">=</span> <span class="n">WireInTower</span><span class="p">(</span><span class="n">wire</span><span class="o">=</span><span class="n">wire</span><span class="p">,</span> <span class="n">xpos</span><span class="o">=</span><span class="n">xpos</span><span class="p">,</span> <span class="n">ypos</span><span class="o">=</span><span class="n">ypos</span><span class="p">,</span> <span class="n">phase</span><span class="o">=</span><span class="n">phase</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">wires_in_tower</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">w</span><span class="p">)</span></div>
 
@@ -1387,10 +1446,10 @@
 <div class="viewcode-block" id="OverheadLineType.is_computed">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Branches.html#VeraGridEngine.Devices.Branches.overhead_line_type.OverheadLineType.is_computed">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">is_computed</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Boolean that tells if the template has already been computed or not</span>
 <span class="sd">        :return: if computed or not</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="n">ok</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="c1"># ok = ok and self.z_abc is not None</span>
@@ -1410,10 +1469,10 @@
 <div class="viewcode-block" id="OverheadLineType.has_sequence_data">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Branches.html#VeraGridEngine.Devices.Branches.overhead_line_type.OverheadLineType.has_sequence_data">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">has_sequence_data</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Boolean that tells if the template has already been computed or not</span>
 <span class="sd">        :return: if computed or not</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="n">ok</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="n">ok</span> <span class="o">=</span> <span class="n">ok</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">z_seq</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
@@ -1429,10 +1488,10 @@
 <div class="viewcode-block" id="OverheadLineType.check">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Branches.html#VeraGridEngine.Devices.Branches.overhead_line_type.OverheadLineType.check">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">check</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="n">Logger</span><span class="p">()):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Check that the wires configuration make sense</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="n">all_y_zero</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="n">phases</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
@@ -1444,28 +1503,28 @@
                 <span class="n">all_y_zero</span> <span class="o">=</span> <span class="kc">False</span>
 
             <span class="k">if</span> <span class="n">wire_i</span><span class="o">.</span><span class="n">wire</span><span class="o">.</span><span class="n">diameter</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;The wires&#39;</span> <span class="o">+</span> <span class="n">wire_i</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s1">&#39;(&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;) has GRM=0 which is impossible.&#39;</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">'The wires'</span> <span class="o">+</span> <span class="n">wire_i</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s1">'('</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">+</span> <span class="s1">') has GRM=0 which is impossible.'</span><span class="p">)</span>
                 <span class="k">return</span> <span class="kc">False</span>
 
             <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">wire_j</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">wires_in_tower</span><span class="o">.</span><span class="n">data</span><span class="p">):</span>
 
                 <span class="k">if</span> <span class="n">i</span> <span class="o">!=</span> <span class="n">j</span><span class="p">:</span>
                     <span class="k">if</span> <span class="n">wire_i</span><span class="o">.</span><span class="n">xpos</span> <span class="o">==</span> <span class="n">wire_j</span><span class="o">.</span><span class="n">xpos</span> <span class="ow">and</span> <span class="n">wire_i</span><span class="o">.</span><span class="n">ypos</span> <span class="o">==</span> <span class="n">wire_j</span><span class="o">.</span><span class="n">ypos</span><span class="p">:</span>
-                        <span class="n">logger</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;The wires&#39;</span> <span class="o">+</span> <span class="n">wire_i</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s1">&#39;(&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;) and &#39;</span> <span class="o">+</span>
-                                   <span class="n">wire_j</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s1">&#39;(&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">j</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;) have the same position which is impossible.&#39;</span><span class="p">)</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">'The wires'</span> <span class="o">+</span> <span class="n">wire_i</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s1">'('</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">+</span> <span class="s1">') and '</span> <span class="o">+</span>
+                                   <span class="n">wire_j</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s1">'('</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">j</span><span class="p">)</span> <span class="o">+</span> <span class="s1">') have the same position which is impossible.'</span><span class="p">)</span>
                         <span class="k">return</span> <span class="kc">False</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="k">pass</span>
 
         <span class="k">if</span> <span class="n">all_y_zero</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;All the vertical coordinates (y) are exactly zero.</span><span class="se">\n</span><span class="s1">&#39;</span>
-                       <span class="s1">&#39;If this is correct, try a very small value.&#39;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">'All the vertical coordinates (y) are exactly zero.</span><span class="se">\n</span><span class="s1">'</span>
+                       <span class="s1">'If this is correct, try a very small value.'</span><span class="p">)</span>
             <span class="k">return</span> <span class="kc">False</span>
 
         <span class="c1"># A tower may legitimately contain one phase only. Reject just the</span>
         <span class="c1"># configuration that has earth/neutral wires without a phase conductor.</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">phases</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="mi">0</span> <span class="ow">in</span> <span class="n">phases</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;The tower has no phase conductor!&#39;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">'The tower has no phase conductor!'</span><span class="p">)</span>
             <span class="k">return</span> <span class="kc">False</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">pass</span>
@@ -1475,7 +1534,7 @@
         <span class="c1"># missing_phases = False</span>
         <span class="c1"># for i in range(1, mx):</span>
         <span class="c1">#     if i not in phases:</span>
-        <span class="c1">#         logger.add(&#39;Missing phase&#39;, value=i)</span>
+        <span class="c1">#         logger.add('Missing phase', value=i)</span>
         <span class="c1">#         missing_phases = True</span>
 
         <span class="c1"># if missing_phases:</span>
@@ -1487,10 +1546,10 @@
 <div class="viewcode-block" id="OverheadLineType.compute_rating">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Branches.html#VeraGridEngine.Devices.Branches.overhead_line_type.OverheadLineType.compute_rating">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">compute_rating</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Compute the sum of the wires max current in A</span>
 <span class="sd">        :return: vector of max current (I) of the circuits in A</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_circuits</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">wit</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">wires_in_tower</span><span class="o">.</span><span class="n">data</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">wit</span><span class="o">.</span><span class="n">phase</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># disregard the neutral wires</span>
@@ -1505,10 +1564,10 @@
 <div class="viewcode-block" id="OverheadLineType.compute">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Branches.html#VeraGridEngine.Devices.Branches.overhead_line_type.OverheadLineType.compute">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">compute</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Compute the tower matrices</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># check the wires configuration</span>
         <span class="n">all_ok</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">check</span><span class="p">()</span>
 
@@ -1541,11 +1600,11 @@
 <div class="viewcode-block" id="OverheadLineType.is_used">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Branches.html#VeraGridEngine.Devices.Branches.overhead_line_type.OverheadLineType.is_used">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">is_used</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">wire</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :param wire:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">wires_in_tower</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">):</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">wires_in_tower</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">wire</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">wire</span><span class="o">.</span><span class="n">name</span><span class="p">:</span>
@@ -1555,12 +1614,12 @@
 <div class="viewcode-block" id="OverheadLineType.get_sequence_values">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Branches.html#VeraGridEngine.Devices.Branches.overhead_line_type.OverheadLineType.get_sequence_values">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_sequence_values</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">circuit_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">seq</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the positive sequence values R1 [Ohm], X1[Ohm] and Bsh1 [S].</span>
 <span class="sd">        :param circuit_idx: Circuit indexation (starts at 1)</span>
 <span class="sd">        :param seq: Sequence number (0, 1, 2)</span>
 <span class="sd">        :return: R1 [Ohm], X1[Ohm] and Bsh1 [S]</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">z_seq</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_seq</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">a1</span> <span class="o">=</span> <span class="mi">3</span> <span class="o">*</span> <span class="p">(</span><span class="n">circuit_idx</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="n">seq</span>
@@ -1570,7 +1629,7 @@
             <span class="n">I_kA</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Imax</span><span class="p">[</span><span class="n">circuit_idx</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
             <span class="k">return</span> <span class="n">R1</span><span class="p">,</span> <span class="n">X1</span><span class="p">,</span> <span class="n">Bsh1</span><span class="p">,</span> <span class="n">I_kA</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="c1"># warn(f&quot;{self.name} tower is incorrect :(&quot;)</span>
+            <span class="c1"># warn(f"{self.name} tower is incorrect :(")</span>
             <span class="n">I_kA</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Imax</span><span class="p">[</span><span class="n">circuit_idx</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
             <span class="k">return</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1e-20</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">I_kA</span></div>
 
@@ -1578,7 +1637,7 @@
 <div class="viewcode-block" id="OverheadLineType.get_values">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Branches.html#VeraGridEngine.Devices.Branches.overhead_line_type.OverheadLineType.get_values">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_values</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Sbase</span><span class="p">,</span> <span class="n">length</span><span class="p">,</span> <span class="n">circuit_index</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">round_vals</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">Vnom</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the sequence values of the template</span>
 <span class="sd">        :param Sbase: Base power</span>
 <span class="sd">        :param length: Length of the line</span>
@@ -1586,7 +1645,7 @@
 <span class="sd">        :param round_vals: Boolean to round parameter values</span>
 <span class="sd">        :param Vnom: nominal voltage for the per unit calculation (kV)</span>
 <span class="sd">        :return: Line parameters and rate</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="n">Vn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Vnom</span> <span class="k">if</span> <span class="n">Vnom</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">Vnom</span>
 
@@ -1651,78 +1710,78 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">earth_resistivity</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get ``earth_resistivity``.</span>
 
 <span class="sd">        :return: float</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_earth_resistivity</span>
 
     <span class="nd">@earth_resistivity</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">earth_resistivity</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Set ``earth_resistivity``.</span>
 
 <span class="sd">        :param val: Value to assign.</span>
 <span class="sd">        :return: None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_earth_resistivity</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">frequency</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get ``frequency``.</span>
 
 <span class="sd">        :return: float</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_frequency</span>
 
     <span class="nd">@frequency</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">frequency</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Set ``frequency``.</span>
 
 <span class="sd">        :param val: Value to assign.</span>
 <span class="sd">        :return: None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_frequency</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">capex</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get ``capex``.</span>
 
 <span class="sd">        :return: float</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_capex</span>
 
     <span class="nd">@capex</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">capex</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Set ``capex``.</span>
 
 <span class="sd">        :param val: Value to assign.</span>
 <span class="sd">        :return: None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_capex</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">opex</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get ``opex``.</span>
 
 <span class="sd">        :return: float</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_opex</span>
 
     <span class="nd">@opex</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">opex</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Set ``opex``.</span>
 
 <span class="sd">        :param val: Value to assign.</span>
 <span class="sd">        :return: None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_opex</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="p">)</span></div>
 
 

@@ -13,7 +13,47 @@ from typing import TextIO
 from VeraGridEngine.enumerations import NativeCompilerFramework
 from VeraGridEngine.IO.file_system import get_create_veragrid_folder
 from VeraGridEngine.IO.native_compiler.compiler_interface import NativeCompilerSelection, NativeCompilerToolset
-from VeraGridEngine.IO.native_compiler.local_llvm_interface import resolve_local_llvm_toolset
+from VeraGridEngine.IO.native_compiler.local_llvm_interface import LocalLlvmCompilerHandler, resolve_local_llvm_toolset
+from VeraGridEngine.IO.native_compiler.pygslv_interface import PygslvCompilerHandler
+from VeraGridEngine.basic_structures import Logger
+from VeraGridEngine.Utils.Compiler.interface import Compiler, CompilerInterface
+
+
+def resolve_native_compiler(selection: NativeCompilerSelection | None = None, logger: Logger | None = None) -> Compiler | None:
+    """Create the shared facade for a selected provider or the existing OS default.
+
+    :param selection: Explicit provider, saved local LLVM choice, or the generic OS default.
+    :param logger: Optional logger retaining selection/setup failures.
+    :return: Caller-owned facade, or None when the selected provider is unavailable.
+    """
+    selected: NativeCompilerSelection | None = selection if selection is not None else load_saved_local_llvm_selection()
+    shared_logger: Logger = logger if logger is not None else Logger()
+    if selected is None:
+        # With no explicit or valid saved choice, retain Santiago's OS compiler order.
+        return Compiler(logger=shared_logger)
+    else:
+        pass
+    handler: CompilerInterface
+    try:
+        if selected.framework == NativeCompilerFramework.LOCAL_LLVM:
+            handler = LocalLlvmCompilerHandler(resolve_local_llvm_toolset(selected), shared_logger)
+        elif selected.framework == NativeCompilerFramework.PYGSLV:
+            if selected.binary_root is None and selected.support_root is None and selected.sdk_root is None:
+                handler = PygslvCompilerHandler(shared_logger)
+            else:
+                shared_logger.add_error("pygslv is an in-process provider and does not accept executable roots")
+                return None
+        else:
+            shared_logger.add_error("Unsupported native compiler provider")
+            return None
+    except (OSError, RuntimeError, ValueError) as error:
+        shared_logger.add_error("Selected native compiler is unavailable: " + str(error))
+        return None
+    else:
+        if handler.setup_valid:
+            return Compiler(logger=shared_logger, compiler_handler=handler)
+        else:
+            return None
 
 
 def resolve_native_compiler_toolset(selection: NativeCompilerSelection) -> NativeCompilerToolset:

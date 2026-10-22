@@ -265,9 +265,11 @@ def get_current_source_emt_template(vf: VarFactory,
         current_vars[phase_label] = current_var
         in_vars.append(voltage_var)
         algebraic_vars.append(current_var)
-        algebraic_eqs.append(current_var - _build_sinusoidal_wave_expression(amplitude_var, theta_var, phase_deg_var, offset_var))
+        # Seed the full waveform so phase offsets satisfy the same law at startup.
+        source_current_expr: Expr = _build_sinusoidal_wave_expression(amplitude_var, theta_var, phase_deg_var, offset_var)
+        algebraic_eqs.append(current_var - source_current_expr)
         out_vars.append(current_var)
-        template.block.init_eqs[current_var] = offset_var
+        template.block.init_eqs[current_var] = source_current_expr
 
     template.block.in_vars = in_vars
     template.block.state_vars = [theta_var]
@@ -373,9 +375,11 @@ def get_controlled_current_source_emt_template(vf: VarFactory,
         in_vars.append(voltage_var)
         in_vars.append(amplitude_command_var)
         algebraic_vars.append(current_var)
-        algebraic_eqs.append(current_var - _build_sinusoidal_wave_expression(amplitude_command_var, theta_var, phase_deg_var, offset_var))
+        # The initial current must include the external amplitude command and phase offset.
+        source_current_expr: Expr = _build_sinusoidal_wave_expression(amplitude_command_var, theta_var, phase_deg_var, offset_var)
+        algebraic_eqs.append(current_var - source_current_expr)
         out_vars.append(current_var)
-        template.block.init_eqs[current_var] = offset_var
+        template.block.init_eqs[current_var] = source_current_expr
 
     template.block.in_vars = in_vars
     template.block.state_vars = [theta_var]
@@ -492,9 +496,12 @@ def get_voltage_source_emt_template(vf: VarFactory,
         current_vars[phase_label] = current_var
         in_vars.append(voltage_var)
         algebraic_vars.append(current_var)
-        algebraic_eqs.append(current_var - source_conductance_var * (_build_sinusoidal_wave_expression(amplitude_var, theta_var, phase_deg_var, offset_var) - voltage_var))
+        # Reuse the Norton law for the seed, including source phase and bus voltage.
+        source_current_expr: Expr = source_conductance_var * (
+            _build_sinusoidal_wave_expression(amplitude_var, theta_var, phase_deg_var, offset_var) - voltage_var)
+        algebraic_eqs.append(current_var - source_current_expr)
         out_vars.append(current_var)
-        template.block.init_eqs[current_var] = source_conductance_var * (offset_var - voltage_var)
+        template.block.init_eqs[current_var] = source_current_expr
 
     template.block.in_vars = in_vars
     template.block.state_vars = [theta_var]
@@ -607,9 +614,12 @@ def get_controlled_voltage_source_emt_template(vf: VarFactory,
         in_vars.append(voltage_var)
         in_vars.append(amplitude_command_var)
         algebraic_vars.append(current_var)
-        algebraic_eqs.append(current_var - source_conductance_var * (_build_sinusoidal_wave_expression(amplitude_command_var, theta_var, phase_deg_var, offset_var) - voltage_var))
+        # Use the commanded Norton current at startup as well as during simulation.
+        source_current_expr: Expr = source_conductance_var * (
+            _build_sinusoidal_wave_expression(amplitude_command_var, theta_var, phase_deg_var, offset_var) - voltage_var)
+        algebraic_eqs.append(current_var - source_current_expr)
         out_vars.append(current_var)
-        template.block.init_eqs[current_var] = source_conductance_var * (offset_var - voltage_var)
+        template.block.init_eqs[current_var] = source_current_expr
 
     template.block.in_vars = in_vars
     template.block.state_vars = [theta_var]

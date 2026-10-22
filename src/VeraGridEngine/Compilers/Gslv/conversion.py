@@ -31,6 +31,7 @@ from typing import (
     Tuple,
     Union,
 )
+from VeraGridEngine.Compilers.Gslv.Devices.remedial_actions import bind_event_devices
 from VeraGridEngine.Compilers.Gslv.Devices.areas import add_areas
 from VeraGridEngine.Compilers.Gslv.Devices.zones import add_zones
 from VeraGridEngine.Compilers.Gslv.Devices.countries import add_countries
@@ -351,6 +352,8 @@ def to_gslv(circuit: MultiCircuit,
         n_time=n_time,
         time_indices=time_indices
     )
+
+    bind_event_devices(circuit=circuit, gslv_grid=pg_grid)
 
     return pg_grid, dicts
 

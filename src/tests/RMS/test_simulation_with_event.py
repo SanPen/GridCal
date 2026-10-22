@@ -5,6 +5,7 @@
 import os
 import pandas as pd
 import numpy as np
+import pytest
 from pandas.testing import assert_frame_equal
 
 from VeraGridEngine.Utils.Symbolic.block import Block
@@ -19,9 +20,12 @@ from VeraGridEngine.Templates.Rms.genqec_exc_gov_sat_template import get_complet
 from VeraGridEngine.Utils.Symbolic.bus_rms_template import initialize_bus_rms
 from VeraGridEngine.Utils.Symbolic.templates_common_functions import set_rms_model
 
-from VeraGridEngine.enumerations import DynamicEventTransitionType, DynamicIntegrationMethod, RmsInitializationMethod
+from VeraGridEngine.enumerations import DynamicEventTransitionType, DynamicIntegrationMethod, RmsInitializationMethod, SparseSolver
 from VeraGridEngine.Devices.Events.rms_event import RmsEvent
+from VeraGridEngine.Utils.NumericalMethods.external_sparse_solver_interface import SparseLinearSolverBackendProvider
+from VeraGridEngine.Utils.NumericalMethods.sparse_lu_selection import get_sparse_lu_provider_status
 import VeraGridEngine.api as gce
+from tests.RMS.test_rms_sparse_lu_selection import CountingProvider
 
 
 def find_name_in_block(name: str, block: Block):
@@ -35,12 +39,31 @@ def find_name_in_block(name: str, block: Block):
             return res
 
 
-def test_simulation_with_event():
+@pytest.mark.parametrize("sparse_solver", [SparseSolver.SuperLU, SparseSolver.KLU])
+def test_simulation_with_event(sparse_solver: SparseSolver) -> None:
     """
     This test creates a grid, adds rms models and events and rens simulation. Then it compares results with reference.
+
+    With KLU the Newton corrections are factorized by the native runtime, counted by a provider
+    wrapper (901 observed in the case lab); KLU is skipped with its reason when not installed.
+
+    :param sparse_solver: Sparse LU used by the Newton corrections.
     :return:
     :rtype:
     """
+    provider: SparseLinearSolverBackendProvider | None = None
+    counter: CountingProvider | None = None
+    if sparse_solver == SparseSolver.KLU:
+        klu: SparseLinearSolverBackendProvider | None
+        reason: str
+        klu, reason = get_sparse_lu_provider_status(SparseSolver.KLU)
+        if klu is None:
+            pytest.skip("native KLU unavailable: " + reason)
+        else:
+            counter = CountingProvider(klu)
+            provider = counter
+    else:
+        pass
 
     #########
     # retrieve reference results df
@@ -183,10 +206,19 @@ def test_simulation_with_event():
         t0=0,
         t_end=options.simulation_time,
         h=options.time_step,
-        max_iter=options.max_iter
+        max_iter=options.max_iter,
+        sparse_solver_backend_provider=provider,
     )
 
     t, y, well_initialized, converged = solver.simulate()
+
+    if counter is not None:
+        # Every native factorization is solved exactly once by its Newton correction.
+        assert counter.factorizations > 0
+        assert counter.solves == counter.factorizations
+        print(f"Native KLU factorizations: {counter.factorizations}")
+    else:
+        pass
 
     # The historical reference includes five internal variables that no longer
     # belong to the RMS DAE vector. Preserve the old CSV as a legacy artefact,

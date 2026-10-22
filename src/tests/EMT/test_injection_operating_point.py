@@ -17,12 +17,38 @@ from VeraGridEngine.Devices.multi_circuit import MultiCircuit
 from VeraGridEngine.Devices.types import INJECTION_DEVICE_TYPES
 from VeraGridEngine.Simulations.EMT.injection_operating_point import (
     EmtInjectionOperatingPoint,
-    build_balanced_emt_injection_operating_point,
 )
 from VeraGridEngine.Simulations.EMT.problems.emt_problem_dae import EmtProblemDae
 from VeraGridEngine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
 from VeraGridEngine.Simulations.PowerFlow3ph.power_flow_results_3ph import PowerFlowResults3Ph
 from VeraGridEngine.enumerations import BusMode
+
+
+def build_balanced_emt_injection_operating_point(
+        grid: MultiCircuit,
+        power_flow_results: PowerFlowResults,
+        bus_dict: dict[Bus, int],
+        injection_devices: list[INJECTION_DEVICE_TYPES],
+) -> EmtInjectionOperatingPoint:
+    """Exercise the common builder without compiling the full EMT network.
+
+    :param grid: Static circuit.
+    :param power_flow_results: Solved per-device powers.
+    :param bus_dict: Bus result ordering.
+    :param injection_devices: Injection ordering.
+    :return: Powers produced by the common EMT builder.
+    """
+    problem: EmtProblemDae = object.__new__(EmtProblemDae)
+    problem.grid = grid
+    problem.power_flow_results = power_flow_results
+    problem.power_flow_results_3ph = None
+    problem.logger = None
+    operating_point = problem._build_injection_seed_store(
+        grid=grid, bus_dict=bus_dict, injection_devices=injection_devices,
+        sbase=grid.Sbase, static_parameter_values_mapping=dict(),
+    )
+    assert operating_point is not None
+    return operating_point
 
 
 def _build_balanced_results(
@@ -341,7 +367,7 @@ def test_three_phase_shunt_seed_uses_emt_injection_sign() -> None:
     problem.grid = grid
     problem.power_flow_results = None
     problem.power_flow_results_3ph = results_3ph
-    phase_power: np.ndarray = problem._get_shunt_fixed_power_vector_3ph(
+    phase_power: np.ndarray = problem._get_shunt_fixed_power_vector(
         shunt=shunt,
         bus_index=0,
     )
@@ -408,11 +434,12 @@ def test_three_phase_operating_point_splits_slack_residual_by_limits() -> None:
     problem.power_flow_results_3ph = results_3ph
     problem.logger = None
     injection_devices: list[INJECTION_DEVICE_TYPES] = list(grid.get_injection_devices_iter())
-    operating_point: EmtInjectionOperatingPoint = problem._build_injection_seed_store_3ph(
+    operating_point: EmtInjectionOperatingPoint = problem._build_injection_seed_store(
         grid=grid,
         bus_dict=dict(((slack_bus, 0),)),
         injection_devices=injection_devices,
         sbase=grid.Sbase,
+        static_parameter_values_mapping=dict(),
     )
 
     generator_1_power: np.ndarray = operating_point.get_ac_seed(0)

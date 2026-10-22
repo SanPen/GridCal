@@ -19,7 +19,8 @@ It is a positive-sequence AC line model that computes sending-end and receiving-
 
 - Uses from-side and to-side terminal voltage magnitudes and angles as inputs.
 - Computes active and reactive power at both ends of the line.
-- Includes series conductance, series susceptance, and shunt susceptance.
+- Includes series admittance and the physical total shunt conductance and susceptance.
+- Converts each terminal magnitude to the line's common from-terminal reference using the mapped virtual taps.
 - Uses the event variable `u` to enable or disable the branch contribution.
 
 ### Characteristics
@@ -31,16 +32,16 @@ It is a positive-sequence AC line model that computes sending-end and receiving-
 
 ## How it works
 
-The template evaluates the standard positive-sequence branch power expressions using the terminal voltages at both ends of the line and the branch admittance parameters. When `u = 0`, the line contribution is suppressed; when `u = 1`, the full branch equations are applied.
+The template evaluates the positive-sequence PI powers using common-reference magnitudes $U_f=V_{mf}/t_f$ and $U_t=V_{mt}/t_t$. The line's existing virtual-tap owner supplies $t_f=1$ and $t_t=V_{nom,f}/V_{nom,t}$. Both default to one when unassigned. Each end receives half the physical shunt. When `u = 0`, all four powers, including the shunt contributions, are suppressed.
 
 ## Characteristic equations
 
 $$
-P_f = V_{mf}^2 g - g V_{mf} V_{mt} \cos(\theta_f - \theta_t) + b V_{mf} V_{mt} \cos\left(\theta_f - \theta_t + \frac{\pi}{2}\right)
+P_f = u\left[U_f^2\left(g+\frac{g_{sh}}{2}\right) - g U_f U_t \cos(\theta_f - \theta_t) + b U_f U_t \cos\left(\theta_f - \theta_t + \frac{\pi}{2}\right)\right]
 $$
 
 $$
-Q_f = V_{mf}^2\left(-\frac{b_{sh}}{2} - b\right) - g V_{mf} V_{mt} \sin(\theta_f - \theta_t) + b V_{mf} V_{mt} \sin\left(\theta_f - \theta_t + \frac{\pi}{2}\right)
+Q_f = u\left[U_f^2\left(-\frac{b_{sh}}{2} - b\right) - g U_f U_t \sin(\theta_f - \theta_t) + b U_f U_t \sin\left(\theta_f - \theta_t + \frac{\pi}{2}\right)\right]
 $$
 
 Equivalent expressions are used for `P_t` and `Q_t` at the receiving end.
@@ -65,6 +66,10 @@ Equivalent expressions are used for `P_t` and `Q_t` at the receiving end.
 | Parameter | `g` | Series conductance of the positive-sequence line model | pu |
 | Parameter | `b` | Series susceptance of the positive-sequence line model | pu |
 | Parameter | `bsh` | Total shunt susceptance term used by the line model | pu |
+| Parameter | `gsh` | Total physical shunt conductance, split equally between ends | pu |
+| Parameter | `vtap_f`, `vtap_t` | Terminal-to-common-reference voltage ratios; structural defaults are one | pu |
+
+Saved Blocks retain their recorded equations. Loading or copying an older no-tap template does not regenerate it; explicit template reassignment selects the current equations. Direct per-unit data with an unknown historical voltage reference are preserved without inferring original SI equipment.
 
 ## How to use it
 

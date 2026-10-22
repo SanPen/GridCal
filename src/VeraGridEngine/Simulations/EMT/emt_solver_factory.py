@@ -15,8 +15,11 @@ from VeraGridEngine.Simulations.EMT.solvers.structural_compiled_solver import St
 from VeraGridEngine.enumerations import DynamicIntegrationMethod
 from VeraGridEngine.Utils.NumericalMethods.emt_sparse_solver_registry import resolve_emt_sparse_solver_backend_provider
 from VeraGridEngine.Utils.Symbolic.diagnostic import NewtonDiagnosticsConfig
+from VeraGridEngine.basic_structures import Logger
+from VeraGridEngine.enumerations import SparseSolver
 from collections.abc import Callable
 from typing import Any
+import warnings
 
 
 EMT_SOLVER_CLASS_MAP = {
@@ -35,7 +38,8 @@ def build_emt_solver(options: EmtOptions,
                      method: DynamicIntegrationMethod = DynamicIntegrationMethod.DaeTrapezoidal,
                      newton_diag_config: NewtonDiagnosticsConfig | None = None,
                      progress_signal: DummySignal | None = None,
-                     cancel_checker: Callable[[], bool] | None = None) -> Any:
+                     cancel_checker: Callable[[], bool] | None = None,
+                     logger: Logger | None = None) -> Any:
     """
     Build the configured EMT solver.
 
@@ -57,6 +61,8 @@ def build_emt_solver(options: EmtOptions,
     :type progress_signal: DummySignal | None
     :param cancel_checker: Optional cancellation callback checked by the solver at safe boundaries.
     :type cancel_checker: Callable[[], bool] | None
+    :param logger: Optional logger receiving sparse solver selection warnings (RuntimeWarning when None).
+    :type logger: Logger | None
     :return: Configured EMT solver instance.
     :rtype: Any
     """
@@ -72,6 +78,7 @@ def build_emt_solver(options: EmtOptions,
             external_plugin_name=options.external_sparse_solver_plugin_name,
             external_plugin_directory=options.external_sparse_solver_directory,
             allow_internal_fallback=options.allow_internal_sparse_fallback,
+            logger=logger,
         )
         return solver_cls(problem=problem,
                           t0=t0,
@@ -91,6 +98,7 @@ def build_emt_solver(options: EmtOptions,
             external_plugin_name=options.external_sparse_solver_plugin_name,
             external_plugin_directory=options.external_sparse_solver_directory,
             allow_internal_fallback=options.allow_internal_sparse_fallback,
+            logger=logger,
         )
         return solver_cls(problem=problem,
                           t0=t0,
@@ -104,6 +112,16 @@ def build_emt_solver(options: EmtOptions,
                           cancel_checker=cancel_checker,
                           newton_tolerance=options.tolerance)
     else:
+        if options.sparse_solver != SparseSolver.SuperLU or len(options.external_sparse_solver_plugin_name) > 0:
+            # These solvers keep their own linear algebra; make the ignored selection visible.
+            ignored_message: str = (f"sparse_solver {options.sparse_solver.value} is ignored by the "
+                                    f"{options.solver_type.value} EMT solver")
+            if logger is None:
+                warnings.warn(ignored_message, RuntimeWarning, stacklevel=2)
+            else:
+                logger.add_warning(ignored_message)
+        else:
+            pass
         return solver_cls(problem=problem,
                           t0=t0,
                           t_end=t_end,

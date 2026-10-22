@@ -181,7 +181,7 @@ class ResultsModel(WrappableTableModel):
 
             elif orientation == QtCore.Qt.Orientation.Vertical:
                 if self.table.index_c is None:
-                    return section
+                    return str(section)
                 else:
                     val = f"{section}: {self.table.index_c[section]}"
             else:
@@ -190,7 +190,8 @@ class ResultsModel(WrappableTableModel):
             if isinstance(val, pd.Timestamp):
                 return val.strftime('%Y/%m/%d  %H:%M:%S')
             else:
-                return val
+                # Imported labels can be arrays; Qt header sizing and painting require text.
+                return str(val)
         return None
 
     def slice_cols(self, col_idx) -> "ResultsModel":

@@ -279,7 +279,10 @@ def _build_pseudo_emt_converter_vsc_block(vf: VarFactory, name: str) -> Block:
     )
     block.api_obj_mapping = dict([
         (ParamPowerFlowReferenceType.Sbase, sbase),
+        (ParamPowerFlowReferenceType.P0, P0_sched),
         (ParamPowerFlowReferenceType.alpha1, P_loss0),
+        (ParamPowerFlowReferenceType.alpha2, P_loss_i1),
+        (ParamPowerFlowReferenceType.alpha3, P_loss_i2),
         (ParamPowerFlowReferenceType.omega_base, omega_base),
         (ParamPowerFlowReferenceType.converter_control_mode_1, control1),
         (ParamPowerFlowReferenceType.converter_control_mode_2, control2),

@@ -30,7 +30,9 @@ from VeraGridEngine.IO.dgs.dgs_logical_actuator_binding import (
 )
 from VeraGridEngine.IO.dgs.dgs_rms_measurement_binding import (
     DgsRmsMeasurementBindingReport,
+    _connect_meter_aliases,
     _get_physical_meter_terminal_side,
+    _get_veragrid_meter_name,
     bind_dgs_rms_measurements,
 )
 from VeraGridEngine.IO.dgs.dgs_rms_preparation import (
@@ -138,6 +140,9 @@ from VeraGridEngine.Utils.procedural_logic import (
 )
 from VeraGridEngine.Templates.Rms.line_rms_template import (
     get_dc_line_rms_template,
+)
+from VeraGridEngine.Templates.Rms.rms_meter_templates import (
+    build_rms_phase_locked_loop_block,
 )
 from VeraGridEngine.Templates.Rms.transformer_rms_template import (
     get_transformer2w_rms,
@@ -268,6 +273,109 @@ def test_dgs_vsc_unconnected_inputs_create_terminal_measurements() -> None:
         root_inputs_by_reference[VarPowerFlowReferenceType.Vat]
         is not controller_inputs[2]
     )
+
+
+@pytest.mark.parametrize("conflicting_alias", (False, True))
+def test_early_pll_meter_binding_preserves_canonical_output_ownership(
+        conflicting_alias: bool,
+) -> None:
+    """Finalize a stateful PLL without losing early consumer identity.
+
+    :param conflicting_alias: Whether two distinct early outputs claim the
+        same prepared PLL output, which must be rejected before mutation.
+    :return: None; verify ownership, startup, copy and declarative persistence.
+    """
+    var_factory: VarFactory = VarFactory()
+    angle: Var = var_factory.add_var("measured_angle")
+    meter_name: str = _get_veragrid_meter_name(
+        meter_kind=RmsPhysicalMeterKind.PHASE_LOCKED_LOOP,
+        source_fid="42",
+    )
+    prepared: Block
+    native_outputs: dict[str, Var]
+    prepared, native_outputs = build_rms_phase_locked_loop_block(
+        vf=var_factory,
+        va=angle,
+        proportional_gain=200.0,
+        integral_gain=10000.0,
+        nominal_frequency_hz=50.0,
+        name=meter_name,
+    )
+    retained_output: Var = var_factory.add_var("controller_cosine")
+    early: Block = Block(
+        name=meter_name,
+        algebraic_vars=list([retained_output]),
+        algebraic_eqs=list([retained_output - Const(1.0)]),
+        out_vars=list([retained_output]),
+    )
+    controller: Block = Block(in_vars=list([retained_output]))
+    aliases: dict[str, Expr] = dict()
+    aliases["cosphi"] = native_outputs["cosphi"]
+    targets: dict[str, list[Var]] = dict()
+    targets["cosphi"] = list([retained_output])
+    if conflicting_alias:
+        # Both spellings are supported aliases for one native cosine. Their
+        # distinct early owners cannot both become that single solved output.
+        conflicting_output: Var = var_factory.add_var("other_controller_cosine")
+        early.algebraic_vars.append(conflicting_output)
+        early.algebraic_eqs.append(conflicting_output - Const(1.0))
+        early.out_vars.append(conflicting_output)
+        controller.in_vars.append(conflicting_output)
+        aliases["cosphi1"] = native_outputs["cosphi"]
+        targets["cosphi1"] = list([conflicting_output])
+    else:
+        pass
+    host: Block = Block(children=list([controller, early]))
+    host_before: dict[str, object] = host.to_dict()
+    prepared_before: dict[str, object] = prepared.to_dict()
+    state_uids: tuple[int, ...] = tuple(var.uid for var in prepared.state_vars)
+
+    connected_count: int = _connect_meter_aliases(
+        host_model=host,
+        targets_by_name=targets,
+        alias_expressions=aliases,
+        meter_name=meter_name,
+        meter_source_fid="42",
+        meter_target_fid="bus-7",
+        meter_terminal_side=RmsTerminalSide.BUS,
+        meter_kind=RmsPhysicalMeterKind.PHASE_LOCKED_LOOP,
+        var_factory=var_factory,
+        prepared_meter_block=prepared,
+    )
+    if conflicting_alias:
+        assert connected_count == 0
+        assert host.to_dict() == host_before
+        assert prepared.to_dict() == prepared_before
+    else:
+        assert connected_count == 1
+        assert host.children[1] is prepared
+        assert prepared.uid == early.uid
+        assert tuple(var.uid for var in prepared.state_vars) == state_uids
+        assert any(var is retained_output for var in prepared.out_vars)
+        assert retained_output in prepared.init_eqs
+        assert retained_output.shared_ref is not None
+        assert controller.in_vars[0] is retained_output
+
+        # The same ownership and physical declaration must survive both
+        # supported lifecycle operations, without serializing runtime objects.
+        restored: Block
+        for restored in (host.copy(), Block.parse(data=host.to_dict())):
+            restored_meter: Block = restored.children[1]
+            point: RmsPhysicalMeasurementPoint | None = (
+                restored_meter.dynamic_model_contract.rms_physical_measurement_point
+            )
+            assert point is not None
+            assert point.get_output_var_uids() == (retained_output.uid,)
+            assert point.get_source_fid() == "42"
+            assert point.get_target_fid() == "bus-7"
+            assert tuple(var.uid for var in restored_meter.state_vars) == state_uids
+            assert sum(
+                var.uid == retained_output.uid
+                for owner in restored.get_all_blocks()
+                for var in owner.algebraic_vars
+            ) == 1
+            assert retained_output.uid in set(var.uid for var in restored_meter.init_eqs)
+            assert restored.children[0].in_vars[0].uid == retained_output.uid
 
 
 def test_physical_meter_terminal_side_rejects_invalid_ordinals() -> None:
@@ -1537,7 +1645,6 @@ def test_v1_early_native_measurements_preserve_power_and_phase_semantics() -> No
     ),
 )
 
-@pytest.mark.skip(reason="Incorrect")
 def test_v1_v2_dynamic_routes_keep_power_meters_as_editor_blocks(
         file_name: str,
         expected_meter_names: set[str],

@@ -297,6 +297,7 @@ class EmtSimulationDriver(DriverTemplate):
                     newton_diag_config=newton_diag_config,
                     progress_signal=self.progress_signal,
                     cancel_checker=self.is_cancel,
+                    logger=self.logger,
                 )
 
                 native_session: ManufacturerNativeRuntimeSession | None = None
@@ -369,6 +370,16 @@ class EmtSimulationDriver(DriverTemplate):
 
                 print(f"converged ={converged}")
                 print(f"well_initialized ={well_initialized}")
+                # Qualification belongs to the existing initialization report.
+                if problem.initialization_report is None:
+                    pass
+                else:
+                    initialization_summary: str = (
+                        f"Initialization status={problem.initialization_report.status.name}: "
+                        f"{problem.initialization_report.message}"
+                    )
+                    print(initialization_summary)
+                    self.report_text(initialization_summary)
                 first_step_states_unchanged: bool | None
                 if well_initialized:
                     first_step_states_unchanged = _compare_first_step_non_angle_states(
@@ -401,8 +412,12 @@ class EmtSimulationDriver(DriverTemplate):
                 # outcome instead of the default False placeholders.
                 self.results.converged[group_idx] = converged
                 self.results.well_initialized[group_idx] = well_initialized
-                self.results.values[:, :, group_idx] = y
-                self.results.diff_values[:, :, group_idx] = dy
+                # Keep the declared group/time layout while marking uncomputed rows.
+                completed_samples: int = y.shape[0]
+                self.results.values[:completed_samples, :, group_idx] = y
+                self.results.diff_values[:completed_samples, :, group_idx] = dy
+                self.results.values[completed_samples:, :, group_idx] = np.nan
+                self.results.diff_values[completed_samples:, :, group_idx] = np.nan
                 self.results.parameter_value_maps[group_idx] = _collect_emt_group_parameter_values(
                     problem=problem,
                     grid=self.grid,

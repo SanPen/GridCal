@@ -331,7 +331,8 @@ class DynamicDevice(PhysicalDevice):
             if self.auto_update_enabled:
                 # Duplicating the template avoids mutating shared library blocks,
                 # and bus variables are rebound to this specific device instance.
-                rms_mdl = duplicate_block(val.block, self._var_factory)
+                rms_mdl = duplicate_block(val.block, self._var_factory,
+                                           preserve_external_network_connections=True)
                 rms_mdl.name = val.name
                 connect_bus_variables_rms(self, rms_mdl, self._var_factory)
                 self.rms_model = rms_mdl

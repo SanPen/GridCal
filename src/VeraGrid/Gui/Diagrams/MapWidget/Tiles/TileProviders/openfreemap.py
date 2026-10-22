@@ -65,7 +65,8 @@ def create_map_tile_sources(cache_dir: str) -> list[Tiles]:
     """
     return list((
         OpenFreeMapTiles(os.path.join(cache_dir, 'openfreemap_colour'), MapStyle.Colour, False),
-        OpenFreeMapTiles(os.path.join(cache_dir, 'openfreemap_light'), MapStyle.Light, False),
-        OpenFreeMapTiles(os.path.join(cache_dir, 'openfreemap_dark'), MapStyle.Dark, False),
+        # Separate rendered caches so existing detailed tiles cannot mask the cleaner style.
+        OpenFreeMapTiles(os.path.join(cache_dir, 'openfreemap_light_clean'), MapStyle.Light, False),
+        OpenFreeMapTiles(os.path.join(cache_dir, 'openfreemap_dark_clean'), MapStyle.Dark, False),
         MercatorTiles(tiles_dir=os.path.join(cache_dir, 'osm'), max_zoom=20, start_workers=False),
     ))

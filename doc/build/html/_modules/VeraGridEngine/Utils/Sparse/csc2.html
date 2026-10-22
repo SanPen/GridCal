@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Utils.Sparse.csc2 &mdash; VeraGrid 6.7.13 documentation</title>
+  <title>VeraGridEngine.Utils.Sparse.csc2 &mdash; VeraGrid 6.7.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=16fbabd8"></script>
+      <script src="../../../../_static/documentation_options.js?v=b2832fc1"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -125,28 +125,28 @@
 <div class="viewcode-block" id="CSC">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Sparse.html#VeraGridEngine.Utils.Sparse.csc2.CSC">[docs]</a>
 <span class="nd">@jitclass</span><span class="p">([</span>
-    <span class="p">(</span><span class="s1">&#39;n_rows&#39;</span><span class="p">,</span> <span class="n">nb</span><span class="o">.</span><span class="n">int32</span><span class="p">),</span>
-    <span class="p">(</span><span class="s1">&#39;n_cols&#39;</span><span class="p">,</span> <span class="n">nb</span><span class="o">.</span><span class="n">int32</span><span class="p">),</span>
-    <span class="p">(</span><span class="s1">&#39;nnz&#39;</span><span class="p">,</span> <span class="n">nb</span><span class="o">.</span><span class="n">int32</span><span class="p">),</span>
-    <span class="p">(</span><span class="s1">&#39;data&#39;</span><span class="p">,</span> <span class="n">nb</span><span class="o">.</span><span class="n">float64</span><span class="p">[:]),</span>
-    <span class="p">(</span><span class="s1">&#39;indices&#39;</span><span class="p">,</span> <span class="n">nb</span><span class="o">.</span><span class="n">int32</span><span class="p">[:]),</span>
-    <span class="p">(</span><span class="s1">&#39;indptr&#39;</span><span class="p">,</span> <span class="n">nb</span><span class="o">.</span><span class="n">int32</span><span class="p">[:],),</span>
-    <span class="p">(</span><span class="s1">&#39;format&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="n">unicode_type</span><span class="p">)</span>
+    <span class="p">(</span><span class="s1">'n_rows'</span><span class="p">,</span> <span class="n">nb</span><span class="o">.</span><span class="n">int32</span><span class="p">),</span>
+    <span class="p">(</span><span class="s1">'n_cols'</span><span class="p">,</span> <span class="n">nb</span><span class="o">.</span><span class="n">int32</span><span class="p">),</span>
+    <span class="p">(</span><span class="s1">'nnz'</span><span class="p">,</span> <span class="n">nb</span><span class="o">.</span><span class="n">int32</span><span class="p">),</span>
+    <span class="p">(</span><span class="s1">'data'</span><span class="p">,</span> <span class="n">nb</span><span class="o">.</span><span class="n">float64</span><span class="p">[:]),</span>
+    <span class="p">(</span><span class="s1">'indices'</span><span class="p">,</span> <span class="n">nb</span><span class="o">.</span><span class="n">int32</span><span class="p">[:]),</span>
+    <span class="p">(</span><span class="s1">'indptr'</span><span class="p">,</span> <span class="n">nb</span><span class="o">.</span><span class="n">int32</span><span class="p">[:],),</span>
+    <span class="p">(</span><span class="s1">'format'</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="n">unicode_type</span><span class="p">)</span>
 <span class="p">])</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">CSC</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    numba CSC matrix struct</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_rows</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">n_cols</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">nnz</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">force_zeros</span><span class="p">:</span> <span class="nb">bool</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Constructor</span>
 <span class="sd">        :param n_rows:</span>
 <span class="sd">        :param n_cols:</span>
 <span class="sd">        :param nnz:</span>
 <span class="sd">        :param force_zeros:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">format</span> <span class="o">=</span> <span class="s2">&quot;csc&quot;</span>
+<span class="sd">        """</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">format</span> <span class="o">=</span> <span class="s2">"csc"</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">n_rows</span> <span class="o">=</span> <span class="n">n_rows</span>  <span class="c1"># n rows</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">n_cols</span> <span class="o">=</span> <span class="n">n_cols</span>  <span class="c1"># n cols</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nnz</span> <span class="o">=</span> <span class="n">nnz</span>
@@ -162,14 +162,14 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">indptr</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># always</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">indices</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">indptr</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">Vec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;CSC&quot;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">indices</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">indptr</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">Vec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"CSC"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Set the internal arrays</span>
 <span class="sd">        :param indices:</span>
 <span class="sd">        :param indptr:</span>
 <span class="sd">        :param data:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">indices</span> <span class="o">=</span> <span class="n">indices</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">indptr</span> <span class="o">=</span> <span class="n">indptr</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span>
@@ -178,7 +178,7 @@
         <span class="k">return</span> <span class="bp">self</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">fill_from_coo</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Ti</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">Tj</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">Tx</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span> <span class="n">nnz</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        C = compressed-column form of a triplet matrix T.</span>
 <span class="sd">        The columns of T are not sorted, and duplicate entries may be present in T.</span>
 
@@ -186,7 +186,7 @@
 <span class="sd">        :param Tj: array of column indices (could be longer than nnz)</span>
 <span class="sd">        :param Tx: array of data (could be longer than nnz)</span>
 <span class="sd">        :param nnz: number of non-zeros</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nnz</span> <span class="o">=</span> <span class="n">nnz</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nnz</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nnz</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
@@ -209,26 +209,26 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">shape</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Shape for scipy compatibility</span>
 <span class="sd">        :return: n_rows, n_cols</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_rows</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_cols</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">resize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nnz</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Resize this matrix</span>
 <span class="sd">        :param nnz: number of non-zeros</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nnz</span> <span class="o">=</span> <span class="n">nnz</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[:</span><span class="n">nnz</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">indices</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">indices</span><span class="p">[:</span><span class="n">nnz</span><span class="p">]</span>  <span class="c1"># np.resize is not suported by numba</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">todense</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get dense array representation</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">val</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">n_rows</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_cols</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
 
         <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_cols</span><span class="p">):</span>
@@ -237,17 +237,17 @@
         <span class="k">return</span> <span class="n">val</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">toarray</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get dense array representation</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">todense</span><span class="p">()</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Create a copy of this matrix</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">res</span> <span class="o">=</span> <span class="n">CSC</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_rows</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_cols</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nnz</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
         <span class="n">res</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="n">res</span><span class="o">.</span><span class="n">indices</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">indices</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
@@ -255,26 +255,26 @@
         <span class="k">return</span> <span class="n">res</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">dot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Mat-vector multiplication</span>
 <span class="sd">        :param x: vector</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">csc_matvec_ff</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
 
     <span class="c1"># @property</span>
-    <span class="c1"># def T(self) -&gt; &quot;CSC&quot;:</span>
-    <span class="c1">#     &quot;&quot;&quot;</span>
+    <span class="c1"># def T(self) -&gt; "CSC":</span>
+    <span class="c1">#     """</span>
     <span class="c1">#     Traspose</span>
     <span class="c1">#     :return:</span>
-    <span class="c1">#     &quot;&quot;&quot;</span>
+    <span class="c1">#     """</span>
     <span class="c1">#     return sp_transpose(self)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">get_diag_max</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the maximum value of the diagonal</span>
 <span class="sd">        :return: value</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">val</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1e20</span>
         <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_cols</span><span class="p">):</span>
             <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">indptr</span><span class="p">[</span><span class="n">j</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">indptr</span><span class="p">[</span><span class="n">j</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]):</span>
@@ -282,12 +282,12 @@
                     <span class="n">val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">p</span><span class="p">]</span>
         <span class="k">return</span> <span class="n">val</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">add_val_to_diagonal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;CSC&quot;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_val_to_diagonal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"CSC"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Add value to the diagonal in-place</span>
 <span class="sd">        :param val: some value</span>
 <span class="sd">        :return: copy with modified diagonal</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">A</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">A</span><span class="o">.</span><span class="n">n_cols</span><span class="p">):</span>
             <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">A</span><span class="o">.</span><span class="n">indptr</span><span class="p">[</span><span class="n">j</span><span class="p">],</span> <span class="n">A</span><span class="o">.</span><span class="n">indptr</span><span class="p">[</span><span class="n">j</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]):</span>
@@ -295,20 +295,20 @@
                     <span class="n">A</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">p</span><span class="p">]</span> <span class="o">+=</span> <span class="n">val</span>
         <span class="k">return</span> <span class="n">A</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">mul</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">B</span><span class="p">:</span> <span class="s2">&quot;CSC&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;CSC&quot;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">mul</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">B</span><span class="p">:</span> <span class="s2">"CSC"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"CSC"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        @ operator</span>
 <span class="sd">        :param B: CSC matrix or ndarray</span>
 <span class="sd">        :return: CSC matrix or ndarray</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">csc_multiply_ff</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">B</span><span class="p">)</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">sum</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">B</span><span class="p">:</span> <span class="s2">&quot;CSC&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;CSC&quot;</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">sum</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">B</span><span class="p">:</span> <span class="s2">"CSC"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"CSC"</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        @ operator</span>
 <span class="sd">        :param B: CSC matrix or ndarray</span>
 <span class="sd">        :return: CSC matrix or ndarray</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="n">m</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_rows</span>
         <span class="n">n</span> <span class="o">=</span> <span class="n">B</span><span class="o">.</span><span class="n">n_cols</span>
@@ -357,12 +357,12 @@
 
         <span class="k">return</span> <span class="n">C</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">add_scalar</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;CSC&quot;</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_scalar</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"CSC"</span><span class="p">:</span>
         <span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="n">res</span><span class="o">.</span><span class="n">data</span> <span class="o">+=</span> <span class="n">val</span>
         <span class="k">return</span> <span class="n">res</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">prod_scalar</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;CSC&quot;</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">prod_scalar</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"CSC"</span><span class="p">:</span>
         <span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="n">res</span><span class="o">.</span><span class="n">data</span> <span class="o">*=</span> <span class="n">val</span>
         <span class="k">return</span> <span class="n">res</span></div>
@@ -372,28 +372,28 @@
 <div class="viewcode-block" id="CxCSC">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Sparse.html#VeraGridEngine.Utils.Sparse.csc2.CxCSC">[docs]</a>
 <span class="nd">@jitclass</span><span class="p">([</span>
-    <span class="p">(</span><span class="s1">&#39;n_rows&#39;</span><span class="p">,</span> <span class="n">nb</span><span class="o">.</span><span class="n">int32</span><span class="p">),</span>
-    <span class="p">(</span><span class="s1">&#39;n_cols&#39;</span><span class="p">,</span> <span class="n">nb</span><span class="o">.</span><span class="n">int32</span><span class="p">),</span>
-    <span class="p">(</span><span class="s1">&#39;nnz&#39;</span><span class="p">,</span> <span class="n">nb</span><span class="o">.</span><span class="n">int32</span><span class="p">),</span>
-    <span class="p">(</span><span class="s1">&#39;data&#39;</span><span class="p">,</span> <span class="n">nb</span><span class="o">.</span><span class="n">complex128</span><span class="p">[:]),</span>
-    <span class="p">(</span><span class="s1">&#39;indices&#39;</span><span class="p">,</span> <span class="n">nb</span><span class="o">.</span><span class="n">int32</span><span class="p">[:]),</span>
-    <span class="p">(</span><span class="s1">&#39;indptr&#39;</span><span class="p">,</span> <span class="n">nb</span><span class="o">.</span><span class="n">int32</span><span class="p">[:],),</span>
-    <span class="p">(</span><span class="s1">&#39;format&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="n">unicode_type</span><span class="p">)</span>
+    <span class="p">(</span><span class="s1">'n_rows'</span><span class="p">,</span> <span class="n">nb</span><span class="o">.</span><span class="n">int32</span><span class="p">),</span>
+    <span class="p">(</span><span class="s1">'n_cols'</span><span class="p">,</span> <span class="n">nb</span><span class="o">.</span><span class="n">int32</span><span class="p">),</span>
+    <span class="p">(</span><span class="s1">'nnz'</span><span class="p">,</span> <span class="n">nb</span><span class="o">.</span><span class="n">int32</span><span class="p">),</span>
+    <span class="p">(</span><span class="s1">'data'</span><span class="p">,</span> <span class="n">nb</span><span class="o">.</span><span class="n">complex128</span><span class="p">[:]),</span>
+    <span class="p">(</span><span class="s1">'indices'</span><span class="p">,</span> <span class="n">nb</span><span class="o">.</span><span class="n">int32</span><span class="p">[:]),</span>
+    <span class="p">(</span><span class="s1">'indptr'</span><span class="p">,</span> <span class="n">nb</span><span class="o">.</span><span class="n">int32</span><span class="p">[:],),</span>
+    <span class="p">(</span><span class="s1">'format'</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="n">unicode_type</span><span class="p">)</span>
 <span class="p">])</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">CxCSC</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    numba CSC matrix struct</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_rows</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">n_cols</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">nnz</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">force_zeros</span><span class="p">:</span> <span class="nb">bool</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Constructor</span>
 <span class="sd">        :param n_rows:</span>
 <span class="sd">        :param n_cols:</span>
 <span class="sd">        :param nnz:</span>
 <span class="sd">        :param force_zeros:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">format</span> <span class="o">=</span> <span class="s2">&quot;csc&quot;</span>
+<span class="sd">        """</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">format</span> <span class="o">=</span> <span class="s2">"csc"</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">n_rows</span> <span class="o">=</span> <span class="n">n_rows</span>  <span class="c1"># n rows</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">n_cols</span> <span class="o">=</span> <span class="n">n_cols</span>  <span class="c1"># n cols</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nnz</span> <span class="o">=</span> <span class="n">nnz</span>
@@ -409,14 +409,14 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">indptr</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># always</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">indices</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">indptr</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;CxCSC&quot;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">indices</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">indptr</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"CxCSC"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Set the internal arrays</span>
 <span class="sd">        :param indices:</span>
 <span class="sd">        :param indptr:</span>
 <span class="sd">        :param data:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">indices</span> <span class="o">=</span> <span class="n">indices</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">indptr</span> <span class="o">=</span> <span class="n">indptr</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span>
@@ -425,7 +425,7 @@
         <span class="k">return</span> <span class="bp">self</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">fill_from_coo</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Ti</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">Tj</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">Tx</span><span class="p">:</span> <span class="n">CxVec</span><span class="p">,</span> <span class="n">nnz</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        C = compressed-column form of a triplet matrix T.</span>
 <span class="sd">        The columns of T are not sorted, and duplicate entries may be present in T.</span>
 
@@ -433,7 +433,7 @@
 <span class="sd">        :param Tj: array of column indices (could be longer than nnz)</span>
 <span class="sd">        :param Tx: array of data (could be longer than nnz)</span>
 <span class="sd">        :param nnz: number of non-zeros</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nnz</span> <span class="o">=</span> <span class="n">nnz</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nnz</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">complex128</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nnz</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
@@ -463,18 +463,18 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">shape</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Shape for scipy compatibility</span>
 <span class="sd">        :return: n_rows, n_cols</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_rows</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_cols</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">real</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CSC</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the real representation of this matrix</span>
 <span class="sd">        :return: CSC</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">A</span> <span class="o">=</span> <span class="n">CSC</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_rows</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_cols</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nnz</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
         <span class="n">A</span><span class="o">.</span><span class="n">indptr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">indptr</span>
         <span class="n">A</span><span class="o">.</span><span class="n">indices</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">indices</span>
@@ -483,10 +483,10 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">imag</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CSC</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the imaginary representation of this matrix</span>
 <span class="sd">        :return: CSC</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">A</span> <span class="o">=</span> <span class="n">CSC</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_rows</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_cols</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nnz</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
         <span class="n">A</span><span class="o">.</span><span class="n">indptr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">indptr</span>
         <span class="n">A</span><span class="o">.</span><span class="n">indices</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">indices</span>
@@ -494,19 +494,19 @@
         <span class="k">return</span> <span class="n">A</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">resize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nnz</span><span class="p">:</span> <span class="n">nb</span><span class="o">.</span><span class="n">int32</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Resize this matrix</span>
 <span class="sd">        :param nnz: number of non-zeros</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nnz</span> <span class="o">=</span> <span class="n">nnz</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[:</span><span class="n">nnz</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">indices</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">indices</span><span class="p">[:</span><span class="n">nnz</span><span class="p">]</span>  <span class="c1"># np.resize is not suported by numba</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">todense</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get dense array representation</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">val</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">n_rows</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_cols</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">complex128</span><span class="p">)</span>
 
         <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_cols</span><span class="p">):</span>
@@ -515,17 +515,17 @@
         <span class="k">return</span> <span class="n">val</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">toarray</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get dense array representation</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">todense</span><span class="p">()</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Create a copy of this matrix</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">res</span> <span class="o">=</span> <span class="n">CSC</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_rows</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_cols</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nnz</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
         <span class="n">res</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="n">res</span><span class="o">.</span><span class="n">indices</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">indices</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
@@ -533,19 +533,19 @@
         <span class="k">return</span> <span class="n">res</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">dot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Mat-vector multiplication</span>
 <span class="sd">        :param x: vector</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">csc_matvec_cx</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="fm">__matmul__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">B</span><span class="p">:</span> <span class="s2">&quot;CxCSC&quot;</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;CxCSC&quot;</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__matmul__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">B</span><span class="p">:</span> <span class="s2">"CxCSC"</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"CxCSC"</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
 
 <span class="sd">        :param B:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">CSC</span><span class="p">):</span>
             <span class="k">return</span> <span class="n">csc_multiply_cx</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">B</span><span class="p">)</span>
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
@@ -553,16 +553,16 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">TypeError</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="fm">__add__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">B</span><span class="p">:</span> <span class="s2">&quot;CxCSC&quot;</span> <span class="o">|</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;CxCSC&quot;</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__add__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">B</span><span class="p">:</span> <span class="s2">"CxCSC"</span> <span class="o">|</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"CxCSC"</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        @ operator</span>
 <span class="sd">        :param B: CSC matrix or ndarray</span>
 <span class="sd">        :return: CSC matrix or ndarray</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">CxCSC</span><span class="p">):</span>
 
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Adding CxCSC matrices: A.shape=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">, B.shape=</span><span class="si">{</span><span class="n">B</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;CxCSC Matrix Data Types: A.data=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">dtype</span><span class="si">}</span><span class="s2">, B.data=</span><span class="si">{</span><span class="n">B</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">dtype</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Adding CxCSC matrices: A.shape=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">, B.shape=</span><span class="si">{</span><span class="n">B</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"CxCSC Matrix Data Types: A.data=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">dtype</span><span class="si">}</span><span class="s2">, B.data=</span><span class="si">{</span><span class="n">B</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">dtype</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
             <span class="n">m</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_rows</span>
             <span class="n">n</span> <span class="o">=</span> <span class="n">B</span><span class="o">.</span><span class="n">n_cols</span>
@@ -671,11 +671,11 @@
 <div class="viewcode-block" id="mat_to_scipy">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Sparse.html#VeraGridEngine.Utils.Sparse.csc2.mat_to_scipy">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">mat_to_scipy</span><span class="p">(</span><span class="n">csc</span><span class="p">:</span> <span class="n">CSC</span> <span class="o">|</span> <span class="n">CxCSC</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">csc_matrix</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    CSC or CxCSC Matrix to Scipy</span>
 <span class="sd">    :param csc:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="n">csc_matrix</span><span class="p">((</span><span class="n">csc</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">csc</span><span class="o">.</span><span class="n">indices</span><span class="p">,</span> <span class="n">csc</span><span class="o">.</span><span class="n">indptr</span><span class="p">),</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">csc</span><span class="o">.</span><span class="n">n_rows</span><span class="p">,</span> <span class="n">csc</span><span class="o">.</span><span class="n">n_cols</span><span class="p">))</span></div>
 
 
@@ -683,13 +683,13 @@
 <div class="viewcode-block" id="scipy_to_mat">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Sparse.html#VeraGridEngine.Utils.Sparse.csc2.scipy_to_mat">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">scipy_to_mat</span><span class="p">(</span><span class="n">mat</span><span class="p">:</span> <span class="n">csc_matrix</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CSC</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Scipy CSC matrix to CSC marix</span>
 <span class="sd">    :param mat: Scipy CSC matrix</span>
 <span class="sd">    :return: CSC marix</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">mat</span><span class="o">.</span><span class="n">format</span> <span class="o">==</span> <span class="s1">&#39;csc&#39;</span><span class="p">:</span>
-        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;scipy_to_cxmat: Converting matrix to CSC format...&#39;</span><span class="p">)</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">mat</span><span class="o">.</span><span class="n">format</span> <span class="o">==</span> <span class="s1">'csc'</span><span class="p">:</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">'scipy_to_cxmat: Converting matrix to CSC format...'</span><span class="p">)</span>
         <span class="n">mat</span> <span class="o">=</span> <span class="n">mat</span><span class="o">.</span><span class="n">tocsc</span><span class="p">()</span>
 
     <span class="n">x</span> <span class="o">=</span> <span class="n">CSC</span><span class="p">(</span><span class="n">mat</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">mat</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">mat</span><span class="o">.</span><span class="n">nnz</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
@@ -703,13 +703,13 @@
 <div class="viewcode-block" id="scipy_to_cxmat">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Sparse.html#VeraGridEngine.Utils.Sparse.csc2.scipy_to_cxmat">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">scipy_to_cxmat</span><span class="p">(</span><span class="n">mat</span><span class="p">:</span> <span class="n">csc_matrix</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CxCSC</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Scipy CSC matrix to CxCSC marix</span>
 <span class="sd">    :param mat: Scipy CSC matrix</span>
 <span class="sd">    :return: CxCSC marix</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">mat</span><span class="o">.</span><span class="n">format</span> <span class="o">==</span> <span class="s1">&#39;csc&#39;</span><span class="p">:</span>
-        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;scipy_to_cxmat: Converting matrix to CSC format...&#39;</span><span class="p">)</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">mat</span><span class="o">.</span><span class="n">format</span> <span class="o">==</span> <span class="s1">'csc'</span><span class="p">:</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">'scipy_to_cxmat: Converting matrix to CSC format...'</span><span class="p">)</span>
         <span class="n">mat</span> <span class="o">=</span> <span class="n">mat</span><span class="o">.</span><span class="n">tocsc</span><span class="p">()</span>
 
     <span class="n">x</span> <span class="o">=</span> <span class="n">CxCSC</span><span class="p">(</span><span class="n">mat</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">mat</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">mat</span><span class="o">.</span><span class="n">nnz</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
@@ -723,12 +723,12 @@
 <div class="viewcode-block" id="is_valid_for_super_lu">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Sparse.html#VeraGridEngine.Utils.Sparse.csc2.is_valid_for_super_lu">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">is_valid_for_super_lu</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">CSC</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Check that a CSC matrix is structurally safe to pass to SuperLU.</span>
 
 <span class="sd">    :param A: CSC matrix.</span>
 <span class="sd">    :return: True when the matrix storage is consistent.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">valid</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
 
     <span class="k">if</span> <span class="n">A</span><span class="o">.</span><span class="n">n_rows</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">A</span><span class="o">.</span><span class="n">n_cols</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
@@ -787,11 +787,11 @@
 <div class="viewcode-block" id="spfactor">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Sparse.html#VeraGridEngine.Utils.Sparse.csc2.spfactor">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">spfactor</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">CSC</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span> <span class="o">|</span> <span class="n">SuperLU</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Sparse factorization with SuperLU</span>
 <span class="sd">    :param A: CSC matrix</span>
 <span class="sd">    :return: SuperLU factorization object</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">A</span><span class="o">.</span><span class="n">n_rows</span> <span class="o">==</span> <span class="n">A</span><span class="o">.</span><span class="n">n_cols</span><span class="p">:</span>
         <span class="k">pass</span>
     <span class="k">else</span><span class="p">:</span>
@@ -815,12 +815,12 @@
 <div class="viewcode-block" id="spsolve_csc">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Sparse.html#VeraGridEngine.Utils.Sparse.csc2.spsolve_csc">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">spsolve_csc</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">CSC</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Vec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Sparse solution</span>
 <span class="sd">    :param A: CSC matrix</span>
 <span class="sd">    :param x: vector</span>
 <span class="sd">    :return: solution</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">factor</span> <span class="o">=</span> <span class="n">spfactor</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">factor</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">),</span> <span class="kc">False</span>
@@ -833,7 +833,7 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Sparse.html#VeraGridEngine.Utils.Sparse.csc2.pack_4_by_4">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">pack_4_by_4</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">CSC</span><span class="p">,</span> <span class="n">B</span><span class="p">:</span> <span class="n">CSC</span><span class="p">,</span> <span class="n">C</span><span class="p">:</span> <span class="n">CSC</span><span class="p">,</span> <span class="n">D</span><span class="p">:</span> <span class="n">CSC</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CSC</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Stack 4 CSC matrices in a 2 by 2 structure</span>
 <span class="sd">    stack csc sparse float matrices like this:</span>
 <span class="sd">    | A | B |</span>
@@ -843,7 +843,7 @@
 <span class="sd">    :param C: Lower left matrix</span>
 <span class="sd">    :param D: Lower right matrix</span>
 <span class="sd">    :return: Stitched matrix</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="c1"># check dimensional compatibility</span>
     <span class="k">assert</span> <span class="n">A</span><span class="o">.</span><span class="n">n_rows</span> <span class="o">==</span> <span class="n">B</span><span class="o">.</span><span class="n">n_rows</span>
@@ -891,7 +891,7 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Sparse.html#VeraGridEngine.Utils.Sparse.csc2.pack_3_by_4">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">pack_3_by_4</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">CSC</span><span class="p">,</span> <span class="n">B</span><span class="p">:</span> <span class="n">CSC</span><span class="p">,</span> <span class="n">C</span><span class="p">:</span> <span class="n">CSC</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CSC</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Stack 3 CSC matrices in a 2 by 2 structure</span>
 <span class="sd">    stack csc sparse float matrices like this:</span>
 <span class="sd">    | A | B |</span>
@@ -900,7 +900,7 @@
 <span class="sd">    :param B: Upper right matrix</span>
 <span class="sd">    :param C: Lower left matrix</span>
 <span class="sd">    :return: Stitched matrix</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="c1"># check dimensional compatibility</span>
     <span class="k">assert</span> <span class="n">A</span><span class="o">.</span><span class="n">n_rows</span> <span class="o">==</span> <span class="n">B</span><span class="o">.</span><span class="n">n_rows</span>
@@ -941,14 +941,14 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Sparse.html#VeraGridEngine.Utils.Sparse.csc2.csc_cumsum_i">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">csc_cumsum_i</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    p [0..n] = cumulative sum of c [0..n-1], and then copy p [0..n-1] into c</span>
 
 <span class="sd">    @param p: size n+1, cumulative sum of c</span>
 <span class="sd">    @param c: size n, overwritten with p [0..n-1] on output</span>
 <span class="sd">    @param n: length of c</span>
 <span class="sd">    @return: sum (c), null on error</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">nz</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="n">nz2</span> <span class="o">=</span> <span class="mf">0.0</span>
 
@@ -966,11 +966,11 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Sparse.html#VeraGridEngine.Utils.Sparse.csc2.sp_transpose">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">sp_transpose</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">CSC</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CSC</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Actual CSC transpose unlike scipy&#39;s</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Actual CSC transpose unlike scipy's</span>
 <span class="sd">    :param A: CSC matrix</span>
 <span class="sd">    :return: CSC transposed matrix</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">C</span> <span class="o">=</span> <span class="n">CSC</span><span class="p">(</span><span class="n">A</span><span class="o">.</span><span class="n">n_cols</span><span class="p">,</span> <span class="n">A</span><span class="o">.</span><span class="n">n_rows</span><span class="p">,</span> <span class="n">A</span><span class="o">.</span><span class="n">nnz</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
 
     <span class="n">w</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">A</span><span class="o">.</span><span class="n">n_rows</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
@@ -995,12 +995,12 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Sparse.html#VeraGridEngine.Utils.Sparse.csc2.sp_slice_cols">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">sp_slice_cols</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">CSC</span><span class="p">,</span> <span class="n">cols</span><span class="p">:</span> <span class="n">IntMat</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CSC</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Slice columns</span>
 <span class="sd">    :param A: Matrix to slice</span>
 <span class="sd">    :param cols: vector of columns</span>
 <span class="sd">    :return: New sliced matrix</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># pass1: determine the number of non-zeros</span>
     <span class="n">nnz</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">cols</span><span class="p">:</span>
@@ -1032,12 +1032,12 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Sparse.html#VeraGridEngine.Utils.Sparse.csc2.sp_slice_rows">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">sp_slice_rows</span><span class="p">(</span><span class="n">mat</span><span class="p">:</span> <span class="n">CSC</span><span class="p">,</span> <span class="n">rows</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CSC</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Slice rows</span>
 <span class="sd">    :param mat:</span>
 <span class="sd">    :param rows:</span>
 <span class="sd">    :return: CSC matrix</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">B</span> <span class="o">=</span> <span class="n">sp_transpose</span><span class="p">(</span><span class="n">mat</span><span class="p">)</span>
     <span class="n">A</span> <span class="o">=</span> <span class="n">sp_slice_cols</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">rows</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">sp_transpose</span><span class="p">(</span><span class="n">A</span><span class="p">)</span></div>
@@ -1048,12 +1048,12 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Sparse.html#VeraGridEngine.Utils.Sparse.csc2.sp_slice">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">()</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">sp_slice</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">CSC</span><span class="p">,</span> <span class="n">rows</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">cols</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    /*</span>
 <span class="sd">     * This function performs the trivial slicing of the CSC sparse matrix A</span>
 <span class="sd">     *</span>
 <span class="sd">     * Steps:</span>
-<span class="sd">     *  - Slice the columns with &quot;sp_submat_c(A, cols)&quot;</span>
+<span class="sd">     *  - Slice the columns with "sp_submat_c(A, cols)"</span>
 <span class="sd">     *  - convert to CSR with .t() {transpose}</span>
 <span class="sd">     *  - Slice the rows with sp_submat_c(B, rows), because it is a CSR now</span>
 <span class="sd">     *  - Convert the result back to CSC with the final .t()</span>
@@ -1062,7 +1062,7 @@
 <span class="sd">    :param rows:</span>
 <span class="sd">    :param cols:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">n_rows</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">rows</span><span class="p">)</span>
     <span class="n">n_cols</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">cols</span><span class="p">)</span>
 
@@ -1079,7 +1079,7 @@
 
         <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">A</span><span class="o">.</span><span class="n">indptr</span><span class="p">[</span><span class="n">j</span><span class="p">],</span> <span class="n">A</span><span class="o">.</span><span class="n">indptr</span><span class="p">[</span><span class="n">j</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]):</span>  <span class="c1"># rows of A[:, j]</span>
 
-            <span class="c1"># row index translation to the &quot;rows&quot; space</span>
+            <span class="c1"># row index translation to the "rows" space</span>
             <span class="n">i</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="n">indices</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
             <span class="n">ii</span> <span class="o">=</span> <span class="n">lookup</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
 
@@ -1102,8 +1102,8 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Sparse.html#VeraGridEngine.Utils.Sparse.csc2.csc_stack_2d_ff">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">()</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">csc_stack_2d_ff</span><span class="p">(</span><span class="n">mats</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">CSC</span><span class="p">],</span> <span class="n">n_rows</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">n_cols</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CSC</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Assemble matrix from a list of matrices representing a &quot;super matrix&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Assemble matrix from a list of matrices representing a "super matrix"</span>
 
 <span class="sd">    |mat11 | mat12 | mat13 |</span>
 <span class="sd">    |mat21 | mat22 | mat23 |</span>
@@ -1118,7 +1118,7 @@
 <span class="sd">    :param n_rows: number of rows of the mats structure</span>
 <span class="sd">    :param n_cols: number of cols of the mats structure</span>
 <span class="sd">    :return: Final assembled matrix in CSC format</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="c1"># pass 1: compute the number of non zero</span>
     <span class="n">nnz</span> <span class="o">=</span> <span class="mi">0</span>
@@ -1172,11 +1172,11 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Sparse.html#VeraGridEngine.Utils.Sparse.csc2.diags">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">diags</span><span class="p">(</span><span class="n">array</span><span class="p">:</span> <span class="n">Vec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CSC</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Get diagonal sparse matrix from array</span>
 <span class="sd">    :param array:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">m</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">array</span><span class="p">)</span>
     <span class="n">res</span> <span class="o">=</span> <span class="n">CSC</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
 
@@ -1195,12 +1195,12 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Sparse.html#VeraGridEngine.Utils.Sparse.csc2.diagc">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">diagc</span><span class="p">(</span><span class="n">m</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CSC</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Get diagonal sparse matrix from value</span>
 <span class="sd">    :param m: size of the matrix</span>
 <span class="sd">    :param value: value to set</span>
 <span class="sd">    :return: CSC matrix</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">res</span> <span class="o">=</span> <span class="n">CSC</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
 
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">m</span><span class="p">):</span>
@@ -1218,7 +1218,7 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Sparse.html#VeraGridEngine.Utils.Sparse.csc2.extend">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">extend</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">CSC</span><span class="p">,</span> <span class="n">last_col</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">last_row</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">corner_val</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CSC</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    B = |   A       last_col |</span>
 <span class="sd">        | last_row  val      |</span>
 
@@ -1227,7 +1227,7 @@
 <span class="sd">    :param last_row: last row to be added to A | last_col</span>
 <span class="sd">    :param corner_val: The botton-right corner value</span>
 <span class="sd">    :return: Extended matrix</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">assert</span> <span class="n">A</span><span class="o">.</span><span class="n">n_rows</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">last_col</span><span class="p">)</span>
     <span class="k">assert</span> <span class="n">A</span><span class="o">.</span><span class="n">n_cols</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">last_row</span><span class="p">)</span>
 
@@ -1245,7 +1245,7 @@
 
         <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">A</span><span class="o">.</span><span class="n">indptr</span><span class="p">[</span><span class="n">j</span><span class="p">],</span> <span class="n">A</span><span class="o">.</span><span class="n">indptr</span><span class="p">[</span><span class="n">j</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]):</span>  <span class="c1"># rows of A[:, j]</span>
 
-            <span class="c1"># row index translation to the &quot;rows&quot; space</span>
+            <span class="c1"># row index translation to the "rows" space</span>
             <span class="n">i</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="n">indices</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
 
             <span class="n">B</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">nnz</span><span class="p">]</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
@@ -1288,12 +1288,12 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Sparse.html#VeraGridEngine.Utils.Sparse.csc2.csc_multiply_ff">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">csc_multiply_ff</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">CSC</span><span class="p">,</span> <span class="n">B</span><span class="p">:</span> <span class="n">CSC</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CSC</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Sparse matrix multiplication, C = A*B where A and B are CSC sparse matrices</span>
 <span class="sd">    :param A:</span>
 <span class="sd">    :param B:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">assert</span> <span class="n">A</span><span class="o">.</span><span class="n">n_cols</span> <span class="o">==</span> <span class="n">B</span><span class="o">.</span><span class="n">n_rows</span>
     <span class="n">nz</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="n">anz</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="n">indptr</span><span class="p">[</span><span class="n">A</span><span class="o">.</span><span class="n">n_cols</span><span class="p">]</span>
@@ -1316,7 +1316,7 @@
         <span class="c1"># claim more space</span>
         <span class="k">if</span> <span class="n">nz</span> <span class="o">+</span> <span class="n">Cm</span> <span class="o">&gt;</span> <span class="n">Cnzmax</span><span class="p">:</span>
             <span class="c1"># Ci, Cx, Cnzmax = csc_sprealloc_f(Cn, Cp, Ci, Cx, 2 * Cnzmax + m)</span>
-            <span class="c1"># print(&#39;Re-Allocating&#39;)</span>
+            <span class="c1"># print('Re-Allocating')</span>
             <span class="n">Cnzmax</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">Cnzmax</span> <span class="o">+</span> <span class="n">Cm</span>
             <span class="k">if</span> <span class="n">Cnzmax</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="n">Cnzmax</span> <span class="o">=</span> <span class="n">Cp</span><span class="p">[</span><span class="n">A</span><span class="o">.</span><span class="n">n_cols</span><span class="p">]</span>
@@ -1370,7 +1370,7 @@
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">csc_multiply_ff2</span><span class="p">(</span><span class="n">Am</span><span class="p">,</span> <span class="n">An</span><span class="p">,</span> <span class="n">Ap</span><span class="p">,</span> <span class="n">Ai</span><span class="p">,</span> <span class="n">Ax</span><span class="p">,</span>
                      <span class="n">Bm</span><span class="p">,</span> <span class="n">Bn</span><span class="p">,</span> <span class="n">Bp</span><span class="p">,</span> <span class="n">Bi</span><span class="p">,</span> <span class="n">Bx</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Sparse matrix multiplication, C = A*B where A and B are CSC sparse matrices</span>
 <span class="sd">    :param Am: number of rows in A</span>
 <span class="sd">    :param An: number of columns in A</span>
@@ -1383,7 +1383,7 @@
 <span class="sd">    :param Bi: indices of B</span>
 <span class="sd">    :param Bx: data of B</span>
 <span class="sd">    :return: Cm, Cn, Cp, Ci, Cx, Cnzmax</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">assert</span> <span class="n">An</span> <span class="o">==</span> <span class="n">Bm</span>
     <span class="n">nz</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="n">anz</span> <span class="o">=</span> <span class="n">Ap</span><span class="p">[</span><span class="n">An</span><span class="p">]</span>
@@ -1406,7 +1406,7 @@
         <span class="c1"># claim more space</span>
         <span class="k">if</span> <span class="n">nz</span> <span class="o">+</span> <span class="n">Cm</span> <span class="o">&gt;</span> <span class="n">Cnzmax</span><span class="p">:</span>
             <span class="c1"># Ci, Cx, Cnzmax = csc_sprealloc_f(Cn, Cp, Ci, Cx, 2 * Cnzmax + m)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Re-Allocating&#39;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">'Re-Allocating'</span><span class="p">)</span>
             <span class="n">Cnzmax</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">Cnzmax</span> <span class="o">+</span> <span class="n">Cm</span>
             <span class="k">if</span> <span class="n">Cnzmax</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="n">Cnzmax</span> <span class="o">=</span> <span class="n">Cp</span><span class="p">[</span><span class="n">An</span><span class="p">]</span>
@@ -1457,12 +1457,12 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Sparse.html#VeraGridEngine.Utils.Sparse.csc2.csc_multiply_cx">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">csc_multiply_cx</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">CxCSC</span><span class="p">,</span> <span class="n">B</span><span class="p">:</span> <span class="n">CSC</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CxCSC</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Sparse matrix multiplication, C = A*B where A and B are CSC sparse matrices</span>
 <span class="sd">    :param A:</span>
 <span class="sd">    :param B:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">assert</span> <span class="n">A</span><span class="o">.</span><span class="n">n_cols</span> <span class="o">==</span> <span class="n">B</span><span class="o">.</span><span class="n">n_rows</span>
     <span class="n">nz</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="n">anz</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="n">indptr</span><span class="p">[</span><span class="n">A</span><span class="o">.</span><span class="n">n_cols</span><span class="p">]</span>
@@ -1485,7 +1485,7 @@
         <span class="c1"># claim more space</span>
         <span class="k">if</span> <span class="n">nz</span> <span class="o">+</span> <span class="n">Cm</span> <span class="o">&gt;</span> <span class="n">Cnzmax</span><span class="p">:</span>
             <span class="c1"># Ci, Cx, Cnzmax = csc_sprealloc_f(Cn, Cp, Ci, Cx, 2 * Cnzmax + m)</span>
-            <span class="c1"># print(&#39;Re-Allocating&#39;)</span>
+            <span class="c1"># print('Re-Allocating')</span>
             <span class="n">Cnzmax</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">Cnzmax</span> <span class="o">+</span> <span class="n">Cm</span>
             <span class="k">if</span> <span class="n">Cnzmax</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="n">Cnzmax</span> <span class="o">=</span> <span class="n">Cp</span><span class="p">[</span><span class="n">A</span><span class="o">.</span><span class="n">n_cols</span><span class="p">]</span>
@@ -1538,12 +1538,12 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Sparse.html#VeraGridEngine.Utils.Sparse.csc2.csc_matvec_ff">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">csc_matvec_ff</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">CSC</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 
 <span class="sd">    :param A:</span>
 <span class="sd">    :param x:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">assert</span> <span class="n">A</span><span class="o">.</span><span class="n">n_cols</span> <span class="o">==</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
 
@@ -1561,7 +1561,7 @@
                     <span class="n">y</span><span class="p">[</span><span class="n">A</span><span class="o">.</span><span class="n">indices</span><span class="p">[</span><span class="n">p</span><span class="p">],</span> <span class="n">k</span><span class="p">]</span> <span class="o">+=</span> <span class="n">A</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">p</span><span class="p">]</span> <span class="o">*</span> <span class="n">x</span><span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="n">k</span><span class="p">]</span>
         <span class="k">return</span> <span class="n">y</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Wrong number of dimensions&quot;</span><span class="p">)</span></div>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">"Wrong number of dimensions"</span><span class="p">)</span></div>
 
 
 
@@ -1569,12 +1569,12 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Sparse.html#VeraGridEngine.Utils.Sparse.csc2.csc_matvec_cx">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">csc_matvec_cx</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">CxCSC</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 
 <span class="sd">    :param A:</span>
 <span class="sd">    :param x:</span>
 <span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">assert</span> <span class="n">A</span><span class="o">.</span><span class="n">n_cols</span> <span class="o">==</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
 
@@ -1592,16 +1592,16 @@
                     <span class="n">y</span><span class="p">[</span><span class="n">A</span><span class="o">.</span><span class="n">indices</span><span class="p">[</span><span class="n">p</span><span class="p">],</span> <span class="n">k</span><span class="p">]</span> <span class="o">+=</span> <span class="n">A</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">p</span><span class="p">]</span> <span class="o">*</span> <span class="n">x</span><span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="n">k</span><span class="p">]</span>
         <span class="k">return</span> <span class="n">y</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Wrong number of dimensions&quot;</span><span class="p">)</span></div>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">"Wrong number of dimensions"</span><span class="p">)</span></div>
 
 
 
-<span class="c1"># @nb.jit(&quot;i8(i4[:], i4[:], f8[:], i8, f8, i4[:], f8[:], i8, i4[:], i8)&quot;)</span>
+<span class="c1"># @nb.jit("i8(i4[:], i4[:], f8[:], i8, f8, i4[:], f8[:], i8, i4[:], i8)")</span>
 <div class="viewcode-block" id="csc_scatter_f">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Sparse.html#VeraGridEngine.Utils.Sparse.csc2.csc_scatter_f">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">csc_scatter_f</span><span class="p">(</span><span class="n">Ap</span><span class="p">,</span> <span class="n">Ai</span><span class="p">,</span> <span class="n">Ax</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">mark</span><span class="p">,</span> <span class="n">Ci</span><span class="p">,</span> <span class="n">nz</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Scatters and sums a sparse vector A(:,j) into a dense vector, x = x + beta * A(:,j)</span>
 <span class="sd">    :param Ap:</span>
 <span class="sd">    :param Ai:</span>
@@ -1614,7 +1614,7 @@
 <span class="sd">    :param Ci: pattern of x accumulated in C.i</span>
 <span class="sd">    :param nz: pattern of x placed in C starting at C.i[nz]</span>
 <span class="sd">    :return: new value of nz, -1 on error, x and w are modified</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Ap</span><span class="p">[</span><span class="n">j</span><span class="p">],</span> <span class="n">Ap</span><span class="p">[</span><span class="n">j</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]):</span>
         <span class="n">i</span> <span class="o">=</span> <span class="n">Ai</span><span class="p">[</span><span class="n">p</span><span class="p">]</span>  <span class="c1"># A(i,j) is nonzero</span>
@@ -1633,7 +1633,7 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Sparse.html#VeraGridEngine.Utils.Sparse.csc2.csc_scatter_cx">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">csc_scatter_cx</span><span class="p">(</span><span class="n">Ap</span><span class="p">,</span> <span class="n">Ai</span><span class="p">,</span> <span class="n">Ax</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">mark</span><span class="p">,</span> <span class="n">Ci</span><span class="p">,</span> <span class="n">nz</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Scatters and sums a sparse vector A(:,j) into a dense vector, x = x + beta * A(:,j)</span>
 <span class="sd">    :param Ap:</span>
 <span class="sd">    :param Ai:</span>
@@ -1646,7 +1646,7 @@
 <span class="sd">    :param Ci: pattern of x accumulated in C.i</span>
 <span class="sd">    :param nz: pattern of x placed in C starting at C.i[nz]</span>
 <span class="sd">    :return: new value of nz, -1 on error, x and w are modified</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Ap</span><span class="p">[</span><span class="n">j</span><span class="p">],</span> <span class="n">Ap</span><span class="p">[</span><span class="n">j</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]):</span>
         <span class="n">i</span> <span class="o">=</span> <span class="n">Ai</span><span class="p">[</span><span class="n">p</span><span class="p">]</span>  <span class="c1"># A(i,j) is nonzero</span>
@@ -1664,14 +1664,14 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Sparse.html#VeraGridEngine.Utils.Sparse.csc2.csc_spalloc_f">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">csc_spalloc_f</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">nzmax</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Allocate a sparse matrix (triplet form or compressed-column form).</span>
 
 <span class="sd">    @param m: number of rows</span>
 <span class="sd">    @param n: number of columns</span>
 <span class="sd">    @param nzmax: maximum number of entries</span>
 <span class="sd">    @return: m, n, Aindptr, Aindices, Adata, Anzmax</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">Anzmax</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">nzmax</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
     <span class="n">Aindptr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
     <span class="n">Aindices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">Anzmax</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
@@ -1684,14 +1684,14 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Sparse.html#VeraGridEngine.Utils.Sparse.csc2.csc_spalloc_cx">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">csc_spalloc_cx</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">nzmax</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Allocate a sparse matrix (triplet form or compressed-column form).</span>
 
 <span class="sd">    @param m: number of rows</span>
 <span class="sd">    @param n: number of columns</span>
 <span class="sd">    @param nzmax: maximum number of entries</span>
 <span class="sd">    @return: m, n, Aindptr, Aindices, Adata, Anzmax</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">Anzmax</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">nzmax</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
     <span class="n">Aindptr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
     <span class="n">Aindices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">Anzmax</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
@@ -1703,7 +1703,7 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Sparse.html#VeraGridEngine.Utils.Sparse.csc2.csc_add_ff">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">csc_add_ff</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">CSC</span><span class="p">,</span> <span class="n">B</span><span class="p">:</span> <span class="n">CSC</span><span class="p">,</span> <span class="n">alpha</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">beta</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CSC</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    C = alpha*A + beta*B</span>
 
 <span class="sd">    @param A: column-compressed matrix</span>
@@ -1711,7 +1711,7 @@
 <span class="sd">    @param alpha: scalar alpha</span>
 <span class="sd">    @param beta: scalar beta</span>
 <span class="sd">    @return: C=alpha*A + beta*B, null on error (Cm, Cn, Cp, Ci, Cx)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">m</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="n">n_rows</span>
     <span class="n">n</span> <span class="o">=</span> <span class="n">B</span><span class="o">.</span><span class="n">n_cols</span>
@@ -1744,13 +1744,13 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Sparse.html#VeraGridEngine.Utils.Sparse.csc2.csc_add_ff2">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">csc_add_ff2</span><span class="p">(</span><span class="n">Am</span><span class="p">,</span> <span class="n">An</span><span class="p">,</span> <span class="n">Aindptr</span><span class="p">,</span> <span class="n">Aindices</span><span class="p">,</span> <span class="n">Adata</span><span class="p">,</span> <span class="n">Bn</span><span class="p">,</span> <span class="n">Bindptr</span><span class="p">,</span> <span class="n">Bindices</span><span class="p">,</span> <span class="n">Bdata</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    C = A + B</span>
 
 <span class="sd">    @param A: column-compressed matrix</span>
 <span class="sd">    @param B: column-compressed matrix</span>
 <span class="sd">    @return: C=alpha*A + beta*B, null on error (Cm, Cn, Cp, Ci, Cx)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">nz</span> <span class="o">=</span> <span class="mi">0</span>
 
     <span class="n">m</span><span class="p">,</span> <span class="n">anz</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">Bp</span><span class="p">,</span> <span class="n">Bx</span> <span class="o">=</span> <span class="n">Am</span><span class="p">,</span> <span class="n">Aindptr</span><span class="p">[</span><span class="n">An</span><span class="p">],</span> <span class="n">Bn</span><span class="p">,</span> <span class="n">Bindptr</span><span class="p">,</span> <span class="n">Bdata</span>
@@ -1783,13 +1783,13 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Sparse.html#VeraGridEngine.Utils.Sparse.csc2.csc_add_cx2">[docs]</a>
 <span class="nd">@nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">csc_add_cx2</span><span class="p">(</span><span class="n">Am</span><span class="p">,</span> <span class="n">An</span><span class="p">,</span> <span class="n">Aindptr</span><span class="p">,</span> <span class="n">Aindices</span><span class="p">,</span> <span class="n">Adata</span><span class="p">,</span> <span class="n">Bn</span><span class="p">,</span> <span class="n">Bindptr</span><span class="p">,</span> <span class="n">Bindices</span><span class="p">,</span> <span class="n">Bdata</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    C = A + B</span>
 
 <span class="sd">    @param A: column-compressed matrix</span>
 <span class="sd">    @param B: column-compressed matrix</span>
 <span class="sd">    @return: C=alpha*A + beta*B, null on error (Cm, Cn, Cp, Ci, Cx)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">nz</span> <span class="o">=</span> <span class="mi">0</span>
 
     <span class="n">m</span><span class="p">,</span> <span class="n">anz</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">Bp</span><span class="p">,</span> <span class="n">Bx</span> <span class="o">=</span> <span class="n">Am</span><span class="p">,</span> <span class="n">Aindptr</span><span class="p">[</span><span class="n">An</span><span class="p">],</span> <span class="n">Bn</span><span class="p">,</span> <span class="n">Bindptr</span><span class="p">,</span> <span class="n">Bdata</span>

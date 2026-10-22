@@ -1,0 +1,1258 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VeraGridEngine.Templates.BasicBlockCatalog.basic_block_catalog &mdash; VeraGrid 6.7.12 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/style.css?v=ba3a54df" />
+
+  
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=b2832fc1"></script>
+      <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            VeraGrid
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/installation.html">💽 Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/user_interface.html">📊 User interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/veragrid_scripting_guide.html">📑 VeraGrid scripting guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/grid_analysis.html">🔎 Grid analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/structure.html">🌁 Structure of VeraGrid</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/modelling.html">📐 Grid Modelling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/model_debugging.html">🪲 Model debugging</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/file_operations.html">💾 File loading and saving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/topology.html">🌵 Topology</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/clustering.html">🎳 Clustering</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/grid_reduction.html">👾 Grid Reduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/procedural_grid.html">🕸️ Procedural Grid Expansion</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/power_flow.html">🔥 Power flow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/linear_analysis.html">📏 Linear analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/optimal_power_flow.html">🏁 Optimal power flow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/short_circuit.html">⚡ Short-Circuit</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/stochastic_power_flow.html">🎲 Stochastic power flow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/continuation_power_flow.html">➿ Continuation power flow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/sigma_analysis.html">🌘 Sigma analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/solar_wizard.html">☀️ Solar power wizard</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/contingency_analysis.html">💥 Contingency analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/investment_optimization.html">🏦 Investment optimization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/cascading.html">🎢 Cascading</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/net_transfer_capacity.html">🚢 Net transfer capacity optimization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/nodal_hosting_capacity.html">🏭 Nodal hosting capacity</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/reliability.html">🚧 Reliability</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/development.html">💻 Development</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/plugins.html">🧩 Plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/license.html">📜 License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/data_models.html">Data Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../rst_source/api/auto/modules.html">VeraGrid</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">VeraGrid</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">VeraGridEngine.Templates.BasicBlockCatalog.basic_block_catalog</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for VeraGridEngine.Templates.BasicBlockCatalog.basic_block_catalog</h1><div class="highlight"><pre>
+<span></span><span class="c1"># This Source Code Form is subject to the terms of the Mozilla Public</span>
+<span class="c1"># License, v. 2.0. If a copy of the MPL was not distributed with this</span>
+<span class="c1"># file, You can obtain one at https://mozilla.org/MPL/2.0/.</span>
+<span class="c1"># SPDX-License-Identifier: MPL-2.0</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">keyword</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">lru_cache</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Sequence</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Devices.Dynamic.emt_template</span><span class="w"> </span><span class="kn">import</span> <span class="n">EmtModelTemplate</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Devices.Dynamic.var_factory</span><span class="w"> </span><span class="kn">import</span> <span class="n">VarFactory</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Templates.BasicBlockCatalog.Functions</span><span class="w"> </span><span class="kn">import</span> <span class="n">BasicBlockCatalogTemplateBuilder</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Templates.BasicBlockCatalog.Functions</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_basic_block_catalog_template_builder_by_module_name</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Templates.BasicBlockCatalog.catalog_static_registry</span><span class="w"> </span><span class="kn">import</span> <span class="n">BasicBlockCatalogStaticRecord</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Templates.BasicBlockCatalog.catalog_static_registry</span><span class="w"> </span><span class="kn">import</span> <span class="n">build_basic_block_catalog_pending_template_reason</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Templates.BasicBlockCatalog.catalog_static_registry</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_basic_block_catalog_static_records</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Utils.Symbolic.block</span><span class="w"> </span><span class="kn">import</span> <span class="n">Block</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Utils.Symbolic.symbolic</span><span class="w"> </span><span class="kn">import</span> <span class="n">Expr</span><span class="p">,</span> <span class="n">Var</span>
+
+
+<div class="viewcode-block" id="BasicBlockTemplateDescriptor">
+<a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Templates.BasicBlockCatalog.html#VeraGridEngine.Templates.BasicBlockCatalog.basic_block_catalog.BasicBlockTemplateDescriptor">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">BasicBlockTemplateDescriptor</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Explicit, typed description of one shipped catalog template.</span>
+<span class="sd">    """</span>
+
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="s2">"_template_key"</span><span class="p">,</span>
+        <span class="s2">"_typ_id"</span><span class="p">,</span>
+        <span class="s2">"_blkdef_name"</span><span class="p">,</span>
+        <span class="s2">"_sample_display_name"</span><span class="p">,</span>
+        <span class="s2">"_display_label"</span><span class="p">,</span>
+        <span class="s2">"_category_path"</span><span class="p">,</span>
+        <span class="s2">"_inputs"</span><span class="p">,</span>
+        <span class="s2">"_outputs"</span><span class="p">,</span>
+        <span class="s2">"_states"</span><span class="p">,</span>
+        <span class="s2">"_params"</span><span class="p">,</span>
+        <span class="s2">"_unsupported_lines"</span><span class="p">,</span>
+        <span class="s2">"_module_name"</span><span class="p">,</span>
+        <span class="s2">"_module_filename"</span><span class="p">,</span>
+        <span class="s2">"_description"</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">template_key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">typ_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">blkdef_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">sample_display_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">display_label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">category_path</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+        <span class="n">inputs</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+        <span class="n">outputs</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+        <span class="n">states</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+        <span class="n">params</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+        <span class="n">unsupported_lines</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+        <span class="n">module_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">module_filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">description</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Store one immutable catalog descriptor.</span>
+
+<span class="sd">        :param template_key: Stable semantic lookup key.</span>
+<span class="sd">        :param typ_id: Imported numeric type identifier.</span>
+<span class="sd">        :param blkdef_name: Raw source block name.</span>
+<span class="sd">        :param sample_display_name: Clean human-facing source name.</span>
+<span class="sd">        :param display_label: Unique label exposed in the editor.</span>
+<span class="sd">        :param category_path: Full editor category path.</span>
+<span class="sd">        :param inputs: Input names.</span>
+<span class="sd">        :param outputs: Output names.</span>
+<span class="sd">        :param states: State names.</span>
+<span class="sd">        :param params: Runtime parameter names.</span>
+<span class="sd">        :param unsupported_lines: Pending markers for non editor-ready templates.</span>
+<span class="sd">        :param module_name: Standalone module stem inside the shipped catalog.</span>
+<span class="sd">        :param module_filename: Standalone module filename inside the shipped catalog.</span>
+<span class="sd">        :param description: Human-facing explanation of the block behavior.</span>
+<span class="sd">        :returns: None.</span>
+<span class="sd">        """</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_template_key</span> <span class="o">=</span> <span class="n">template_key</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_typ_id</span> <span class="o">=</span> <span class="n">typ_id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_blkdef_name</span> <span class="o">=</span> <span class="n">blkdef_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sample_display_name</span> <span class="o">=</span> <span class="n">sample_display_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_display_label</span> <span class="o">=</span> <span class="n">display_label</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_category_path</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">category_path</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_inputs</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_outputs</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">outputs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_states</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">states</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_params</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_unsupported_lines</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">unsupported_lines</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_module_name</span> <span class="o">=</span> <span class="n">module_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_module_filename</span> <span class="o">=</span> <span class="n">module_filename</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_description</span> <span class="o">=</span> <span class="n">description</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">template_key</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Return the stable semantic lookup key.</span>
+
+<span class="sd">        :returns: Template lookup key.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_template_key</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">typ_id</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Return the imported numeric type identifier.</span>
+
+<span class="sd">        :returns: Imported type identifier.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_typ_id</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">blkdef_name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Return the raw imported block name.</span>
+
+<span class="sd">        :returns: Raw block name.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_blkdef_name</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">sample_display_name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Return the clean display name derived from the shipped module.</span>
+
+<span class="sd">        :returns: Clean source name.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sample_display_name</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">display_label</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Return the unique label exposed by the editor.</span>
+
+<span class="sd">        :returns: Unique label.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_display_label</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">category_path</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Return the full library category path.</span>
+
+<span class="sd">        :returns: Category path.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_category_path</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">inputs</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Return the input names.</span>
+
+<span class="sd">        :returns: Input-name tuple.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inputs</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">outputs</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Return the output names.</span>
+
+<span class="sd">        :returns: Output-name tuple.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_outputs</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">states</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Return the state names.</span>
+
+<span class="sd">        :returns: State-name tuple.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_states</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">params</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Return the runtime parameter names.</span>
+
+<span class="sd">        :returns: Parameter-name tuple.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_params</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">unsupported_lines</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Return the pending markers for non editor-ready templates.</span>
+
+<span class="sd">        :returns: Unsupported marker tuple.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_unsupported_lines</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">module_name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Return the standalone Python module stem.</span>
+
+<span class="sd">        :returns: Module stem.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_module_name</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">module_filename</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Return the standalone Python filename.</span>
+
+<span class="sd">        :returns: Module filename.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_module_filename</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">description</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Return the human-facing behavior description.</span>
+
+<span class="sd">        :returns: Block behavior description, or an empty string when unspecified.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_description</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_editor_ready</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Return whether the template can be exposed in the editor.</span>
+
+<span class="sd">        :returns: ``True`` when the template has executable content.</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_unsupported_lines</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">search_text</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Build the normalized search text used by the editor filter.</span>
+
+<span class="sd">        :returns: Search text.</span>
+<span class="sd">        """</span>
+        <span class="n">tokens</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">category_name</span><span class="p">:</span> <span class="nb">str</span>
+
+        <span class="c1"># The search index mixes the stable human-facing fields so one filter can</span>
+        <span class="c1"># match label, source name, semantic key, imported type id, or category.</span>
+        <span class="n">tokens</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_display_label</span><span class="p">)</span>
+        <span class="n">tokens</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_blkdef_name</span><span class="p">)</span>
+        <span class="n">tokens</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_sample_display_name</span><span class="p">)</span>
+        <span class="n">tokens</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_template_key</span><span class="p">)</span>
+        <span class="n">tokens</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_typ_id</span><span class="p">)</span>
+        <span class="n">tokens</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_description</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">category_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_category_path</span><span class="p">:</span>
+            <span class="n">tokens</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">category_name</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="s2">" "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tokens</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="build_basic_block_catalog_functional_description">
+<a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Templates.BasicBlockCatalog.html#VeraGridEngine.Templates.BasicBlockCatalog.basic_block_catalog.build_basic_block_catalog_functional_description">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">build_basic_block_catalog_functional_description</span><span class="p">(</span><span class="n">record</span><span class="p">:</span> <span class="n">BasicBlockCatalogStaticRecord</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Build a functional description for one imported basic-block record.</span>
+
+<span class="sd">    The shipped catalogue contains hundreds of variants whose labels encode</span>
+<span class="sd">    their equations and optional behaviours. This function turns that stable</span>
+<span class="sd">    metadata into useful Library text while explicit hand-written descriptions</span>
+<span class="sd">    remain authoritative for exceptional blocks.</span>
+
+<span class="sd">    :param record: Static catalogue record requiring a description.</span>
+<span class="sd">    :returns: Functional, human-facing explanation of the block behaviour.</span>
+<span class="sd">    """</span>
+    <span class="n">template_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">record</span><span class="o">.</span><span class="n">template_key</span>
+    <span class="n">display_label</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">record</span><span class="o">.</span><span class="n">display_label</span>
+    <span class="n">category_path</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">record</span><span class="o">.</span><span class="n">category_path</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">category_path</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">family</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">category_path</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">family</span> <span class="o">=</span> <span class="s2">""</span>
+
+    <span class="c1"># Elementary functions are described by their mathematical operation.</span>
+    <span class="k">if</span> <span class="n">family</span> <span class="o">==</span> <span class="s2">"Elementary Functions"</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">template_key</span> <span class="o">==</span> <span class="s2">"equal"</span><span class="p">:</span>
+            <span class="n">description</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"Compares two input signals and outputs one when they are equal, otherwise zero."</span>
+        <span class="k">elif</span> <span class="n">template_key</span> <span class="o">==</span> <span class="s2">"abs"</span><span class="p">:</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="s2">"Returns the absolute value of the input signal."</span>
+        <span class="k">elif</span> <span class="n">template_key</span> <span class="o">==</span> <span class="s2">"ceil"</span><span class="p">:</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="s2">"Rounds the input signal upward to the nearest integer."</span>
+        <span class="k">elif</span> <span class="n">template_key</span> <span class="o">==</span> <span class="s2">"floor"</span><span class="p">:</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="s2">"Rounds the input signal downward to the nearest integer."</span>
+        <span class="k">elif</span> <span class="n">template_key</span> <span class="o">==</span> <span class="s2">"frac"</span><span class="p">:</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="s2">"Returns the fractional part of the input signal."</span>
+        <span class="k">elif</span> <span class="n">template_key</span> <span class="o">==</span> <span class="s2">"round"</span><span class="p">:</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="s2">"Rounds the input signal to the nearest integer."</span>
+        <span class="k">elif</span> <span class="n">template_key</span> <span class="o">==</span> <span class="s2">"modulo"</span><span class="p">:</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="s2">"Returns the remainder after dividing the first input signal by the second."</span>
+        <span class="k">elif</span> <span class="n">template_key</span> <span class="o">==</span> <span class="s2">"reciprocal_fb"</span><span class="p">:</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="s2">"Returns a sign-preserving protected reciprocal with a minimum denominator magnitude."</span>
+        <span class="k">elif</span> <span class="n">template_key</span> <span class="o">==</span> <span class="s2">"reciprocal"</span><span class="p">:</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="s2">"Returns the exact reciprocal of the input signal; the result is undefined at zero."</span>
+        <span class="k">elif</span> <span class="n">template_key</span> <span class="o">==</span> <span class="s2">"sign"</span><span class="p">:</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="s2">"Returns the sign of the input signal as -1, 0, or 1."</span>
+        <span class="k">elif</span> <span class="n">template_key</span> <span class="o">==</span> <span class="s2">"sqrt"</span><span class="p">:</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="s2">"Returns the square root of the absolute input value."</span>
+        <span class="k">elif</span> <span class="n">template_key</span> <span class="o">==</span> <span class="s2">"x_2"</span><span class="p">:</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="s2">"Squares the input signal: y = x²."</span>
+        <span class="k">elif</span> <span class="n">template_key</span> <span class="o">==</span> <span class="s2">"x_p"</span><span class="p">:</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="s2">"Raises the input signal to the configurable exponent p."</span>
+        <span class="k">elif</span> <span class="n">template_key</span> <span class="o">==</span> <span class="s2">"exp"</span><span class="p">:</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="s2">"Applies the natural exponential function to the input signal."</span>
+        <span class="k">elif</span> <span class="n">template_key</span> <span class="o">==</span> <span class="s2">"ln"</span><span class="p">:</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="s2">"Applies the natural logarithm to the input signal."</span>
+        <span class="k">elif</span> <span class="n">template_key</span> <span class="o">==</span> <span class="s2">"log"</span><span class="p">:</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="s2">"Applies the base-10 logarithm to the input signal."</span>
+        <span class="k">elif</span> <span class="n">template_key</span> <span class="o">==</span> <span class="s2">"atan2"</span><span class="p">:</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="s2">"Returns the four-quadrant angle atan2(y, x) in radians."</span>
+        <span class="k">elif</span> <span class="n">template_key</span> <span class="o">==</span> <span class="s2">"atan2d"</span><span class="p">:</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="s2">"Returns the four-quadrant angle atan2(y, x) in degrees."</span>
+        <span class="k">elif</span> <span class="n">template_key</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"coshd"</span><span class="p">,</span> <span class="s2">"sinhd"</span><span class="p">,</span> <span class="s2">"tanhd"</span><span class="p">):</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"Applies the </span><span class="si">{</span><span class="n">display_label</span><span class="si">}</span><span class="s2"> hyperbolic function to an input expressed in degrees."</span>
+        <span class="k">elif</span> <span class="n">template_key</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">"d"</span><span class="p">):</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"Applies the </span><span class="si">{</span><span class="n">display_label</span><span class="si">}</span><span class="s2"> trigonometric function using degrees."</span>
+        <span class="k">elif</span> <span class="n">template_key</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"acos"</span><span class="p">,</span> <span class="s2">"asin"</span><span class="p">,</span> <span class="s2">"atan"</span><span class="p">):</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"Applies the inverse </span><span class="si">{</span><span class="n">display_label</span><span class="si">}</span><span class="s2"> trigonometric function in radians."</span>
+        <span class="k">elif</span> <span class="n">template_key</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"cos"</span><span class="p">,</span> <span class="s2">"sin"</span><span class="p">,</span> <span class="s2">"tan"</span><span class="p">):</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"Applies the </span><span class="si">{</span><span class="n">display_label</span><span class="si">}</span><span class="s2"> trigonometric function in radians."</span>
+        <span class="k">elif</span> <span class="n">template_key</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"cosh"</span><span class="p">,</span> <span class="s2">"sinh"</span><span class="p">,</span> <span class="s2">"tanh"</span><span class="p">):</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"Applies the </span><span class="si">{</span><span class="n">display_label</span><span class="si">}</span><span class="s2"> hyperbolic function to the input signal."</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"Applies the </span><span class="si">{</span><span class="n">display_label</span><span class="si">}</span><span class="s2"> mathematical operation to the input signal."</span>
+    <span class="k">elif</span> <span class="n">family</span> <span class="o">==</span> <span class="s2">"Constants and Scaling"</span><span class="p">:</span>
+        <span class="c1"># Records without input ports are sources; the remaining records scale a signal.</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">record</span><span class="o">.</span><span class="n">inputs</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"Outputs the constant value </span><span class="si">{</span><span class="n">display_label</span><span class="si">}</span><span class="s2">."</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"Scales the input signal using the factor </span><span class="si">{</span><span class="n">display_label</span><span class="si">}</span><span class="s2">."</span>
+    <span class="k">elif</span> <span class="n">family</span> <span class="o">==</span> <span class="s2">"Scaling and Products"</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">template_key</span> <span class="o">==</span> <span class="s2">"a_x_c1_x_c2"</span><span class="p">:</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="s2">"Evaluates the factored quadratic y = a(x - c1)(x - c2)."</span>
+        <span class="k">elif</span> <span class="n">template_key</span> <span class="o">==</span> <span class="s2">"ax_2_bx_c"</span><span class="p">:</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="s2">"Evaluates the quadratic polynomial y = ax² + bx + c."</span>
+        <span class="k">elif</span> <span class="n">template_key</span> <span class="o">==</span> <span class="s2">"mx_n"</span><span class="p">:</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="s2">"Applies the affine transformation y = m·x + n."</span>
+        <span class="k">elif</span> <span class="n">template_key</span> <span class="o">==</span> <span class="s2">"bias"</span><span class="p">:</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="s2">"Provides an initial bias value determined from the initialized output."</span>
+        <span class="k">elif</span> <span class="s2">"Saturated"</span> <span class="ow">in</span> <span class="n">display_label</span><span class="p">:</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"Applies </span><span class="si">{</span><span class="n">display_label</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="si">}</span><span class="s2"> to the input and clamps the result to configured bounds."</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"Multiplies the input signal by </span><span class="si">{</span><span class="n">display_label</span><span class="si">}</span><span class="s2">."</span>
+    <span class="k">elif</span> <span class="n">family</span> <span class="o">==</span> <span class="s2">"Integrators and Derivatives"</span><span class="p">:</span>
+        <span class="c1"># The leading numerator distinguishes integrators from differentiators.</span>
+        <span class="k">if</span> <span class="n">template_key</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"1_s"</span><span class="p">):</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"Integrates the input using the </span><span class="si">{</span><span class="n">display_label</span><span class="si">}</span><span class="s2"> formulation."</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"Applies the continuous differentiating transfer function </span><span class="si">{</span><span class="n">display_label</span><span class="si">}</span><span class="s2">."</span>
+    <span class="k">elif</span> <span class="n">family</span> <span class="o">==</span> <span class="s2">"Transfer Functions and Filters"</span><span class="p">:</span>
+        <span class="k">if</span> <span class="s2">"butterworth"</span> <span class="ow">in</span> <span class="n">template_key</span><span class="p">:</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"Applies a </span><span class="si">{</span><span class="n">display_label</span><span class="si">}</span><span class="s2"> low-pass filter to the input signal."</span>
+        <span class="k">elif</span> <span class="n">template_key</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"max"</span><span class="p">):</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"Outputs the largest of the </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">record</span><span class="o">.</span><span class="n">inputs</span><span class="p">)</span><span class="si">}</span><span class="s2"> input signals."</span>
+        <span class="k">elif</span> <span class="n">template_key</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"min"</span><span class="p">):</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"Outputs the smallest of the </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">record</span><span class="o">.</span><span class="n">inputs</span><span class="p">)</span><span class="si">}</span><span class="s2"> input signals."</span>
+        <span class="k">elif</span> <span class="n">template_key</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"multiply"</span><span class="p">):</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"Scales the input signal by </span><span class="si">{</span><span class="n">display_label</span><span class="si">}</span><span class="s2">."</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"Applies the continuous transfer function </span><span class="si">{</span><span class="n">display_label</span><span class="si">}</span><span class="s2"> to the input signal."</span>
+    <span class="k">elif</span> <span class="n">family</span> <span class="o">==</span> <span class="s2">"Controllers"</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">template_key</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"picdro"</span><span class="p">):</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="s2">"Applies PI droop control with configurable pickup and dropoff timing."</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"Implements the continuous controller or compensator </span><span class="si">{</span><span class="n">display_label</span><span class="si">}</span><span class="s2">."</span>
+    <span class="k">elif</span> <span class="n">family</span> <span class="o">==</span> <span class="s2">"Delays and Memory"</span><span class="p">:</span>
+        <span class="k">if</span> <span class="s2">"lastvalue"</span> <span class="ow">in</span> <span class="n">template_key</span><span class="p">:</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"Retains the previous sampled input value using the </span><span class="si">{</span><span class="n">display_label</span><span class="si">}</span><span class="s2"> variant."</span>
+        <span class="k">elif</span> <span class="n">template_key</span> <span class="o">==</span> <span class="s2">"movingavg"</span><span class="p">:</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="s2">"Returns the moving average of the input over a configurable delayed time window."</span>
+        <span class="k">elif</span> <span class="n">template_key</span> <span class="o">==</span> <span class="s2">"delay"</span><span class="p">:</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="s2">"Outputs the input signal after a configurable exact time delay."</span>
+        <span class="k">elif</span> <span class="s2">"pade"</span> <span class="ow">in</span> <span class="n">template_key</span><span class="p">:</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"Approximates a time delay with the </span><span class="si">{</span><span class="n">display_label</span><span class="si">}</span><span class="s2"> rational transfer function."</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"Applies the transport-delay model </span><span class="si">{</span><span class="n">display_label</span><span class="si">}</span><span class="s2"> to the input signal."</span>
+    <span class="k">elif</span> <span class="n">family</span> <span class="o">==</span> <span class="s2">"Comparators"</span><span class="p">:</span>
+        <span class="n">description</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"Compares signals using the condition “</span><span class="si">{</span><span class="n">display_label</span><span class="si">}</span><span class="s2">” and outputs a Boolean result."</span>
+    <span class="k">elif</span> <span class="n">family</span> <span class="o">==</span> <span class="s2">"Gates and Memory"</span><span class="p">:</span>
+        <span class="n">logic_keys</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"and2"</span><span class="p">,</span> <span class="s2">"and3"</span><span class="p">,</span> <span class="s2">"and4"</span><span class="p">,</span> <span class="s2">"eor"</span><span class="p">,</span> <span class="s2">"nor"</span><span class="p">,</span> <span class="s2">"not"</span><span class="p">,</span> <span class="s2">"or2"</span><span class="p">,</span> <span class="s2">"or3"</span><span class="p">,</span> <span class="s2">"or4"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">template_key</span> <span class="ow">in</span> <span class="n">logic_keys</span><span class="p">:</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"Applies the </span><span class="si">{</span><span class="n">display_label</span><span class="si">}</span><span class="s2"> Boolean logic operation to its inputs."</span>
+        <span class="k">elif</span> <span class="s2">"flipflop"</span> <span class="ow">in</span> <span class="n">template_key</span> <span class="ow">or</span> <span class="n">template_key</span> <span class="o">==</span> <span class="s2">"bistable"</span><span class="p">:</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"Stores a latched value using the </span><span class="si">{</span><span class="n">display_label</span><span class="si">}</span><span class="s2"> set/reset behaviour."</span>
+        <span class="k">elif</span> <span class="n">template_key</span> <span class="o">==</span> <span class="s2">"edge_detector"</span><span class="p">:</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="s2">"Outputs a pulse when it detects the configured transition of the input signal."</span>
+        <span class="k">elif</span> <span class="n">template_key</span> <span class="o">==</span> <span class="s2">"monostable"</span><span class="p">:</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="s2">"Generates a pulse of configurable duration when triggered."</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"Selects between input signals according to the </span><span class="si">{</span><span class="n">display_label</span><span class="si">}</span><span class="s2"> condition."</span>
+    <span class="k">elif</span> <span class="n">family</span> <span class="o">==</span> <span class="s2">"Switching and Selection"</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">template_key</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"select"</span><span class="p">):</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"Selects an output value according to the </span><span class="si">{</span><span class="n">display_label</span><span class="si">}</span><span class="s2"> condition."</span>
+        <span class="k">elif</span> <span class="n">template_key</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"selfix"</span><span class="p">):</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="s2">"Sets and retains the input value when the enabling condition becomes true."</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"Routes input signals according to the </span><span class="si">{</span><span class="n">display_label</span><span class="si">}</span><span class="s2"> switching rule."</span>
+    <span class="k">elif</span> <span class="n">family</span> <span class="o">==</span> <span class="s2">"Timers and Enables"</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">template_key</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"enable"</span><span class="p">):</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"Enables or holds its signal channels according to the </span><span class="si">{</span><span class="n">display_label</span><span class="si">}</span><span class="s2"> control rule."</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"Applies the enabled continuous response </span><span class="si">{</span><span class="n">display_label</span><span class="si">}</span><span class="s2">."</span>
+    <span class="k">elif</span> <span class="n">family</span> <span class="o">==</span> <span class="s2">"Limiters"</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">template_key</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"rate_limiter"</span><span class="p">)</span> <span class="ow">or</span> <span class="n">template_key</span> <span class="o">==</span> <span class="s2">"gradlim_const"</span><span class="p">:</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"Limits how quickly the input can change using the </span><span class="si">{</span><span class="n">display_label</span><span class="si">}</span><span class="s2"> bounds."</span>
+        <span class="k">elif</span> <span class="n">template_key</span> <span class="o">==</span> <span class="s2">"limit_lower_p"</span><span class="p">:</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="s2">"Clamps the input signal to a configurable lower bound."</span>
+        <span class="k">elif</span> <span class="n">template_key</span> <span class="o">==</span> <span class="s2">"limit_upper"</span><span class="p">:</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="s2">"Clamps the input signal to a configurable upper bound."</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"Clamps the input signal using the </span><span class="si">{</span><span class="n">display_label</span><span class="si">}</span><span class="s2"> upper and lower bounds."</span>
+    <span class="k">elif</span> <span class="n">family</span> <span class="o">==</span> <span class="s2">"Deadbands and Rate Limiters"</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">template_key</span> <span class="o">==</span> <span class="s2">"backlash"</span><span class="p">:</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="s2">"Models mechanical backlash with a configurable hysteresis gap."</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"Applies the </span><span class="si">{</span><span class="n">display_label</span><span class="si">}</span><span class="s2"> deadband characteristic around zero."</span>
+    <span class="k">elif</span> <span class="n">family</span> <span class="o">==</span> <span class="s2">"Signal Generators"</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">template_key</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">"_ip"</span><span class="p">)</span> <span class="ow">and</span> <span class="s2">"wave_generator"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">template_key</span><span class="p">:</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"Generates a timed pulse while the condition “</span><span class="si">{</span><span class="n">display_label</span><span class="si">}</span><span class="s2">” is active."</span>
+        <span class="k">elif</span> <span class="s2">"sine_wave"</span> <span class="ow">in</span> <span class="n">template_key</span><span class="p">:</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"Generates a configurable sinusoidal waveform using the </span><span class="si">{</span><span class="n">display_label</span><span class="si">}</span><span class="s2"> timing variant."</span>
+        <span class="k">elif</span> <span class="s2">"square_wave"</span> <span class="ow">in</span> <span class="n">template_key</span><span class="p">:</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"Generates a configurable square waveform using the </span><span class="si">{</span><span class="n">display_label</span><span class="si">}</span><span class="s2"> timing variant."</span>
+        <span class="k">elif</span> <span class="s2">"triangle_wave"</span> <span class="ow">in</span> <span class="n">template_key</span><span class="p">:</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"Generates a configurable triangular waveform using the </span><span class="si">{</span><span class="n">display_label</span><span class="si">}</span><span class="s2"> timing variant."</span>
+        <span class="k">elif</span> <span class="s2">"sawtooth_wave"</span> <span class="ow">in</span> <span class="n">template_key</span><span class="p">:</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"Generates a configurable sawtooth waveform using the </span><span class="si">{</span><span class="n">display_label</span><span class="si">}</span><span class="s2"> timing variant."</span>
+        <span class="k">elif</span> <span class="n">template_key</span> <span class="o">==</span> <span class="s2">"pulse"</span><span class="p">:</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="s2">"Generates a pulse with configurable start time and duration."</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"Generates the </span><span class="si">{</span><span class="n">display_label</span><span class="si">}</span><span class="s2"> source waveform."</span>
+    <span class="k">elif</span> <span class="n">family</span> <span class="o">==</span> <span class="s2">"Time Sources and Timers"</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">template_key</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"time_"</span><span class="p">):</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="s2">"Outputs the current global simulation time."</span>
+        <span class="k">elif</span> <span class="n">template_key</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"clock"</span><span class="p">):</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"Generates a periodic clock signal using the </span><span class="si">{</span><span class="n">display_label</span><span class="si">}</span><span class="s2"> configuration."</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"Measures elapsed simulation time using the </span><span class="si">{</span><span class="n">display_label</span><span class="si">}</span><span class="s2"> reset and hold behaviour."</span>
+    <span class="k">elif</span> <span class="n">family</span> <span class="o">==</span> <span class="s2">"Arrays and Matrices"</span><span class="p">:</span>
+        <span class="k">if</span> <span class="s2">"inverse"</span> <span class="ow">in</span> <span class="n">template_key</span> <span class="ow">or</span> <span class="n">template_key</span> <span class="o">==</span> <span class="s2">"invlapprox"</span><span class="p">:</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"Finds the input corresponding to a tabulated output using </span><span class="si">{</span><span class="n">display_label</span><span class="si">}</span><span class="s2">."</span>
+        <span class="k">elif</span> <span class="s2">"matrix"</span> <span class="ow">in</span> <span class="n">template_key</span> <span class="ow">or</span> <span class="n">template_key</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"lapprox2"</span><span class="p">,</span> <span class="s2">"sapprox2"</span><span class="p">):</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"Interpolates a two-dimensional table using </span><span class="si">{</span><span class="n">display_label</span><span class="si">}</span><span class="s2">."</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"Interpolates a one-dimensional table using </span><span class="si">{</span><span class="n">display_label</span><span class="si">}</span><span class="s2">."</span>
+    <span class="k">elif</span> <span class="n">family</span> <span class="o">==</span> <span class="s2">"Clarke, Park and dq0"</span><span class="p">:</span>
+        <span class="n">description</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"Applies the </span><span class="si">{</span><span class="n">display_label</span><span class="si">}</span><span class="s2"> coordinate transformation."</span>
+    <span class="k">elif</span> <span class="n">family</span> <span class="o">==</span> <span class="s2">"RMS and Sequence"</span><span class="p">:</span>
+        <span class="k">if</span> <span class="s2">"rms"</span> <span class="ow">in</span> <span class="n">template_key</span><span class="p">:</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"Computes the </span><span class="si">{</span><span class="n">display_label</span><span class="si">}</span><span class="s2"> magnitude from the input signals."</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"Converts phase quantities using the </span><span class="si">{</span><span class="n">display_label</span><span class="si">}</span><span class="s2"> sequence transformation."</span>
+    <span class="k">elif</span> <span class="n">family</span> <span class="o">==</span> <span class="s2">"Operations"</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">template_key</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"limit"</span><span class="p">):</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"Limits a complex signal using the </span><span class="si">{</span><span class="n">display_label</span><span class="si">}</span><span class="s2"> magnitude constraint."</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"Performs </span><span class="si">{</span><span class="n">display_label</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="si">}</span><span class="s2"> on complex-valued signals."</span>
+    <span class="k">elif</span> <span class="n">family</span> <span class="o">==</span> <span class="s2">"Measurements and Units"</span><span class="p">:</span>
+        <span class="n">conversion_keys</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"deg_rad"</span><span class="p">,</span> <span class="s2">"rad_deg"</span><span class="p">,</span> <span class="s2">"rad_s_rpm"</span><span class="p">,</span> <span class="s2">"rpm_rad_s"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s2">"_p_u"</span> <span class="ow">in</span> <span class="n">template_key</span> <span class="ow">or</span> <span class="n">template_key</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"p_u_"</span><span class="p">)</span> <span class="ow">or</span> <span class="n">template_key</span> <span class="ow">in</span> <span class="n">conversion_keys</span><span class="p">:</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"Converts a signal from </span><span class="si">{</span><span class="n">display_label</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">'-&gt;'</span><span class="p">,</span><span class="w"> </span><span class="s1">'to'</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span>
+        <span class="k">elif</span> <span class="n">template_key</span> <span class="o">==</span> <span class="s2">"power_base"</span><span class="p">:</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="s2">"Computes the power base used for per-unit conversion."</span>
+        <span class="k">elif</span> <span class="n">template_key</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"accelerating_power"</span><span class="p">):</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"Computes machine accelerating power using the </span><span class="si">{</span><span class="n">display_label</span><span class="si">}</span><span class="s2"> formulation."</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"Computes the </span><span class="si">{</span><span class="n">display_label</span><span class="si">}</span><span class="s2"> electrical measurement."</span>
+    <span class="k">elif</span> <span class="n">family</span> <span class="o">==</span> <span class="s2">"Drive Train"</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">template_key</span> <span class="o">==</span> <span class="s2">"gear_box"</span><span class="p">:</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="s2">"Transforms shaft speed and torque through a configurable gearbox ratio."</span>
+        <span class="k">elif</span> <span class="n">template_key</span> <span class="o">==</span> <span class="s2">"mass_j"</span><span class="p">:</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="s2">"Models rotational inertia and integrates accelerating torque into shaft speed."</span>
+        <span class="k">elif</span> <span class="n">template_key</span> <span class="o">==</span> <span class="s2">"spring"</span><span class="p">:</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="s2">"Models torsional spring torque from the relative shaft angle."</span>
+        <span class="k">elif</span> <span class="n">template_key</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"shaft"</span><span class="p">):</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"Models the </span><span class="si">{</span><span class="n">display_label</span><span class="si">}</span><span class="s2"> torsional shaft section and its inertial coupling."</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"Applies the </span><span class="si">{</span><span class="n">display_label</span><span class="si">}</span><span class="s2"> mechanical drive-train relation."</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">description</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"Implements the </span><span class="si">{</span><span class="n">display_label</span><span class="si">}</span><span class="s2"> basic dynamic-model operation."</span>
+
+    <span class="c1"># Shared modifiers make closely related continuous variants explicit.</span>
+    <span class="n">modifier_parts</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+    <span class="n">lower_label</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">display_label</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+    <span class="k">if</span> <span class="s2">"bypass"</span> <span class="ow">in</span> <span class="n">lower_label</span><span class="p">:</span>
+        <span class="n">modifier_parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"supports a bypass path"</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">pass</span>
+    <span class="k">if</span> <span class="s2">"reset signal"</span> <span class="ow">in</span> <span class="n">lower_label</span> <span class="ow">or</span> <span class="s2">"reset sig"</span> <span class="ow">in</span> <span class="n">lower_label</span><span class="p">:</span>
+        <span class="n">modifier_parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"accepts an external reset value"</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="s2">"reset"</span> <span class="ow">in</span> <span class="n">lower_label</span><span class="p">:</span>
+        <span class="n">modifier_parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"can be reset"</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">pass</span>
+    <span class="k">if</span> <span class="s2">"hold"</span> <span class="ow">in</span> <span class="n">lower_label</span><span class="p">:</span>
+        <span class="n">modifier_parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"can hold its current state"</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">pass</span>
+    <span class="k">if</span> <span class="s2">"freeze"</span> <span class="ow">in</span> <span class="n">lower_label</span><span class="p">:</span>
+        <span class="n">modifier_parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"can freeze integration"</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">pass</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">modifier_parts</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">description</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">description</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s1">'.'</span><span class="p">)</span><span class="si">}</span><span class="s2"> It also </span><span class="si">{</span><span class="s1">', '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">modifier_parts</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">pass</span>
+
+    <span class="k">return</span> <span class="n">description</span></div>
+
+
+
+<div class="viewcode-block" id="get_basic_block_catalog_root">
+<a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Templates.BasicBlockCatalog.html#VeraGridEngine.Templates.BasicBlockCatalog.basic_block_catalog.get_basic_block_catalog_root">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_basic_block_catalog_root</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Return the directory containing the shipped basic block catalog.</span>
+
+<span class="sd">    :returns: Catalog root directory.</span>
+<span class="sd">    """</span>
+    <span class="k">return</span> <span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span><span class="o">.</span><span class="n">parent</span></div>
+
+
+
+<div class="viewcode-block" id="get_basic_block_catalog_templates_dir">
+<a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Templates.BasicBlockCatalog.html#VeraGridEngine.Templates.BasicBlockCatalog.basic_block_catalog.get_basic_block_catalog_templates_dir">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_basic_block_catalog_templates_dir</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Return the directory with the shipped standalone template modules.</span>
+
+<span class="sd">    :returns: Standalone-template directory.</span>
+<span class="sd">    """</span>
+    <span class="k">return</span> <span class="n">get_basic_block_catalog_root</span><span class="p">()</span> <span class="o">/</span> <span class="s2">"Functions"</span></div>
+
+
+
+<div class="viewcode-block" id="get_basic_block_catalog_pending_template_reason">
+<a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Templates.BasicBlockCatalog.html#VeraGridEngine.Templates.BasicBlockCatalog.basic_block_catalog.get_basic_block_catalog_pending_template_reason">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_basic_block_catalog_pending_template_reason</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Return the canonical pending reason for non-executable catalog templates.</span>
+
+<span class="sd">    :returns: Pending reason.</span>
+<span class="sd">    """</span>
+    <span class="k">return</span> <span class="n">build_basic_block_catalog_pending_template_reason</span><span class="p">()</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_descriptor_sort_key</span><span class="p">(</span><span class="n">descriptor</span><span class="p">:</span> <span class="n">BasicBlockTemplateDescriptor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Build the deterministic sort key for one descriptor.</span>
+
+<span class="sd">    :param descriptor: Catalog descriptor.</span>
+<span class="sd">    :returns: Sort key ordered by type identifier and module name.</span>
+<span class="sd">    """</span>
+    <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">descriptor</span><span class="o">.</span><span class="n">typ_id</span><span class="p">),</span> <span class="n">descriptor</span><span class="o">.</span><span class="n">module_name</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_build_descriptor_from_static_record</span><span class="p">(</span><span class="n">record</span><span class="p">:</span> <span class="n">BasicBlockCatalogStaticRecord</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BasicBlockTemplateDescriptor</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Convert one static record into the public descriptor object.</span>
+
+<span class="sd">    :param record: Static snapshot record.</span>
+<span class="sd">    :returns: Public catalog descriptor.</span>
+<span class="sd">    """</span>
+    <span class="c1"># Explicit descriptions document exceptional equations. All remaining</span>
+    <span class="c1"># records receive a family-aware description from their stable metadata.</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">record</span><span class="o">.</span><span class="n">description</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">description</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">record</span><span class="o">.</span><span class="n">description</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">description</span> <span class="o">=</span> <span class="n">build_basic_block_catalog_functional_description</span><span class="p">(</span><span class="n">record</span><span class="o">=</span><span class="n">record</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">BasicBlockTemplateDescriptor</span><span class="p">(</span>
+        <span class="n">template_key</span><span class="o">=</span><span class="n">record</span><span class="o">.</span><span class="n">template_key</span><span class="p">,</span>
+        <span class="n">typ_id</span><span class="o">=</span><span class="n">record</span><span class="o">.</span><span class="n">typ_id</span><span class="p">,</span>
+        <span class="n">blkdef_name</span><span class="o">=</span><span class="n">record</span><span class="o">.</span><span class="n">blkdef_name</span><span class="p">,</span>
+        <span class="n">sample_display_name</span><span class="o">=</span><span class="n">record</span><span class="o">.</span><span class="n">sample_display_name</span><span class="p">,</span>
+        <span class="n">display_label</span><span class="o">=</span><span class="n">record</span><span class="o">.</span><span class="n">display_label</span><span class="p">,</span>
+        <span class="n">category_path</span><span class="o">=</span><span class="n">record</span><span class="o">.</span><span class="n">category_path</span><span class="p">,</span>
+        <span class="n">inputs</span><span class="o">=</span><span class="n">record</span><span class="o">.</span><span class="n">inputs</span><span class="p">,</span>
+        <span class="n">outputs</span><span class="o">=</span><span class="n">record</span><span class="o">.</span><span class="n">outputs</span><span class="p">,</span>
+        <span class="n">states</span><span class="o">=</span><span class="n">record</span><span class="o">.</span><span class="n">states</span><span class="p">,</span>
+        <span class="n">params</span><span class="o">=</span><span class="n">record</span><span class="o">.</span><span class="n">params</span><span class="p">,</span>
+        <span class="n">unsupported_lines</span><span class="o">=</span><span class="n">record</span><span class="o">.</span><span class="n">unsupported_lines</span><span class="p">,</span>
+        <span class="n">module_name</span><span class="o">=</span><span class="n">record</span><span class="o">.</span><span class="n">module_name</span><span class="p">,</span>
+        <span class="n">module_filename</span><span class="o">=</span><span class="n">record</span><span class="o">.</span><span class="n">module_filename</span><span class="p">,</span>
+        <span class="n">description</span><span class="o">=</span><span class="n">description</span><span class="p">,</span>
+    <span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_resolve_template_builder_from_descriptor</span><span class="p">(</span><span class="n">descriptor</span><span class="p">:</span> <span class="n">BasicBlockTemplateDescriptor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BasicBlockCatalogTemplateBuilder</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Resolve one shipped standalone template builder from the static package registry.</span>
+
+<span class="sd">    :param descriptor: Catalog descriptor for the target module.</span>
+<span class="sd">    :returns: Imported standalone template builder.</span>
+<span class="sd">    :raises KeyError: Raised when the generated package registry does not expose the descriptor module.</span>
+<span class="sd">    """</span>
+    <span class="n">template_builder</span><span class="p">:</span> <span class="n">BasicBlockCatalogTemplateBuilder</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">get_basic_block_catalog_template_builder_by_module_name</span><span class="p">(</span><span class="n">descriptor</span><span class="o">.</span><span class="n">module_name</span><span class="p">)</span>
+    <span class="p">)</span>
+
+    <span class="c1"># The descriptor snapshot owns the canonical module name, so the runtime can</span>
+    <span class="c1"># resolve one explicit builder without probing the filesystem or imported module state.</span>
+    <span class="k">if</span> <span class="n">template_builder</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Could not resolve standalone template builder for module '</span><span class="si">{</span><span class="n">descriptor</span><span class="o">.</span><span class="n">module_name</span><span class="si">}</span><span class="s2">'"</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">template_builder</span>
+
+
+<div class="viewcode-block" id="get_basic_block_catalog_descriptors">
+<a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Templates.BasicBlockCatalog.html#VeraGridEngine.Templates.BasicBlockCatalog.basic_block_catalog.get_basic_block_catalog_descriptors">[docs]</a>
+<span class="nd">@lru_cache</span><span class="p">(</span><span class="n">maxsize</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_basic_block_catalog_descriptors</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">BasicBlockTemplateDescriptor</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Return the shipped basic block catalog descriptors.</span>
+
+<span class="sd">    :returns: Full descriptor tuple.</span>
+<span class="sd">    """</span>
+    <span class="n">descriptors</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">BasicBlockTemplateDescriptor</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+    <span class="n">static_record</span><span class="p">:</span> <span class="n">BasicBlockCatalogStaticRecord</span>
+
+    <span class="c1"># The runtime now consumes one generated static snapshot instead of discovering</span>
+    <span class="c1"># modules dynamically, so the catalog shape is stable across refactors.</span>
+    <span class="k">for</span> <span class="n">static_record</span> <span class="ow">in</span> <span class="n">get_basic_block_catalog_static_records</span><span class="p">():</span>
+        <span class="n">descriptors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_build_descriptor_from_static_record</span><span class="p">(</span><span class="n">static_record</span><span class="p">))</span>
+
+    <span class="n">descriptors</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="n">_descriptor_sort_key</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">descriptors</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="get_editor_ready_basic_block_catalog_descriptors">
+<a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Templates.BasicBlockCatalog.html#VeraGridEngine.Templates.BasicBlockCatalog.basic_block_catalog.get_editor_ready_basic_block_catalog_descriptors">[docs]</a>
+<span class="nd">@lru_cache</span><span class="p">(</span><span class="n">maxsize</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_editor_ready_basic_block_catalog_descriptors</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">BasicBlockTemplateDescriptor</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Return only the shipped templates that are ready for editor exposure.</span>
+
+<span class="sd">    :returns: Editor-ready descriptor tuple.</span>
+<span class="sd">    """</span>
+    <span class="n">ready_descriptors</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">BasicBlockTemplateDescriptor</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+    <span class="n">descriptor</span><span class="p">:</span> <span class="n">BasicBlockTemplateDescriptor</span>
+
+    <span class="k">for</span> <span class="n">descriptor</span> <span class="ow">in</span> <span class="n">get_basic_block_catalog_descriptors</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">descriptor</span><span class="o">.</span><span class="n">is_editor_ready</span><span class="p">:</span>
+            <span class="n">ready_descriptors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">descriptor</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">pass</span>
+
+    <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">ready_descriptors</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="get_pending_basic_block_catalog_descriptors">
+<a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Templates.BasicBlockCatalog.html#VeraGridEngine.Templates.BasicBlockCatalog.basic_block_catalog.get_pending_basic_block_catalog_descriptors">[docs]</a>
+<span class="nd">@lru_cache</span><span class="p">(</span><span class="n">maxsize</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_pending_basic_block_catalog_descriptors</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">BasicBlockTemplateDescriptor</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Return only the shipped templates that are not ready for editor exposure.</span>
+
+<span class="sd">    :returns: Pending descriptor tuple.</span>
+<span class="sd">    """</span>
+    <span class="n">pending_descriptors</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">BasicBlockTemplateDescriptor</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+    <span class="n">descriptor</span><span class="p">:</span> <span class="n">BasicBlockTemplateDescriptor</span>
+
+    <span class="k">for</span> <span class="n">descriptor</span> <span class="ow">in</span> <span class="n">get_basic_block_catalog_descriptors</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">descriptor</span><span class="o">.</span><span class="n">is_editor_ready</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">pending_descriptors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">descriptor</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">pending_descriptors</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="get_basic_block_catalog_descriptor_by_key">
+<a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Templates.BasicBlockCatalog.html#VeraGridEngine.Templates.BasicBlockCatalog.basic_block_catalog.get_basic_block_catalog_descriptor_by_key">[docs]</a>
+<span class="nd">@lru_cache</span><span class="p">(</span><span class="n">maxsize</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_basic_block_catalog_descriptor_by_key</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">BasicBlockTemplateDescriptor</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Return the descriptor lookup indexed by semantic key.</span>
+
+<span class="sd">    :returns: Descriptor lookup by semantic key.</span>
+<span class="sd">    """</span>
+    <span class="n">descriptor_lookup</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">BasicBlockTemplateDescriptor</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+    <span class="n">descriptor</span><span class="p">:</span> <span class="n">BasicBlockTemplateDescriptor</span>
+
+    <span class="k">for</span> <span class="n">descriptor</span> <span class="ow">in</span> <span class="n">get_basic_block_catalog_descriptors</span><span class="p">():</span>
+        <span class="n">descriptor_lookup</span><span class="p">[</span><span class="n">descriptor</span><span class="o">.</span><span class="n">template_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">descriptor</span>
+
+    <span class="k">return</span> <span class="n">descriptor_lookup</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_build_python_symbol_name</span><span class="p">(</span><span class="n">raw_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Convert one catalogue variable name into a valid Python identifier.</span>
+
+<span class="sd">    Catalogue display names may contain spaces and mathematical punctuation,</span>
+<span class="sd">    while the equation editor exposes every symbolic variable as Python source.</span>
+<span class="sd">    This conversion deliberately affects only variable names and therefore does</span>
+<span class="sd">    not alter the human-facing template or block labels.</span>
+
+<span class="sd">    :param raw_name: Symbolic name emitted by a catalogue template builder.</span>
+<span class="sd">    :return: Identifier-safe symbolic name.</span>
+<span class="sd">    """</span>
+    <span class="c1"># Replace display punctuation with separators while retaining the readable</span>
+    <span class="c1"># portions of the source name used to identify generated internal symbols.</span>
+    <span class="n">safe_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s2">"[^0-9a-zA-Z_]"</span><span class="p">,</span> <span class="s2">"_"</span><span class="p">,</span> <span class="n">raw_name</span><span class="p">)</span>
+    <span class="n">safe_name</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s2">"_+"</span><span class="p">,</span> <span class="s2">"_"</span><span class="p">,</span> <span class="n">safe_name</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s2">"_"</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">safe_name</span> <span class="o">==</span> <span class="s2">""</span><span class="p">:</span>
+        <span class="n">safe_name</span> <span class="o">=</span> <span class="s2">"symbol"</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">pass</span>
+
+    <span class="c1"># Python identifiers cannot begin with a number or equal a language keyword.</span>
+    <span class="k">if</span> <span class="n">safe_name</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">isdigit</span><span class="p">():</span>
+        <span class="n">safe_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"symbol_</span><span class="si">{</span><span class="n">safe_name</span><span class="si">}</span><span class="s2">"</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">pass</span>
+
+    <span class="k">if</span> <span class="n">keyword</span><span class="o">.</span><span class="n">iskeyword</span><span class="p">(</span><span class="n">safe_name</span><span class="p">):</span>
+        <span class="n">safe_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">safe_name</span><span class="si">}</span><span class="s2">_symbol"</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">pass</span>
+
+    <span class="k">return</span> <span class="n">safe_name</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_build_catalogue_local_symbol_name</span><span class="p">(</span>
+        <span class="n">variable</span><span class="p">:</span> <span class="n">Var</span><span class="p">,</span>
+        <span class="n">descriptor</span><span class="p">:</span> <span class="n">BasicBlockTemplateDescriptor</span><span class="p">,</span>
+        <span class="n">template_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">role_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">role_index</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Build one concise local name from generated catalogue metadata.</span>
+
+<span class="sd">    Generated modules prefix internal variables with the complete block name</span>
+<span class="sd">    and append the complete runtime instance name. Removing both repetitions</span>
+<span class="sd">    retains the meaningful local token while keeping the result compact.</span>
+
+<span class="sd">    :param variable: Materialized symbolic variable being named.</span>
+<span class="sd">    :param descriptor: Stable descriptor of the source catalogue block.</span>
+<span class="sd">    :param template_name: Runtime block name appended by the generated builder.</span>
+<span class="sd">    :param role_name: Fallback symbolic role such as ``state`` or ``mode``.</span>
+<span class="sd">    :param role_index: Zero-based position inside that symbolic role.</span>
+<span class="sd">    :return: Python-safe local name without the per-template namespace.</span>
+<span class="sd">    """</span>
+    <span class="n">runtime_free_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">variable</span><span class="o">.</span><span class="n">name</span>
+    <span class="n">runtime_suffix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"_</span><span class="si">{</span><span class="n">template_name</span><span class="si">}</span><span class="s2">"</span>
+    <span class="k">if</span> <span class="n">runtime_free_name</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="n">runtime_suffix</span><span class="p">):</span>
+        <span class="n">runtime_free_name</span> <span class="o">=</span> <span class="n">runtime_free_name</span><span class="p">[:</span><span class="o">-</span><span class="nb">len</span><span class="p">(</span><span class="n">runtime_suffix</span><span class="p">)]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">pass</span>
+
+    <span class="c1"># Differential symbols add ``d_`` before the same generated block prefix.</span>
+    <span class="c1"># Preserve that mathematical role while normalizing the shared payload.</span>
+    <span class="n">is_derivative</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">runtime_free_name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"d_"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">is_derivative</span><span class="p">:</span>
+        <span class="n">generated_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">runtime_free_name</span><span class="p">[</span><span class="mi">2</span><span class="p">:]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">generated_name</span> <span class="o">=</span> <span class="n">runtime_free_name</span>
+
+    <span class="c1"># The standalone generators use either one or two separators between the</span>
+    <span class="c1"># imported block name and the actual local symbol. Remove only that exact</span>
+    <span class="c1"># descriptor-owned prefix; mathematical underscores inside local names are</span>
+    <span class="c1"># therefore preserved.</span>
+    <span class="n">double_separator_prefix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">descriptor</span><span class="o">.</span><span class="n">blkdef_name</span><span class="si">}</span><span class="s2">__"</span>
+    <span class="n">single_separator_prefix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">descriptor</span><span class="o">.</span><span class="n">blkdef_name</span><span class="si">}</span><span class="s2">_"</span>
+    <span class="k">if</span> <span class="n">generated_name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">double_separator_prefix</span><span class="p">):</span>
+        <span class="n">local_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">generated_name</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">double_separator_prefix</span><span class="p">):]</span>
+    <span class="k">elif</span> <span class="n">generated_name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">single_separator_prefix</span><span class="p">):</span>
+        <span class="n">local_name</span> <span class="o">=</span> <span class="n">generated_name</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">single_separator_prefix</span><span class="p">):]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">local_name</span> <span class="o">=</span> <span class="n">generated_name</span>
+
+    <span class="k">if</span> <span class="n">is_derivative</span><span class="p">:</span>
+        <span class="n">local_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"d_</span><span class="si">{</span><span class="n">local_name</span><span class="si">}</span><span class="s2">"</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">pass</span>
+
+    <span class="n">safe_local_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">_build_python_symbol_name</span><span class="p">(</span><span class="n">raw_name</span><span class="o">=</span><span class="n">local_name</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">safe_local_name</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">32</span><span class="p">:</span>
+        <span class="n">safe_local_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">role_name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">role_index</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">"</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">pass</span>
+    <span class="k">return</span> <span class="n">safe_local_name</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_register_catalogue_role_symbol_names</span><span class="p">(</span>
+        <span class="n">variables</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Var</span><span class="p">],</span>
+        <span class="n">descriptor</span><span class="p">:</span> <span class="n">BasicBlockTemplateDescriptor</span><span class="p">,</span>
+        <span class="n">template_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">namespace</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">role_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">preferred_names_by_identity</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Register concise preferred names for one ordered variable role.</span>
+
+<span class="sd">    The first role that owns a variable is authoritative. This matters for</span>
+<span class="sd">    output variables that are also present in the algebraic collection and for</span>
+<span class="sd">    differential variables that retain a reference to their base state.</span>
+
+<span class="sd">    :param variables: Ordered variables belonging to the same symbolic role.</span>
+<span class="sd">    :param descriptor: Stable descriptor of the source catalogue block.</span>
+<span class="sd">    :param template_name: Runtime name used during materialization.</span>
+<span class="sd">    :param namespace: Short stable namespace derived from the catalogue type.</span>
+<span class="sd">    :param role_name: Fallback role used when an imported local name is long.</span>
+<span class="sd">    :param preferred_names_by_identity: Destination lookup by stable identity.</span>
+<span class="sd">    :return: None.</span>
+<span class="sd">    """</span>
+    <span class="n">role_index</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">variable</span><span class="p">:</span> <span class="n">Var</span>
+    <span class="k">for</span> <span class="n">role_index</span><span class="p">,</span> <span class="n">variable</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">variables</span><span class="p">):</span>
+        <span class="n">variable_identity</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">variable</span><span class="o">.</span><span class="n">non_mutable_uid</span>
+        <span class="k">if</span> <span class="n">variable_identity</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">preferred_names_by_identity</span><span class="p">:</span>
+            <span class="n">local_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">_build_catalogue_local_symbol_name</span><span class="p">(</span>
+                <span class="n">variable</span><span class="o">=</span><span class="n">variable</span><span class="p">,</span>
+                <span class="n">descriptor</span><span class="o">=</span><span class="n">descriptor</span><span class="p">,</span>
+                <span class="n">template_name</span><span class="o">=</span><span class="n">template_name</span><span class="p">,</span>
+                <span class="n">role_name</span><span class="o">=</span><span class="n">role_name</span><span class="p">,</span>
+                <span class="n">role_index</span><span class="o">=</span><span class="n">role_index</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">preferred_names_by_identity</span><span class="p">[</span><span class="n">variable_identity</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">local_name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">namespace</span><span class="si">}</span><span class="s2">"</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">pass</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_build_catalogue_preferred_symbol_names</span><span class="p">(</span>
+        <span class="n">descriptor</span><span class="p">:</span> <span class="n">BasicBlockTemplateDescriptor</span><span class="p">,</span>
+        <span class="n">root_block</span><span class="p">:</span> <span class="n">Block</span><span class="p">,</span>
+        <span class="n">template_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""Build concise role-aware names for one materialized catalogue tree.</span>
+
+<span class="sd">    :param descriptor: Stable descriptor of the source catalogue block.</span>
+<span class="sd">    :param root_block: Root of the freshly materialized block tree.</span>
+<span class="sd">    :param template_name: Runtime name used by the generated builder.</span>
+<span class="sd">    :return: Preferred Python-safe names keyed by non-mutable variable identity.</span>
+<span class="sd">    """</span>
+    <span class="n">preferred_names_by_identity</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+    <span class="n">namespace</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"bb</span><span class="si">{</span><span class="n">descriptor</span><span class="o">.</span><span class="n">typ_id</span><span class="si">}</span><span class="s2">"</span>
+    <span class="n">owner</span><span class="p">:</span> <span class="n">Block</span>
+
+    <span class="c1"># Public ports and states receive priority because these are the names that</span>
+    <span class="c1"># users see most often in equations and on the block interface.</span>
+    <span class="k">for</span> <span class="n">owner</span> <span class="ow">in</span> <span class="n">root_block</span><span class="o">.</span><span class="n">get_all_blocks</span><span class="p">():</span>
+        <span class="n">_register_catalogue_role_symbol_names</span><span class="p">(</span>
+            <span class="n">variables</span><span class="o">=</span><span class="n">owner</span><span class="o">.</span><span class="n">in_vars</span><span class="p">,</span>
+            <span class="n">descriptor</span><span class="o">=</span><span class="n">descriptor</span><span class="p">,</span>
+            <span class="n">template_name</span><span class="o">=</span><span class="n">template_name</span><span class="p">,</span>
+            <span class="n">namespace</span><span class="o">=</span><span class="n">namespace</span><span class="p">,</span>
+            <span class="n">role_name</span><span class="o">=</span><span class="s2">"input"</span><span class="p">,</span>
+            <span class="n">preferred_names_by_identity</span><span class="o">=</span><span class="n">preferred_names_by_identity</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">_register_catalogue_role_symbol_names</span><span class="p">(</span>
+            <span class="n">variables</span><span class="o">=</span><span class="n">owner</span><span class="o">.</span><span class="n">out_vars</span><span class="p">,</span>
+            <span class="n">descriptor</span><span class="o">=</span><span class="n">descriptor</span><span class="p">,</span>
+            <span class="n">template_name</span><span class="o">=</span><span class="n">template_name</span><span class="p">,</span>
+            <span class="n">namespace</span><span class="o">=</span><span class="n">namespace</span><span class="p">,</span>
+            <span class="n">role_name</span><span class="o">=</span><span class="s2">"output"</span><span class="p">,</span>
+            <span class="n">preferred_names_by_identity</span><span class="o">=</span><span class="n">preferred_names_by_identity</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">_register_catalogue_role_symbol_names</span><span class="p">(</span>
+            <span class="n">variables</span><span class="o">=</span><span class="n">owner</span><span class="o">.</span><span class="n">state_vars</span><span class="p">,</span>
+            <span class="n">descriptor</span><span class="o">=</span><span class="n">descriptor</span><span class="p">,</span>
+            <span class="n">template_name</span><span class="o">=</span><span class="n">template_name</span><span class="p">,</span>
+            <span class="n">namespace</span><span class="o">=</span><span class="n">namespace</span><span class="p">,</span>
+            <span class="n">role_name</span><span class="o">=</span><span class="s2">"state"</span><span class="p">,</span>
+            <span class="n">preferred_names_by_identity</span><span class="o">=</span><span class="n">preferred_names_by_identity</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">_register_catalogue_role_symbol_names</span><span class="p">(</span>
+            <span class="n">variables</span><span class="o">=</span><span class="n">owner</span><span class="o">.</span><span class="n">diff_vars</span><span class="p">,</span>
+            <span class="n">descriptor</span><span class="o">=</span><span class="n">descriptor</span><span class="p">,</span>
+            <span class="n">template_name</span><span class="o">=</span><span class="n">template_name</span><span class="p">,</span>
+            <span class="n">namespace</span><span class="o">=</span><span class="n">namespace</span><span class="p">,</span>
+            <span class="n">role_name</span><span class="o">=</span><span class="s2">"derivative"</span><span class="p">,</span>
+            <span class="n">preferred_names_by_identity</span><span class="o">=</span><span class="n">preferred_names_by_identity</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">_register_catalogue_role_symbol_names</span><span class="p">(</span>
+            <span class="n">variables</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="n">owner</span><span class="o">.</span><span class="n">event_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">()),</span>
+            <span class="n">descriptor</span><span class="o">=</span><span class="n">descriptor</span><span class="p">,</span>
+            <span class="n">template_name</span><span class="o">=</span><span class="n">template_name</span><span class="p">,</span>
+            <span class="n">namespace</span><span class="o">=</span><span class="n">namespace</span><span class="p">,</span>
+            <span class="n">role_name</span><span class="o">=</span><span class="s2">"parameter"</span><span class="p">,</span>
+            <span class="n">preferred_names_by_identity</span><span class="o">=</span><span class="n">preferred_names_by_identity</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">_register_catalogue_role_symbol_names</span><span class="p">(</span>
+            <span class="n">variables</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="n">owner</span><span class="o">.</span><span class="n">mode_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">()),</span>
+            <span class="n">descriptor</span><span class="o">=</span><span class="n">descriptor</span><span class="p">,</span>
+            <span class="n">template_name</span><span class="o">=</span><span class="n">template_name</span><span class="p">,</span>
+            <span class="n">namespace</span><span class="o">=</span><span class="n">namespace</span><span class="p">,</span>
+            <span class="n">role_name</span><span class="o">=</span><span class="s2">"mode"</span><span class="p">,</span>
+            <span class="n">preferred_names_by_identity</span><span class="o">=</span><span class="n">preferred_names_by_identity</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">_register_catalogue_role_symbol_names</span><span class="p">(</span>
+            <span class="n">variables</span><span class="o">=</span><span class="n">owner</span><span class="o">.</span><span class="n">algebraic_vars</span><span class="p">,</span>
+            <span class="n">descriptor</span><span class="o">=</span><span class="n">descriptor</span><span class="p">,</span>
+            <span class="n">template_name</span><span class="o">=</span><span class="n">template_name</span><span class="p">,</span>
+            <span class="n">namespace</span><span class="o">=</span><span class="n">namespace</span><span class="p">,</span>
+            <span class="n">role_name</span><span class="o">=</span><span class="s2">"auxiliary"</span><span class="p">,</span>
+            <span class="n">preferred_names_by_identity</span><span class="o">=</span><span class="n">preferred_names_by_identity</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="n">preferred_names_by_identity</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_rename_new_catalogue_variables</span><span class="p">(</span>
+    <span class="n">variables_by_identity</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Var</span><span class="p">],</span>
+    <span class="n">previous_identities</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
+    <span class="n">reserved_names</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+    <span class="n">renamed_identities</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
+    <span class="n">procedural_name_mapping</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="n">Expr</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span> <span class="n">Expr</span><span class="p">],</span>
+    <span class="n">preferred_names_by_identity</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span>
+    <span class="n">descriptor</span><span class="p">:</span> <span class="n">BasicBlockTemplateDescriptor</span><span class="p">,</span>
+    <span class="n">template_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">namespace</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Give newly materialized catalogue variables unique Python-safe names.</span>
+
+<span class="sd">    :param variables_by_identity: Factory variables keyed by stable identity.</span>
+<span class="sd">    :param previous_identities: Identities that existed before materialization.</span>
+<span class="sd">    :param reserved_names: Names already owned by the surrounding model.</span>
+<span class="sd">    :param renamed_identities: New identities already handled through another</span>
+<span class="sd">        factory collection.</span>
+<span class="sd">    :param procedural_name_mapping: Old names mapped to their renamed symbolic variables.</span>
+<span class="sd">    :param preferred_names_by_identity: Role-aware names for variables exposed by the block.</span>
+<span class="sd">    :param descriptor: Stable descriptor of the source catalogue block.</span>
+<span class="sd">    :param template_name: Runtime name used during materialization.</span>
+<span class="sd">    :param namespace: Stable short namespace used for unclassified helper variables.</span>
+<span class="sd">    :return: None.</span>
+<span class="sd">    """</span>
+    <span class="n">variable_identity</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">variable</span><span class="p">:</span> <span class="n">Var</span>
+
+    <span class="k">for</span> <span class="n">variable_identity</span><span class="p">,</span> <span class="n">variable</span> <span class="ow">in</span> <span class="n">variables_by_identity</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="n">variable_identity</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">previous_identities</span>
+            <span class="ow">and</span> <span class="n">variable_identity</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">renamed_identities</span>
+        <span class="p">):</span>
+            <span class="n">original_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">variable</span><span class="o">.</span><span class="n">name</span>
+            <span class="n">preferred_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">preferred_names_by_identity</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">variable</span><span class="o">.</span><span class="n">non_mutable_uid</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">preferred_name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">base_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">_build_python_symbol_name</span><span class="p">(</span><span class="n">raw_name</span><span class="o">=</span><span class="n">preferred_name</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># A generated helper that is referenced only from an expression</span>
+                <span class="c1"># retains its local token even though it is not part of one of</span>
+                <span class="c1"># the explicit block collections.</span>
+                <span class="n">local_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">_build_catalogue_local_symbol_name</span><span class="p">(</span>
+                    <span class="n">variable</span><span class="o">=</span><span class="n">variable</span><span class="p">,</span>
+                    <span class="n">descriptor</span><span class="o">=</span><span class="n">descriptor</span><span class="p">,</span>
+                    <span class="n">template_name</span><span class="o">=</span><span class="n">template_name</span><span class="p">,</span>
+                    <span class="n">role_name</span><span class="o">=</span><span class="s2">"symbol"</span><span class="p">,</span>
+                    <span class="n">role_index</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">renamed_identities</span><span class="p">),</span>
+                <span class="p">)</span>
+                <span class="n">base_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">local_name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">namespace</span><span class="si">}</span><span class="s2">"</span>
+            <span class="n">candidate_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">base_name</span>
+            <span class="n">suffix</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span>
+
+            <span class="c1"># Normalization can merge punctuation variants. Allocate a stable</span>
+            <span class="c1"># suffix so the editor namespace never loses one of those symbols.</span>
+            <span class="k">while</span> <span class="n">candidate_name</span> <span class="ow">in</span> <span class="n">reserved_names</span><span class="p">:</span>
+                <span class="n">candidate_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">base_name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">suffix</span><span class="si">}</span><span class="s2">"</span>
+                <span class="n">suffix</span> <span class="o">+=</span> <span class="mi">1</span>
+
+            <span class="n">variable</span><span class="o">.</span><span class="n">set_name</span><span class="p">(</span><span class="n">candidate_name</span><span class="p">)</span>
+            <span class="n">reserved_names</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">candidate_name</span><span class="p">)</span>
+            <span class="n">renamed_identities</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">variable_identity</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">original_name</span> <span class="o">!=</span> <span class="n">candidate_name</span><span class="p">:</span>
+                <span class="n">procedural_name_mapping</span><span class="p">[</span><span class="n">original_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">variable</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">pass</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">pass</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_remap_catalogue_procedural_logic</span><span class="p">(</span>
+    <span class="n">root_block</span><span class="p">:</span> <span class="n">Block</span><span class="p">,</span>
+    <span class="n">procedural_name_mapping</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="n">Expr</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span> <span class="n">Expr</span><span class="p">],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Synchronize name-backed procedural references after symbol normalization.</span>
+
+<span class="sd">    Procedural entries retain some targets as strings for persisted legacy</span>
+<span class="sd">    compatibility. Their typed ``remap`` operation updates those strings while</span>
+<span class="sd">    preserving symbolic expression identities and the concrete logic type.</span>
+
+<span class="sd">    :param root_block: Complete materialized catalogue block tree.</span>
+<span class="sd">    :param procedural_name_mapping: Old symbol names mapped to renamed variables.</span>
+<span class="sd">    :return: None.</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">procedural_name_mapping</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">owner</span><span class="p">:</span> <span class="n">Block</span>
+        <span class="k">for</span> <span class="n">owner</span> <span class="ow">in</span> <span class="n">root_block</span><span class="o">.</span><span class="n">get_all_blocks</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">owner</span><span class="o">.</span><span class="n">procedural_logic</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">owner</span><span class="o">.</span><span class="n">procedural_logic</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
+                    <span class="n">entry</span><span class="o">.</span><span class="n">remap</span><span class="p">(</span><span class="n">procedural_name_mapping</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">owner</span><span class="o">.</span><span class="n">procedural_logic</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">pass</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">pass</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_normalize_materialized_catalogue_symbol_names</span><span class="p">(</span>
+    <span class="n">descriptor</span><span class="p">:</span> <span class="n">BasicBlockTemplateDescriptor</span><span class="p">,</span>
+    <span class="n">var_factory</span><span class="p">:</span> <span class="n">VarFactory</span><span class="p">,</span>
+    <span class="n">root_block</span><span class="p">:</span> <span class="n">Block</span><span class="p">,</span>
+    <span class="n">template_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">previous_var_identities</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
+    <span class="n">previous_diff_var_identities</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Normalize only the variables created by one catalogue materialization.</span>
+
+<span class="sd">    The factory can already contain symbols belonging to the surrounding model.</span>
+<span class="sd">    Those names remain untouched; they only reserve their namespace so newly</span>
+<span class="sd">    created catalogue variables cannot collide with them.</span>
+
+<span class="sd">    :param descriptor: Stable descriptor of the source catalogue block.</span>
+<span class="sd">    :param var_factory: Factory containing old and newly created variables.</span>
+<span class="sd">    :param root_block: Complete materialized catalogue block tree.</span>
+<span class="sd">    :param template_name: Runtime name used by the generated builder.</span>
+<span class="sd">    :param previous_var_identities: Regular-variable identities present before</span>
+<span class="sd">        loading.</span>
+<span class="sd">    :param previous_diff_var_identities: Differential-variable identities present</span>
+<span class="sd">        before loading.</span>
+<span class="sd">    :return: None.</span>
+<span class="sd">    """</span>
+    <span class="n">regular_variables</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Var</span><span class="p">]</span> <span class="o">=</span> <span class="n">var_factory</span><span class="o">.</span><span class="n">get_vars_dict</span><span class="p">()</span>
+    <span class="n">differential_variables</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Var</span><span class="p">]</span> <span class="o">=</span> <span class="n">var_factory</span><span class="o">.</span><span class="n">get_diff_var_dict</span><span class="p">()</span>
+    <span class="n">reserved_names</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+    <span class="n">renamed_identities</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+    <span class="n">procedural_name_mapping</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="n">Expr</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span> <span class="n">Expr</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+    <span class="n">preferred_names_by_identity</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">_build_catalogue_preferred_symbol_names</span><span class="p">(</span>
+        <span class="n">descriptor</span><span class="o">=</span><span class="n">descriptor</span><span class="p">,</span>
+        <span class="n">root_block</span><span class="o">=</span><span class="n">root_block</span><span class="p">,</span>
+        <span class="n">template_name</span><span class="o">=</span><span class="n">template_name</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">namespace</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"bb</span><span class="si">{</span><span class="n">descriptor</span><span class="o">.</span><span class="n">typ_id</span><span class="si">}</span><span class="s2">"</span>
+    <span class="n">variable</span><span class="p">:</span> <span class="n">Var</span>
+
+    <span class="c1"># Existing symbols define the namespace that the new template must respect.</span>
+    <span class="k">for</span> <span class="n">variable</span> <span class="ow">in</span> <span class="n">regular_variables</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">variable</span><span class="o">.</span><span class="n">non_mutable_uid</span> <span class="ow">in</span> <span class="n">previous_var_identities</span><span class="p">:</span>
+            <span class="n">reserved_names</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">variable</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">pass</span>
+
+    <span class="k">for</span> <span class="n">variable</span> <span class="ow">in</span> <span class="n">differential_variables</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">variable</span><span class="o">.</span><span class="n">non_mutable_uid</span> <span class="ow">in</span> <span class="n">previous_diff_var_identities</span><span class="p">:</span>
+            <span class="n">reserved_names</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">variable</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">pass</span>
+
+    <span class="n">_rename_new_catalogue_variables</span><span class="p">(</span>
+        <span class="n">variables_by_identity</span><span class="o">=</span><span class="n">regular_variables</span><span class="p">,</span>
+        <span class="n">previous_identities</span><span class="o">=</span><span class="n">previous_var_identities</span><span class="p">,</span>
+        <span class="n">reserved_names</span><span class="o">=</span><span class="n">reserved_names</span><span class="p">,</span>
+        <span class="n">renamed_identities</span><span class="o">=</span><span class="n">renamed_identities</span><span class="p">,</span>
+        <span class="n">procedural_name_mapping</span><span class="o">=</span><span class="n">procedural_name_mapping</span><span class="p">,</span>
+        <span class="n">preferred_names_by_identity</span><span class="o">=</span><span class="n">preferred_names_by_identity</span><span class="p">,</span>
+        <span class="n">descriptor</span><span class="o">=</span><span class="n">descriptor</span><span class="p">,</span>
+        <span class="n">template_name</span><span class="o">=</span><span class="n">template_name</span><span class="p">,</span>
+        <span class="n">namespace</span><span class="o">=</span><span class="n">namespace</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">_rename_new_catalogue_variables</span><span class="p">(</span>
+        <span class="n">variables_by_identity</span><span class="o">=</span><span class="n">differential_variables</span><span class="p">,</span>
+        <span class="n">previous_identities</span><span class="o">=</span><span class="n">previous_diff_var_identities</span><span class="p">,</span>
+        <span class="n">reserved_names</span><span class="o">=</span><span class="n">reserved_names</span><span class="p">,</span>
+        <span class="n">renamed_identities</span><span class="o">=</span><span class="n">renamed_identities</span><span class="p">,</span>
+        <span class="n">procedural_name_mapping</span><span class="o">=</span><span class="n">procedural_name_mapping</span><span class="p">,</span>
+        <span class="n">preferred_names_by_identity</span><span class="o">=</span><span class="n">preferred_names_by_identity</span><span class="p">,</span>
+        <span class="n">descriptor</span><span class="o">=</span><span class="n">descriptor</span><span class="p">,</span>
+        <span class="n">template_name</span><span class="o">=</span><span class="n">template_name</span><span class="p">,</span>
+        <span class="n">namespace</span><span class="o">=</span><span class="n">namespace</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">_remap_catalogue_procedural_logic</span><span class="p">(</span>
+        <span class="n">root_block</span><span class="o">=</span><span class="n">root_block</span><span class="p">,</span>
+        <span class="n">procedural_name_mapping</span><span class="o">=</span><span class="n">procedural_name_mapping</span><span class="p">,</span>
+    <span class="p">)</span>
+
+
+<div class="viewcode-block" id="load_basic_block_catalog_template">
+<a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Templates.BasicBlockCatalog.html#VeraGridEngine.Templates.BasicBlockCatalog.basic_block_catalog.load_basic_block_catalog_template">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">load_basic_block_catalog_template</span><span class="p">(</span>
+    <span class="n">descriptor</span><span class="p">:</span> <span class="n">BasicBlockTemplateDescriptor</span><span class="p">,</span>
+    <span class="n">var_factory</span><span class="p">:</span> <span class="n">VarFactory</span><span class="p">,</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EmtModelTemplate</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Materialize one shipped catalog-derived template on demand.</span>
+
+<span class="sd">    :param descriptor: Template descriptor.</span>
+<span class="sd">    :param var_factory: Variable factory for the new instance.</span>
+<span class="sd">    :param name: Optional explicit instance name.</span>
+<span class="sd">    :returns: Materialized EMT template.</span>
+<span class="sd">    """</span>
+    <span class="c1"># Snapshot the surrounding model so normalization is strictly limited to</span>
+    <span class="c1"># the variables allocated by this catalogue builder call.</span>
+    <span class="n">previous_var_identities</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">var_factory</span><span class="o">.</span><span class="n">get_vars_dict</span><span class="p">()</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+    <span class="n">previous_diff_var_identities</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">var_factory</span><span class="o">.</span><span class="n">get_diff_var_dict</span><span class="p">()</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+    <span class="n">template_builder</span><span class="p">:</span> <span class="n">BasicBlockCatalogTemplateBuilder</span> <span class="o">=</span> <span class="n">_resolve_template_builder_from_descriptor</span><span class="p">(</span><span class="n">descriptor</span><span class="p">)</span>
+    <span class="n">template</span><span class="p">:</span> <span class="n">EmtModelTemplate</span> <span class="o">=</span> <span class="n">template_builder</span><span class="p">(</span><span class="n">var_factory</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+    <span class="n">_normalize_materialized_catalogue_symbol_names</span><span class="p">(</span>
+        <span class="n">descriptor</span><span class="o">=</span><span class="n">descriptor</span><span class="p">,</span>
+        <span class="n">var_factory</span><span class="o">=</span><span class="n">var_factory</span><span class="p">,</span>
+        <span class="n">root_block</span><span class="o">=</span><span class="n">template</span><span class="o">.</span><span class="n">block</span><span class="p">,</span>
+        <span class="n">template_name</span><span class="o">=</span><span class="n">template</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+        <span class="n">previous_var_identities</span><span class="o">=</span><span class="n">previous_var_identities</span><span class="p">,</span>
+        <span class="n">previous_diff_var_identities</span><span class="o">=</span><span class="n">previous_diff_var_identities</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">template</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Santiago Peñate Vera et. al..</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

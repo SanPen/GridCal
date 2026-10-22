@@ -270,13 +270,8 @@ def build_dynamic_model_with_editor(application: QtWidgets.QApplication,
         template_block
     )
 
-    # A fresh root editor initially lays out only its interface wrappers. Once
-    # the catalog block exists, reproduce the current GUI workflow by placing
-    # those wrappers around the definitive content before routing any wires.
-    layout_updated: bool = editor._layout_root_interface_items_around_content()
-    assert layout_updated is True
-    application.processEvents()
-
+    # Grouped measurements already exist when the root editor opens. Connect their
+    # phase ports directly, without invoking the retired per-port relayout workflow.
     expected_connection_count: int = len(template_block.in_vars) + len(template_block.out_vars)
     variable: Var
 

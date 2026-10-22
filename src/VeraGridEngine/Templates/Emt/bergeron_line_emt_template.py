@@ -70,21 +70,16 @@ def _build_line_parameter_matrices_from_template_or_balanced_data(line: Any,
         zbase_ohm: float = (vbase_volt * vbase_volt) / sbase_va
         ybase_siemens: float = 1.0 / zbase_ohm
 
-        # Bergeron travelling-wave dynamics are highly sensitive to the exact
-        # per-length ``Z`` and ``Y`` matrices. The original template matrices are
-        # already stored in the precise physical form expected by this model, and
-        # the delay calculation in ``line.get_tau()`` still uses that same source.
-        # Keeping Bergeron on the template path therefore preserves one internally
-        # consistent representation for ``R/L/C`` and ``tau``.
-        z_phys_m: np.ndarray = np.asarray(line.template.z_nabc, dtype=np.complex128) / 1e3
-        y_phys_m: np.ndarray = np.asarray(line.template.y_nabc, dtype=np.complex128) / 1e3
+        # Tower matrices are per kilometre, as is line.length.
+        # Keep that length unit through the conversion to total per-unit values.
+        z_per_km = np.asarray(line.template.z_nabc, dtype=np.complex128)
+        y_per_km = np.asarray(line.template.y_nabc, dtype=np.complex128)
+        z_total_pu = z_per_km * float(line.length) / zbase_ohm
+        y_total_pu = y_per_km * float(line.length) / ybase_siemens
 
-        z_pu_m: np.ndarray = z_phys_m / zbase_ohm
-        y_pu_m: np.ndarray = y_phys_m / ybase_siemens
-
-        r_full: np.ndarray = np.real(z_pu_m) * float(line.length)
-        l_full: np.ndarray = (np.imag(z_pu_m) / w) * float(line.length)
-        c_full: np.ndarray = (np.imag(y_pu_m) / w) * float(line.length)
+        r_full = np.real(z_total_pu)
+        l_full = np.imag(z_total_pu) / w
+        c_full = np.imag(y_total_pu) / w
         return r_full, l_full, c_full
     else:
         pass
@@ -262,6 +257,11 @@ class BergeronHistoryRuntime:
         "Gc_red",
         "H_red",
         "n_delay",
+        "modal_delays",
+        "current_to_modes",
+        "current_from_modes",
+        "delay_steps",
+        "delay_fractions",
         "buf_vf",
         "buf_vt",
         "buf_if",
@@ -278,6 +278,8 @@ class BergeronHistoryRuntime:
         self.line = line
         self.block = line_block
         self.h = float(h)
+        if not np.isfinite(self.h) or self.h <= 0:
+            raise ValueError("Bergeron time step must be positive and finite")
 
         self.hist_if: List[np.ndarray] = []
         self.hist_it: List[np.ndarray] = []
@@ -308,7 +310,6 @@ class BergeronHistoryRuntime:
         self.Ih_f = self._extract_hist_vars(prefix=f"Ih_f_")
         self.Ih_t = self._extract_hist_vars(prefix=f"Ih_t_")
 
-        w = 2.0 * np.pi * fbase
         R_full, L_full, C_full = _build_line_parameter_matrices_from_template_or_balanced_data(
             line=line,
             sbase=sbase,
@@ -352,17 +353,37 @@ class BergeronHistoryRuntime:
         L = L_full[np.ix_(idx_mat, idx_mat)]
         C = C_full[np.ix_(idx_mat, idx_mat)]
 
-        try:
-            Zc = spla.sqrtm(L @ np.linalg.inv(C))
-        except Exception:
-            Zc = np.eye(self.m) * np.sqrt(L[0, 0] / (C[0, 0] + 1e-20))
+        # Power-invariant modal transforms: V = Tv Vm, I = Ti Im.
+        # Diagonalize C^(1/2) L C^(1/2), whose eigenvalues are travel times squared.
+        capacitance_values, capacitance_vectors = spla.eigh(C)
+        if np.any(capacitance_values <= 0):
+            raise ValueError(f"Bergeron line '{line.name}' requires positive-definite capacitance")
+        capacitance_root = (capacitance_vectors * np.sqrt(capacitance_values)) @ capacitance_vectors.T
+        inverse_capacitance_root = (capacitance_vectors / np.sqrt(capacitance_values)) @ capacitance_vectors.T
+        travel_time_squared, modes = spla.eigh(capacitance_root @ L @ capacitance_root)
+        if np.any(travel_time_squared <= 0):
+            raise ValueError(f"Bergeron line '{line.name}' requires positive-definite inductance")
+        self.modal_delays = np.sqrt(travel_time_squared)
+        self.current_from_modes = capacitance_root @ modes
+        self.current_to_modes = modes.T @ inverse_capacitance_root
+        voltage_from_modes = inverse_capacitance_root @ modes
+        Zc = (voltage_from_modes * self.modal_delays) @ self.current_to_modes
 
-        Z_eq = np.real(Zc) + R / 4.0
+        Z_eq = Zc + R / 4.0
         self.Gc_red = np.linalg.inv(Z_eq)
-        self.H_red = (np.real(Zc) - R / 4.0) @ self.Gc_red
+        # Left multiplication matters for coupled matrices. This also ensures
+        # the zero-frequency voltage drop equals the full R @ I.
+        self.H_red = self.Gc_red @ (Zc - R / 4.0)
 
-        tau = line.get_tau(w=w)
-        self.n_delay = max(1, int(round(tau / self.h)))
+        delay_in_steps = self.modal_delays / self.h
+        if np.min(delay_in_steps) < 1.0 - 1e-12:
+            raise ValueError(
+                f"Bergeron line '{line.name}' requires time_step <= "
+                f"{np.min(self.modal_delays):.9g} s (shortest modal travel time); got {self.h:.9g} s"
+            )
+        self.delay_steps = np.floor(delay_in_steps + 1e-12).astype(int)
+        self.delay_fractions = np.maximum(0.0, delay_in_steps - self.delay_steps)
+        self.n_delay = int(np.max(self.delay_steps)) + 1
 
         self.buf_vf = np.zeros((self.n_delay + 1, self.m), dtype=float)
         self.buf_vt = np.zeros((self.n_delay + 1, self.m), dtype=float)
@@ -469,7 +490,6 @@ class BergeronHistoryRuntime:
         # The solver calls once at t=0, then before solving t=k*h with
         # x_prev at (k-1)*h. Store that accepted state at its own time index.
         k_curr = max(0, step_counter - 1) % (self.n_delay + 1)
-        k_tau = (step_counter - self.n_delay) % (self.n_delay + 1)
 
         v_f_now = np.array([x_prev[i] if i >= 0 else 0.0 for i in self.idx_vf], dtype=float)
         v_t_now = np.array([x_prev[i] if i >= 0 else 0.0 for i in self.idx_vt], dtype=float)
@@ -483,15 +503,14 @@ class BergeronHistoryRuntime:
         self.buf_if[k_curr, :] = self.Gc_red @ v_f_now + Ih_f_now
         self.buf_it[k_curr, :] = self.Gc_red @ v_t_now + Ih_t_now
 
-        v_f_tau = self.buf_vf[k_tau, :]
-        v_t_tau = self.buf_vt[k_tau, :]
-        i_f_tau = self.buf_if[k_tau, :]
-        i_t_tau = self.buf_it[k_tau, :]
-
-        X_f = -self.Gc_red @ v_t_tau - i_t_tau
-        Y_f = -self.Gc_red @ v_f_tau - i_f_tau
-        X_t = -self.Gc_red @ v_f_tau - i_f_tau
-        Y_t = -self.Gc_red @ v_t_tau - i_t_tau
+        # Each current-wave mode travels at its own speed. Interpolate between
+        # accepted samples rather than rounding all modes to one integer delay.
+        delayed_from = self._delayed_current_wave(step_counter, self.buf_vf, self.buf_if)
+        delayed_to = self._delayed_current_wave(step_counter, self.buf_vt, self.buf_it)
+        X_f = -delayed_to
+        Y_f = -delayed_from
+        X_t = -delayed_from
+        Y_t = -delayed_to
 
         I = np.eye(self.m)
         I_hist_f = 0.5 * ((I + self.H_red) @ X_f + (I - self.H_red) @ Y_f)
@@ -514,6 +533,45 @@ class BergeronHistoryRuntime:
             full_params[self.idx_p_hf[i]] = I_hist_f[i]
             full_params[self.idx_p_ht[i]] = I_hist_t[i]
 
+
+    def get_terminal_admittance(self, frequency_hz: float) -> np.ndarray:
+        """Return the complex two-port Y of the implemented discrete recurrence.
+
+        Port order is from active phases, then to active phases. Currents enter
+        the line at both ends. Includes modal delay interpolation and losses;
+        this describes the runtime, not an independent physical reference.
+        """
+        omega = 2.0 * np.pi * frequency_hz
+        modal_rotation = np.exp(-1j * omega * self.h * self.delay_steps)
+        interpolation = ((1.0 - self.delay_fractions)
+                         + self.delay_fractions * np.exp(-1j * omega * self.h))
+        delay = (self.current_from_modes * (modal_rotation * interpolation)) @ self.current_to_modes
+        identity = np.eye(self.m)
+        opposite = 0.5 * (identity + self.H_red) @ delay
+        same = 0.5 * (identity - self.H_red) @ delay
+        current_matrix = np.block([
+            [identity + same @ self.H_red, opposite @ self.H_red],
+            [opposite @ self.H_red, identity + same @ self.H_red],
+        ])
+        voltage_matrix = np.block([
+            [(identity - same) @ self.Gc_red, -opposite @ self.Gc_red],
+            [-opposite @ self.Gc_red, (identity - same) @ self.Gc_red],
+        ])
+        return np.linalg.solve(current_matrix, voltage_matrix)
+
+    def _delayed_current_wave(self, step_counter: int,
+                              voltage_buffer: np.ndarray, current_buffer: np.ndarray) -> np.ndarray:
+        """Return delayed Gc*V + H*I, including the lossy current attenuation."""
+        modal_wave = np.zeros(self.m)
+        for mode in range(self.m):
+            recent_slot = (step_counter - self.delay_steps[mode]) % (self.n_delay + 1)
+            older_slot = (recent_slot - 1) % (self.n_delay + 1)
+            fraction = self.delay_fractions[mode]
+            voltage = (1.0 - fraction) * voltage_buffer[recent_slot] + fraction * voltage_buffer[older_slot]
+            current = (1.0 - fraction) * current_buffer[recent_slot] + fraction * current_buffer[older_slot]
+            wave = self.Gc_red @ voltage + self.H_red @ current
+            modal_wave[mode] = self.current_to_modes[mode] @ wave
+        return self.current_from_modes @ modal_wave
 
     def initialize_buffers_from_initial_point(
             self,

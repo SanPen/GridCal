@@ -19,7 +19,6 @@ from VeraGrid.Gui.DynamicModelEditor.Workspace.dynamic_editor_workspace_window i
 from VeraGrid.Gui.FmuTemplateEditor.fmu_template_editor import FmuTemplateEditorDialog
 from VeraGrid.Gui.Main.SubClasses.io import IoMain
 from VeraGrid.Gui.ManufacturerNativeImporter.manufacturer_native_importer import ManufacturerNativeImporterDialog
-import VeraGrid.Gui.ManufacturerNativeImporter.manufacturer_native_importer as native_importer_module
 from VeraGridEngine.Devices.Dynamic.manufacturer_native_model import (
     ManufacturerNativeBinaryVariant,
     ManufacturerNativeModel,
@@ -30,19 +29,16 @@ from VeraGridEngine.enumerations import (
     DynamicSimulationMode,
     IeeeCigreDllPlatform,
     IeeeCigreDllVerificationStatus,
-    NativeCompilerFramework,
     NativeModelInterface,
 )
 
 from VeraGridEngine.IO.manufacturer_native.model_info_codec import (
     encode_manufacturer_native_model_info,
 )
-import VeraGridEngine.IO.manufacturer_native.inspection as native_inspection_module
 from VeraGridEngine.IO.manufacturer_native.worker_artifact import (
     ManufacturerNativeWorkerArtifact,
-    ManufacturerNativeWorkerPreparation,
+    _worker_sources,
 )
-from VeraGridEngine.IO.native_compiler.compiler_interface import NativeCompilerSelection
 from VeraGridEngine.Utils.Symbolic.block import Block
 from VeraGridEngine.Utils.procedural_logic import ManufacturerNativeControllerLogic
 from tests.MANUFACTURER_NATIVE.test_model_info_codec import _model_info
@@ -574,8 +570,7 @@ def test_native_oem_action_rejects_windows_x86_model_on_linux(qt_app: object) ->
 def test_native_oem_action_imports_qualified_model(
         qt_app: object,
         tmp_path: Path,
-        platform: IeeeCigreDllPlatform,
-        monkeypatch: pytest.MonkeyPatch) -> None:
+        platform: IeeeCigreDllPlatform) -> None:
     """Import a qualified native model and refresh an open RMS library.
 
     :param qt_app: Shared Qt application fixture.
@@ -583,6 +578,7 @@ def test_native_oem_action_imports_qualified_model(
     """
     app: QtWidgets.QApplication = qt_app
     fixture_root: Path = Path(__file__).resolve().parents[1] / "data" / "manufacturer_native"
+    worker_artifact: ManufacturerNativeWorkerArtifact | None = None
     if platform == IeeeCigreDllPlatform.WINDOWS_X86:
         if sys.platform != "win32" or struct.calcsize("P") != 8:
             pytest.skip("Windows x86 native worker requires a 64-bit Windows host")
@@ -602,10 +598,7 @@ def test_native_oem_action_imports_qualified_model(
             text=True,
         )
         assert compiled.returncode == 0, compiled.stderr
-        worker_source_root: Path = (
-            Path(native_inspection_module.__file__).resolve().parents[2]
-            / "data" / "native_worker" / "source"
-        )
+        worker_source_root: Path = _worker_sources()[0].parent
         worker_path: Path = tmp_path / "veragrid-manufacturer-worker"
         worker_sources: list[str] = [
             str(worker_source_root / name)
@@ -626,30 +619,11 @@ def test_native_oem_action_imports_qualified_model(
             text=True,
         )
         assert worker_build.returncode == 0, worker_build.stderr
-        worker_artifact: ManufacturerNativeWorkerArtifact = ManufacturerNativeWorkerArtifact(
+        worker_artifact = ManufacturerNativeWorkerArtifact(
             executable_path=worker_path,
             content_sha256=hashlib.sha256(worker_path.read_bytes()).hexdigest(),
             platform=IeeeCigreDllPlatform.LINUX_X64,
             cache_key="gui-test-local-worker",
-        )
-        compiler_selection: NativeCompilerSelection = NativeCompilerSelection(
-            NativeCompilerFramework.LOCAL_LLVM,
-            binary_root=tmp_path,
-        )
-        monkeypatch.setattr(
-            native_importer_module,
-            "load_saved_local_llvm_selection",
-            lambda: compiler_selection,
-        )
-        monkeypatch.setattr(
-            native_importer_module,
-            "prepare_manufacturer_native_runtime",
-            lambda selection=None: ManufacturerNativeWorkerPreparation(worker_artifact, True),
-        )
-        monkeypatch.setattr(
-            native_inspection_module,
-            "resolve_manufacturer_native_worker",
-            lambda selection=None, prepare_if_missing=False: worker_artifact,
         )
     harness: OemImportHarness = OemImportHarness(
         project_directory=str(fixture_path.parent)
@@ -679,7 +653,7 @@ def test_native_oem_action_imports_qualified_model(
         platform=platform,
     )
     QtCore.QTimer.singleShot(0, driver.interact)
-    IoMain.import_oem_manufacturer_native_model(harness)
+    IoMain.import_oem_manufacturer_native_model(harness, worker_artifact=worker_artifact)
 
     assert driver.interacted
     assert driver.failure_text == ""
@@ -712,6 +686,7 @@ def test_native_oem_action_imports_qualified_model(
         ManufacturerNativeImporterDialog(
             assets=harness.circuit,
             provider=provider,
+            worker_artifact=worker_artifact,
         )
     )
     QtCore.QTimer.singleShot(0, attach_driver.interact)
